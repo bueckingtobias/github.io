@@ -4,14 +4,116 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bücking Immobilien GmbH & Co. KG</title>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f4; }
-    h1 { font-size: 36px; color: #2c3e50; }
-    p { font-size: 18px; color: #555; }
+    body { margin:0; font-family: 'Roboto', sans-serif; scroll-behavior: smooth; background: #f4f4f4; color: #333; }
+    header { background: #d0d0d0; position: fixed; width: 100%; top: 0; z-index: 1000; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-family: 'Montserrat', sans-serif; }
+    header h1 { margin: 0; font-size: 28px; }
+    nav { background: #333; position: sticky; top: 80px; z-index: 999; }
+    nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; }
+    nav ul li { margin: 0; }
+    nav ul li a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: 0.3s; }
+    nav ul li a:hover, nav ul li a.active { background: #3498db; }
+    main { padding: 180px 20px 40px; max-width: 1200px; margin: 0 auto; }
+    section { margin-bottom: 60px; padding: 40px 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    h2 { color: #2c3e50; margin-top:0; font-family: 'Montserrat', sans-serif; }
+    p { line-height: 1.6; }
+    
+    .hero { background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://via.placeholder.com/1200x400') center/cover no-repeat; color: #fff; text-align: center; padding: 120px 20px; border-radius: 8px; margin-bottom: 40px; }
+    .hero h2 { font-size: 48px; margin-bottom: 20px; }
+    .hero p { font-size: 22px; }
+    
+    .services { display: flex; flex-wrap: wrap; justify-content: space-around; }
+    .service { width: 250px; text-align: center; margin: 20px; }
+    .service i { font-size: 50px; color: #3498db; margin-bottom: 15px; }
+    
+    .projects { display: flex; flex-wrap: wrap; justify-content: space-around; }
+    .project { width: 300px; margin: 20px; background: #f9f9f9; border-radius: 8px; padding: 15px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
+    
+    input, textarea { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #2980b9; }
+    
+    footer { text-align: center; padding: 20px; background: #333; color: #fff; }
+    footer a { color: #3498db; margin: 0 10px; text-decoration: none; }
+    
+    @media (max-width: 768px) { .services, .projects { flex-direction: column; align-items: center; } header h1 { font-size: 22px; } .hero h2 { font-size: 32px; } .hero p { font-size: 18px; } }
   </style>
 </head>
 <body>
-  <h1>Bücking Immobilien GmbH & Co. KG</h1>
-  <p>Website Platzhalter – Inhalte folgen bald.</p>
+  <header>
+    <h1>Bücking Immobilien GmbH & Co. KG</h1>
+  </header>
+
+  <nav>
+    <ul id="menu">
+      <li><a href="#home" class="active">Home</a></li>
+      <li><a href="#services">Leistungen</a></li>
+      <li><a href="#projects">Projekte</a></li>
+      <li><a href="#contact">Kontakt</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="home" class="hero">
+      <h2>Willkommen</h2>
+      <p>Ihre Experten für Immobilien und Bauprojekte – Website Platzhalter</p>
+    </section>
+
+    <section id="services">
+      <h2>Leistungen</h2>
+      <div class="services">
+        <div class="service"><i class="fas fa-handshake"></i><h3>Beratung</h3><p>Platzhaltertext für Beratung.</p></div>
+        <div class="service"><i class="fas fa-project-diagram"></i><h3>Projektplanung</h3><p>Platzhaltertext für Projektplanung.</p></div>
+        <div class="service"><i class="fas fa-home"></i><h3>Verkauf</h3><p>Platzhaltertext für Verkauf und Vermarktung.</p></div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <h2>Projekte</h2>
+      <div class="projects">
+        <div class="project"><h3>Projekt A</h3><p>Platzhalter für Projektbeschreibung.</p></div>
+        <div class="project"><h3>Projekt B</h3><p>Platzhalter für Projektbeschreibung.</p></div>
+        <div class="project"><h3>Projekt C</h3><p>Platzhalter für Projektbeschreibung.</p></div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h2>Kontakt</h2>
+      <form>
+        <input type="text" placeholder="Name">
+        <input type="email" placeholder="Email">
+        <textarea placeholder="Nachricht"></textarea>
+        <button type="submit">Senden</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 Bücking Immobilien GmbH & Co. KG.  
+    <a href="#"><i class="fab fa-facebook"></i></a>
+    <a href="#"><i class="fab fa-instagram"></i></a>
+    <a href="#"><i class="fab fa-linkedin"></i></a>
+  </footer>
+
+  <script>
+    // Menü aktiv beim Scrollen
+    const sections = document.querySelectorAll('section');
+    const menuLinks = document.querySelectorAll('nav ul li a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 150;
+        if(pageYOffset >= sectionTop){ current = section.getAttribute('id'); }
+      });
+      menuLinks.forEach(link => { link.classList.remove('active'); if(link.getAttribute('href') === '#' + current){ link.classList.add('active'); } });
+    });
+  </script>
 </body>
 </html>
