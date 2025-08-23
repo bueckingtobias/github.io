@@ -19,14 +19,15 @@
       background-color: #004225; /* British Racing Green */
       color: white;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       padding: 15px 40px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       z-index: 1000;
     }
-    header img {
-      height: 50px;
+    header span {
+      font-size: 1.5rem;
+      font-weight: bold;
     }
     .hero {
       height: 100vh;
@@ -39,9 +40,9 @@
       background-color: #ffffff;
       color: #004225;
     }
-    .hero h1 {
-      font-size: 3rem;
-      font-weight: bold;
+    .hero img {
+      max-width: 300px;
+      height: auto;
     }
     footer {
       text-align: center;
@@ -54,12 +55,11 @@
 </head>
 <body>
   <header>
-    <div><span>Bücking Immobilien GmbH & Co. KG</span></div>
-    <img src="logo.jpeg" alt="Bücking Immobilien Logo">
+    <span>Bücking Immobilien GmbH & Co. KG</span>
   </header>
 
   <section class="hero">
-    <h1>Bücking Immobilien GmbH & Co. KG</h1>
+    <img src="logo.jpeg" alt="Bücking Immobilien Logo">
   </section>
 
   <footer>
