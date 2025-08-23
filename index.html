@@ -7,63 +7,63 @@
   <style>
     body {
       margin: 0;
-      font-family: 'Avenir', sans-serif;
-      background-color: #ffffff;
-      color: #004225; /* identisches Grün */
+      font-family: "Avenir", sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh; /* Höhe = gesamte Bildschirmhöhe */
     }
+
     header {
+      background-color: #004225; /* British Racing Green */
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 1.5em;
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      background-color: #004225; /* British Racing Green */
-      color: white;
+      right: 0;
+    }
+
+    main {
+      flex: 1;
+      background-color: white;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 15px 40px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 1000;
+      padding-top: 80px; /* Platz unter Header */
+      padding-bottom: 60px; /* Platz über Footer */
     }
-    header span {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    .hero {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-      background-color: #ffffff;
-      color: #004225;
-    }
-    .hero img {
+
+    main img {
       max-width: 300px;
       height: auto;
     }
+
     footer {
-      text-align: center;
-      padding: 20px;
       background-color: #004225;
       color: white;
-      margin-top: 50px;
+      text-align: center;
+      padding: 15px;
+      font-size: 0.9em;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
     }
   </style>
 </head>
 <body>
   <header>
-    <span>Bücking Immobilien GmbH & Co. KG</span>
+    Bücking Immobilien GmbH &amp; Co. KG
   </header>
 
-  <section class="hero">
-    <img src="logo.jpeg" alt="Bücking Immobilien Logo">
-  </section>
+  <main>
+    <img src="logo.jpeg" alt="Logo Bücking Immobilien">
+  </main>
 
   <footer>
-    &copy; 2025 Bücking Immobilien GmbH & Co. KG – Alle Rechte vorbehalten
+    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
   </footer>
 </body>
 </html>
