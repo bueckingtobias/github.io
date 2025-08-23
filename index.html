@@ -42,7 +42,6 @@
       box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
     }
 
-    /* Main Content */
     main {
       margin-top: 100px;
       margin-bottom: 80px;
@@ -63,13 +62,13 @@
 
     section h2 {
       font-size: 3rem;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       letter-spacing: 1px;
     }
 
     section p {
-      font-size: 1.3rem;
-      max-width: 900px;
+      font-size: 1.2rem;
+      max-width: 800px;
       text-align: center;
       line-height: 1.8;
       color: #004225;
@@ -80,7 +79,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 30px;
-      margin-top: 40px;
+      margin-top: 30px;
     }
 
     .placeholder-box {
@@ -105,8 +104,8 @@
     }
 
     .team-photo {
-      width: 150px;
-      height: 150px;
+      width: 180px;
+      height: 180px;
       border-radius: 50%;
       background-color: #cccccc;
       margin-bottom: 15px;
@@ -122,6 +121,18 @@
       margin: 5px 0;
     }
 
+    .cta {
+      margin-top: 10px;
+      padding: 8px 15px;
+      background-color: #004225;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
     @media (max-width: 768px) {
       .placeholder-box {
         width: 80%;
@@ -131,6 +142,10 @@
       }
       section p {
         font-size: 1.1rem;
+      }
+      .team-photo {
+        width: 150px;
+        height: 150px;
       }
     }
   </style>
@@ -143,23 +158,45 @@
   <main>
     <section>
       <h2>Leistungen</h2>
-      <p>Unsere professionellen Immobilien-Dienstleistungen bieten erstklassigen Service für Eigentümer, Investoren und Mieter.</p>
+      <p>Kurze Übersicht unserer Hauptdienstleistungen.</p>
       <div class="placeholder-row">
-        <div class="placeholder-box">Leistung 1</div>
-        <div class="placeholder-box">Leistung 2</div>
-        <div class="placeholder-box">Leistung 3</div>
-        <div class="placeholder-box">Leistung 4</div>
+        <div class="placeholder-box">
+          <p>Immobilienverkauf</p>
+          <p>Core Facts: Schnell, fair, transparent</p>
+          <a href="#" class="cta">Mehr erfahren</a>
+        </div>
+        <div class="placeholder-box">
+          <p>Vermietung</p>
+          <p>Core Facts: Professionell, zuverlässig</p>
+          <a href="#" class="cta">Mehr erfahren</a>
+        </div>
+        <div class="placeholder-box">
+          <p>Beratung</p>
+          <p>Core Facts: Expertise, individuelle Lösungen</p>
+          <a href="#" class="cta">Mehr erfahren</a>
+        </div>
       </div>
     </section>
 
     <section>
       <h2>Projekte</h2>
-      <p>Unsere Projekte umfassen eine Vielzahl hochwertiger Immobilienentwicklungen.</p>
+      <p>Ausgewählte Immobilienprojekte im Überblick.</p>
       <div class="placeholder-row">
-        <div class="placeholder-box">Projekt 1</div>
-        <div class="placeholder-box">Projekt 2</div>
-        <div class="placeholder-box">Projekt 3</div>
-        <div class="placeholder-box">Projekt 4</div>
+        <div class="placeholder-box">
+          <p>Projekt Alpha</p>
+          <p>Core Facts: Neubau, zentral gelegen</p>
+          <a href="#" class="cta">Mehr erfahren</a>
+        </div>
+        <div class="placeholder-box">
+          <p>Projekt Beta</p>
+          <p>Core Facts: Modernisierung, hochwertig</p>
+          <a href="#" class="cta">Mehr erfahren</a>
+        </div>
+        <div class="placeholder-box">
+          <p>Projekt Gamma</p>
+          <p>Core Facts: Nachhaltig, energieeffizient</p>
+          <a href="#" class="cta">Mehr erfahren</a>
+        </div>
       </div>
     </section>
 
@@ -171,18 +208,20 @@
           <img src="tobias.jpg" alt="Tobias Bücking" class="team-photo">
           <div class="team-info">
             <p><strong>Tobias Bücking</strong></p>
-            <p>Position / Verantwortungsbereich</p>
-            <p>Mail: info@buecking-immobilien.de</p>
-            <p>Tel: +49 123 4567890</p>
+            <p>Position</p>
+            <p>Verantwortungsbereich</p>
+            <p>Mail: [Platzhalter]</p>
+            <p>Tel: [Platzhalter]</p>
           </div>
         </div>
         <div class="placeholder-box">
           <img src="bernfried.jpg" alt="Bernfried Bücking" class="team-photo">
           <div class="team-info">
             <p><strong>Bernfried Bücking</strong></p>
-            <p>Position / Verantwortungsbereich</p>
-            <p>Mail: info@buecking-immobilien.de</p>
-            <p>Tel: +49 123 4567891</p>
+            <p>Position</p>
+            <p>Verantwortungsbereich</p>
+            <p>Mail: [Platzhalter]</p>
+            <p>Tel: [Platzhalter]</p>
           </div>
         </div>
       </div>
