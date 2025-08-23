@@ -8,48 +8,121 @@
     body {
       margin: 0;
       font-family: "Avenir", sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh; /* Höhe = gesamte Bildschirmhöhe */
+      color: #004225;
+      background-color: #ffffff;
     }
 
+    /* Header */
     header {
-      background-color: #004225; /* British Racing Green */
+      background-color: #004225;
       color: white;
       text-align: center;
       padding: 20px;
       font-size: 1.5em;
+      font-weight: bold;
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
-    main {
-      flex: 1;
-      background-color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-top: 80px; /* Platz unter Header */
-      padding-bottom: 60px; /* Platz über Footer */
-    }
-
-    main img {
-      max-width: 300px;
-      height: auto;
-    }
-
+    /* Footer */
     footer {
       background-color: #004225;
       color: white;
       text-align: center;
-      padding: 15px;
+      padding: 20px;
       font-size: 0.9em;
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    }
+
+    /* Main Content */
+    main {
+      margin-top: 100px; /* Platz für Header */
+      margin-bottom: 80px; /* Platz für Footer */
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+    }
+
+    section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 60px 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    section h2 {
+      font-size: 3rem;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+    }
+
+    section p {
+      font-size: 1.3rem;
+      max-width: 900px;
+      text-align: center;
+      line-height: 1.8;
+      color: #004225;
+    }
+
+    .placeholder-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    .placeholder-box {
+      width: 360px;
+      height: 240px;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #888888;
+      font-size: 1.2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .placeholder-box:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+    }
+
+    /* Feinschliff: größere Abstände, klare Linien, subtile Animationen */
+    section h2, section p {
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    @media (max-width: 768px) {
+      .placeholder-box {
+        width: 80%;
+        height: 200px;
+      }
+      section h2 {
+        font-size: 2.2rem;
+      }
+      section p {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
@@ -59,7 +132,36 @@
   </header>
 
   <main>
-    <img src="logo.jpeg" alt="Logo Bücking Immobilien">
+    <section>
+      <h2>Leistungen</h2>
+      <p>Unsere professionellen Immobilien-Dienstleistungen bieten erstklassigen Service für Eigentümer, Investoren und Mieter. Platzhalter-Boxen markieren die Bereiche, die später mit detaillierten Informationen gefüllt werden.</p>
+      <div class="placeholder-row">
+        <div class="placeholder-box">Leistung 1</div>
+        <div class="placeholder-box">Leistung 2</div>
+        <div class="placeholder-box">Leistung 3</div>
+        <div class="placeholder-box">Leistung 4</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Projekte</h2>
+      <p>Unsere Projekte umfassen eine Vielzahl hochwertiger Immobilienentwicklungen. Jede Box repräsentiert ein zukünftiges Projekt, das detailliert dargestellt wird.</p>
+      <div class="placeholder-row">
+        <div class="placeholder-box">Projekt 1</div>
+        <div class="placeholder-box">Projekt 2</div>
+        <div class="placeholder-box">Projekt 3</div>
+        <div class="placeholder-box">Projekt 4</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Kontakt</h2>
+      <p>Hier werden alle Kontaktinformationen, Formulare und Interaktionsmöglichkeiten für Kunden und Interessenten eingebaut. Aktuell dienen diese Boxen als Platzhalter.</p>
+      <div class="placeholder-row">
+        <div class="placeholder-box">Kontaktformular / Info 1</div>
+        <div class="placeholder-box">Kontaktformular / Info 2</div>
+      </div>
+    </section>
   </main>
 
   <footer>
