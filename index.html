@@ -4,91 +4,66 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bücking Immobilien GmbH & Co. KG</title>
-
   <style>
-    /* Basis-Styles */
-    @font-face {
-      font-family: 'AvenirNext';
-      src: local('Avenir Next Bold'), local('AvenirNext-Bold'), sans-serif;
-      font-weight: 700;
+    body {
+      margin: 0;
+      font-family: 'Avenir', sans-serif;
+      background-color: #ffffff;
+      color: #004225; /* identisches Grün */
     }
-
-    body { margin:0; font-family: 'AvenirNext', sans-serif; scroll-behavior: smooth; background: #f4f4f4; color: #333; }
-    header { background: #d0f0e0; position: fixed; width: 100%; top: 0; z-index: 1000; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    header h1 { margin: 0; font-size: 32px; }
-
-    nav { background: #20b2aa; position: sticky; top: 80px; z-index: 999; }
-    nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; }
-    nav ul li { margin: 0; }
-    nav ul li a { display: block; padding: 15px 20px; color: white; text-decoration: none; transition: 0.3s; }
-    nav ul li a:hover, nav ul li a.active { background: #2ebfa1; }
-
-    main { padding: 180px 20px 40px; max-width: 1200px; margin: 0 auto; }
-    section { margin-bottom: 60px; padding: 40px 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    h2 { color: #2c3e50; margin-top:0; }
-    p { line-height: 1.6; }
-
-    .hero { background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('https://via.placeholder.com/1200x400/20b2aa/ffffff') center/cover no-repeat; color: #fff; text-align: center; padding: 120px 20px; border-radius: 12px; margin-bottom: 40px; }
-    .hero h2 { font-size: 48px; margin-bottom: 20px; }
-    .hero p { font-size: 22px; }
-
-    footer { text-align: center; padding: 20px; background: #20b2aa; color: #fff; border-radius: 0 0 12px 12px; }
-
-    @media (max-width: 768px) { nav ul { flex-direction: column; } header h1 { font-size: 24px; } .hero h2 { font-size: 32px; } .hero p { font-size: 18px; } }
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #004225; /* British Racing Green */
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 40px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    header img {
+      height: 50px;
+    }
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      background-color: #ffffff;
+      color: #004225;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #004225;
+      color: white;
+      margin-top: 50px;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Bücking Immobilien GmbH & Co. KG</h1>
+    <div><span>Bücking Immobilien GmbH & Co. KG</span></div>
+    <img src="logo.jpeg" alt="Bücking Immobilien Logo">
   </header>
 
-  <nav>
-    <ul id="menu">
-      <li><a href="#home" class="active">Home</a></li>
-      <li><a href="#services">Leistungen</a></li>
-      <li><a href="#projects">Projekte</a></li>
-      <li><a href="#contact">Kontakt</a></li>
-    </ul>
-  </nav>
-
-  <main>
-    <section id="home" class="hero">
-      <h2>Willkommen</h2>
-      <p>Platzhalter-Website für Bücking Immobilien GmbH & Co. KG</p>
-    </section>
-
-    <section id="services">
-      <h2>Leistungen</h2>
-      <p>Hier erscheinen bald Informationen zu unseren Dienstleistungen.</p>
-    </section>
-
-    <section id="projects">
-      <h2>Projekte</h2>
-      <p>Platzhalter für Projektübersicht und Details.</p>
-    </section>
-
-    <section id="contact">
-      <h2>Kontakt</h2>
-      <p>Kontaktinformationen folgen hier.</p>
-    </section>
-  </main>
+  <section class="hero">
+    <h1>Bücking Immobilien GmbH & Co. KG</h1>
+  </section>
 
   <footer>
-    &copy; 2025 Bücking Immobilien GmbH & Co. KG. Alle Rechte vorbehalten.
+    &copy; 2025 Bücking Immobilien GmbH & Co. KG – Alle Rechte vorbehalten
   </footer>
-
-  <script>
-    // Menü aktiv beim Scrollen
-    const sections = document.querySelectorAll('section');
-    const menuLinks = document.querySelectorAll('nav ul li a');
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach(section => {
-        const sectionTop = section.offsetTop - 150;
-        if(pageYOffset >= sectionTop){ current = section.getAttribute('id'); }
-      });
-      menuLinks.forEach(link => { link.classList.remove('active'); if(link.getAttribute('href') === '#' + current){ link.classList.add('active'); } });
-    });
-  </script>
 </body>
 </html>
