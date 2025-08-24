@@ -120,7 +120,7 @@
 
     .project-hero img {
       width: 100%;
-      aspect-ratio: 4842 / 1978; /* echtes Seitenverhältnis */
+      aspect-ratio: 4842 / 1978;
       object-fit: cover;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -182,6 +182,20 @@
       padding: 4px 10px;
       border-radius: 8px;
       margin-top: 5px;
+    }
+
+    .apartment-info {
+      max-width: 900px;
+      margin-top: 30px;
+      font-size: 0.9rem;
+      text-align: center;
+      line-height: 1.5;
+      color: #555555; /* dezenter Grauton */
+    }
+
+    .apartment-info strong {
+      font-weight: 600;
+      color: #004225; /* nur das Wort "Hinweis" bleibt grün */
     }
 
     /* Team */
@@ -269,49 +283,60 @@
         Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit zeitgemäßem Wohnkomfort.
       </p>
 
-      <!-- Nur ein großes Bild -->
+      <!-- Außenansicht -->
       <div class="project-intro">
         <div class="project-hero">
-          <img src="projekt-aussenansicht.png" alt="Außenansicht Gesamtansicht">
+          <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
         </div>
       </div>
 
+      <!-- Wohnungen -->
       <div class="apartment-row">
         <div class="apartment-box">
-          <img src="wohnung1-grundriss.jpeg" alt="Wohnung 1 Grundriss">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
           <h4>Wohnung 1</h4>
           <p>Größe: 107 m²</p>
           <p>Zimmer: 3</p>
           <p>Preis: 1.400,00 €</p>
         </div>
         <div class="apartment-box">
-          <img src="wohnung2-grundriss.jpeg" alt="Wohnung 2 Grundriss">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
           <h4>Wohnung 2</h4>
           <p>Größe: 93 m²</p>
           <p>Zimmer: 4</p>
           <p class="vermietet">Vermietet</p>
         </div>
         <div class="apartment-box">
-          <img src="wohnung3-grundriss.jpeg" alt="Wohnung 3 Grundriss">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
           <h4>Wohnung 3</h4>
           <p>Größe: 92 m²</p>
           <p>Zimmer: 3</p>
           <p>Preis: 1.200,00 €</p>
         </div>
         <div class="apartment-box">
-          <img src="wohnung4-grundriss.jpeg" alt="Wohnung 4 Grundriss">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
           <h4>Wohnung 4</h4>
           <p>Größe: 92 m²</p>
           <p>Zimmer: 3</p>
           <p>Preis: 1.200,00 €</p>
         </div>
         <div class="apartment-box">
-          <img src="wohnung5-grundriss.jpeg" alt="Wohnung 5 Grundriss">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
           <h4>Wohnung 5</h4>
           <p>Größe: 124 m²</p>
           <p>Zimmer: 4</p>
           <p>Preis: 1.620,00 €</p>
         </div>
+      </div>
+
+      <!-- Zusatzinfo -->
+      <div class="apartment-info">
+        <p>
+          <strong>Hinweis:</strong> Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten. Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters.
+        </p>
+        <p>
+          Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.
+        </p>
       </div>
     </section>
 
