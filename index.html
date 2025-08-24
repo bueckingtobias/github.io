@@ -109,15 +109,37 @@
       margin-bottom: 30px;
     }
 
-    .project-wide-image {
+    .project-hero {
       width: 100%;
       max-width: 1100px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      padding: 20px;
       border-radius: 12px;
-      margin: 20px 0;
-      object-fit: cover;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
 
+    .project-hero img {
+      width: 100%;
+      aspect-ratio: 4842 / 1978; /* echtes Seitenverhältnis */
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s, opacity 0.6s ease;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    .project-hero img.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .project-hero img:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    /* Wohnungen */
     .apartment-row {
       display: flex;
       flex-wrap: wrap;
@@ -151,10 +173,6 @@
       margin-bottom: 10px;
     }
 
-    .apartment-box h4 {
-      margin: 10px 0;
-    }
-
     .vermietet {
       display: inline-block;
       background-color: red;
@@ -166,6 +184,7 @@
       margin-top: 5px;
     }
 
+    /* Team */
     .team-box {
       width: 380px;
       background-color: #004225;
@@ -250,8 +269,11 @@
         Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit zeitgemäßem Wohnkomfort.
       </p>
 
+      <!-- Nur ein großes Bild -->
       <div class="project-intro">
-        <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Projekt" class="project-wide-image">
+        <div class="project-hero">
+          <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
+        </div>
       </div>
 
       <div class="apartment-row">
@@ -313,5 +335,19 @@
   <footer>
     &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
   </footer>
+
+  <script>
+    // Scroll-Animation für Hero-Bild
+    const heroImg = document.querySelector('.project-hero img');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.2 });
+
+    observer.observe(heroImg);
+  </script>
 </body>
 </html>
