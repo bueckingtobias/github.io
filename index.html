@@ -82,31 +82,26 @@
 
     .placeholder-box {
       width: 380px;
+      background-color: #004225;
+      color: #ffffff;
       display: flex;
       justify-content: center;
       align-items: center;
+      font-size: 1.2rem;
       border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      padding: 25px;
+      padding: 40px 25px;
+      text-align: center;
+      font-weight: bold;
       transition: transform 0.3s, box-shadow 0.3s;
+      cursor: default;
     }
 
     .placeholder-box:hover {
       transform: translateY(-6px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
 
-    .green-box {
-      background-color: #004225;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.4rem;
-      height: 150px;
-      text-align: center;
-    }
-
+    /* Projekt-Design */
     .project-intro {
       width: 100%;
       max-width: 1100px;
@@ -121,20 +116,6 @@
       margin: 20px 0;
       object-fit: cover;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .project-details {
-      width: 100%;
-      max-width: 1100px;
-      background-color: #f8f8f8;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      margin-top: 20px;
-    }
-
-    .project-details h3 {
-      margin-bottom: 15px;
     }
 
     .apartment-row {
@@ -153,6 +134,13 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.05);
       padding: 20px;
       text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+
+    .apartment-box:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
     }
 
     .apartment-box img {
@@ -167,6 +155,32 @@
       margin: 10px 0;
     }
 
+    .vermietet {
+      display: inline-block;
+      background-color: red;
+      color: white;
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding: 4px 10px;
+      border-radius: 8px;
+      margin-top: 5px;
+    }
+
+    .team-box {
+      width: 380px;
+      background-color: #004225;
+      color: #ffffff;
+      border-radius: 12px;
+      text-align: center;
+      padding: 25px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .team-box:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
     .team-photo {
       width: 180px;
       height: 180px;
@@ -176,17 +190,14 @@
       object-fit: cover;
     }
 
-    .team-info {
-      text-align: center;
-      color: #004225;
-    }
-
-    .team-info p {
+    .team-info p, .team-info a {
+      color: #ffffff;
       margin: 5px 0;
+      text-decoration: none;
     }
 
     @media (max-width: 768px) {
-      .placeholder-box {
+      .placeholder-box, .team-box {
         width: 85%;
       }
       section h2 {
@@ -225,28 +236,18 @@
     <!-- Leistungen -->
     <section id="leistungen">
       <h2>Leistungen</h2>
-      <p>Kurze Übersicht unserer Hauptdienstleistungen.</p>
       <div class="placeholder-row">
-        <div class="placeholder-box green-box">
-          <strong>Projektentwicklung</strong>
-        </div>
-        <div class="placeholder-box green-box">
-          <strong>Vermietung</strong>
-        </div>
-        <div class="placeholder-box green-box">
-          <strong>Instandhaltung</strong>
-        </div>
+        <div class="placeholder-box">Projektentwicklung</div>
+        <div class="placeholder-box">Vermietung</div>
+        <div class="placeholder-box">Instandhaltung</div>
       </div>
     </section>
 
     <!-- Projekt -->
     <section id="projekt">
-      <h2>Vom Bauernhof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
+      <h2>Vom Hof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
       <p>
-        Unser aktuelles Projekt widmet sich einem besonderen Ort: Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut.
-      </p>
-      <p>
-        Mit viel Liebe zum Detail und Respekt vor der Geschichte des Hofs schaffen wir modernen Wohnraum mit ländlichem Charakter, in dem sich Menschen wohlfühlen und zuhause ankommen können.
+        Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit zeitgemäßem Wohnkomfort.
       </p>
 
       <div class="project-intro">
@@ -257,37 +258,37 @@
         <div class="apartment-box">
           <img src="wohnung1-grundriss.jpeg" alt="Wohnung 1 Grundriss">
           <h4>Wohnung 1</h4>
-          <p>Größe: [Platzhalter] m²</p>
-          <p>Zimmer: [Platzhalter]</p>
-          <p>Preis: [Platzhalter]</p>
+          <p>Größe: 107 m²</p>
+          <p>Zimmer: 3</p>
+          <p>Preis: 1.400,00 €</p>
         </div>
         <div class="apartment-box">
           <img src="wohnung2-grundriss.jpeg" alt="Wohnung 2 Grundriss">
           <h4>Wohnung 2</h4>
-          <p>Größe: [Platzhalter] m²</p>
-          <p>Zimmer: [Platzhalter]</p>
-          <p>Preis: [Platzhalter]</p>
+          <p>Größe: 93 m²</p>
+          <p>Zimmer: 4</p>
+          <p class="vermietet">Vermietet</p>
         </div>
         <div class="apartment-box">
           <img src="wohnung3-grundriss.jpeg" alt="Wohnung 3 Grundriss">
           <h4>Wohnung 3</h4>
-          <p>Größe: [Platzhalter] m²</p>
-          <p>Zimmer: [Platzhalter]</p>
-          <p>Preis: [Platzhalter]</p>
+          <p>Größe: 92 m²</p>
+          <p>Zimmer: 3</p>
+          <p>Preis: 1.200,00 €</p>
         </div>
         <div class="apartment-box">
           <img src="wohnung4-grundriss.jpeg" alt="Wohnung 4 Grundriss">
           <h4>Wohnung 4</h4>
-          <p>Größe: [Platzhalter] m²</p>
-          <p>Zimmer: [Platzhalter]</p>
-          <p>Preis: [Platzhalter]</p>
+          <p>Größe: 92 m²</p>
+          <p>Zimmer: 3</p>
+          <p>Preis: 1.200,00 €</p>
         </div>
         <div class="apartment-box">
           <img src="wohnung5-grundriss.jpeg" alt="Wohnung 5 Grundriss">
           <h4>Wohnung 5</h4>
-          <p>Größe: [Platzhalter] m²</p>
-          <p>Zimmer: [Platzhalter]</p>
-          <p>Preis: [Platzhalter]</p>
+          <p>Größe: 124 m²</p>
+          <p>Zimmer: 4</p>
+          <p>Preis: 1.620,00 €</p>
         </div>
       </div>
     </section>
@@ -296,10 +297,21 @@
     <section id="kontakt">
       <h2>Kontakt</h2>
       <div class="placeholder-row">
-        <div class="placeholder-box">
+        <div class="team-box">
           <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo">
           <div class="team-info">
             <p><strong>Tobias Bücking</strong></p>
             <p>Geschäftsführender Gesellschafter</p>
             <p>Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
-            <p>Tel: <a href="tel:+4917657960759">+49 
+            <p>Tel: <a href="tel:+4917657960759">+49 176 57960759</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
+  </footer>
+</body>
+</html>
