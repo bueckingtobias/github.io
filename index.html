@@ -42,34 +42,33 @@
     }
 
     main {
-      margin-top: 100px;
-      margin-bottom: 80px;
+      margin-top: 90px;
+      margin-bottom: 70px;
       display: flex;
       flex-direction: column;
-      gap: 60px;
+      gap: 40px;
     }
 
     section {
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      padding: 60px 20px;
+      min-height: auto;
+      padding: 40px 20px;
       border-bottom: 1px solid #e0e0e0;
     }
 
     section h2 {
-      font-size: 3rem;
-      margin-bottom: 20px;
+      font-size: 2.5rem;
+      margin-bottom: 15px;
       letter-spacing: 1px;
     }
 
     section p {
-      font-size: 1.2rem;
-      max-width: 800px;
+      font-size: 1.1rem;
+      max-width: 900px;
       text-align: center;
-      line-height: 1.8;
+      line-height: 1.6;
       color: #004225;
     }
 
@@ -77,29 +76,95 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 30px;
-      margin-top: 30px;
+      gap: 25px;
+      margin-top: 20px;
     }
 
     .placeholder-box {
-      width: 360px;
-      height: auto;
+      width: 380px;
       background-color: #f0f0f0;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
       align-items: center;
-      color: #888888;
+      color: #004225;
       font-size: 1.2rem;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      padding: 20px;
+      padding: 25px;
       transition: transform 0.3s, box-shadow 0.3s;
     }
 
     .placeholder-box:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+      transform: translateY(-6px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .placeholder-box ul {
+      text-align: left;
+      margin-top: 15px;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    /* Projekt-Design */
+    .project-intro {
+      width: 100%;
+      max-width: 1100px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .project-wide-image {
+      width: 100%;
+      max-width: 1100px;
+      border-radius: 12px;
+      margin: 20px 0;
+      object-fit: cover;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .project-details {
+      width: 100%;
+      max-width: 1100px;
+      background-color: #f8f8f8;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      margin-top: 20px;
+    }
+
+    .project-details h3 {
+      margin-bottom: 15px;
+    }
+
+    .apartment-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+      margin-top: 30px;
+    }
+
+    .apartment-box {
+      width: 320px;
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .apartment-box img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .apartment-box h4 {
+      margin: 10px 0;
     }
 
     .team-photo {
@@ -120,31 +185,22 @@
       margin: 5px 0;
     }
 
-    .cta {
-      margin-top: 10px;
-      padding: 8px 15px;
-      background-color: #004225;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
     @media (max-width: 768px) {
       .placeholder-box {
-        width: 80%;
+        width: 85%;
       }
       section h2 {
-        font-size: 2.2rem;
+        font-size: 2rem;
       }
       section p {
-        font-size: 1.1rem;
+        font-size: 1rem;
       }
       .team-photo {
         width: 150px;
         height: 150px;
+      }
+      .apartment-box {
+        width: 90%;
       }
     }
   </style>
@@ -155,90 +211,114 @@
   </header>
 
   <main>
+    <!-- Über uns -->
+    <section id="ueber-uns">
+      <h2>Über uns</h2>
+      <p>
+        Aus der Landwirtschaft kommend sind wir seit Generationen in der Region ansässig und haben es uns zur Aufgabe gemacht, gemeinsam mit unseren Partnern Immobilien mit höchstem Qualitätsanspruch zu sanieren, entwickeln und zu betreuen.
+      </p>
+      <p>
+        Unser Anspruch ist es, Immobilienprojekte nicht nur wirtschaftlich, sondern auch nachhaltig und im Einklang mit der Umgebung und den Bedürfnissen unserer Kunden zu gestalten. Dabei legen wir großen Wert auf transparente Kommunikation, eine vertrauensvolle Zusammenarbeit und individuelle Beratung.
+      </p>
+      <img src="galerie-platzhalter.jpg" alt="Galerie" class="project-wide-image">
+    </section>
+
+    <!-- Leistungen -->
     <section id="leistungen">
       <h2>Leistungen</h2>
       <p>Kurze Übersicht unserer Hauptdienstleistungen.</p>
       <div class="placeholder-row">
         <div class="placeholder-box">
-          <p>Immobilienverkauf</p>
-          <p>Core Facts: Schnell, fair, transparent</p>
-          <a href="#leistung-verkauf" class="cta">Mehr erfahren</a>
+          <p><strong>Projektentwicklung</strong></p>
+          <ul>
+            <li>Planung und Umsetzung von Immobilienprojekten</li>
+            <li>Koordination von Partnern</li>
+            <li>Nachhaltige Nutzungskonzepte</li>
+          </ul>
         </div>
         <div class="placeholder-box">
-          <p>Vermietung</p>
-          <p>Core Facts: Professionell, zuverlässig</p>
-          <a href="#leistung-vermietung" class="cta">Mehr erfahren</a>
+          <p><strong>Vermietung</strong></p>
+          <ul>
+            <li>Attraktive Objekte in regionaler Lage</li>
+            <li>Transparente Mietbedingungen</li>
+            <li>Persönliche Betreuung der Mieter</li>
+          </ul>
         </div>
         <div class="placeholder-box">
-          <p>Beratung</p>
-          <p>Core Facts: Expertise, individuelle Lösungen</p>
-          <a href="#leistung-beratung" class="cta">Mehr erfahren</a>
+          <p><strong>Instandhaltung</strong></p>
+          <ul>
+            <li>Regelmäßige Pflege und Wartung</li>
+            <li>Schnelle Lösungen bei Bedarf</li>
+            <li>Werterhalt der Immobilien</li>
+          </ul>
         </div>
-      </div>
-      <div id="leistung-verkauf" class="placeholder-row">
-        <div class="placeholder-box">Hier können Details zu Immobilienverkauf eingefügt werden.</div>
-      </div>
-      <div id="leistung-vermietung" class="placeholder-row">
-        <div class="placeholder-box">Hier können Details zur Vermietung eingefügt werden.</div>
-      </div>
-      <div id="leistung-beratung" class="placeholder-row">
-        <div class="placeholder-box">Hier können Details zur Beratung eingefügt werden.</div>
       </div>
     </section>
 
-    <section id="projekte">
-      <h2>Projekte</h2>
-      <p>Ausgewählte Immobilienprojekte im Überblick.</p>
-      <div class="placeholder-row">
-        <div class="placeholder-box">
-          <p>Projekt Alpha</p>
-          <p>Core Facts: Neubau, zentral gelegen</p>
-          <a href="#projekt-alpha" class="cta">Mehr erfahren</a>
-        </div>
-        <div class="placeholder-box">
-          <p>Projekt Beta</p>
-          <p>Core Facts: Modernisierung, hochwertig</p>
-          <a href="#projekt-beta" class="cta">Mehr erfahren</a>
-        </div>
-        <div class="placeholder-box">
-          <p>Projekt Gamma</p>
-          <p>Core Facts: Nachhaltig, energieeffizient</p>
-          <a href="#projekt-gamma" class="cta">Mehr erfahren</a>
-        </div>
+    <!-- Projekt -->
+    <section id="projekt">
+      <h2>Vom Bauernhof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
+      <p>
+        Unser aktuelles Projekt widmet sich einem besonderen Ort: Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut.
+      </p>
+      <p>
+        Mit viel Liebe zum Detail und Respekt vor der Geschichte des Hofs schaffen wir modernen Wohnraum mit ländlichem Charakter, in dem sich Menschen wohlfühlen und zuhause ankommen können.
+      </p>
+
+      <div class="project-intro">
+        <img src="projekt-aussenansicht.jpg" alt="Außenansicht Projekt" class="project-wide-image">
       </div>
-      <div id="projekt-alpha" class="placeholder-row">
-        <div class="placeholder-box">Hier können Details zu Projekt Alpha eingefügt werden.</div>
-      </div>
-      <div id="projekt-beta" class="placeholder-row">
-        <div class="placeholder-box">Hier können Details zu Projekt Beta eingefügt werden.</div>
-      </div>
-      <div id="projekt-gamma" class="placeholder-row">
-        <div class="placeholder-box">Hier können Details zu Projekt Gamma eingefügt werden.</div>
+
+      <div class="apartment-row">
+        <div class="apartment-box">
+          <img src="wohnung1-grundriss.jpg" alt="Wohnung 1 Grundriss">
+          <h4>Wohnung 1</h4>
+          <p>Größe: [Platzhalter] m²</p>
+          <p>Zimmer: [Platzhalter]</p>
+          <p>Preis: [Platzhalter]</p>
+        </div>
+        <div class="apartment-box">
+          <img src="wohnung2-grundriss.jpg" alt="Wohnung 2 Grundriss">
+          <h4>Wohnung 2</h4>
+          <p>Größe: [Platzhalter] m²</p>
+          <p>Zimmer: [Platzhalter]</p>
+          <p>Preis: [Platzhalter]</p>
+        </div>
+        <div class="apartment-box">
+          <img src="wohnung3-grundriss.jpg" alt="Wohnung 3 Grundriss">
+          <h4>Wohnung 3</h4>
+          <p>Größe: [Platzhalter] m²</p>
+          <p>Zimmer: [Platzhalter]</p>
+          <p>Preis: [Platzhalter]</p>
+        </div>
+        <div class="apartment-box">
+          <img src="wohnung4-grundriss.jpg" alt="Wohnung 4 Grundriss">
+          <h4>Wohnung 4</h4>
+          <p>Größe: [Platzhalter] m²</p>
+          <p>Zimmer: [Platzhalter]</p>
+          <p>Preis: [Platzhalter]</p>
+        </div>
+        <div class="apartment-box">
+          <img src="wohnung5-grundriss.jpg" alt="Wohnung 5 Grundriss">
+          <h4>Wohnung 5</h4>
+          <p>Größe: [Platzhalter] m²</p>
+          <p>Zimmer: [Platzhalter]</p>
+          <p>Preis: [Platzhalter]</p>
+        </div>
       </div>
     </section>
 
+    <!-- Kontakt -->
     <section id="kontakt">
       <h2>Kontakt</h2>
-      <p>Kontaktieren Sie unser Team für weitere Informationen.</p>
       <div class="placeholder-row">
         <div class="placeholder-box">
           <img src="tobias.jpg" alt="Tobias Bücking" class="team-photo">
           <div class="team-info">
             <p><strong>Tobias Bücking</strong></p>
-            <p>Position</p>
-            <p>Verantwortungsbereich</p>
-            <p>Mail: [Platzhalter]</p>
-            <p>Tel: [Platzhalter]</p>
-          </div>
-        </div>
-        <div class="placeholder-box">
-          <img src="bernfried.jpg" alt="Bernfried Bücking" class="team-photo">
-          <div class="team-info">
-            <p><strong>Bernfried Bücking</strong></p>
-            <p>Position</p>
-            <p>Verantwortungsbereich</p>
-            <p>Mail: [Platzhalter]</p>
-            <p>Tel: [Platzhalter]</p>
+            <p>Geschäftsführender Gesellschafter</p>
+            <p>Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
+            <p>Tel: <a href="tel:+4917657960759">+49 176 57960759</a></p>
           </div>
         </div>
       </div>
