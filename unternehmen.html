@@ -1,34 +1,292 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Unternehmen – Bücking Immobilien GmbH & Co. KG</title>
   <style>
-    body {font-family: Avenir, sans-serif; margin:0; padding:0; text-align:center;}
-    header {background:#004225;color:#fff;padding:20px;font-size:1.5em;font-weight:bold;}
-    nav {background:#f5f5f5;padding:12px 0;}
-    nav ul {list-style:none;margin:0;padding:0;display:flex;justify-content:center;gap:40px;}
-    nav a {text-decoration:none;color:#004225;font-weight:600;}
-    nav a:hover {color:#007a4c;}
-    footer {background:#004225;color:#fff;padding:20px;margin-top:40px;}
-    main {padding:40px;}
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: "Avenir", sans-serif;
+      color: #004225;
+      background: #ffffff;
+      scroll-behavior: smooth;
+    }
+
+    header {
+      background: #004225; color: white;
+      text-align: center; padding: 20px;
+      font-size: 1.5em; font-weight: bold;
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    nav {
+      background: #f5f5f5; padding: 12px 0;
+      position: fixed; top: 70px; left: 0; right: 0;
+      z-index: 999; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    nav ul {
+      list-style: none; margin: 0; padding: 0;
+      display: flex; justify-content: center; gap: 40px;
+    }
+    nav a {
+      text-decoration: none; color: #004225;
+      font-weight: 600; font-size: 1.1rem;
+      transition: color 0.3s;
+    }
+    nav a:hover { color: #222; }
+    nav a[aria-current="page"] { text-decoration: underline; }
+
+    footer {
+      background: #004225; color: white;
+      text-align: center; padding: 20px; font-size: 0.9em;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    }
+
+    main {
+      margin-top: 150px; margin-bottom: 100px;
+      display: flex; flex-direction: column; gap: 80px;
+    }
+    section {
+      padding: 60px 20px; text-align: center;
+    }
+    section h2 {
+      font-size: 2.4rem; margin-bottom: 20px;
+    }
+    section p {
+      max-width: 900px; margin: 0 auto 20px;
+      line-height: 1.6; font-size: 1.15rem;
+    }
+
+    /* Fade-In */
+    .fade-in { opacity: 0; transform: translateY(40px); transition: all 0.9s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* Zitat */
+    .quote-section {
+      background: #004225; color: white;
+      padding: 80px 20px;
+    }
+    .quote {
+      font-size: 1.15rem; font-style: italic;
+      max-width: 900px; margin: 0 auto;
+      line-height: 1.6;
+    }
+    .quote-author {
+      margin-top: 20px; font-size: 1rem; font-weight: 500; opacity: 0.9;
+    }
+
+    /* Leitbild */
+    .leitbild-container {
+      display: flex; justify-content: center; gap: 40px;
+      flex-wrap: wrap; max-width: 1000px; margin: 0 auto;
+    }
+    .leitbild-box {
+      flex: 1 1 250px;
+      padding: 30px; border-radius: 12px;
+      background: #f9f9f9; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .leitbild-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .leitbild-icon {
+      font-size: 2rem; margin-bottom: 15px;
+    }
+    .leitbild-box h3 { margin-bottom: 10px; }
+    .leitbild-box p { font-size: 1rem; }
+
+    /* Chronik */
+    .chronik-container {
+      display: flex;
+      flex-direction: column; /* untereinander */
+      align-items: center;
+      gap: 30px;
+      max-width: 900px;
+      margin: 40px auto 0;
+    }
+    .chronik-box {
+      width: 100%;
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .chronik-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .chronik-box h3 {
+      font-size: 2rem;
+      margin-bottom: 15px;
+      color: #004225;
+    }
+    .chronik-box p {
+      font-size: 1rem;
+      color: #333;
+    }
+    .chronik-box.highlight {
+      background: #004225;
+      color: white; /* Text UND Überschrift */
+    }
+    .chronik-box.highlight h3,
+    .chronik-box.highlight p {
+      color: white;
+    }
+
+    @media(max-width:768px){
+      section h2 { font-size: 2rem; }
+      section p { font-size: 1rem; }
+      .quote { font-size: 1rem; }
+    }
   </style>
 </head>
 <body>
-<header>Bücking Immobilien GmbH & Co. KG</header>
+  <header>Bücking Immobilien GmbH & Co. KG</header>
 
   <nav>
     <ul>
       <li><a href="index.html">Home</a></li>
-      <li><a href="unternehmen.html">Unternehmen</a></li>
+      <li><a href="unternehmen.html" aria-current="page">Unternehmen</a></li>
       <li><a href="referenzen.html">Referenzen</a></li>
       <li><a href="kontakt.html">Kontakt</a></li>
       <li><a href="impressum.html">Impressum</a></li>
     </ul>
   </nav>
 
-<main><section><h2>Unternehmen</h2><p>Hier steht der Inhalt der Unternehmensseite ...</p></section></main>
-<footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
+  <main>
+    <!-- Philosophie -->
+    <section class="fade-in">
+      <h2>Unsere Philosophie</h2>
+    <p>
+  Die Bücking Immobilien GmbH &amp; Co. KG steht für zielgerichtete, nachhaltige Immobilienentwicklung und eine professionelle
+  Vermietung mit klaren Prozessen. Wir realisieren moderne Wohnprojekte mit hoher
+  Energieeffizienz und funktionalen Grundrissen – immer mit Blick auf Mieterzufriedenheit
+  und langfristige Wirtschaftlichkeit.
+</p>
+<p>
+  Unser Ansatz verbindet regionale Verantwortung mit unternehmerischer Disziplin:
+  ressourcenschonende Bauweisen, transparente Kommunikation und
+  partnerschaftliche Zusammenarbeit mit lokalen Betrieben. So entsteht Substanz, die heute überzeugt
+  und morgen Bestand hat.
+</p>
+<p>
+  Wir verfolgen einen klaren Plan: entwickeln, in den eigenen Bestand übernehmen und
+  kontinuierlich vermieten. Dabei wächst unser Portfolio bewusst und qualitätsorientiert –
+  wir priorisieren Werthaltigkeit, Beständigkeit und eine sorgfältige Pflege
+  statt kurzfristiger Skalierung. Ziel ist verlässlicher Wohnraum in der Region, der ökologische Standards erfüllt
+  und stabile Perspektiven für Mieterinnen und Mieter bietet.
+
+
+    </section>
+
+    <!-- Zitat -->
+    <section class="quote-section fade-in">
+      <div class="quote">
+        „Regional handeln heißt für uns: kurze Wege, transparente Entscheidungen und Verantwortung gegenüber Mietern, Partnern und Standort.“
+        <div class="quote-author">Tobias Bücking</div>
+      </div>
+    </section>
+
+    <!-- Leitbild -->
+    <section class="fade-in">
+      <h2>Unternehmerisches Leitbild</h2>
+      <div class="leitbild-container">
+        <div class="leitbild-box">
+          <div class="leitbild-icon">🏗️</div>
+          <h3>Nachhaltig bauen</h3>
+          <p>Ressourcenschonende Materialien, Photovoltaik und effiziente Haustechnik sind unser Standard.</p>
+        </div>
+         <div class="leitbild-box">
+          <div class="leitbild-icon">🤝</div>
+          <h3>Vertrauen schaffen</h3>
+          <p>Vertrauen entsteht für uns durch Transparenz, Ehrlichkeit und Kontinuität. Von der ersten Anfrage bis zur laufenden Betreuung setzen wir auf klare Kommunikation und verbindliche Abläufe.</p>
+        </div>
+        <div class="leitbild-box">
+          <div class="leitbild-icon">🌍</div>
+          <h3>Regional handeln</h3>
+          <p>Kurze Wege, verlässliche Strukturen: Unsere Projekte entstehen mit qualifizierten Handwerkspartnern vor Ort.</p>
+        </div>
+       
+      </div>
+    </section>
+
+ <!-- Chronik -->
+<section class="fade-in">
+  <h2>Chronik</h2>
+
+  <div class="chronik-container">
+    <!-- Ausblick -->
+    <div class="chronik-box highlight">
+      <h3>Ausblick</h3>
+      <p>
+        Wir schließen die Wohnungen Schritt für Schritt fertig ab und vermieten sie fair und transparent.
+        Für Mieterinnen und Mieter bleiben wir gut erreichbar, kümmern uns zügig um Anliegen
+        und halten die Häuser zuverlässig in Schuss. Unser Bestand wächst langsam – lieber
+        ordentlich und dauerhaft, statt zu schnell.
+      </p>
+    </div>
+
+    <!-- 2025 -->
+    <div class="chronik-box">
+      <h3>2025</h3>
+      <p>
+        Start des ersten Projekts: Aus dem Familienhof entstehen fünf Wohnungen mit hellen Räumen
+        und praktischen Grundrissen. Dämmung, Haustechnik und Ausstattung werden so gewählt,
+        dass Wohnen komfortabel und gut zu betreiben ist. Übergaben, Ansprechpartner und
+        Abläufe für die Vermietung werden klar geregelt.
+      </p>
+    </div>
+
+    <!-- 2024 -->
+    <div class="chronik-box">
+      <h3>2024</h3>
+      <p>
+        Gründung der Bücking Immobilien GmbH &amp; Co. KG. Damit gibt es feste Zuständigkeiten,
+        klare Unterlagen und einen verlässlichen Kontakt – für Mieter, Handwerksbetriebe und Partner.
+      </p>
+    </div>
+
+    <!-- 2023 -->
+    <div class="chronik-box">
+      <h3>2023</h3>
+      <p>
+        Beginn der Planung: Entwürfe, Genehmigungen und Vorbereitung der Arbeiten.
+        Wir holen Betriebe aus der Region mit ins Boot und stimmen die Schritte sorgfältig ab.
+      </p>
+    </div>
+
+    <!-- Vor 2023 -->
+    <div class="chronik-box">
+      <h3>Vor 2023</h3>
+      <p>
+        Landwirtschaftliche Nutzung über viele Jahre. Diese Herkunft prägt unseren Blick:
+        bodenständig, verlässlich und mit Verantwortung für den Ort.
+      </p>
+    </div>
+  </div>
+</section>
+  </main>
+
+  <footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
+
+  <script>
+    // Scroll Animation
+    const faders = document.querySelectorAll('.fade-in');
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    faders.forEach(f => observer.observe(f));
+  </script>
 </body>
 </html>
