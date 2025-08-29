@@ -1,5 +1,4 @@
-# Write the updated index.html with working navigation and Home message
-index_html = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
@@ -275,6 +274,12 @@ index_html = """<!DOCTYPE html>
       section p { font-size: 1rem; }
       .team-photo { width: 150px; height: 150px; }
       .apartment-box { width: 90%; }
+
+      /* --- Mobile Navigation Fix: unter Header platzieren und umbruchfähig machen --- */
+      nav { top: 110px; }
+      main { margin-top: 220px; }                 /* Platz für höheren Header + Navi */
+      nav ul { flex-wrap: wrap; gap: 16px; padding: 0 10px; }
+      nav a  { font-size: 1rem; display: inline-block; padding: 10px 8px; }
     }
   </style>
 </head>
@@ -422,8 +427,3 @@ index_html = """<!DOCTYPE html>
   </script>
 </body>
 </html>
-"""
-with open("/mnt/data/index.html", "w", encoding="utf-8") as f:
-    f.write(index_html)
-
-"/mnt/data/index.html"
