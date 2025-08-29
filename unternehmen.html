@@ -64,18 +64,40 @@
     .fade-in { opacity: 0; transform: translateY(40px); transition: all 0.9s ease; }
     .fade-in.visible { opacity: 1; transform: translateY(0); }
 
-    /* Zitat */
+    /* Zitat-Hero (neu, mit Foto) */
     .quote-section {
-      background: #004225; color: white;
-      padding: 80px 20px;
+      background: #004225;
+      color: #fff;
+      padding: 100px 20px;
     }
-    .quote {
-      font-size: 1.15rem; font-style: italic;
-      max-width: 900px; margin: 0 auto;
-      line-height: 1.6;
+    .quote-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+    .quote-photo {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #fff;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      flex: 0 0 auto;
+    }
+    .quote-text { text-align: left; flex: 1 1 auto; }
+    .quote-text blockquote {
+      margin: 0;
+      font-style: italic;
+      line-height: 1.5;
+      font-size: 1.6rem; /* größer als Fließtext */
+      font-weight: 500;
     }
     .quote-author {
-      margin-top: 20px; font-size: 1rem; font-weight: 500; opacity: 0.9;
+      margin-top: 14px;
+      font-size: 1rem;
+      opacity: 0.9;
     }
 
     /* Leitbild */
@@ -99,10 +121,10 @@
     .leitbild-box h3 { margin-bottom: 10px; }
     .leitbild-box p { font-size: 1rem; }
 
-    /* Chronik */
+    /* Chronik (Cards vertikal) */
     .chronik-container {
       display: flex;
-      flex-direction: column; /* untereinander */
+      flex-direction: column;
       align-items: center;
       gap: 30px;
       max-width: 900px;
@@ -132,17 +154,24 @@
     }
     .chronik-box.highlight {
       background: #004225;
-      color: white; /* Text UND Überschrift */
-    }
-    .chronik-box.highlight h3,
-    .chronik-box.highlight p {
       color: white;
     }
+    .chronik-box.highlight h3,
+    .chronik-box.highlight p { color: white; }
 
+    /* Responsive */
+    @media (max-width: 900px) {
+      .quote-wrap { flex-direction: column; text-align: center; gap: 24px; }
+      .quote-text { text-align: center; }
+      .quote-photo { width: 140px; height: 140px; }
+      .quote-text blockquote { font-size: 1.35rem; }
+    }
     @media(max-width:768px){
       section h2 { font-size: 2rem; }
       section p { font-size: 1rem; }
-      .quote { font-size: 1rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-in { transition: none !important; }
     }
   </style>
 </head>
@@ -163,33 +192,38 @@
     <!-- Philosophie -->
     <section class="fade-in">
       <h2>Unsere Philosophie</h2>
-    <p>
-  Die Bücking Immobilien GmbH &amp; Co. KG steht für zielgerichtete, nachhaltige Immobilienentwicklung und eine professionelle
-  Vermietung mit klaren Prozessen. Wir realisieren moderne Wohnprojekte mit hoher
-  Energieeffizienz und funktionalen Grundrissen – immer mit Blick auf Mieterzufriedenheit
-  und langfristige Wirtschaftlichkeit.
-</p>
-<p>
-  Unser Ansatz verbindet regionale Verantwortung mit unternehmerischer Disziplin:
-  ressourcenschonende Bauweisen, transparente Kommunikation und
-  partnerschaftliche Zusammenarbeit mit lokalen Betrieben. So entsteht Substanz, die heute überzeugt
-  und morgen Bestand hat.
-</p>
-<p>
-  Wir verfolgen einen klaren Plan: entwickeln, in den eigenen Bestand übernehmen und
-  kontinuierlich vermieten. Dabei wächst unser Portfolio bewusst und qualitätsorientiert –
-  wir priorisieren Werthaltigkeit, Beständigkeit und eine sorgfältige Pflege
-  statt kurzfristiger Skalierung. Ziel ist verlässlicher Wohnraum in der Region, der ökologische Standards erfüllt
-  und stabile Perspektiven für Mieterinnen und Mieter bietet.
-
-
+      <p>
+        Die Bücking Immobilien GmbH &amp; Co. KG steht für zielgerichtete, nachhaltige Immobilienentwicklung und eine professionelle
+        Vermietung mit klaren Prozessen. Wir realisieren moderne Wohnprojekte mit hoher
+        Energieeffizienz und funktionalen Grundrissen – immer mit Blick auf Mieterzufriedenheit
+        und langfristige Wirtschaftlichkeit.
+      </p>
+      <p>
+        Unser Ansatz verbindet regionale Verantwortung mit unternehmerischer Disziplin:
+        ressourcenschonende Bauweisen, transparente Kommunikation und
+        partnerschaftliche Zusammenarbeit mit lokalen Betrieben. So entsteht Substanz, die heute überzeugt
+        und morgen Bestand hat.
+      </p>
+      <p>
+        Wir verfolgen einen klaren Plan: entwickeln, in den eigenen Bestand übernehmen und
+        kontinuierlich vermieten. Dabei wächst unser Portfolio bewusst und qualitätsorientiert –
+        wir priorisieren Werthaltigkeit, Beständigkeit und eine sorgfältige Pflege
+        statt kurzfristiger Skalierung. Ziel ist verlässlicher Wohnraum in der Region, der ökologische Standards erfüllt
+        und stabile Perspektiven für Mieterinnen und Mieter bietet.
+      </p>
     </section>
 
-    <!-- Zitat -->
+    <!-- Zitat (mit Foto) -->
     <section class="quote-section fade-in">
-      <div class="quote">
-        „Regional handeln heißt für uns: kurze Wege, transparente Entscheidungen und Verantwortung gegenüber Mietern, Partnern und Standort.“
-        <div class="quote-author">Tobias Bücking</div>
+      <div class="quote-wrap">
+        <img class="quote-photo" src="tobias.jpeg" alt="Tobias Bücking">
+        <div class="quote-text">
+          <blockquote>
+            „Wir planen konsequent, bauen effizient und vermieten mit klaren Standards.
+            So entsteht Wohnraum, der heute überzeugt und morgen Bestand hat.“
+          </blockquote>
+          <div class="quote-author">Tobias Bücking</div>
+        </div>
       </div>
     </section>
 
@@ -202,7 +236,7 @@
           <h3>Nachhaltig bauen</h3>
           <p>Ressourcenschonende Materialien, Photovoltaik und effiziente Haustechnik sind unser Standard.</p>
         </div>
-         <div class="leitbild-box">
+        <div class="leitbild-box">
           <div class="leitbild-icon">🤝</div>
           <h3>Vertrauen schaffen</h3>
           <p>Vertrauen entsteht für uns durch Transparenz, Ehrlichkeit und Kontinuität. Von der ersten Anfrage bis zur laufenden Betreuung setzen wir auf klare Kommunikation und verbindliche Abläufe.</p>
@@ -212,65 +246,58 @@
           <h3>Regional handeln</h3>
           <p>Kurze Wege, verlässliche Strukturen: Unsere Projekte entstehen mit qualifizierten Handwerkspartnern vor Ort.</p>
         </div>
-       
       </div>
     </section>
 
- <!-- Chronik -->
-<section class="fade-in">
-  <h2>Chronik</h2>
+    <!-- Chronik -->
+    <section class="fade-in">
+      <h2>Chronik</h2>
+      <div class="chronik-container">
+        <div class="chronik-box highlight">
+          <h3>Ausblick</h3>
+          <p>
+            Wir schließen die Wohnungen Schritt für Schritt fertig ab und vermieten sie fair und transparent.
+            Für Mieterinnen und Mieter bleiben wir gut erreichbar, kümmern uns zügig um Anliegen
+            und halten die Häuser zuverlässig in Schuss. Unser Bestand wächst langsam – lieber
+            ordentlich und dauerhaft, statt zu schnell.
+          </p>
+        </div>
 
-  <div class="chronik-container">
-    <!-- Ausblick -->
-    <div class="chronik-box highlight">
-      <h3>Ausblick</h3>
-      <p>
-        Wir schließen die Wohnungen Schritt für Schritt fertig ab und vermieten sie fair und transparent.
-        Für Mieterinnen und Mieter bleiben wir gut erreichbar, kümmern uns zügig um Anliegen
-        und halten die Häuser zuverlässig in Schuss. Unser Bestand wächst langsam – lieber
-        ordentlich und dauerhaft, statt zu schnell.
-      </p>
-    </div>
+        <div class="chronik-box">
+          <h3>2025</h3>
+          <p>
+            Start des ersten Projekts: Aus dem Familienhof entstehen fünf Wohnungen mit hellen Räumen
+            und praktischen Grundrissen. Dämmung, Haustechnik und Ausstattung werden so gewählt,
+            dass Wohnen komfortabel und gut zu betreiben ist. Übergaben, Ansprechpartner und
+            Abläufe für die Vermietung werden klar geregelt.
+          </p>
+        </div>
 
-    <!-- 2025 -->
-    <div class="chronik-box">
-      <h3>2025</h3>
-      <p>
-        Start des ersten Projekts: Aus dem Familienhof entstehen fünf Wohnungen mit hellen Räumen
-        und praktischen Grundrissen. Dämmung, Haustechnik und Ausstattung werden so gewählt,
-        dass Wohnen komfortabel und gut zu betreiben ist. Übergaben, Ansprechpartner und
-        Abläufe für die Vermietung werden klar geregelt.
-      </p>
-    </div>
+        <div class="chronik-box">
+          <h3>2024</h3>
+          <p>
+            Gründung der Bücking Immobilien GmbH &amp; Co. KG. Damit gibt es feste Zuständigkeiten,
+            klare Unterlagen und einen verlässlichen Kontakt – für Mieter, Handwerksbetriebe und Partner.
+          </p>
+        </div>
 
-    <!-- 2024 -->
-    <div class="chronik-box">
-      <h3>2024</h3>
-      <p>
-        Gründung der Bücking Immobilien GmbH &amp; Co. KG. Damit gibt es feste Zuständigkeiten,
-        klare Unterlagen und einen verlässlichen Kontakt – für Mieter, Handwerksbetriebe und Partner.
-      </p>
-    </div>
+        <div class="chronik-box">
+          <h3>2023</h3>
+          <p>
+            Beginn der Planung: Entwürfe, Genehmigungen und Vorbereitung der Arbeiten.
+            Wir holen Betriebe aus der Region mit ins Boot und stimmen die Schritte sorgfältig ab.
+          </p>
+        </div>
 
-    <!-- 2023 -->
-    <div class="chronik-box">
-      <h3>2023</h3>
-      <p>
-        Beginn der Planung: Entwürfe, Genehmigungen und Vorbereitung der Arbeiten.
-        Wir holen Betriebe aus der Region mit ins Boot und stimmen die Schritte sorgfältig ab.
-      </p>
-    </div>
-
-    <!-- Vor 2023 -->
-    <div class="chronik-box">
-      <h3>Vor 2023</h3>
-      <p>
-        Landwirtschaftliche Nutzung über viele Jahre. Diese Herkunft prägt unseren Blick:
-        bodenständig, verlässlich und mit Verantwortung für den Ort.
-      </p>
-    </div>
-  </div>
-</section>
+        <div class="chronik-box">
+          <h3>Vor 2023</h3>
+          <p>
+            Landwirtschaftliche Nutzung über viele Jahre. Diese Herkunft prägt unseren Blick:
+            bodenständig, verlässlich und mit Verantwortung für den Ort.
+          </p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
