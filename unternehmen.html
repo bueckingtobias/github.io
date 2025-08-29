@@ -33,8 +33,10 @@
       text-decoration: none; color: #004225;
       font-weight: 600; font-size: 1.1rem; transition: color 0.3s;
     }
-    nav a:hover { color: #222; }
+    /* wie Index */
+    nav a:hover { color: #007a4c; }
     nav a[aria-current="page"] { text-decoration: underline; }
+
     footer {
       background: #004225; color: white;
       text-align: center; padding: 20px; font-size: 0.9em;
@@ -75,7 +77,7 @@
     .chronik-box.highlight { background:#004225; color:#fff; }
     .chronik-box.highlight h3, .chronik-box.highlight p { color:#fff; }
 
-    /* Responsive */
+    /* Responsive – identisch zur Index-Navigation */
     @media (max-width: 900px) {
       .quote-wrap { flex-direction: column; text-align: center; gap: 24px; }
       .quote-text { text-align: center; }
@@ -85,6 +87,12 @@
     @media (max-width: 768px) {
       section h2 { font-size: 2rem; }
       section p { font-size: 1rem; }
+
+      /* Mobile Navigation wie auf Index */
+      nav { top: 110px; }
+      main { margin-top: 220px; }
+      nav ul { flex-wrap: wrap; gap: 16px; padding: 0 10px; }
+      nav a  { font-size: 1rem; display: inline-block; padding: 10px 8px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .fade-in { transition: none !important; }
@@ -132,7 +140,7 @@
     <!-- Zitat (mit Foto) -->
     <section class="quote-section fade-in">
       <div class="quote-wrap">
-        <img class="quote-photo" src="Tobias.jpeg" alt="Tobias Bücking">
+        <img class="quote-photo" src="tobias.jpeg" alt="Tobias Bücking">
         <div class="quote-text">
           <blockquote>
             „Regional handeln heißt für uns: kurze Wege, transparente Entscheidungen und Verantwortung gegenüber Mietern, Partnern und Standort.“
