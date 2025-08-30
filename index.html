@@ -5,306 +5,290 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bücking Immobilien GmbH & Co. KG</title>
   <style>
-    /* Globale Fixes */
-    * {
-      box-sizing: border-box;
+    /* ===== Grundlayout & Variablen ===== */
+    :root {
+      --brand: #004225;
+      --brand-700: #00361e;
+      --text: #004225;
+      --bg: #ffffff;
+      --muted: #f5f5f5;
+      --shadow: 0 2px 10px rgba(0,0,0,0.2);
+      --radius: 12px;
+      --header-h: 70px; /* Header-Höhe */
     }
+
+    * { box-sizing: border-box; }
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       max-width: 100%;
       overflow-x: hidden;
-      font-family: "Avenir", sans-serif;
-      color: #004225;
-      background-color: #ffffff;
+      font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
       scroll-behavior: smooth;
     }
 
+    /* ===== Header mit integriertem Menü ===== */
     header {
-      background-color: #004225;
-      color: white;
-      text-align: center;
-      padding: 20px;
-      font-size: 1.5em;
-      font-weight: bold;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      position: fixed; inset: 0 0 auto 0;
+      height: var(--header-h);
+      background: var(--brand);
+      color: #fff;
       z-index: 1000;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      height: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      gap: 16px;
+    }
+    .brand {
+      font-weight: 800; letter-spacing: .3px; font-size: 1.05rem;
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: #fff;
+      white-space: nowrap;
     }
 
-    /* Navigation direkt unter dem Header */
-    nav {
-      background-color: #f5f5f5;
-      padding: 12px 0;
-      position: fixed;
-      top: 70px;
-      left: 0;
-      right: 0;
+    /* Desktop-Navigation */
+    nav.primary {
+      display: none; /* mobil: via Drawer */
+    }
+    nav.primary ul {
+      list-style: none; margin: 0; padding: 0;
+      display: flex; gap: 28px;
+    }
+    nav.primary a {
+      text-decoration: none; color: #fff; font-weight: 600;
+      padding: 8px 2px; border-radius: 6px; transition: opacity .2s ease;
+    }
+    nav.primary a[aria-current="page"] { text-decoration: underline; }
+    nav.primary a:hover { opacity: .85; }
+
+    /* Hamburger-Button */
+    .menu-toggle {
+      appearance: none; border: 0; background: transparent; color: #fff;
+      width: 44px; height: 44px; border-radius: 8px;
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .menu-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    .menu-icon, .menu-icon::before, .menu-icon::after {
+      content: ""; display: block; width: 22px; height: 2px; background: #fff;
+      transition: transform .25s ease, opacity .2s ease;
+      border-radius: 2px;
+    }
+    .menu-icon::before { transform: translateY(-7px); }
+    .menu-icon::after  { transform: translateY(5px); }
+    .menu-toggle[aria-expanded="true"] .menu-icon { transform: rotate(45deg); }
+    .menu-toggle[aria-expanded="true"] .menu-icon::before { transform: rotate(90deg); }
+    .menu-toggle[aria-expanded="true"] .menu-icon::after { opacity: 0; }
+
+    /* Drawer (mobiles Ausklapp-Menü) */
+    .drawer-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      opacity: 0; pointer-events: none; transition: opacity .25s ease;
       z-index: 999;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      text-align: center;
     }
-    nav ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      gap: 40px;
+    .drawer {
+      position: fixed; top: var(--header-h); left: 0; right: 0;
+      background: #fff; color: var(--text);
+      transform: translateY(-8px); opacity: 0; pointer-events: none;
+      border-bottom: 1px solid #e5e5e5;
+      box-shadow: 0 10px 25px rgba(0,0,0,.15);
+      transition: transform .25s ease, opacity .25s ease;
+      z-index: 1001;
     }
-    nav ul li { display: inline; }
-    nav a {
-      text-decoration: none;
-      color: #004225;
-      font-weight: 600;
-      font-size: 1.1rem;
-      transition: color 0.3s;
-    }
-    nav a:hover { color: #007a4c; }
-    nav a[aria-current="page"] { text-decoration: underline; }
+    .drawer.open,
+    .drawer-backdrop.open { pointer-events: auto; }
+    .drawer.open { transform: translateY(0); opacity: 1; }
+    .drawer-backdrop.open { opacity: 1; }
 
-    footer {
-      background-color: #004225;
-      color: white;
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9em;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    .drawer nav { padding: 14px 16px 18px; }
+    .drawer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .drawer a {
+      display: block; width: 100%;
+      text-decoration: none; color: var(--text); font-weight: 700;
+      padding: 12px 10px; border-radius: 10px; background: var(--muted);
     }
+    .drawer a[aria-current="page"] { outline: 2px solid var(--brand); }
 
-    main {
-      margin-top: 150px; /* Platz für Header + Navigation */
-      margin-bottom: 70px;
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
-    }
+    /* Body-Lock beim offenen Menü */
+    body.menu-open { overflow: hidden; }
 
-    section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: auto;
-      padding: 40px 20px;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    section h2 {
-      font-size: 2.5rem;
-      margin-bottom: 15px;
-      letter-spacing: 1px;
-      text-align: center;
-    }
-
-    section p {
-      font-size: 1.1rem;
-      max-width: 900px;
-      text-align: center;
-      line-height: 1.6;
-      color: #004225;
-    }
-
-    .placeholder-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 25px;
-      margin-top: 20px;
-    }
-
-    .placeholder-box {
-      width: 380px;
-      background-color: #004225;
-      color: #ffffff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.2rem;
-      border-radius: 12px;
-      padding: 40px 25px;
-      text-align: center;
-      font-weight: bold;
-      transition: transform 0.3s, box-shadow 0.3s;
-      cursor: default;
-    }
-
-    .placeholder-box:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    }
-
-    /* Projekt-Design */
-    .project-intro {
-      width: 100%;
-      max-width: 1100px;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .project-hero {
-      width: 100%;
-      max-width: 1100px;
-      margin: 20px auto;
-      background-color: #ffffff;
-      padding: 20px;
-      border-radius: 12px;
-    }
-
-    .project-hero img {
-      width: 100%;
-      aspect-ratio: 4842 / 1978;
-      object-fit: cover;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      transition: transform 0.3s, box-shadow 0.3s, opacity 0.6s ease;
-      opacity: 0;
-      transform: translateY(30px);
-    }
-
-    .project-hero img.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .project-hero img:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-
-    /* Wohnungen */
-    .apartment-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 25px;
-      margin-top: 30px;
-    }
-
-    .apartment-box {
-      width: 320px;
-      background-color: #ffffff;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      padding: 20px;
-      text-align: center;
-      transition: transform 0.3s, box-shadow 0.3s;
+    /* ===== Hero: Vollbreite, ganz oben ===== */
+    .hero {
       position: relative;
-    }
-
-    .apartment-box:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-    }
-
-    .apartment-box img {
       width: 100%;
-      height: 180px;
+      margin: 0; padding: 0;
+    }
+    .hero img {
+      display: block; width: 100%; height: clamp(48vh, 62vh, 78vh);
       object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      padding: 0 16px;
+      background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.15), rgba(0,0,0,.35));
+    }
+    .hero-caption {
+      color: #fff; text-align: center; max-width: 1100px;
+    }
+    .hero-caption h1 {
+      margin: 0 0 10px; font-size: clamp(1.6rem, 3.5vw, 3rem); letter-spacing: .4px;
+    }
+    .hero-caption p {
+      margin: 0; font-size: clamp(1rem, 1.6vw, 1.25rem);
+      opacity: .95; line-height: 1.5;
     }
 
+    /* ===== Main & Sektionen ===== */
+    main { padding-top: var(--header-h); /* Platz für fixed Header */ }
+    section {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 40px 20px; border-bottom: 1px solid #e0e0e0;
+    }
+    section h2 {
+      font-size: 2.2rem; margin: 10px 0 15px; letter-spacing: 1px; text-align: center;
+    }
+    section p {
+      font-size: 1.1rem; max-width: 900px; text-align: center; line-height: 1.6; color: var(--text);
+    }
+
+    /* Karten & Raster (wie gehabt) */
+    .placeholder-row {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; margin-top: 20px;
+    }
+    .placeholder-box {
+      width: 380px; background-color: var(--brand); color: #ffffff;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.2rem; border-radius: var(--radius);
+      padding: 40px 25px; text-align: center; font-weight: bold;
+      transition: transform .3s, box-shadow .3s; cursor: default;
+    }
+    .placeholder-box:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+    .project-intro { width: 100%; max-width: 1100px; text-align: center; margin-bottom: 30px; }
+    .project-hero { width: 100%; max-width: 1100px; margin: 20px auto; background: #fff; padding: 20px; border-radius: var(--radius); }
+    .project-hero img {
+      width: 100%; aspect-ratio: 4842 / 1978; object-fit: cover;
+      border-radius: var(--radius); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform .3s, box-shadow .3s, opacity .6s ease;
+      opacity: 0; transform: translateY(30px);
+    }
+    .project-hero img.visible { opacity: 1; transform: translateY(0); }
+    .project-hero img:hover { transform: translateY(-6px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+    .apartment-row {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; margin-top: 30px;
+    }
+    .apartment-box {
+      width: 320px; background: #ffffff; border: 1px solid #ddd;
+      border-radius: var(--radius); box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 20px; text-align: center; transition: transform .3s, box-shadow .3s; position: relative;
+    }
+    .apartment-box:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+    .apartment-box img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
     .vermietet {
-      display: inline-block;
-      background-color: red;
-      color: white;
-      font-weight: bold;
-      font-size: 0.9rem;
-      padding: 4px 10px;
-      border-radius: 8px;
-      margin-top: 5px;
+      display: inline-block; background: red; color: white; font-weight: bold; font-size: .9rem;
+      padding: 4px 10px; border-radius: 8px; margin-top: 5px;
     }
-
     .apartment-info {
-      max-width: 900px;
-      margin-top: 30px;
-      font-size: 0.9rem;
-      text-align: center;
-      line-height: 1.5;
-      color: #555555; /* dezenter Grauton */
+      max-width: 900px; margin-top: 30px; font-size: .9rem; text-align: center; line-height: 1.5; color: #555;
     }
-
-    .apartment-info strong {
-      font-weight: 600;
-      color: #004225;
-    }
+    .apartment-info strong { font-weight: 600; color: var(--brand); }
 
     /* Team */
     .team-box {
-      width: 380px;
-      background-color: #004225;
-      color: #ffffff;
-      border-radius: 12px;
-      text-align: center;
-      padding: 25px;
-      transition: transform 0.3s, box-shadow 0.3s;
+      width: 380px; background: var(--brand); color: #ffffff; border-radius: var(--radius);
+      text-align: center; padding: 25px; transition: transform .3s, box-shadow .3s;
     }
+    .team-box:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .team-photo { width: 180px; height: 180px; border-radius: 50%; background: #cccccc; margin-bottom: 15px; object-fit: cover; }
+    .team-info p, .team-info a { color: #ffffff; margin: 5px 0; text-decoration: none; }
 
-    .team-box:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    /* Footer */
+    footer {
+      background: var(--brand); color: white; text-align: center;
+      padding: 20px; font-size: .9em; position: fixed; bottom: 0; left: 0; right: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
     }
+    /* Abstand, damit Footer Inhalte nicht überdeckt */
+    .footer-spacer { height: 70px; }
 
-    .team-photo {
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      background-color: #cccccc;
-      margin-bottom: 15px;
-      object-fit: cover;
+    /* ===== Responsives Verhalten ===== */
+    @media (min-width: 980px) {
+      /* Desktop: klassische Navbar im Header, kein Drawer sichtbar */
+      nav.primary { display: block; }
+      .menu-toggle { display: none; }
+      .drawer, .drawer-backdrop { display: none; }
     }
-
-    .team-info p, .team-info a {
-      color: #ffffff;
-      margin: 5px 0;
-      text-decoration: none;
-    }
-
     @media (max-width: 768px) {
-      .placeholder-box, .team-box { width: 85%; }
       section h2 { font-size: 2rem; }
-      section p { font-size: 1rem; }
-      .team-photo { width: 150px; height: 150px; }
+      section p  { font-size: 1rem; }
+      .placeholder-box, .team-box { width: 85%; }
       .apartment-box { width: 90%; }
-
-      /* --- Mobile Navigation Fix: unter Header platzieren und umbruchfähig machen --- */
-      nav { top: 110px; }
-      main { margin-top: 220px; }                 /* Platz für höheren Header + Navi */
-      nav ul { flex-wrap: wrap; gap: 16px; padding: 0 10px; }
-      nav a  { font-size: 1rem; display: inline-block; padding: 10px 8px; }
+      .team-photo { width: 150px; height: 150px; }
     }
   </style>
 </head>
 <body>
+  <!-- Header mit Brand, Desktop-Navi & Hamburger -->
   <header>
-    Bücking Immobilien GmbH & Co. KG
+    <div class="header-inner">
+      <a class="brand" href="#home" aria-label="Zur Startseite">
+        Bücking Immobilien GmbH &amp; Co. KG
+      </a>
+
+      <!-- Desktop-Navigation -->
+      <nav class="primary" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="#home" aria-current="page">Home</a></li>
+          <li><a href="unternehmen.html">Unternehmen</a></li>
+          <li><a href="referenzen.html">Referenzen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+
+      <!-- Hamburger (mobil) -->
+      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
+        <span class="menu-icon"></span>
+      </button>
+    </div>
+
+    <!-- Ausklapp-Menü (mobil) -->
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
+      <nav aria-label="Mobile Navigation">
+        <ul>
+          <li><a href="#home" aria-current="page">Home</a></li>
+          <li><a href="unternehmen.html">Unternehmen</a></li>
+          <li><a href="referenzen.html">Referenzen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
-  <!-- Navigation -->
-  <nav>
-    <ul>
-      <li><a href="#home" aria-current="page">Home</a></li>
-      <li><a href="unternehmen.html">Unternehmen</a></li>
-      <li><a href="referenzen.html">Referenzen</a></li>
-      <li><a href="kontakt.html">Kontakt</a></li>
-      <li><a href="impressum.html">Impressum</a></li>
-    </ul>
-  </nav>
+  <!-- Hero: vollflächiges Startbild -->
+  <section id="home" class="hero" aria-label="Titelbereich">
+    <!-- Ersetze den Pfad durch dein gewünschtes Startbild -->
+    <img src="hero-startseite.jpeg" alt="Außenansicht eines Immobilienprojekts von Bücking Immobilien">
+    <div class="hero-overlay">
+      <div class="hero-caption">
+        <h1>Nachhaltig. Verlässlich. Persönlich.</h1>
+        <p>Moderne Mietwohnungen mit regionaler Handschrift.</p>
+      </div>
+    </div>
+  </section>
 
   <main>
     <!-- Über uns -->
     <section id="ueber-uns">
       <h2>Über uns</h2>
       <p>
-        Die Bücking Immobilien GmbH & Co. KG steht für nachhaltige Projektentwicklung und die verantwortungsvolle Pflege von Immobilien in unserer Region.
+        Die Bücking Immobilien GmbH &amp; Co. KG steht für nachhaltige Projektentwicklung und die verantwortungsvolle Pflege von Immobilien in unserer Region.
         Aus einer traditionsreichen Landwirtschaft hervorgegangen, verbinden wir Heimatverbundenheit mit einem hohen Anspruch an Qualität und Verlässlichkeit.
       </p>
       <p>
@@ -405,6 +389,8 @@
         </div>
       </div>
     </section>
+
+    <div class="footer-spacer" aria-hidden="true"></div>
   </main>
 
   <footer>
@@ -412,18 +398,73 @@
   </footer>
 
   <script>
-    // Scroll-Animation für Hero-Bild
-    const heroImg = document.querySelector('.project-hero img');
-    if (heroImg) {
+    /* ===== Hero-Scroll-Animation (bestehend) ===== */
+    const heroImgProject = document.querySelector('.project-hero img');
+    if (heroImgProject) {
       const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
       }, { threshold: 0.2 });
-      observer.observe(heroImg);
+      observer.observe(heroImgProject);
     }
+
+    /* ===== Mobiles Ausklapp-Menü ===== */
+    const body = document.body;
+    const toggle = document.querySelector('.menu-toggle');
+    const drawer = document.getElementById('mobile-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+
+    function openMenu() {
+      toggle.setAttribute('aria-expanded', 'true');
+      drawer.hidden = false;
+      backdrop.hidden = false;
+      // Kleiner Timeout für Transition-Start
+      requestAnimationFrame(() => {
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+        body.classList.add('menu-open');
+        // Fokus auf ersten Link setzen
+        const firstLink = drawer.querySelector('a');
+        firstLink && firstLink.focus();
+      });
+    }
+    function closeMenu() {
+      toggle.setAttribute('aria-expanded', 'false');
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      body.classList.remove('menu-open');
+      // Nach Ende der Transition aus dem DOM-Fluss nehmen
+      setTimeout(() => { drawer.hidden = true; backdrop.hidden = true; }, 200);
+      toggle.focus();
+    }
+
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      expanded ? closeMenu() : openMenu();
+    });
+
+    backdrop.addEventListener('click', closeMenu);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { closeMenu(); }
+    });
+
+    // Schließen, wenn Link im Drawer geklickt wird
+    drawer.addEventListener('click', (e) => {
+      const target = e.target.closest('a');
+      if (target) closeMenu();
+    });
+
+    // Optional: Header-Höhe dynamisch (falls Schriftgrößen o.ä. variieren)
+    const header = document.querySelector('header');
+    const main = document.querySelector('main');
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const h = Math.ceil(entry.contentRect.height);
+        header.style.setProperty('--header-h', h + 'px');
+        document.documentElement.style.setProperty('--header-h', h + 'px');
+        main.style.paddingTop = `var(--header-h)`;
+      }
+    });
+    ro.observe(header);
   </script>
 </body>
 </html>
