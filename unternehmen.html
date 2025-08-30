@@ -5,55 +5,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Unternehmen – Bücking Immobilien GmbH & Co. KG</title>
   <style>
+    :root{
+      --brand:#004225;
+      --muted:#f5f5f5;
+      --text:#004225;
+      --radius:12px;
+      --header-h:70px;
+      --shadow:0 2px 10px rgba(0,0,0,0.2);
+    }
     * { box-sizing: border-box; }
     html, body {
       margin: 0; padding: 0;
       font-family: "Avenir", sans-serif;
-      color: #004225;
+      color: var(--text);
       background: #ffffff;
       scroll-behavior: smooth;
+      max-width: 100%;
+      overflow-x: hidden;
     }
-    header {
-      background: #004225; color: white;
-      text-align: center; padding: 20px;
-      font-size: 1.5em; font-weight: bold;
-      position: fixed; top: 0; left: 0; right: 0;
-      z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
-    nav {
-      background: #f5f5f5; padding: 12px 0;
-      position: fixed; top: 70px; left: 0; right: 0;
-      z-index: 999; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    nav ul {
-      list-style: none; margin: 0; padding: 0;
-      display: flex; justify-content: center; gap: 40px;
-    }
-    nav a {
-      text-decoration: none; color: #004225;
-      font-weight: 600; font-size: 1.1rem; transition: color 0.3s;
-    }
-    /* wie Index */
-    nav a:hover { color: #007a4c; }
-    nav a[aria-current="page"] { text-decoration: underline; }
 
+    /* ===== Fixed Header mit integrierter Navigation ===== */
+    header {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      background: var(--brand); color: white;
+      z-index: 1000; box-shadow: var(--shadow);
+    }
+    .header-inner{
+      max-width:1200px; margin:0 auto;
+      height:100%; display:flex; align-items:center; justify-content:space-between;
+      padding: 0 16px; gap:16px;
+      font-size: 1.5em; font-weight: bold;
+    }
+    .brand{
+      color:#fff; text-decoration:none; white-space:nowrap;
+      font-weight: 800; letter-spacing:.2px; font-size:1.05rem;
+    }
+
+    /* Desktop-Navigation */
+    nav.primary{ display:none; }
+    nav.primary ul{
+      list-style:none; margin:0; padding:0; display:flex; gap:40px;
+    }
+    nav.primary a{
+      text-decoration:none; color:#fff; font-weight:600; font-size:1.05rem; transition:opacity .2s;
+    }
+    nav.primary a:hover{ opacity:.85; }
+    nav.primary a[aria-current="page"]{ text-decoration: underline; }
+
+    /* Hamburger-Button (mobil) */
+    .menu-toggle{
+      appearance:none; border:0; background:transparent; color:#fff;
+      width:44px; height:44px; border-radius:8px; display:grid; place-items:center; cursor:pointer;
+    }
+    .menu-toggle:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
+    .menu-icon, .menu-icon::before, .menu-icon::after{
+      content:""; display:block; width:22px; height:2px; background:#fff; border-radius:2px;
+      transition: transform .25s ease, opacity .2s ease;
+    }
+    .menu-icon::before{ transform: translateY(-7px); }
+    .menu-icon::after{ transform: translateY(5px); }
+    .menu-toggle[aria-expanded="true"] .menu-icon{ transform: rotate(45deg); }
+    .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform: rotate(90deg); }
+    .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0; }
+
+    /* Drawer (mobiles Ausklapp-Menü) */
+    .drawer-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.4);
+      opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999;
+    }
+    .drawer{
+      position:fixed; top: var(--header-h); left:0; right:0;
+      background:#fff; color:var(--text);
+      transform: translateY(-8px); opacity:0; pointer-events:none;
+      border-bottom:1px solid #e5e5e5;
+      box-shadow:0 10px 25px rgba(0,0,0,.15);
+      transition: transform .25s ease, opacity .25s ease;
+      z-index:1001;
+    }
+    .drawer.open, .drawer-backdrop.open{ pointer-events:auto; }
+    .drawer.open{ transform: translateY(0); opacity:1; }
+    .drawer-backdrop.open{ opacity:1; }
+    .drawer nav{ padding:14px 16px 18px; }
+    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+    .drawer a{
+      display:block; width:100%; text-decoration:none; color:var(--text); font-weight:700;
+      padding:12px 10px; border-radius:10px; background:var(--muted);
+    }
+    .drawer a[aria-current="page"]{ outline:2px solid var(--brand); }
+
+    /* Body-Lock beim offenen Menü */
+    body.menu-open{ overflow: hidden; }
+
+    /* Footer (unverändert) */
     footer {
-      background: #004225; color: white;
+      background: var(--brand); color: white;
       text-align: center; padding: 20px; font-size: 0.9em;
       position: fixed; bottom: 0; left: 0; right: 0;
       box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
     }
+
+    /* Main & Sections (so wenig wie möglich geändert) */
     main {
-      margin-top: 150px; margin-bottom: 100px;
+      /* statt fixer margin-top nutzen wir die tatsächliche Header-Höhe */
+      padding-top: var(--header-h);
+      margin-bottom: 100px;
       display: flex; flex-direction: column; gap: 60px;
     }
     section { padding: 60px 20px; text-align: center; }
     section h2 { font-size: 2.2rem; margin-bottom: 16px; }
     section p { max-width: 900px; margin: 0 auto 16px; line-height: 1.6; font-size: 1.05rem; }
+
     .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
     .fade-in.visible { opacity: 1; transform: translateY(0); }
 
-    /* Quote hero (only used where present) */
+    /* Quote hero (bestehend) */
     .quote-section { background:#004225; color:#fff; padding:100px 20px; }
     .quote-wrap { max-width:1100px; margin:0 auto; display:flex; align-items:center; gap:40px; }
     .quote-photo { width:180px; height:180px; border-radius:50%; object-fit:cover; border:4px solid #fff; box-shadow:0 10px 25px rgba(0,0,0,0.25); flex:0 0 auto; }
@@ -77,7 +143,12 @@
     .chronik-box.highlight { background:#004225; color:#fff; }
     .chronik-box.highlight h3, .chronik-box.highlight p { color:#fff; }
 
-    /* Responsive – identisch zur Index-Navigation */
+    /* Responsive */
+    @media (min-width: 980px){
+      nav.primary{ display:block; }
+      .menu-toggle{ display:none; }
+      .drawer, .drawer-backdrop{ display:none; }
+    }
     @media (max-width: 900px) {
       .quote-wrap { flex-direction: column; text-align: center; gap: 24px; }
       .quote-text { text-align: center; }
@@ -87,12 +158,6 @@
     @media (max-width: 768px) {
       section h2 { font-size: 2rem; }
       section p { font-size: 1rem; }
-
-      /* Mobile Navigation wie auf Index */
-      nav { top: 110px; }
-      main { margin-top: 220px; }
-      nav ul { flex-wrap: wrap; gap: 16px; padding: 0 10px; }
-      nav a  { font-size: 1rem; display: inline-block; padding: 10px 8px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .fade-in { transition: none !important; }
@@ -100,17 +165,46 @@
   </style>
 </head>
 <body>
-  <header>Bücking Immobilien GmbH &amp; Co. KG</header>
+  <!-- Neuer Header mit integrierter Navigation -->
+  <header>
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="Zur Startseite">
+        Bücking Immobilien GmbH &amp; Co. KG
+      </a>
 
-  <nav>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="unternehmen.html" aria-current="page">Unternehmen</a></li>
-      <li><a href="referenzen.html">Referenzen</a></li>
-      <li><a href="kontakt.html">Kontakt</a></li>
-      <li><a href="impressum.html">Impressum</a></li>
-    </ul>
-  </nav>
+      <!-- Desktop-Navigation -->
+      <nav class="primary" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="unternehmen.html" aria-current="page">Unternehmen</a></li>
+          <li><a href="referenzen.html">Referenzen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+
+      <!-- Hamburger (mobil) -->
+      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
+        <span class="menu-icon"></span>
+      </button>
+    </div>
+
+    <!-- Ausklapp-Menü (mobil) -->
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
+      <nav aria-label="Mobile Navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="unternehmen.html" aria-current="page">Unternehmen</a></li>
+          <li><a href="referenzen.html">Referenzen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- !!! Alte <nav> entfernt – Rest unverändert !!! -->
 
   <main>
     <!-- Philosophie -->
@@ -227,40 +321,55 @@
   <footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
 
   <script>
-    // Fade-in
+    // Fade-in (unverändert)
     const faders = document.querySelectorAll('.fade-in');
     const fadeObserver = new IntersectionObserver((entries, obs) => {
       entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
     }, { threshold: 0.2 });
     faders.forEach(f => fadeObserver.observe(f));
 
-    // Mobile Header/Nav Offset Fix
-    (function(){
-      const header = document.querySelector('header');
-      const nav    = document.querySelector('nav');
-      const main   = document.querySelector('main');
-      function adjustOffsets() {
-        if (!header || !nav || !main) return;
-        const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        if (isMobile) {
-          const headerH = header.offsetHeight;
-          nav.style.position = 'fixed';
-          nav.style.top = headerH + 'px';
-          const navH = nav.offsetHeight;
-          main.style.marginTop = (headerH + navH + 30) + 'px';
-        } else {
-          nav.style.position = 'fixed';
-          nav.style.top = '70px';
-          main.style.marginTop = '150px';
-        }
-      }
-      window.addEventListener('load', adjustOffsets);
-      window.addEventListener('resize', adjustOffsets);
-      window.addEventListener('load', () => {
-        const img = document.querySelector('.quote-photo');
-        if (img && !img.complete) { img.addEventListener('load', adjustOffsets); } else { adjustOffsets(); }
+    // Mobiles Ausklapp-Menü
+    const body = document.body;
+    const toggle = document.querySelector('.menu-toggle');
+    const drawer = document.getElementById('mobile-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    const header = document.querySelector('header');
+    const main = document.querySelector('main');
+
+    function openMenu(){
+      toggle.setAttribute('aria-expanded','true');
+      drawer.hidden = false; backdrop.hidden = false;
+      requestAnimationFrame(()=>{
+        drawer.classList.add('open'); backdrop.classList.add('open');
+        body.classList.add('menu-open');
+        const firstLink = drawer.querySelector('a'); firstLink && firstLink.focus();
       });
-    })();
+    }
+    function closeMenu(){
+      toggle.setAttribute('aria-expanded','false');
+      drawer.classList.remove('open'); backdrop.classList.remove('open');
+      body.classList.remove('menu-open');
+      setTimeout(()=>{ drawer.hidden = true; backdrop.hidden = true; }, 200);
+      toggle.focus();
+    }
+    toggle.addEventListener('click', ()=>{
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      expanded ? closeMenu() : openMenu();
+    });
+    backdrop.addEventListener('click', closeMenu);
+    window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeMenu(); });
+    drawer.addEventListener('click', (e)=>{ if(e.target.closest('a')) closeMenu(); });
+
+    // Header-Höhe → Main-Offset dynamisch halten
+    const ro = new ResizeObserver(entries=>{
+      for (const entry of entries){
+        const h = Math.ceil(entry.contentRect.height);
+        header.style.setProperty('--header-h', h + 'px');
+        document.documentElement.style.setProperty('--header-h', h + 'px');
+        main.style.paddingTop = `var(--header-h)`;
+      }
+    });
+    ro.observe(header);
   </script>
 </body>
 </html>
