@@ -20,7 +20,6 @@
       scroll-behavior:smooth;
     }
 
-    /* ===== Header ===== */
     header{
       position:fixed; top:0; left:0; right:0; height:var(--header-h);
       background:var(--brand); color:#fff;
@@ -38,7 +37,6 @@
     nav.primary a{color:#fff; text-decoration:none; font-weight:600;}
     nav.primary a[aria-current="page"]{text-decoration:underline;}
 
-    /* Hamburger */
     .menu-toggle{appearance:none; border:0; background:transparent; color:#fff;
       width:44px; height:44px; display:grid; place-items:center; cursor:pointer;}
     .menu-icon,.menu-icon::before,.menu-icon::after{
@@ -51,7 +49,6 @@
     .menu-toggle[aria-expanded="true"] .menu-icon::before{transform:rotate(90deg);}
     .menu-toggle[aria-expanded="true"] .menu-icon::after{opacity:0;}
 
-    /* Drawer */
     .drawer-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.4);
       opacity:0; pointer-events:none; transition:.25s; z-index:999;}
     .drawer{position:fixed; top:var(--header-h); left:0; right:0; background:#fff;
@@ -66,7 +63,6 @@
     .drawer a{display:block; padding:12px 10px; background:var(--muted);
       border-radius:8px; font-weight:700; color:var(--text); text-decoration:none;}
 
-    /* Footer */
     footer{
       background:var(--brand); color:#fff;
       text-align:center; padding:20px; font-size:.9em;
@@ -74,14 +70,12 @@
       box-shadow:0 -2px 10px rgba(0,0,0,0.2);
     }
 
-    /* Main */
     main{padding:calc(var(--header-h) + 20px) 20px 140px 20px;}
     section{margin-bottom:40px;}
     section h2{font-size:1.6rem; margin-bottom:10px; color:var(--brand);}
     section p, section ul{line-height:1.6; margin:0 0 12px;}
     section ul{padding-left:20px;}
 
-    /* Fade */
     .fade-in{opacity:0; transform:translateY(20px); transition:.6s;}
     .fade-in.visible{opacity:1; transform:translateY(0);}
 
@@ -125,13 +119,16 @@
 
     <section class="fade-in">
       <h2>Vertreten durch</h2>
-      <p>Tobias Bücking, Bernfried Bücking (Geschäftsführung)</p>
+      <p>Komplementärin: <strong>Bücking Beteiligungs GmbH</strong><br>
+      Diese wird vertreten durch die Geschäftsführer Tobias Bücking und Bernfried Bücking.</p>
     </section>
 
     <section class="fade-in">
       <h2>Registereintrag</h2>
-      <p>Amtsgericht Oldenburg – HRA [Platzhalter]<br>
-      Persönlich haftende Gesellschafterin: Bücking Beteiligungs GmbH, HRB [Platzhalter]</p>
+      <p>Bücking Immobilien GmbH &amp; Co. KG<br>
+      Amtsgericht Oldenburg, HRA [Platzhalter]</p>
+      <p>Bücking Beteiligungs GmbH (Komplementärin)<br>
+      Amtsgericht Oldenburg, HRB [Platzhalter]</p>
     </section>
 
     <section class="fade-in">
