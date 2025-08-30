@@ -80,13 +80,13 @@
     .contact-box h3{margin-bottom:10px; color:var(--brand);}
     .contact-box p,.contact-box a{color:var(--text); font-size:1rem; text-decoration:none;}
 
-    /* Formular */
-    form{max-width:700px; margin:0 auto; display:flex; flex-direction:column; gap:15px; text-align:left;}
-    form label{font-weight:600; margin-bottom:5px;}
-    form input,form textarea{width:100%; padding:12px; border:1px solid #ccc; border-radius:var(--radius); font-family:inherit;}
-    form button{background:var(--brand); color:#fff; border:none; padding:14px 20px; border-radius:var(--radius);
-      font-weight:700; cursor:pointer;}
-    form button:hover{background:#00361e;}
+    /* Teamkarten */
+    .team-container{display:flex; flex-wrap:wrap; justify-content:center; gap:30px;}
+    .team-box{width:320px; background:var(--brand); color:#fff; border-radius:var(--radius);
+      text-align:center; padding:25px; transition:.3s;}
+    .team-box:hover{transform:translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.2);}
+    .team-photo{width:160px; height:160px; border-radius:50%; background:#ccc; margin-bottom:15px; object-fit:cover;}
+    .team-info p{margin:5px 0;}
 
     /* Karte */
     .map{width:100%; max-width:1000px; height:350px; margin:0 auto; border-radius:var(--radius); overflow:hidden;}
@@ -96,7 +96,7 @@
     .fade-in.visible{opacity:1; transform:translateY(0);}
 
     @media(min-width:980px){nav.primary{display:block;} .menu-toggle{display:none;} .drawer,.drawer-backdrop{display:none;}}
-    @media(max-width:768px){.contact-container{flex-direction:column; align-items:center;} section h2{font-size:2rem;}}
+    @media(max-width:768px){.contact-container,.team-container{flex-direction:column; align-items:center;} section h2{font-size:2rem;}}
   </style>
 </head>
 <body>
@@ -125,6 +125,7 @@
   </header>
 
   <main>
+    <!-- Kontaktkarten -->
     <section class="fade-in">
       <h2>So erreichen Sie uns</h2>
       <p>Wir stehen Ihnen gerne für Anfragen, Besichtigungen und weitere Informationen zur Verfügung.</p>
@@ -147,30 +148,33 @@
       </div>
     </section>
 
+    <!-- Teamkarten -->
     <section class="fade-in">
-      <h2>Kontaktformular</h2>
-      <form action="send_mail.php" method="post">
-        <div>
-          <label for="name">Name</label>
-          <input id="name" name="name" type="text" required>
+      <h2>Geschäftsführung</h2>
+      <div class="team-container">
+        <div class="team-box">
+          <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo">
+          <div class="team-info">
+            <p><strong>Tobias Bücking</strong></p>
+            <p>Geschäftsführung</p>
+          </div>
         </div>
-        <div>
-          <label for="email">E-Mail</label>
-          <input id="email" name="email" type="email" required>
+        <div class="team-box">
+          <img src="bernfried.jpeg" alt="Bernfried Bücking" class="team-photo">
+          <div class="team-info">
+            <p><strong>Bernfried Bücking</strong></p>
+            <p>Geschäftsführung</p>
+          </div>
         </div>
-        <div>
-          <label for="message">Nachricht</label>
-          <textarea id="message" name="message" rows="5" required></textarea>
-        </div>
-        <button type="submit">Nachricht senden</button>
-      </form>
+      </div>
     </section>
 
+    <!-- Google Maps -->
     <section class="fade-in">
       <h2>Unser Standort</h2>
       <div class="map">
         <iframe
-          src="https://www.google.com/maps?q=53.06272,8.57508&z=18&output=embed"
+          src="https://www.google.com/maps?q=53.06272,8.57508&z=14&output=embed"
           width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
         </iframe>
       </div>
