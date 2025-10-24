@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Referenzen – Bücking Immobilien GmbH & Co. KG</title>
+  <title>Projekte – Bücking Immobilien GmbH & Co. KG</title>
   <style>
-    body {font-family: Avenir, sans-serif; margin:0; padding:0; text-align:center;}
+    body {font-family: Avenir, sans-serif; margin:0; padding:0; text-align:center; color:#004225; background:#fff;}
     header {background:#004225;color:#fff;padding:20px;font-size:1.5em;font-weight:bold;}
     nav {background:#f5f5f5;padding:12px 0;}
     nav ul {list-style:none;margin:0;padding:0;display:flex;justify-content:center;gap:40px;}
@@ -13,22 +13,139 @@
     nav a:hover {color:#007a4c;}
     footer {background:#004225;color:#fff;padding:20px;margin-top:40px;}
     main {padding:40px;}
+
+    /* ===== Zusatz-Styles für den Projekt-Abschnitt ===== */
+    .project-intro { width: 100%; max-width: 1100px; text-align: center; margin: 0 auto 30px; }
+    .project-hero { width: 100%; max-width: 1100px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 12px; }
+    .project-hero img {
+      width: 100%; aspect-ratio: 4842 / 1978; object-fit: cover;
+      border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform .3s, box-shadow .3s, opacity .6s ease;
+      opacity: 0; transform: translateY(30px);
+    }
+    .project-hero img.visible { opacity: 1; transform: translateY(0); }
+    .project-hero img:hover { transform: translateY(-6px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+    .apartment-row {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; margin-top: 30px;
+    }
+    .apartment-box {
+      width: 320px; background: #ffffff; border: 1px solid #ddd;
+      border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 20px; text-align: center; transition: transform .3s, box-shadow .3s;
+    }
+    .apartment-box:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+    .apartment-box img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+    .vermietet {
+      display: inline-block; background: red; color: white; font-weight: bold; font-size: .9rem;
+      padding: 4px 10px; border-radius: 8px; margin-top: 5px;
+    }
+    .apartment-info {
+      max-width: 900px; margin: 30px auto 0; font-size: .95rem; text-align: center; line-height: 1.5; color: #2a5a3f;
+    }
+    .apartment-info strong { font-weight: 700; color: #004225; }
+    section h2 { color:#004225; }
+    section p { color:#2a5a3f; }
   </style>
 </head>
 <body>
-<header>Bücking Immobilien GmbH & Co. KG</header>
+<header>Bücking Immobilien GmbH &amp; Co. KG</header>
 
   <nav>
     <ul>
       <li><a href="index.html">Home</a></li>
       <li><a href="unternehmen.html">Unternehmen</a></li>
-      <li><a href="referenzen.html">Referenzen</a></li>
+      <li><a href="referenzen.html">Projekte</a></li>
       <li><a href="kontakt.html">Kontakt</a></li>
       <li><a href="impressum.html">Impressum</a></li>
     </ul>
   </nav>
 
-<main><section><h2>Referenzen</h2><p>Beispiele für unsere Projekte ...</p></section></main>
+<main>
+  <section>
+    <h2>Projekte</h2>
+    <p>Beispiele unserer aktuellen und abgeschlossenen Entwicklungen.</p>
+  </section>
+
+  <!-- Eingefügter Projekt-Abschnitt -->
+  <section id="projekt">
+    <h2>Vom Hof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
+    <p>
+      Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit zeitgemäßem Wohnkomfort.
+    </p>
+
+    <!-- Außenansicht -->
+    <div class="project-intro">
+      <div class="project-hero">
+        <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
+      </div>
+    </div>
+
+    <!-- Wohnungen -->
+    <div class="apartment-row">
+      <div class="apartment-box">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+        <h4>Wohnung 1</h4>
+        <p>Größe: 107 m²</p>
+        <p>Zimmer: 3</p>
+        <p>Preis: 1.400,00 €</p>
+      </div>
+      <div class="apartment-box">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+        <h4>Wohnung 2</h4>
+        <p>Größe: 93 m²</p>
+        <p>Zimmer: 4</p>
+        <p class="vermietet">Vermietet</p>
+      </div>
+      <div class="apartment-box">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+        <h4>Wohnung 3</h4>
+        <p>Größe: 92 m²</p>
+        <p>Zimmer: 3</p>
+        <p class="vermietet">Vermietet</p>
+      </div>
+      <div class="apartment-box">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+        <h4>Wohnung 4</h4>
+        <p>Größe: 92 m²</p>
+        <p>Zimmer: 3</p>
+        <p>Preis: 1.200,00 €</p>
+      </div>
+      <div class="apartment-box">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+        <h4>Wohnung 5</h4>
+        <p>Größe: 124 m²</p>
+        <p>Zimmer: 4</p>
+        <p>Preis: 1.620,00 €</p>
+      </div>
+    </div>
+
+    <!-- Zusatzinfo -->
+    <div class="apartment-info">
+      <p><strong>Hinweis:</strong></p>
+      <p>
+        Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten.
+        Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens.
+        Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters.
+      </p>
+      <p>
+        Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.
+      </p>
+    </div>
+  </section>
+</main>
+
 <footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
+
+<script>
+  // Fade-in der Projekt-Hero-Grafik
+  const heroImgProject = document.querySelector('.project-hero img');
+  if (heroImgProject) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.2 });
+    observer.observe(heroImgProject);
+  }
+</script>
 </body>
 </html>
