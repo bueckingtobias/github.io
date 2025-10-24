@@ -5,20 +5,134 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Projekte – Bücking Immobilien GmbH & Co. KG</title>
   <style>
-    body {font-family: Avenir, sans-serif; margin:0; padding:0; text-align:center;}
-    header {background:#004225;color:#fff;padding:20px;font-size:1.5em;font-weight:bold;}
-    nav {background:#f5f5f5;padding:12px 0;}
-    nav ul {list-style:none;margin:0;padding:0;display:flex;justify-content:center;gap:40px;}
-    nav a {text-decoration:none;color:#004225;font-weight:600;}
-    nav a:hover {color:#007a4c;}
-    footer {background:#004225;color:#fff;padding:20px;margin-top:40px;}
-    main {padding:40px;}
+    /* ===== Grundlayout & Variablen (1:1 wie index) ===== */
+    :root {
+      --brand: #004225;
+      --brand-700: #00361e;
+      --text: #004225;
+      --bg: #ffffff;
+      --muted: #f5f5f5;
+      --shadow: 0 2px 10px rgba(0,0,0,0.2);
+      --radius: 12px;
+      --header-h: 70px; /* Header-Höhe */
+    }
 
-    .project-intro { width: 100%; max-width: 1100px; text-align: center; margin: 0 auto 30px; }
-    .project-hero { width: 100%; max-width: 1100px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 12px; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      max-width: 100%;
+      overflow-x: hidden;
+      font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      scroll-behavior: smooth;
+    }
+
+    /* ===== Header mit integriertem Menü (1:1 wie index) ===== */
+    header {
+      position: fixed; inset: 0 0 auto 0;
+      height: var(--header-h);
+      background: var(--brand);
+      color: #fff;
+      z-index: 1000;
+      box-shadow: var(--shadow);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      height: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      gap: 16px;
+    }
+    .brand {
+      font-weight: 800; letter-spacing: .3px; font-size: 1.05rem;
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: #fff;
+      white-space: nowrap;
+    }
+
+    /* Desktop-Navigation */
+    nav.primary { display: none; }
+    nav.primary ul {
+      list-style: none; margin: 0; padding: 0;
+      display: flex; gap: 28px;
+    }
+    nav.primary a {
+      text-decoration: none; color: #fff; font-weight: 600;
+      padding: 8px 2px; border-radius: 6px; transition: opacity .2s ease;
+    }
+    nav.primary a[aria-current="page"] { text-decoration: underline; }
+    nav.primary a:hover { opacity: .85; }
+
+    /* Hamburger-Button */
+    .menu-toggle {
+      appearance: none; border: 0; background: transparent; color: #fff;
+      width: 44px; height: 44px; border-radius: 8px;
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .menu-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    .menu-icon, .menu-icon::before, .menu-icon::after {
+      content: ""; display: block; width: 22px; height: 2px; background: #fff;
+      transition: transform .25s ease, opacity .2s ease;
+      border-radius: 2px;
+    }
+    .menu-icon::before { transform: translateY(-7px); }
+    .menu-icon::after  { transform: translateY(5px); }
+    .menu-toggle[aria-expanded="true"] .menu-icon { transform: rotate(45deg); }
+    .menu-toggle[aria-expanded="true"] .menu-icon::before { transform: rotate(90deg); }
+    .menu-toggle[aria-expanded="true"] .menu-icon::after { opacity: 0; }
+
+    /* Drawer (mobil) */
+    .drawer-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      opacity: 0; pointer-events: none; transition: opacity .25s ease;
+      z-index: 999;
+    }
+    .drawer {
+      position: fixed; top: var(--header-h); left: 0; right: 0;
+      background: #fff; color: var(--text);
+      transform: translateY(-8px); opacity: 0; pointer-events: none;
+      border-bottom: 1px solid #e5e5e5;
+      box-shadow: 0 10px 25px rgba(0,0,0,.15);
+      transition: transform .25s ease, opacity .25s ease;
+      z-index: 1001;
+    }
+    .drawer.open,
+    .drawer-backdrop.open { pointer-events: auto; }
+    .drawer.open { transform: translateY(0); opacity: 1; }
+    .drawer-backdrop.open { opacity: 1; }
+
+    .drawer nav { padding: 14px 16px 18px; }
+    .drawer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .drawer a {
+      display: block; width: 100%;
+      text-decoration: none; color: var(--text); font-weight: 700;
+      padding: 12px 10px; border-radius: 10px; background: var(--muted);
+    }
+    .drawer a[aria-current="page"] { outline: 2px solid var(--brand); }
+
+    /* Body-Lock beim offenen Menü */
+    body.menu-open { overflow: hidden; }
+
+    /* ===== Main & Sektionen (1:1 wie index) ===== */
+    main { padding-top: var(--header-h); }
+    section {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 40px 20px; border-bottom: 1px solid #e0e0e0;
+    }
+    section h2 {
+      font-size: 2.2rem; margin: 10px 0 15px; letter-spacing: 1px; text-align: center;
+    }
+    section p {
+      font-size: 1.1rem; max-width: 900px; text-align: center; line-height: 1.6; color: var(--text);
+    }
+
+    /* ===== Projekt-spezifische Bausteine (nur Zusatz, kollisionsfrei) ===== */
+    .project-intro { width: 100%; max-width: 1100px; text-align: center; margin-bottom: 30px; }
+    .project-hero { width: 100%; max-width: 1100px; margin: 20px auto; background: #fff; padding: 20px; border-radius: var(--radius); }
     .project-hero img {
       width: 100%; aspect-ratio: 4842 / 1978; object-fit: cover;
-      border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-radius: var(--radius); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       transition: transform .3s, box-shadow .3s, opacity .6s ease;
       opacity: 0; transform: translateY(30px);
     }
@@ -30,8 +144,8 @@
     }
     .apartment-box {
       width: 320px; background: #ffffff; border: 1px solid #ddd;
-      border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      padding: 20px; text-align: center; transition: transform .3s, box-shadow .3s;
+      border-radius: var(--radius); box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 20px; text-align: center; transition: transform .3s, box-shadow .3s; position: relative;
     }
     .apartment-box:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
     .apartment-box img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
@@ -40,124 +154,233 @@
       display: inline-block; background: red; color: white; font-weight: bold; font-size: .9rem;
       padding: 4px 10px; border-radius: 8px; margin-top: 5px;
     }
-
     .apartment-actions { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
     .badge-btn {
-      display: inline-block; background: #004225; color: #ffffff; font-weight: bold; font-size: .9rem;
+      display: inline-block; background: var(--brand); color: #ffffff; font-weight: bold; font-size: .9rem;
       padding: 4px 10px; border-radius: 8px; text-decoration: none;
     }
-    .badge-btn:hover { background:#007a4c; }
+    .badge-btn:hover { background: #007a4c; }
+
+    /* ===== Footer (1:1 wie index) ===== */
+    footer {
+      background: var(--brand); color: white; text-align: center;
+      padding: 20px; font-size: .9em; position: fixed; bottom: 0; left: 0; right: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    }
+    .footer-spacer { height: 70px; }
+
+    /* ===== Responsives Verhalten (1:1 wie index) ===== */
+    @media (min-width: 980px) {
+      nav.primary { display: block; }
+      .menu-toggle { display: none; }
+      .drawer, .drawer-backdrop { display: none; }
+    }
+    @media (max-width: 768px) {
+      section h2 { font-size: 2rem; }
+      section p  { font-size: 1rem; }
+      .apartment-box { width: 90%; }
+    }
   </style>
 </head>
 <body>
-<header>Bücking Immobilien GmbH &amp; Co. KG</header>
+  <!-- Header 1:1 wie index -->
+  <header>
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="Zur Startseite">
+        Bücking Immobilien GmbH &amp; Co. KG
+      </a>
 
-  <nav>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="unternehmen.html">Unternehmen</a></li>
-      <li><a href="referenzen.html">Projekte</a></li>
-      <li><a href="kontakt.html">Kontakt</a></li>
-      <li><a href="impressum.html">Impressum</a></li>
-    </ul>
-  </nav>
+      <!-- Desktop-Navigation -->
+      <nav class="primary" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="unternehmen.html">Unternehmen</a></li>
+          <li><a href="referenzen.html" aria-current="page">Projekte</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
 
-<main>
-  <section id="projekt">
-    <h2>Vom Hof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
-    <p>
-      Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit zeitgemäßem Wohnkomfort.
-    </p>
-
-    <div class="project-intro">
-      <div class="project-hero">
-        <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
-      </div>
+      <!-- Hamburger (mobil) -->
+      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
+        <span class="menu-icon"></span>
+      </button>
     </div>
 
-    <div class="apartment-row">
-      <!-- Wohnung 1 -->
-      <div class="apartment-box">
-        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
-        <h4>Wohnung 1</h4>
-        <p>Größe: 107 m²</p>
-        <p>Zimmer: 3</p>
-        <p>Preis: 1.400,00 €</p>
-        <div class="apartment-actions">
-          <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%201%20–%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%201%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%0AIch%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%0A%5BName%5D">Per&nbsp;Mail</a>
-          <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
-        </div>
-      </div>
-
-      <!-- Wohnung 2 -->
-      <div class="apartment-box">
-        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
-        <h4>Wohnung 2</h4>
-        <p>Größe: 93 m²</p>
-        <p>Zimmer: 4</p>
-        <p class="vermietet">Vermietet</p>
-      </div>
-
-      <!-- Wohnung 3 -->
-      <div class="apartment-box">
-        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
-        <h4>Wohnung 3</h4>
-        <p>Größe: 92 m²</p>
-        <p>Zimmer: 3</p>
-        <p class="vermietet">Vermietet</p>
-      </div>
-
-      <!-- Wohnung 4 -->
-      <div class="apartment-box">
-        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
-        <h4>Wohnung 4</h4>
-        <p>Größe: 92 m²</p>
-        <p>Zimmer: 3</p>
-        <p>Preis: 1.200,00 €</p>
-        <div class="apartment-actions">
-          <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%204%20–%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%204%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%0AIch%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%0A%5BName%5D">Per&nbsp;Mail</a>
-          <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
-        </div>
-      </div>
-
-      <!-- Wohnung 5 -->
-      <div class="apartment-box">
-        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
-        <h4>Wohnung 5</h4>
-        <p>Größe: 124 m²</p>
-        <p>Zimmer: 4</p>
-        <p>Preis: 1.620,00 €</p>
-        <div class="apartment-actions">
-          <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%205%20–%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%205%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%0AIch%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%0A%5BName%5D">Per&nbsp;Mail</a>
-          <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
-        </div>
-      </div>
+    <!-- Ausklapp-Menü (mobil) -->
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
+      <nav aria-label="Mobile Navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="unternehmen.html">Unternehmen</a></li>
+          <li><a href="referenzen.html" aria-current="page">Projekte</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
     </div>
+  </header>
 
-    <div class="apartment-info" style="max-width:900px;margin:30px auto 0;font-size:.95rem;line-height:1.5;color:#2a5a3f;">
-      <p><strong>Hinweis:</strong></p>
+  <main>
+    <!-- Abstand, damit Footer Inhalte nicht überdeckt -->
+    <div class="footer-spacer" aria-hidden="true"></div>
+
+    <!-- KEIN zusätzlicher Einleitungsblock „Projekte … Entwicklungen.“ -->
+
+    <!-- Projekt -->
+    <section id="projekt">
+      <h2>Vom Hof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
       <p>
-        Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten. 
-        Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. 
-        Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters.
+        Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit zeitgemäßem Wohnkomfort.
       </p>
-      <p>
-        Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.
-      </p>
-    </div>
-  </section>
-</main>
 
-<footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
+      <!-- Außenansicht -->
+      <div class="project-intro">
+        <div class="project-hero">
+          <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
+        </div>
+      </div>
 
-<script>
-  const heroImgProject = document.querySelector('.project-hero img');
-  if (heroImgProject) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-    }, { threshold: 0.2 });
-    observer.observe(heroImgProject);
-  }
-</script>
+      <!-- Wohnungen -->
+      <div class="apartment-row">
+        <!-- Wohnung 1 (frei) -->
+        <div class="apartment-box">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+          <h4>Wohnung 1</h4>
+          <p>Größe: 107 m²</p>
+          <p>Zimmer: 3</p>
+          <p>Preis: 1.400,00 €</p>
+          <div class="apartment-actions">
+            <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%201%20%E2%80%93%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%201%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%20Ich%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMeine%20Kontaktdaten%3A%0AName%3A%20%0ATelefon%3A%20%0AE-Mail%3A%20%0A%0AVielen%20Dank%20und%20freundliche%20Gr%C3%BC%C3%9Fe%0A%5BName%5D">Per&nbsp;Mail</a>
+            <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
+          </div>
+        </div>
+
+        <!-- Wohnung 2 (vermietet) -->
+        <div class="apartment-box">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+          <h4>Wohnung 2</h4>
+          <p>Größe: 93 m²</p>
+          <p>Zimmer: 4</p>
+          <p class="vermietet">Vermietet</p>
+        </div>
+
+        <!-- Wohnung 3 (vermietet) -->
+        <div class="apartment-box">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+          <h4>Wohnung 3</h4>
+          <p>Größe: 92 m²</p>
+          <p>Zimmer: 3</p>
+          <p class="vermietet">Vermietet</p>
+        </div>
+
+        <!-- Wohnung 4 (frei) -->
+        <div class="apartment-box">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+          <h4>Wohnung 4</h4>
+          <p>Größe: 92 m²</p>
+          <p>Zimmer: 3</p>
+          <p>Preis: 1.200,00 €</p>
+          <div class="apartment-actions">
+            <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%204%20%E2%80%93%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%204%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%20Ich%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMeine%20Kontaktdaten%3A%0AName%3A%20%0ATelefon%3A%20%0AE-Mail%3A%20%0A%0AVielen%20Dank%20und%20freundliche%20Gr%C3%BC%C3%9Fe%0A%5BName%5D">Per&nbsp;Mail</a>
+            <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
+          </div>
+        </div>
+
+        <!-- Wohnung 5 (frei) -->
+        <div class="apartment-box">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
+          <h4>Wohnung 5</h4>
+          <p>Größe: 124 m²</p>
+          <p>Zimmer: 4</p>
+          <p>Preis: 1.620,00 €</p>
+          <div class="apartment-actions">
+            <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%205%20%E2%80%93%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%205%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%20Ich%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMeine%20Kontaktdaten%3A%0AName%3A%20%0ATelefon%3A%20%0AE-Mail%3A%20%0A%0AVielen%20Dank%20und%20freundliche%20Gr%C3%BC%C3%9Fe%0A%5BName%5D">Per&nbsp;Mail</a>
+            <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zusatzinfo -->
+      <div class="apartment-info" style="max-width:900px;margin:30px auto 0;font-size:.95rem;line-height:1.5;color:#2a5a3f;">
+        <p><strong>Hinweis:</strong></p>
+        <p>
+          Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten. 
+          Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. 
+          Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters.
+        </p>
+        <p>
+          Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.
+        </p>
+      </div>
+    </section>
+
+    <div class="footer-spacer" aria-hidden="true"></div>
+  </main>
+
+  <!-- Footer 1:1 wie index -->
+  <footer>
+    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
+  </footer>
+
+  <script>
+    /* ===== Hero-Scroll-Animation (wie index) ===== */
+    const heroImgProject = document.querySelector('.project-hero img');
+    if (heroImgProject) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+      }, { threshold: 0.2 });
+      observer.observe(heroImgProject);
+    }
+
+    /* ===== Mobiles Ausklapp-Menü (wie index) ===== */
+    const body = document.body;
+    const toggle = document.querySelector('.menu-toggle');
+    const drawer = document.getElementById('mobile-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+
+    function openMenu() {
+      toggle.setAttribute('aria-expanded', 'true');
+      drawer.hidden = false;
+      backdrop.hidden = false;
+      requestAnimationFrame(() => {
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+        body.classList.add('menu-open');
+        const firstLink = drawer.querySelector('a');
+        firstLink && firstLink.focus();
+      });
+    }
+    function closeMenu() {
+      toggle.setAttribute('aria-expanded', 'false');
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      body.classList.remove('menu-open');
+      setTimeout(() => { drawer.hidden = true; backdrop.hidden = true; }, 200);
+      toggle.focus();
+    }
+
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      expanded ? closeMenu() : openMenu();
+    });
+
+    backdrop.addEventListener('click', closeMenu);
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    drawer.addEventListener('click', (e) => { if (e.target.closest('a')) closeMenu(); });
+
+    /* ===== Header-Höhe dynamisch (wie index) ===== */
+    const header = document.querySelector('header');
+    const main = document.querySelector('main');
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const h = Math.ceil(entry.contentRect.height);
+        header.style.setProperty('--header-h', h + 'px');
+        document.documentElement.style.setProperty('--header-h', h + 'px');
+        main.style.paddingTop = `var(--header-h)`;
+      }
+    });
+    ro.observe(header);
+  </script>
 </body>
 </html>
