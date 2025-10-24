@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Projekte – Bücking Immobilien GmbH & Co. KG</title>
   <style>
-    body {font-family: Avenir, sans-serif; margin:0; padding:0; text-align:center; color:#004225; background:#fff;}
+    body {font-family: Avenir, sans-serif; margin:0; padding:0; text-align:center;}
     header {background:#004225;color:#fff;padding:20px;font-size:1.5em;font-weight:bold;}
     nav {background:#f5f5f5;padding:12px 0;}
     nav ul {list-style:none;margin:0;padding:0;display:flex;justify-content:center;gap:40px;}
@@ -14,7 +14,6 @@
     footer {background:#004225;color:#fff;padding:20px;margin-top:40px;}
     main {padding:40px;}
 
-    /* ===== Zusatz-Styles für den Projekt-Abschnitt ===== */
     .project-intro { width: 100%; max-width: 1100px; text-align: center; margin: 0 auto 30px; }
     .project-hero { width: 100%; max-width: 1100px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 12px; }
     .project-hero img {
@@ -36,16 +35,18 @@
     }
     .apartment-box:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
     .apartment-box img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+
     .vermietet {
       display: inline-block; background: red; color: white; font-weight: bold; font-size: .9rem;
       padding: 4px 10px; border-radius: 8px; margin-top: 5px;
     }
-    .apartment-info {
-      max-width: 900px; margin: 30px auto 0; font-size: .95rem; text-align: center; line-height: 1.5; color: #2a5a3f;
+
+    .apartment-actions { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .badge-btn {
+      display: inline-block; background: #004225; color: #ffffff; font-weight: bold; font-size: .9rem;
+      padding: 4px 10px; border-radius: 8px; text-decoration: none;
     }
-    .apartment-info strong { font-weight: 700; color: #004225; }
-    section h2 { color:#004225; }
-    section p { color:#2a5a3f; }
+    .badge-btn:hover { background:#007a4c; }
   </style>
 </head>
 <body>
@@ -62,34 +63,33 @@
   </nav>
 
 <main>
-  <section>
-    <h2>Projekte</h2>
-    <p>Beispiele unserer aktuellen und abgeschlossenen Entwicklungen.</p>
-  </section>
-
-  <!-- Eingefügter Projekt-Abschnitt -->
   <section id="projekt">
     <h2>Vom Hof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
     <p>
       Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde, wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit zeitgemäßem Wohnkomfort.
     </p>
 
-    <!-- Außenansicht -->
     <div class="project-intro">
       <div class="project-hero">
         <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
       </div>
     </div>
 
-    <!-- Wohnungen -->
     <div class="apartment-row">
+      <!-- Wohnung 1 -->
       <div class="apartment-box">
         <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
         <h4>Wohnung 1</h4>
         <p>Größe: 107 m²</p>
         <p>Zimmer: 3</p>
         <p>Preis: 1.400,00 €</p>
+        <div class="apartment-actions">
+          <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%201%20–%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%201%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%0AIch%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%0A%5BName%5D">Per&nbsp;Mail</a>
+          <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
+        </div>
       </div>
+
+      <!-- Wohnung 2 -->
       <div class="apartment-box">
         <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
         <h4>Wohnung 2</h4>
@@ -97,6 +97,8 @@
         <p>Zimmer: 4</p>
         <p class="vermietet">Vermietet</p>
       </div>
+
+      <!-- Wohnung 3 -->
       <div class="apartment-box">
         <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
         <h4>Wohnung 3</h4>
@@ -104,28 +106,39 @@
         <p>Zimmer: 3</p>
         <p class="vermietet">Vermietet</p>
       </div>
+
+      <!-- Wohnung 4 -->
       <div class="apartment-box">
         <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
         <h4>Wohnung 4</h4>
         <p>Größe: 92 m²</p>
         <p>Zimmer: 3</p>
         <p>Preis: 1.200,00 €</p>
+        <div class="apartment-actions">
+          <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%204%20–%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%204%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%0AIch%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%0A%5BName%5D">Per&nbsp;Mail</a>
+          <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
+        </div>
       </div>
+
+      <!-- Wohnung 5 -->
       <div class="apartment-box">
         <img src="grundriss-platzhalter.jpeg" alt="Grundriss Platzhalter">
         <h4>Wohnung 5</h4>
         <p>Größe: 124 m²</p>
         <p>Zimmer: 4</p>
         <p>Preis: 1.620,00 €</p>
+        <div class="apartment-actions">
+          <a class="badge-btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20Wohnung%205%20–%20Vom%20Hof%20zum%20Zuhause&body=Guten%20Tag%20liebes%20B%C3%BCcking%20Immobilien-Team%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20die%20Wohnung%205%20im%20Projekt%20%E2%80%9EVom%20Hof%20zum%20Zuhause%E2%80%9C.%0AIch%20w%C3%BCrde%20mich%20%C3%BCber%20weitere%20Informationen%20oder%20einen%20Besichtigungstermin%20freuen.%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%0A%5BName%5D">Per&nbsp;Mail</a>
+          <a class="badge-btn" href="tel:+4917657960759">Anrufen</a>
+        </div>
       </div>
     </div>
 
-    <!-- Zusatzinfo -->
-    <div class="apartment-info">
+    <div class="apartment-info" style="max-width:900px;margin:30px auto 0;font-size:.95rem;line-height:1.5;color:#2a5a3f;">
       <p><strong>Hinweis:</strong></p>
       <p>
-        Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten.
-        Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens.
+        Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten. 
+        Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. 
         Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters.
       </p>
       <p>
@@ -138,7 +151,6 @@
 <footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
 
 <script>
-  // Fade-in der Projekt-Hero-Grafik
   const heroImgProject = document.querySelector('.project-hero img');
   if (heroImgProject) {
     const observer = new IntersectionObserver((entries) => {
