@@ -26,15 +26,19 @@
       margin-bottom: 12px;
     }
 
-    .hed {
-      font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight: 900;
-      letter-spacing: .01em;
-      line-height: 1.1;
-      margin: 0 auto 12px;
-      max-width: 20ch;
-      font-size: clamp(1.8rem, 4.5vw, 2.8rem);
-    }
+ .hed{
+  font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-weight:900;
+  letter-spacing:.005em;     /* etwas kompakter */
+  line-height:1.05;
+  margin:0 auto 10px;
+  max-width:none;            /* keine künstliche Zeilenumbrüche */
+  font-size:clamp(1.5rem, 3.2vw, 2.2rem); /* kleiner als zuvor */
+}
+
+@media (min-width:1024px){
+  .hed{ white-space:nowrap; } /* hält es auf 13" sicher in einer Zeile */
+}
 
     .dek {
       margin: 0 auto 28px;
