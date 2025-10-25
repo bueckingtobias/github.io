@@ -16,9 +16,9 @@
       --shadow:0 2px 10px rgba(0,0,0,.15);
       --radius:12px;
       --maxw:1200px;
-      --row-gap:16px;          /* vertikale Abstände im Header */
-      --header-pad:14px;       /* Innenabstand Header */
-      --nav-h:46px;            /* Zielhöhe Menüband (13" / iPad optimiert) */
+      --row-gap:16px;
+      --header-pad:14px;
+      --nav-h:46px;
     }
 
     *{box-sizing:border-box}
@@ -50,7 +50,7 @@
     .brand-logo{
       height:42px; width:auto; display:block;
     }
-    .brand-text{ display:none; } /* Logo steht im Fokus */
+    .brand-text{ display:none; }
 
     /* Zeile 2: Menüband */
     .header-nav{
@@ -60,9 +60,8 @@
       padding:0 8px;
       position:relative;
     }
-    /* Desktop-Menü */
     nav.primary{
-      display:none;  /* wird > 900px sichtbar */
+      display:none;
     }
     nav.primary ul{
       list-style:none; margin:0; padding:0;
@@ -120,8 +119,59 @@
     .drawer a[aria-current="page"]{ outline:2px solid var(--brand) }
 
     /* ===== Main ===== */
-    main{ max-width:var(--maxw); margin:0 auto; padding:18px 16px 80px }
+    main{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:0; /* kein Abstand – Hero liegt direkt unter Header */
+    }
     .section-host{ display:grid; gap:32px }
+
+    /* ===== Hero: Vollbild unter Menüband ===== */
+    .hero {
+      position: relative;
+      width: 100vw;
+      height: 100vh; /* ganze Bildschirmhöhe */
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      display: block;
+    }
+    .hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.15), rgba(0,0,0,.35));
+      text-align: center;
+      padding: 0 16px;
+    }
+    .hero-caption {
+      color: #fff;
+      text-align: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .hero-caption h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      letter-spacing: .4px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+    .hero-caption p {
+      margin: 0;
+      font-size: clamp(1rem, 1.6vw, 1.25rem);
+      line-height: 1.5;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
 
     /* ===== Footer ===== */
     footer{
@@ -138,24 +188,6 @@
       .brand-logo{ height:46px }
       :root{ --nav-h:50px }
     }
-
-    /* Typografie & Komponenten (gleich wie vorher) */
-    .hero{ position:relative; width:100%; margin:0; padding:0 }
-    .hero img{ display:block; width:100%; height:clamp(48vh,62vh,78vh); object-fit:cover }
-    .hero-overlay{ position:absolute; inset:0; display:grid; place-items:center;
-      padding:0 16px; background:linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.15), rgba(0,0,0,.35)); }
-    .hero-caption{ color:#fff; text-align:center; max-width:1100px }
-    .hero-caption h1{ margin:0 0 10px; font-size:clamp(1.6rem,3.4vw,3rem); letter-spacing:.4px; text-shadow:0 2px 6px rgba(0,0,0,.6) }
-    .hero-caption p{ margin:0; font-size:clamp(1rem,1.6vw,1.25rem); line-height:1.5; font-weight:700; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.6) }
-
-    .placeholder-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:25px; margin-top:20px }
-    .placeholder-box{ width:380px; background:var(--brand); color:#fff; display:flex; justify-content:center; align-items:center;
-      font-size:1.2rem; border-radius:var(--radius); padding:40px 25px; text-align:center; font-weight:700; transition:transform .3s, box-shadow .3s }
-    .placeholder-box:hover{ transform:translateY(-6px); box-shadow:0 10px 20px rgba(0,0,0,.2) }
-
-    @media (max-width:768px){
-      .placeholder-box{ width:85% }
-    }
   </style>
 </head>
 
@@ -163,7 +195,6 @@
   <!-- ===== Header: Logo mittig, Menü darunter ===== -->
   <header class="site-header" role="banner">
     <div class="header-top">
-      <!-- Klick auf Logo: nach oben / Start (index) -->
       <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
         <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
         <span class="brand-text">Bücking Immobilien GmbH &amp; Co. KG</span>
@@ -205,9 +236,17 @@
     </div>
   </header>
 
-  <!-- ===== Hauptbereich: Module werden dynamisch geladen ===== -->
+  <!-- ===== Hauptbereich mit Hero ===== -->
   <main id="top">
-    <div id="section-host" class="section-host" aria-live="polite"></div>
+    <section id="home" class="hero" aria-label="Titelbereich">
+      <img src="hero-startseite.jpeg" alt="Immobilienprojekt Bücking Immobilien">
+      <div class="hero-overlay">
+        <div class="hero-caption">
+          <h1>Nachhaltig. Verlässlich. Persönlich.</h1>
+          <p>Moderne Mietwohnungen mit regionaler Handschrift.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
@@ -230,49 +269,6 @@
     backdrop.addEventListener('click',closeMenu);
     window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
     drawer.addEventListener('click',e=>{ const a=e.target.closest('a'); if(a) closeMenu(); });
-
-    /* ===== Module laden: Reihenfolge wie gewünscht ===== */
-    const files=[
-      'landing.html',        // 1) Landingpage
-      'ueber-uns.html',      // 2) Über uns
-      'zitat.html',          // 3) Zitat
-      'leitbild.html'        // 4) Unternehmerisches Leitbild
-    ];
-    const host=document.getElementById('section-host');
-
-    async function loadSection(file){
-      try{
-        const res=await fetch(file, {cache:'no-store'});
-        if(!res.ok) throw new Error(file+' '+res.status);
-        const html=await res.text();
-        const wrapper=document.createElement('div');
-        wrapper.className='module';
-        wrapper.innerHTML=html;
-        host.appendChild(wrapper);
-
-        // kleine Eintrittsanimation (sanft)
-        wrapper.style.opacity='0';
-        wrapper.style.transform='translateY(12px)';
-        requestAnimationFrame(()=>{
-          wrapper.style.transition='opacity .5s ease, transform .5s ease';
-          wrapper.style.opacity='1';
-          wrapper.style.transform='translateY(0)';
-        });
-      }catch(err){
-        const errBox=document.createElement('div');
-        errBox.style.background='#fff3f3';
-        errBox.style.border='1px solid #ffd0d0';
-        errBox.style.padding='12px';
-        errBox.style.borderRadius='10px';
-        errBox.textContent='Abschnitt konnte nicht geladen werden: '+file;
-        host.appendChild(errBox);
-        console.error(err);
-      }
-    }
-
-    (async()=>{
-      for(const f of files){ await loadSection(f); }
-    })();
   </script>
 </body>
 </html>
