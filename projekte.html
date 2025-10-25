@@ -77,17 +77,23 @@
     main{ max-width:var(--maxw); margin:0 auto; padding: clamp(28px, 4vw, 48px) 16px 56px; }
     .kicker{
       font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65;
-      font-size:.9rem; margin:4px 0 12px;
+      font-size:.9rem; margin:4px 0 12px; text-align:center;
     }
     h1,h2,h3,h4{ margin:0 0 8px; }
     h2{
-      font-size: clamp(26px, 4.2vw, 40px);
-      line-height:1.15;
+      /* Landingpage-Heading-Size, zentriert und auf eine Zeile ausgelegt */
+      font-size: clamp(18px, 2.8vw, 30px);
+      line-height: 1.1;
       letter-spacing:.01em;
+      text-align:center;
+      white-space: nowrap;
+      margin-inline:auto;
+      max-width: 100%;
     }
     p{ margin:0 0 14px; opacity:.95; }
 
     /* Projekt-Intro */
+    .intro-wrap{ max-width: 980px; margin: 0 auto; text-align:center; }
     .project-intro{ margin-top:16px; }
     .project-hero{
       position:relative; overflow:hidden; border-radius: var(--radius);
@@ -96,6 +102,7 @@
     }
     .project-hero img{
       width:100%; height:auto; display:block;
+      aspect-ratio: 16/9; object-fit:cover;
     }
 
     /* Wohnungen Grid */
@@ -119,6 +126,7 @@
       overflow:hidden;
       box-shadow: var(--shadow);
       display:flex; flex-direction:column;
+      align-items:stretch;
     }
     .apartment-box img{
       width:100%; height:auto; display:block;
@@ -126,35 +134,40 @@
       background:rgba(255,255,255,.06);
     }
     .apartment-box .box-body{
-      padding:14px;
-      display:flex; flex-direction:column; gap:6px;
+      padding:16px 14px 18px;
+      display:flex; flex-direction:column; gap:10px;
+      align-items:center; text-align:center;
     }
     .apartment-box h4{
-      font-size:1.05rem; margin:0 0 4px; letter-spacing:.01em;
+      font-size:1.06rem; margin:2px 0 2px; letter-spacing:.01em;
     }
-    .meta{ display:flex; gap:10px; flex-wrap:wrap; opacity:.95; font-size:.98rem; }
+    .meta{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; opacity:.95; font-size:.98rem; }
     .meta .chip{
       background:var(--muted); padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12);
     }
 
-    /* Status/Preis Badge */
-    .status{
-      margin-top:8px;
-      font-weight:700;
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border-radius:10px;
-      background:var(--muted);
-      border:1px solid rgba(255,255,255,.12);
+    /* Preisblock */
+    .price-list{
+      list-style:none; margin:6px auto 0; padding:0;
+      display:grid; grid-template-columns: auto auto; gap:8px 14px;
+      width:min(92%, 320px);
+      text-align:left;
     }
-    .status.vermietet{ opacity:.7; }
-    .status .dot{
-      width:8px; height:8px; border-radius:99px; background:#65d38a;
-    }
-    .status.vermietet .dot{ background:#bbbbbb; }
+    .price-list li{ display:contents; }
+    .price-list span.label{ opacity:.85; }
+    .price-list span.value{ font-weight:800; }
 
-    /* Aktionen (für verfügbar) */
+    /* Status/Badges */
+    .badges{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:6px; }
+    .badge{
+      font-weight:700; padding:6px 10px; border-radius:999px;
+      background:var(--muted); border:1px solid rgba(255,255,255,.12);
+    }
+    .badge.vermietet{ opacity:.8; }
+
+    /* Aktionen (nur bei verfügbar) */
     .actions{
-      margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
     }
     .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
@@ -171,6 +184,8 @@
       border-radius: var(--radius);
       background: rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.12);
+      max-width: 980px;
+      margin-inline:auto;
     }
     .apartment-info p{ margin:0 0 10px; }
     .apartment-info strong{ font-weight:800; }
@@ -228,7 +243,7 @@
 
   <main id="top">
     <!-- Projekt -->
-    <section id="projekt" aria-labelledby="projekt-title">
+    <section id="projekt" aria-labelledby="projekt-title" class="intro-wrap">
       <div class="kicker">Aktuelles Projekt</div>
       <h2 id="projekt-title">Vom Hof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
       <p>
@@ -236,111 +251,142 @@
         wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit
         zeitgemäßem Wohnkomfort.
       </p>
+    </section>
 
-      <!-- Außenansicht -->
-      <div class="project-intro">
-        <div class="project-hero">
-          <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
-        </div>
-      </div>
-
-      <!-- Wohnungen -->
-      <div class="apartment-row" aria-label="Wohnungen">
-        <!-- Whg 1 -->
-        <article class="apartment-box" aria-labelledby="w1-title">
-          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 1">
-          <div class="box-body">
-            <h4 id="w1-title">Wohnung 1</h4>
-            <div class="meta">
-              <span class="chip">Größe: 107&nbsp;m²</span>
-              <span class="chip">Zimmer: 3</span>
-            </div>
-            <div class="status"><span class="dot" aria-hidden="true"></span><span>Preis: 1.400,00&nbsp;€ (Nettokalt)</span></div>
-            <div class="actions">
-              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%201%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%201%20(107%20m%C2%B2%2C%203%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>
-                ✉︎&nbsp;Anfragen per E-Mail
-              </a>
-              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Whg 2 (vermietet) -->
-        <article class="apartment-box" aria-labelledby="w2-title">
-          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 2">
-          <div class="box-body">
-            <h4 id="w2-title">Wohnung 2</h4>
-            <div class="meta">
-              <span class="chip">Größe: 93&nbsp;m²</span>
-              <span class="chip">Zimmer: 4</span>
-            </div>
-            <div class="status vermietet"><span class="dot" aria-hidden="true"></span><span>Vermietet</span></div>
-          </div>
-        </article>
-
-        <!-- Whg 3 (vermietet) -->
-        <article class="apartment-box" aria-labelledby="w3-title">
-          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 3">
-          <div class="box-body">
-            <h4 id="w3-title">Wohnung 3</h4>
-            <div class="meta">
-              <span class="chip">Größe: 92&nbsp;m²</span>
-              <span class="chip">Zimmer: 3</span>
-            </div>
-            <div class="status vermietet"><span class="dot" aria-hidden="true"></span><span>Vermietet</span></div>
-          </div>
-        </article>
-
-        <!-- Whg 4 -->
-        <article class="apartment-box" aria-labelledby="w4-title">
-          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 4">
-          <div class="box-body">
-            <h4 id="w4-title">Wohnung 4</h4>
-            <div class="meta">
-              <span class="chip">Größe: 92&nbsp;m²</span>
-              <span class="chip">Zimmer: 3</span>
-            </div>
-            <div class="status"><span class="dot" aria-hidden="true"></span><span>Preis: 1.200,00&nbsp;€ (Nettokalt)</span></div>
-            <div class="actions">
-              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%204%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%204%20(92%20m%C2%B2%2C%203%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>
-                ✉︎&nbsp;Anfragen per E-Mail
-              </a>
-              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Whg 5 -->
-        <article class="apartment-box" aria-labelledby="w5-title">
-          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 5">
-          <div class="box-body">
-            <h4 id="w5-title">Wohnung 5</h4>
-            <div class="meta">
-              <span class="chip">Größe: 124&nbsp;m²</span>
-              <span class="chip">Zimmer: 4</span>
-            </div>
-            <div class="status"><span class="dot" aria-hidden="true"></span><span>Preis: 1.620,00&nbsp;€ (Nettokalt)</span></div>
-            <div class="actions">
-              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%205%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%205%20(124%20m%C2%B2%2C%204%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>
-                ✉︎&nbsp;Anfragen per E-Mail
-              </a>
-              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <!-- Zusatzinfo -->
-      <div class="apartment-info" role="note" aria-label="Hinweise zur Vermietung">
-        <p><strong>Hinweis:</strong></p>
-        <p>
-          Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten.
-          Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. Der Strombezug
-          erfolgt über die hauseigene Solaranlage des Vermieters.
-        </p>
-        <p>Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.</p>
+    <!-- Außenansicht -->
+    <section class="project-intro" aria-label="Außenansicht">
+      <div class="project-hero">
+        <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
       </div>
     </section>
+
+    <!-- Wohnungen -->
+    <section class="apartment-row" aria-label="Wohnungen">
+      <!-- Whg 1 -->
+      <article class="apartment-box" aria-labelledby="w1-title">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 1">
+        <div class="box-body">
+          <h4 id="w1-title">Wohnung 1</h4>
+          <div class="meta">
+            <span class="chip">107&nbsp;m²</span>
+            <span class="chip">3 Zimmer</span>
+          </div>
+          <ul class="price-list" aria-label="Preisübersicht Wohnung 1">
+            <li><span class="label">Kaltmiete</span><span class="value">1.400,00&nbsp;€</span></li>
+            <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
+            <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
+          </ul>
+          <div class="badges">
+            <span class="badge">Verfügbar</span>
+          </div>
+          <div class="actions">
+            <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%201%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%201%20(107%20m%C2%B2%2C%203%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>✉︎&nbsp;Anfragen per E-Mail</a>
+            <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Whg 2 (vermietet + Preis) -->
+      <article class="apartment-box" aria-labelledby="w2-title">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 2">
+        <div class="box-body">
+          <h4 id="w2-title">Wohnung 2</h4>
+          <div class="meta">
+            <span class="chip">93&nbsp;m²</span>
+            <span class="chip">4 Zimmer</span>
+          </div>
+          <ul class="price-list" aria-label="Preisübersicht Wohnung 2">
+            <li><span class="label">Kaltmiete</span><span class="value">1.215,00&nbsp;€</span></li>
+            <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
+            <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
+          </ul>
+          <div class="badges">
+            <span class="badge vermietet">Vermietet</span>
+            <span class="badge">zuletzt beworben</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Whg 3 (vermietet + Preis) -->
+      <article class="apartment-box" aria-labelledby="w3-title">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 3">
+        <div class="box-body">
+          <h4 id="w3-title">Wohnung 3</h4>
+          <div class="meta">
+            <span class="chip">92&nbsp;m²</span>
+            <span class="chip">3 Zimmer</span>
+          </div>
+          <ul class="price-list" aria-label="Preisübersicht Wohnung 3">
+            <li><span class="label">Kaltmiete</span><span class="value">1.202,00&nbsp;€</span></li>
+            <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
+            <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
+          </ul>
+          <div class="badges">
+            <span class="badge vermietet">Vermietet</span>
+            <span class="badge">zuletzt beworben</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Whg 4 -->
+      <article class="apartment-box" aria-labelledby="w4-title">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 4">
+        <div class="box-body">
+          <h4 id="w4-title">Wohnung 4</h4>
+          <div class="meta">
+            <span class="chip">92&nbsp;m²</span>
+            <span class="chip">3 Zimmer</span>
+          </div>
+          <ul class="price-list" aria-label="Preisübersicht Wohnung 4">
+            <li><span class="label">Kaltmiete</span><span class="value">1.200,00&nbsp;€</span></li>
+            <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
+            <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
+          </ul>
+          <div class="badges">
+            <span class="badge">Verfügbar</span>
+          </div>
+          <div class="actions">
+            <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%204%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%204%20(92%20m%C2%B2%2C%203%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>✉︎&nbsp;Anfragen per E-Mail</a>
+            <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Whg 5 -->
+      <article class="apartment-box" aria-labelledby="w5-title">
+        <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 5">
+        <div class="box-body">
+          <h4 id="w5-title">Wohnung 5</h4>
+          <div class="meta">
+            <span class="chip">124&nbsp;m²</span>
+            <span class="chip">4 Zimmer</span>
+          </div>
+          <ul class="price-list" aria-label="Preisübersicht Wohnung 5">
+            <li><span class="label">Kaltmiete</span><span class="value">1.620,00&nbsp;€</span></li>
+            <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
+            <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
+          </ul>
+          <div class="badges">
+            <span class="badge">Verfügbar</span>
+          </div>
+          <div class="actions">
+            <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%205%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%205%20(124%20m%C2%B2%2C%204%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>✉︎&nbsp;Anfragen per E-Mail</a>
+            <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Zusatzinfo -->
+    <div class="apartment-info" role="note" aria-label="Hinweise zur Vermietung">
+      <p><strong>Hinweis:</strong></p>
+      <p>
+        Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten.
+        Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. Der Strombezug
+        erfolgt über die hauseigene Solaranlage des Vermieters.
+      </p>
+      <p>Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.</p>
+    </div>
   </main>
 
   <footer>
