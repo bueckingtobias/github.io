@@ -1,8 +1,69 @@
-<section id="leitbild">
-  <h2>Unternehmerisches Leitbild</h2>
-  <div class="placeholder-row">
-    <div class="placeholder-box">Nachhaltigkeit</div>
-    <div class="placeholder-box">Verlässlichkeit</div>
-    <div class="placeholder-box">Persönlichkeit</div>
+<section id="leitbild" class="mission" aria-label="Leitbild">
+  <style>
+    .mission{
+      position:relative; color:#fff; isolation:isolate;
+      padding: clamp(36px, 6vw, 72px) 16px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.02), rgba(0,0,0,0));
+    }
+    .mission .wrap{
+      max-width: var(--maxw,1200px); margin:0 auto;
+      display:grid; gap:18px;
+    }
+
+    /* Glasband für die drei Prinzipien */
+    .band{
+      display:grid; gap:18px; grid-template-columns:1fr;
+    }
+    @media (min-width:900px){ .band{ grid-template-columns: repeat(3,1fr); } }
+
+    .tile{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: clamp(18px, 3.2vw, 28px);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 20px 56px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .kicker{ font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.78); font-size:.84rem; margin-bottom:8px; }
+    .hed{ margin:0 0 8px; font-weight:900; letter-spacing:.01em; line-height:1.15; font-size: clamp(1.3rem,2.8vw,1.8rem); }
+    .txt{ margin:0; color: rgba(255,255,255,.92); line-height:1.6; }
+
+    /* Abschlusspanel mit Statement */
+    .statement{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      padding: clamp(20px, 3.6vw, 32px);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 22px 60px rgba(0,0,0,.32);
+      text-align:center;
+    }
+    .statement p{ margin:0; font-size: clamp(1rem,1.8vw,1.25rem); line-height:1.6; }
+  </style>
+
+  <div class="wrap">
+    <div class="band">
+      <section class="tile">
+        <div class="kicker">Prinzip 01</div>
+        <h3 class="hed">Nachhaltig bauen</h3>
+        <p class="txt">Ressourcenschonende Materialien, effiziente Haustechnik und zeitlose Gestaltung – sinnvoll für heute, tragfähig für morgen.</p>
+      </section>
+
+      <section class="tile">
+        <div class="kicker">Prinzip 02</div>
+        <h3 class="hed">Vertrauen schaffen</h3>
+        <p class="txt">Transparenz, Ehrlichkeit und Kontinuität: Verlässliche Entscheidungen und klare Kommunikation auf Augenhöhe.</p>
+      </section>
+
+      <section class="tile">
+        <div class="kicker">Prinzip 03</div>
+        <h3 class="hed">Regional handeln</h3>
+        <p class="txt">Kurze Wege und qualifizierte Partner vor Ort – für Qualität, schnelle Reaktion und starke Nachbarschaft.</p>
+      </section>
+    </div>
+
+    <article class="statement" style="margin-top:18px">
+      <p>Unser Leitbild ist einfach: Räume schaffen, die Menschen gerne ihr Zuhause nennen – mit Anspruch, Verantwortung und echter Verbundenheit zur Region.</p>
+    </article>
   </div>
 </section>
