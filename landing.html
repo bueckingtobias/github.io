@@ -37,7 +37,7 @@
       text-transform: uppercase;
       color: rgba(255,255,255,.65);
       font-size: .9rem;
-      margin-bottom: 12px;
+      margin-bottom: 28px; /* ↑ mehr Abstand zur Hauptheadline */
     }
 
     .hed {
@@ -45,7 +45,7 @@
       font-weight:900;
       letter-spacing:.005em;
       line-height:1.05;
-      margin:0 auto 10px;
+      margin:0 auto 22px; /* ↑ mehr Abstand zum Beschreibungstext */
       font-size:clamp(1.5rem, 3.2vw, 2.2rem);
     }
 
@@ -125,14 +125,14 @@
       fill: none;
     }
 
-    /* Überschriften in den Karten – gleich groß wie Hauptheadline */
+    /* Überschriften in den Karten – kleiner und harmonisch zur Hauptheadline */
     .title {
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       font-weight:900;
       letter-spacing:.005em;
-      line-height:1.05;
-      margin-bottom: 12px;
-      font-size:clamp(1.5rem, 3.2vw, 2.2rem);
+      line-height:1.1;
+      margin-bottom: 10px;
+      font-size:clamp(1.1rem, 2.2vw, 1.6rem); /* ↓ kleiner als vorher */
     }
 
     .copy {
