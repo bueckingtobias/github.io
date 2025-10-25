@@ -1,97 +1,100 @@
-<!-- ueber-uns.html -->
-<section id="ueber-uns" aria-labelledby="ou-title">
+<section id="ueber-uns" class="about" aria-label="Über uns">
   <style>
-    /* ===== Über-uns (scoped) ===== */
-    #ueber-uns{
-      --brand: var(--brand, #004225);
-      --brand-700: var(--brand-700, #00361e);
-      font-family:"Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:#fff;
-      background:linear-gradient(180deg, var(--brand) 0%, var(--brand-700) 100%);
+    .about{
+      position:relative; color:#fff; isolation:isolate;
+      padding: clamp(36px, 6vw, 72px) 16px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.02), rgba(0,0,0,0));
+    }
+    .about .wrap{
+      max-width: var(--maxw,1200px); margin:0 auto;
+      display:grid; gap:18px; grid-template-columns:1fr;
+    }
+    @media (min-width: 900px){
+      .about .wrap{ grid-template-columns: 1.2fr .8fr; align-items:start; }
     }
 
-    #ueber-uns .wrap{
-      max-width:900px;
-      margin:0 auto;
-      padding:90px 24px 100px;
-      text-align:left;
+    /* Hauptpanel (Glas) */
+    .panel{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      padding: clamp(20px, 3.6vw, 32px);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 22px 60px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.08);
     }
+    .kicker{ font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.78); font-size:.84rem; margin-bottom:10px; }
+    .hed{ margin:0 0 10px; font-weight:900; letter-spacing:.01em; line-height:1.1; font-size: clamp(1.6rem,3.4vw,2.4rem); }
+    .lead{ margin:0 0 14px; color: rgba(255,255,255,.95); font-size: clamp(1rem,1.6vw,1.18rem); line-height:1.6; }
+    .text{ margin:0; color: rgba(255,255,255,.92); line-height:1.65; }
 
-    /* Linie + Überschrift */
-    #ueber-uns .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      color:#cdd5d0;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      font-weight:700;
-      font-size:.78rem;
-      margin-bottom:20px;
+    /* Sidecards */
+    .stack{ display:grid; gap:18px; }
+    .card{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 18px;
+      padding: clamp(16px, 2.8vw, 22px);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 18px 48px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08);
     }
-    #ueber-uns .badge::before{
-      content:""; width:50px; height:2px;
-      background:#ffffff66;
-      border-radius:2px;
-    }
-
-    #ueber-uns h2#ou-title{
-      margin:0 0 18px;
-      font-size:clamp(34px,4vw,52px);
-      letter-spacing:-.01em;
-      line-height:1.08;
-      font-weight:800;
-      color:#fff;
-    }
-
-    #ueber-uns .kicker{
-      font-size:clamp(15px,1.3vw,19px);
-      color:#e9eee9;
-      line-height:1.6;
-      margin:0 0 24px;
-      max-width:60ch;
-    }
-
-    #ueber-uns .copy{
-      font-size:1.05rem;
-      line-height:1.8;
-      color:#f5f5f5;
-      max-width:68ch;
-      margin:0;
-    }
-
-    /* sanfte Fade-in Animation */
-    @media (prefers-reduced-motion: no-preference){
-      #ueber-uns .wrap{ opacity:0; transform:translateY(12px); transition:opacity .5s ease, transform .5s ease; }
-      #ueber-uns.is-visible .wrap{ opacity:1; transform:none; }
-    }
+    .card h3{ margin:0 0 6px; font-weight:800; font-size: clamp(1.05rem,1.6vw,1.2rem); }
+    .muted{ color: rgba(255,255,255,.78); font-weight:700; letter-spacing:.06em; text-transform:uppercase; font-size:.8rem; }
+    .rule{ height:1px; background: rgba(255,255,255,.18); margin:12px 0; }
+    ul.clean{ margin:0; padding-left: 1.1em; }
+    ul.clean li{ margin: .25em 0; }
   </style>
 
   <div class="wrap">
-    <div class="badge">Über uns</div>
+    <!-- Haupttext -->
+    <article class="panel">
+      <div class="kicker">Über uns</div>
+      <h2 class="hed">Vom Hof zur Heimat</h2>
+      <p class="lead">
+        Die Bücking Immobilien GmbH &amp; Co. KG steht für nachhaltige Projektentwicklung
+        und die verantwortungsvolle Pflege von Immobilien in unserer Region.
+      </p>
+      <p class="text">
+        Aus einer traditionsreichen Landwirtschaft hervorgegangen, verbinden wir Heimatverbundenheit
+        mit einem hohen Anspruch an Qualität und Verlässlichkeit. Unser Ziel ist es, Lebensräume zu schaffen,
+        die modernen Wohnkomfort mit ländlichem Charme vereinen. Dabei setzen wir auf Transparenz, persönliche
+        Beratung und eine vertrauensvolle Zusammenarbeit mit Mieterinnen, Mietern und Partnern.
+      </p>
+    </article>
 
-    <h2 id="ou-title">Klar. Verlässlich. Norddeutsch.</h2>
+    <!-- Rechte Spalte -->
+    <aside class="stack">
+      <section class="card">
+        <div class="muted">Profil</div>
+        <h3>Regional &amp; langfristig</h3>
+        <div class="rule"></div>
+        <ul class="clean">
+          <li>Fokus: Ganderkesee, Elmeloh &amp; Umgebung</li>
+          <li>Langfristige Bewirtschaftung statt kurzfristiger Handel</li>
+          <li>Klare Prozesse &amp; verlässliche Ansprechpartner</li>
+        </ul>
+      </section>
 
-    <p class="kicker">
-      Wir entwickeln und betreuen Wohnraum mit ruhiger Hand – sachlich, langlebig und auf Substanz gebaut.
-    </p>
+      <section class="card">
+        <div class="muted">Qualität</div>
+        <h3>Wertige Details</h3>
+        <div class="rule"></div>
+        <ul class="clean">
+          <li>Effiziente Haustechnik &amp; sinnvolle Grundrisse</li>
+          <li>Reduziertes Design mit sauberer Ausführung</li>
+          <li>Langlebige Materialien &amp; pflegeleichte Lösungen</li>
+        </ul>
+      </section>
 
-    <p class="copy">
-      Bücking Immobilien GmbH &amp; Co. KG steht für Werte, die bleiben:
-      Qualität, Transparenz und ein fairer Umgang mit allen, die mit uns bauen, wohnen oder zusammenarbeiten.
-      Unsere Projekte entstehen mit Bedacht – modern, regional und immer mit Blick auf das Wesentliche.
-    </p>
+      <section class="card">
+        <div class="muted">Zusammenarbeit</div>
+        <h3>Kurze Wege</h3>
+        <div class="rule"></div>
+        <ul class="clean">
+          <li>Direkter Draht zu Eigentümer &amp; Verwaltung</li>
+          <li>Regionale Handwerkspartner</li>
+          <li>Transparente Entscheidungen</li>
+        </ul>
+      </section>
+    </aside>
   </div>
-
-  <script>
-    (function(){
-      const sec=document.getElementById('ueber-uns');
-      if(!sec) return;
-      if(!('IntersectionObserver' in window)){ sec.classList.add('is-visible'); return; }
-      const io=new IntersectionObserver(es=>{
-        es.forEach(e=>{ if(e.isIntersecting){ sec.classList.add('is-visible'); io.disconnect(); }});
-      },{threshold:.2});
-      io.observe(sec);
-    })();
-  </script>
 </section>
