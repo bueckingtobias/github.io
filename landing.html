@@ -9,18 +9,24 @@
       position: relative;
       isolation: isolate;
       color: var(--text);
-      background-color: var(--brand);  /* Einheitliche Hintergrundfarbe */
-      width: 100vw;                    /* gesamte Bildschirmbreite */
-      margin-left: calc(50% - 50vw);   /* löst sich von Wrapper-Breite */
-      margin-right: calc(50% - 50vw);
+      background-color: var(--brand);
+      width: 100%;
       padding: clamp(80px, 10vw, 140px) 16px clamp(80px, 8vw, 120px);
       overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden; /* verhindert horizontales Scrollen */
     }
 
     .container {
       max-width: 1100px;
-      margin: 0 auto;
+      margin-inline: auto;
       text-align: center;
+      padding-inline: 16px;
     }
 
     /* Hero */
@@ -40,7 +46,6 @@
       letter-spacing:.005em;
       line-height:1.05;
       margin:0 auto 10px;
-      max-width:none;
       font-size:clamp(1.5rem, 3.2vw, 2.2rem);
     }
 
