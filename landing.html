@@ -1,191 +1,104 @@
-<section id="home" class="landing" aria-label="Start">
+<section id="zitat" class="quote-section" aria-label="Zitat">
   <style>
-    :root{
-      --brand:#004225;          /* Smyrna-Grün */
-      --text:#ffffff;
-    }
-
-    .landing {
+    .quote-section{
       position: relative;
       isolation: isolate;
-      color: var(--text);
-      background-color: var(--brand);
+      color: #fff;
+      background-color: var(--brand);      /* identischer Hintergrund wie oben */
       width: 100%;
-      padding: clamp(80px, 10vw, 140px) 16px clamp(80px, 8vw, 120px);
+      /* weniger Platz über der Box */
+      padding: clamp(20px, 4vw, 36px) 16px clamp(60px, 7vw, 90px);
+      box-sizing: border-box;
+      scroll-margin-top: var(--nav-h, 46px);
       overflow: hidden;
+    }
+
+    /* Gleiche Breite/Ausrichtung wie die drei Boxen: wir nutzen denselben Container */
+    .quote-section .container{
+      max-width: 1100px;                   /* identisch zur Landing-Section */
+      margin-inline: auto;
+      text-align: center;
+      padding-inline: 16px;                /* identisch zur Landing-Section */
       box-sizing: border-box;
     }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden; /* verhindert horizontales Scrollen */
-    }
-
-    .container {
-      max-width: 1100px;
-      margin-inline: auto;
-      text-align: center;
-      padding-inline: 16px;
-    }
-
-    /* Hero */
-    .kicker {
-      font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.65);
-      font-size: .9rem;
-      margin-bottom: 12px;
-    }
-
-    .hed {
-      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      font-weight:900;
-      letter-spacing:.005em;
-      line-height:1.05;
-      margin:0 auto 10px;
-      font-size:clamp(1.5rem, 3.2vw, 2.2rem);
-    }
-
-    @media (min-width:1024px){
-      .hed{ white-space:nowrap; }
-    }
-
-    .dek {
-      margin: 0 auto 28px;
-      max-width: 60ch;
-      font-size: clamp(0.95rem, 1.3vw, 1.1rem);
-      line-height: 1.6;
-      color: rgba(255,255,255,.85);
-    }
-
-    .cta-row a {
-      appearance: none;
-      border: 1px solid rgba(255,255,255,.25);
-      border-radius: 999px;
-      background: transparent;
-      color: #fff;
-      font-weight: 700;
-      letter-spacing: .04em;
-      text-decoration: none;
-      padding: 12px 28px;
-      display: inline-flex;
-      align-items: center;
-      transition: all .25s ease;
-    }
-    .cta-row a:hover {
-      background: rgba(255,255,255,.08);
-      border-color: rgba(255,255,255,.35);
-    }
-
-    /* Grid */
-    .grid {
-      display: grid;
-      gap: 28px;
-      margin-top: clamp(40px, 5vw, 60px);
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 800px) {
-      .grid { grid-template-columns: repeat(3, 1fr); }
-    }
-
-    /* Cards */
-    .card {
+    .quote-card{
+      width: 100%;                         /* nimmt die volle Containerbreite ein */
       background: rgba(255,255,255,.07);
       border: 1px solid rgba(255,255,255,.15);
       border-radius: 22px;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 10px 25px rgba(0,0,0,.25);
-      padding: 36px 28px;
-      transition: transform .35s ease, box-shadow .35s ease;
-    }
-    .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 14px 30px rgba(0,0,0,.3);
-    }
-
-    .icon {
-      width: 52px;
-      height: 52px;
-      margin: 0 auto 18px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.25);
-      display: grid;
-      place-items: center;
-    }
-    .icon svg {
-      width: 26px;
-      height: 26px;
-      stroke: #fff;
-      stroke-width: 2;
-      fill: none;
+      box-shadow: 0 14px 30px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08);
+      padding: clamp(28px, 3.5vw, 44px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(16px, 2.5vw, 28px);
+      box-sizing: border-box;
     }
 
-    .title {
+    blockquote{
+      margin: 0;
+      font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 500;
+      font-style: italic;                  /* kursiv */
+      line-height: 1.55;
+      color: #fff;
+      font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+      max-width: 60ch;
+      position: relative;
+      text-align: center;                  /* zentriert */
+      padding-top: 18px;                   /* Raum für das Anführungszeichen */
+    }
+    blockquote::before{
+      content: "“";
+      position: absolute;
+      left: 50%;
+      top: -6px;
+      transform: translateX(-50%);
+      font-size: 2.4rem;
+      line-height: 1;
+      opacity: .35;
+    }
+
+    .quote-photo{
+      width: 104px;
+      height: 104px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+      border: 2px solid rgba(255,255,255,.35);
+      box-shadow: 0 10px 28px rgba(0,0,0,.35);
+    }
+
+    .quote-author{
       font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       font-weight: 800;
-      margin-bottom: 10px;
-      font-size: 1.25rem;
+      letter-spacing: .04em;
+      color: rgba(255,255,255,.90);
+      text-align: center;                  /* Name mittig */
+      font-size: 1.05rem;
     }
 
-    .copy {
-      margin: 0 auto;
-      color: rgba(255,255,255,.9);
-      line-height: 1.6;
-      font-size: 1rem;
-      max-width: 35ch;
+    @media (max-width: 800px){
+      /* Auf schmalen Geräten entspricht die Breite automatisch einer Einzelkarte,
+         weil die Containerbreite = Einzelspaltenbreite der Grid-Section ist. */
+      .quote-card{ padding: 24px; }
+      .quote-photo{ width: 88px; height: 88px; }
     }
   </style>
 
   <div class="container">
-    <header class="hero">
-      <div class="kicker">Bücking Immobilien GmbH &amp; Co. KG</div>
-      <h1 class="hed">Nachhaltig. Verlässlich. Persönlich.</h1>
-      <p class="dek">
-        Moderne Mietwohnungen mit regionaler Handschrift – klare Linien, langlebige Qualität und eine Zusammenarbeit auf Augenhöhe.
-      </p>
-      <div class="cta-row">
-        <a href="kontakt.html">Kontakt aufnehmen</a>
-      </div>
-    </header>
+    <div class="quote-card">
+      <blockquote>
+        „Architektur bedeutet Verantwortung – für Menschen, Räume und Generationen.“
+      </blockquote>
 
-    <div class="grid">
-      <article class="card">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M3 20V10l9-5 9 5v10"/><path d="M9 22V12h6v10"/></svg>
-        </div>
-        <h3 class="title">Projektentwicklung</h3>
-        <p class="copy">
-          Wir entwickeln Wohnraum dort, wo er gebraucht wird – mit Fokus auf regionale Strukturen, lokale Handwerksbetriebe und nachhaltige Bauweise. 
-          So entstehen Projekte, die unsere Region langfristig stärken und Lebensqualität schaffen.
-        </p>
-      </article>
+      <!-- Rundes Portrait zwischen Zitat und Name -->
+      <img src="Tobias.jpeg" alt="Tobias Bücking" class="quote-photo">
 
-      <article class="card">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M3 21h18M9 21V9h6v12M12 3v3"/></svg>
-        </div>
-        <h3 class="title">Objektverwaltung</h3>
-        <p class="copy">
-          Unsere Verwaltung steht für Ansprechbarkeit, Nähe und Verlässlichkeit. 
-          Wir kennen unsere Objekte, unsere Mieter und unsere Partner – und sorgen für einen reibungslosen Ablauf im täglichen Betrieb.
-        </p>
-      </article>
-
-      <article class="card">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
-        </div>
-        <h3 class="title">Nachhaltigkeit</h3>
-        <p class="copy">
-          Mit Verantwortung für Umwelt und Zukunft setzen wir auf nachhaltiges Bauen und regionale Wertschöpfung.
-          Unser Anspruch: Immobilien, die ökologisch durchdacht, wirtschaftlich sinnvoll und für kommende Generationen lebenswert bleiben.
-        </p>
-      </article>
+      <div class="quote-author">Tobias Bücking</div>
     </div>
   </div>
 </section>
