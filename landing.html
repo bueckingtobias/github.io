@@ -1,64 +1,169 @@
-<section class="quote-section" aria-label="Zitat">
+<section id="home" class="landing" aria-label="Start">
   <style>
-    .quote-section{
-      position:relative; color:#fff; isolation:isolate;
-      padding: clamp(28px, 5vw, 56px) 16px clamp(36px, 6vw, 64px);
-      background: linear-gradient(to bottom, rgba(255,255,255,.02), rgba(0,0,0,0));
+    .landing{
+      position:relative; isolation:isolate; color:#fff;
+      padding: clamp(64px, 9vw, 120px) 16px clamp(56px, 8vw, 100px);
+      background: linear-gradient(to bottom, rgba(255,255,255,.03), rgba(0,0,0,0));
+      overflow:hidden;
     }
-    .quote-wrap{
-      max-width: var(--maxw, 1200px); margin:0 auto;
-      display:grid; gap:18px; align-items:center;
-      grid-template-columns: 1fr; 
+    .landing::before{
+      content:""; position:absolute; inset:-20% -10% auto -10%; height:60%;
+      background: radial-gradient(60% 50% at 50% 0%, rgba(255,255,255,.06), transparent 60%);
+      opacity:.9; pointer-events:none; animation: drift 18s ease-in-out infinite alternate;
     }
-    @media (min-width:900px){
-      .quote-wrap{ grid-template-columns: auto 1fr; }
-    }
+    @keyframes drift{ 0%{transform:translate3d(-1%,0,0)} 100%{transform:translate3d(1%,0,0)} }
+    @media (prefers-reduced-motion: reduce){ .landing::before{ animation:none } }
 
-    .quote-card{
+    .container{ max-width: var(--maxw, 1200px); margin:0 auto; }
+
+    /* Hero */
+    .hero{ display:grid; gap:18px; justify-items:center; text-align:center; margin:0 auto clamp(32px,5vw,56px) }
+    .kicker{ font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.78); font-size:.9rem; }
+    .hed{ font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-weight:900; letter-spacing:.01em; line-height:1.08; margin:0; max-width:18ch; font-size: clamp(2.2rem,5vw,3.4rem); }
+    .dek{ margin:0; max-width:62ch; font-size:clamp(1rem,1.6vw,1.22rem); line-height:1.6; color:rgba(255,255,255,.95) }
+
+    /* Grid */
+    .grid{ display:grid; gap:18px; margin-top: clamp(26px,4vw,40px); grid-template-columns:1fr }
+    @media (min-width:800px){ .grid{ grid-template-columns: repeat(3,1fr) } }
+
+    /* 3D Glass Cards */
+    .card3d{ perspective: 1200px; position:relative; height: 260px; transform: translateY(10px); opacity:0; transition: transform .6s ease, opacity .6s ease; }
+    .card3d.reveal{ transform: translateY(0); opacity:1; }
+    .flip{ position:relative; width:100%; height:100%; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.2,.6,.2,1); }
+    .card3d.flipped .flip{ transform: rotateY(180deg) }
+    .face{
+      position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+      padding: clamp(18px,3.2vw,26px);
       background: rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.18);
-      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 22px 60px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.08);
-      padding: clamp(18px, 3.6vw, 28px);
-      display:grid; gap:14px; align-items:center;
+      box-shadow: 0 20px 50px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08);
+      transform: rotateY(0deg); backface-visibility: hidden;
     }
+    .face.back{ transform: rotateY(180deg); background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.22); }
 
-    .quote-photo{
-      width: 96px; height: 96px; border-radius: 50%;
-      object-fit: cover; object-position: center;
-      border: 2px solid rgba(255,255,255,.35);
-      box-shadow: 0 10px 28px rgba(0,0,0,.35);
-      justify-self:center;
+    .front-content, .back-content{ max-width: 40ch }
+    .icon{
+      width:44px; height:44px; margin:0 auto 12px; background: rgba(255,255,255,.14);
+      border-radius: 12px; display:grid; place-items:center; border: 1px solid rgba(255,255,255,.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
     }
-    @media (min-width:900px){
-      .quote-photo{ justify-self:start; }
-    }
+    .icon svg{ width:24px; height:24px; stroke:#fff; stroke-width:2; fill:none; }
+    .title{ font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-weight:900; letter-spacing:.01em; font-size: clamp(1.1rem,1.8vw,1.35rem); margin: 0 0 6px; }
+    .copy{ margin:0; color: rgba(255,255,255,.94); line-height:1.55; font-size: 1rem }
 
-    blockquote{
-      margin:0; font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      font-weight:700; line-height:1.5; color:#fff;
-      font-size: clamp(1.05rem, 1.8vw, 1.35rem);
-      position:relative; padding-left:36px;
-    }
-    blockquote::before{
-      content:"“";
-      position:absolute; left:0; top:-6px;
-      font-size: 2.2rem; line-height:1; opacity:.35;
-    }
-    .quote-author{
-      color: rgba(255,255,255,.85);
-      font-weight:800; letter-spacing:.04em; margin-top:4px;
-    }
+    /* Hover/Focus/Touch flip */
+    .card3d:focus-within .flip, .card3d:hover .flip{ transform: rotateY(180deg) }
+    .card3d button.toggle{ position:absolute; inset:0; opacity:0; border:0; background:transparent; cursor:pointer; }
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   </style>
 
-  <div class="quote-wrap">
-    <img class="quote-photo" src="tobias.jpeg" alt="Tobias Bücking">
-    <div class="quote-card">
-      <blockquote>
-        „Regional handeln heißt für uns: kurze Wege, transparente Entscheidungen und Verantwortung gegenüber Mietern, Partnern und Standort.“
-      </blockquote>
-      <div class="quote-author">Tobias Bücking</div>
+  <div class="container">
+    <!-- Hero -->
+    <header class="hero" data-reveal>
+      <div class="kicker">Bücking Immobilien</div>
+      <h1 class="hed">Nachhaltig. Verlässlich. Persönlich.</h1>
+      <p class="dek">Moderne Mietwohnungen mit regionaler Handschrift – klare Linien, langlebige Qualität und eine Zusammenarbeit auf Augenhöhe.</p>
+      <div class="cta-row" style="margin-top:18px">
+        <a class="btn alt" href="kontakt.html" style="appearance:none;border:1px solid rgba(255,255,255,.34);border-radius:999px;background:transparent;color:#fff;font-weight:800;letter-spacing:.04em;text-decoration:none;padding:12px 22px;display:inline-flex;align-items:center">Kontakt aufnehmen</a>
+      </div>
+    </header>
+
+    <!-- Glass Cards mit Flip -->
+    <div class="grid">
+      <!-- Card 1 -->
+      <article class="card3d" data-autoflip>
+        <div class="flip" aria-live="polite">
+          <div class="face front">
+            <div class="front-content">
+              <div class="icon">
+                <svg viewBox="0 0 24 24"><path d="M4 20v-8l8-4 8 4v8"/><path d="M12 12v8"/></svg>
+              </div>
+              <h3 class="title">Nachhaltig bauen</h3>
+            </div>
+          </div>
+          <div class="face back">
+            <div class="back-content">
+              <p class="copy">Ressourcenschonende Materialien und effiziente Haustechnik sind unser Standard.</p>
+            </div>
+          </div>
+        </div>
+        <button class="toggle"><span class="sr-only">Flip</span></button>
+      </article>
+
+      <!-- Card 2 -->
+      <article class="card3d" data-autoflip style="transition-delay:.06s">
+        <div class="flip">
+          <div class="face front">
+            <div class="front-content">
+              <div class="icon">
+                <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+              </div>
+              <h3 class="title">Vertrauen schaffen</h3>
+            </div>
+          </div>
+          <div class="face back">
+            <div class="back-content">
+              <p class="copy">Vertrauen entsteht durch Transparenz, Ehrlichkeit und Kontinuität – von der Anfrage bis zur Betreuung.</p>
+            </div>
+          </div>
+        </div>
+        <button class="toggle"><span class="sr-only">Flip</span></button>
+      </article>
+
+      <!-- Card 3 -->
+      <article class="card3d" data-autoflip style="transition-delay:.12s">
+        <div class="flip">
+          <div class="face front">
+            <div class="front-content">
+              <div class="icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2m14.14 7.14l-2.83-2.83M8.69 8.69L5.86 5.86"/></svg>
+              </div>
+              <h3 class="title">Regional handeln</h3>
+            </div>
+          </div>
+          <div class="face back">
+            <div class="back-content">
+              <p class="copy">Kurze Wege, verlässliche Strukturen: Wir arbeiten mit qualifizierten Handwerkspartnern vor Ort.</p>
+            </div>
+          </div>
+        </div>
+        <button class="toggle"><span class="sr-only">Flip</span></button>
+      </article>
     </div>
   </div>
+
+  <script>
+    // Reveal + Auto-Flip beim Scrollen / Klick Flip
+    (function(){
+      const cards = document.querySelectorAll('.card3d');
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            const el = e.target;
+            el.classList.add('reveal');
+            if(el.hasAttribute('data-autoflip') && !el.dataset.autoflipped){
+              el.dataset.autoflipped = '1';
+              el.classList.add('flipped');
+              setTimeout(()=>el.classList.remove('flipped'), 1400);
+            }
+            io.unobserve(el);
+          }
+        });
+      }, {threshold:.35});
+      cards.forEach(c=>io.observe(c));
+
+      cards.forEach(card=>{
+        const btn = card.querySelector('button.toggle');
+        btn.addEventListener('click', e=>{
+          e.preventDefault();
+          card.classList.toggle('flipped');
+        });
+        card.addEventListener('focusout', e=>{
+          if(!card.contains(e.relatedTarget)){ card.classList.remove('flipped'); }
+        });
+      });
+    })();
+  </script>
 </section>
