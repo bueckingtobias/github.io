@@ -19,7 +19,7 @@
       --maxw:1200px;
       --nav-h:46px;
       --hero-w:980px;           /* gemeinsame Breite Panels */
-      --footer-h:64px;          /* feste Footer-Höhe für Fixierung */
+      --footer-h:64px;          /* feste Footer-Höhe */
     }
 
     *{box-sizing:border-box}
@@ -32,7 +32,7 @@
       min-height:100%;
     }
 
-    /* ===== Header (identisch) ===== */
+    /* ===== Header ===== */
     header.site-header{
       position:sticky; top:0; left:0; right:0; z-index:1000;
       background:var(--brand-700);
@@ -88,22 +88,32 @@
       padding: clamp(28px, 4vw, 48px) 16px calc(16px + var(--footer-h)); /* Platz für fixen Footer */
     }
 
-    .intro-wrap{ max-width: var(--hero-w); margin: 0 auto; text-align:center; padding: clamp(8px, 2vw, 16px) 0 0; }
+    /* Mehr Luft im oberen Bereich */
+    .intro-wrap{
+      max-width: var(--hero-w);
+      margin: 0 auto;
+      text-align:center;
+      padding-top: clamp(16px, 3vw, 28px);
+    }
     .kicker{
       font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65;
-      font-size:.9rem; text-align:center; margin: clamp(12px, 2vw, 18px) 0 10px;
+      font-size:.9rem; text-align:center;
+      margin: clamp(16px, 3vw, 24px) 0 14px;
     }
     .title-stacked{
       text-align:center; margin-inline:auto; max-width:100%; line-height:1.1; letter-spacing:.01em;
-      margin-bottom: clamp(8px, 2vw, 14px);
+      margin-bottom: clamp(14px, 3vw, 22px);
     }
     .title-stacked .line1{
-      display:block; font-size: clamp(20px, 3.0vw, 30px); font-weight:800; margin-bottom: 4px;
+      display:block; font-size: clamp(20px, 3.0vw, 30px); font-weight:800; margin-bottom:8px;
     }
     .title-stacked .line2{
       display:block; font-size: clamp(16px, 2.4vw, 24px); font-weight:700; opacity:.95;
     }
-    .intro-wrap p{ margin: 10px auto 0; opacity:.95; max-width: 70ch; }
+    .intro-wrap p{
+      margin: clamp(14px, 2.5vw, 22px) auto 0;
+      opacity:.95; max-width: 70ch;
+    }
 
     /* ===== Tabs ===== */
     .tabs{ max-width: var(--hero-w); margin: clamp(18px,3vw,26px) auto 0;
@@ -129,7 +139,7 @@
 
     .box-body{ padding:18px 16px 20px; display:flex; flex-direction:column; gap:18px; align-items:center; text-align:center; }
 
-    /* Karten/Gruppen – Buttons unten auf gleicher Höhe */
+    /* Kontaktkarten */
     .grid-cards{
       width:min(92%, 980px); margin:0 auto;
       display:grid; grid-template-columns: 1fr; gap:14px; align-items:stretch;
@@ -137,7 +147,6 @@
     @media (min-width:760px){
       .grid-cards{ grid-template-columns: repeat(3, 1fr); }
     }
-
     .card{
       background: rgba(255,255,255,.06);
       border:1px solid rgba(255,255,255,.14);
@@ -145,17 +154,16 @@
       padding:18px 16px;
       box-shadow: var(--shadow);
       transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
-      display:flex; flex-direction:column; /* wichtig */
-      min-height: 210px; /* sorgt für identische optische Höhe */
+      display:flex; flex-direction:column;
+      min-height: 210px;
     }
     .card:hover{ transform:translateY(-2px); background: rgba(255,255,255,.09); box-shadow: var(--shadow-strong); }
-
     .card .icon{ font-size:1.6rem; opacity:.95; margin-bottom:6px; }
     .card h3{ margin:4px 0 6px; font-size:1.1rem; }
     .card p{ margin:0; opacity:.95; }
     .card a{ color:var(--text); text-decoration:none; font-weight:800; }
+    .card .actions{ margin-top:auto; display:flex; justify-content:center; }
 
-    .card .actions{ margin-top:auto; display:flex; justify-content:center; } /* Button ganz unten */
     .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
       padding:10px 14px; border-radius:12px; text-decoration:none; color:var(--text);
@@ -184,9 +192,8 @@
       width:160px; height:160px; border-radius:50%; object-fit:cover; background:#ccc;
       border:2px solid rgba(255,255,255,.2);
     }
-    .team-card p{ margin:0; }
 
-    /* Standort / Karte */
+    /* Karte */
     .map-card{
       width:min(92%, 980px); margin:0 auto;
       background: rgba(255,255,255,.06);
@@ -198,16 +205,16 @@
     }
     .address{ margin:10px auto 0; text-align:center; opacity:.95; }
 
-    /* ===== Fixierter Footer ===== */
+    /* Footer fixiert */
     footer{
       position:fixed; left:0; right:0; bottom:0;
       height:var(--footer-h);
       background:var(--brand-700); color:var(--text);
       display:grid; place-items:center;
-      padding:0 18px; /* horizontales Padding, Höhe kommt über grid-centering */
+      padding:0 18px;
       font-size:.95rem;
       box-shadow:0 -2px 10px rgba(0,0,0,.25);
-      z-index:900; /* unterhalb Drawer/Backdrop (999/1001) */
+      z-index:900;
     }
 
     @media (min-width:900px){
@@ -227,6 +234,7 @@
       <ul>
         <li><a href="index.html#home">Home</a></li>
         <li><a href="projekte.html">Projekte</a></li>
+        <li><a href="wohnungen.html">Wohnungen</a></li>
         <li><a href="unternehmen.html">Unternehmen</a></li>
         <li><a href="kontakt.html" aria-current="page">Kontakt</a></li>
         <li><a href="impressum.html">Impressum</a></li>
@@ -236,7 +244,7 @@
   </div>
 </header>
 
-<!-- Mobile Drawer -->
+<!-- Drawer mobil -->
 <div class="drawer-backdrop" id="backdrop"></div>
 <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
   <nav>
@@ -262,7 +270,6 @@
        Kontaktieren Sie uns telefonisch oder per E-Mail – wir melden uns zeitnah.</p>
   </section>
 
-  <!-- Tabs -->
   <section class="tabs" aria-label="Kontaktbereiche">
     <div class="tab-controls">
       <input type="radio" name="tab" id="t1" checked><label for="t1">Kontakt</label>
@@ -271,8 +278,8 @@
     </div>
 
     <div class="panels">
-      <!-- Panel 1: Kontakt -->
-      <article class="panel active" id="panel-kontakt">
+      <!-- Panel 1 -->
+      <article class="panel active">
         <div class="box-body">
           <h3>So erreichen Sie uns</h3>
           <div class="grid-cards">
@@ -286,7 +293,6 @@
                 <a class="btn" href="tel:+4917657960759">Jetzt anrufen</a>
               </div>
             </div>
-
             <div class="card">
               <div>
                 <div class="icon">✉︎</div>
@@ -297,7 +303,6 @@
                 <a class="btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20%C3%BCber%20Website&body=Guten%20Tag%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20...%0AName%3A%0ATelefon%3A%0A">E-Mail verfassen</a>
               </div>
             </div>
-
             <div class="card">
               <div>
                 <div class="icon">📍</div>
@@ -312,18 +317,18 @@
         </div>
       </article>
 
-      <!-- Panel 2: Geschäftsführung (ohne Kontakt-Buttons) -->
-      <article class="panel" id="panel-team">
+      <!-- Panel 2 -->
+      <article class="panel">
         <div class="box-body">
           <h3>Geschäftsführung</h3>
           <div class="team-wrap">
             <div class="team-card">
-              <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo" />
+              <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo">
               <p><strong>Tobias Bücking</strong></p>
               <p>Geschäftsführung</p>
             </div>
             <div class="team-card">
-              <img src="bernfried.jpeg" alt="Bernfried Bücking" class="team-photo" />
+              <img src="bernfried.jpeg" alt="Bernfried Bücking" class="team-photo">
               <p><strong>Bernfried Bücking</strong></p>
               <p>Geschäftsführung</p>
             </div>
@@ -331,17 +336,12 @@
         </div>
       </article>
 
-      <!-- Panel 3: Standort -->
-      <article class="panel" id="panel-standort">
+      <!-- Panel 3 -->
+      <article class="panel">
         <div class="box-body">
           <h3>Unser Standort</h3>
           <div class="map-card">
-            <iframe
-              class="map-embed"
-              src="https://www.google.com/maps?q=53.06272,8.57508&z=14&output=embed"
-              allowfullscreen=""
-              loading="lazy">
-            </iframe>
+            <iframe class="map-embed" src="https://www.google.com/maps?q=53.06272,8.57508&z=14&output=embed" allowfullscreen loading="lazy"></iframe>
           </div>
           <p class="address"><strong>Bücking Immobilien GmbH &amp; Co. KG</strong><br>Baumstraße&nbsp;35A, 27777&nbsp;Ganderkesee</p>
           <p><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps?q=Baumstraße%2035A%2C%2027777%20Ganderkesee">Route planen</a></p>
@@ -354,26 +354,15 @@
 <footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
 
 <script>
-  // Mobile Drawer
-  const toggle = document.querySelector('.menu-toggle');
-  const drawer = document.getElementById('mobile-drawer');
-  const backdrop = document.getElementById('backdrop');
-  const setOpen = (open) => {
-    toggle.setAttribute('aria-expanded', String(open));
-    drawer.classList.toggle('open', open);
-    backdrop.classList.toggle('open', open);
-  };
-  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
-  backdrop.addEventListener('click', () => setOpen(false));
-
-  // Tabs
-  const tabRadios = document.querySelectorAll('.tab-controls input');
-  const panels = document.querySelectorAll('.panel');
-  tabRadios.forEach((r, i) => {
-    r.addEventListener('change', () => {
-      panels.forEach((p, j) => p.classList.toggle('active', i === j));
-    });
-  });
+  const toggle=document.querySelector('.menu-toggle');
+  const drawer=document.getElementById('mobile-drawer');
+  const backdrop=document.getElementById('backdrop');
+  const setOpen=(open)=>{toggle.setAttribute('aria-expanded',String(open));drawer.classList.toggle('open',open);backdrop.classList.toggle('open',open)};
+  toggle.addEventListener('click',()=>setOpen(toggle.getAttribute('aria-expanded')!=='true'));
+  backdrop.addEventListener('click',()=>setOpen(false));
+  const tabRadios=document.querySelectorAll('.tab-controls input');
+  const panels=document.querySelectorAll('.panel');
+  tabRadios.forEach((r,i)=>r.addEventListener('change',()=>panels.forEach((p,j)=>p.classList.toggle('active',i===j))));
 </script>
 </body>
 </html>
