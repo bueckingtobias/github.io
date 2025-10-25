@@ -7,77 +7,46 @@
 
   <style>
     :root{
-      --brand:#004225;          /* Smyrna-Grün */
-      --brand-700:#00361e;
-      --text:#ffffff;           /* Weiß für Text */
-      --bg:#004225;             /* Hintergrundfarbe */
-      --muted:#ffffff1a;        /* leichte Akzente */
-      --muted-strong:#ffffff26; /* Hover-Akzent */
+      --brand:#004225; --brand-700:#00361e;
+      --text:#ffffff; --bg:#004225;
+      --muted:#ffffff1a; --muted-strong:#ffffff26;
       --shadow:0 2px 10px rgba(0,0,0,.25);
       --shadow-strong:0 10px 30px rgba(0,0,0,.35);
-      --radius:12px;
-      --maxw:1200px;
-      --nav-h:46px;
-      --hero-w:980px;           /* gemeinsame Breite Panels */
-      --footer-h:64px;          /* feste Footer-Höhe */
-      --icon: rgba(255,255,255,.92);
-      --border: rgba(255,255,255,.14);
-      --panel: rgba(255,255,255,.04);
-      --panel-strong: rgba(255,255,255,.09);
+      --radius:12px; --maxw:1200px; --nav-h:46px;
+      --hero-w:980px; --footer-h:64px;
+      --icon: rgba(255,255,255,.92); --border: rgba(255,255,255,.14);
+      --panel: rgba(255,255,255,.04); --panel-strong: rgba(255,255,255,.09);
+      --card-h: 520px;              /* EINHEITLICHE, HÖHERE KARTENHÖHE */
     }
 
     *{box-sizing:border-box}
-    html,body{
-      margin:0; padding:0;
-      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
-      background:var(--bg);
-      scroll-behavior:smooth;
-      min-height:100%;
-    }
+    html,body{ margin:0; padding:0; font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text); background:var(--bg); scroll-behavior:smooth; min-height:100%; }
 
-    /* ===== Header ===== */
-    header.site-header{
-      position:sticky; top:0; left:0; right:0; z-index:1000;
-      background:var(--brand-700);
-      color:var(--text);
-      box-shadow:var(--shadow);
-    }
+    /* Header */
+    header.site-header{ position:sticky; top:0; z-index:1000; background:var(--brand-700); color:var(--text); box-shadow:var(--shadow); }
     .header-top{ display:grid; place-items:center; padding:14px 16px; }
     .brand-link{ display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; }
     .brand-logo{ height:46px; width:auto; display:block; filter:brightness(0) invert(1); }
-
-    .header-nav{
-      display:flex; align-items:center; justify-content:center;
-      border-top:1px solid rgba(255,255,255,.15);
-      min-height:var(--nav-h); padding:0 8px; position:relative;
-    }
+    .header-nav{ display:flex; align-items:center; justify-content:center; border-top:1px solid rgba(255,255,255,.15); min-height:var(--nav-h); padding:0 8px; position:relative; }
     nav.primary{ display:none; }
     nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
     nav.primary a{ color:var(--text); text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; transition:opacity .2s ease; }
     nav.primary a:hover{ opacity:.8; }
     nav.primary a[aria-current="page"]{ text-decoration:underline; }
 
-    .menu-toggle{
-      position:absolute; right:8px; width:44px; height:44px;
-      border:0; background:transparent; color:var(--text);
-      display:grid; place-items:center; border-radius:8px; cursor:pointer;
-    }
-    .menu-icon, .menu-icon::before, .menu-icon::after{
-      content:""; display:block; width:22px; height:2px;
-      background:var(--text); border-radius:2px; transition:transform .25s ease, opacity .2s ease;
-    }
+    .menu-toggle{ position:absolute; right:8px; width:44px; height:44px; border:0; background:transparent; color:var(--text);
+      display:grid; place-items:center; border-radius:8px; cursor:pointer; }
+    .menu-icon, .menu-icon::before, .menu-icon::after{ content:""; display:block; width:22px; height:2px; background:var(--text); border-radius:2px; transition:transform .25s ease, opacity .2s ease; }
     .menu-icon::before{ transform:translateY(-7px) } .menu-icon::after{ transform:translateY(5px) }
     .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg) }
     .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
     .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
 
     .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999; }
-    .drawer{
-      position:fixed; top:calc(46px + 28px + var(--nav-h)); left:0; right:0; background:var(--brand); color:var(--text);
+    .drawer{ position:fixed; top:calc(46px + 28px + var(--nav-h)); left:0; right:0; background:var(--brand); color:var(--text);
       transform:translateY(-8px); opacity:0; pointer-events:none; border-bottom:1px solid rgba(255,255,255,.15); box-shadow:0 10px 25px rgba(0,0,0,.25);
-      transition:transform .25s ease, opacity .25s ease; z-index:1001;
-    }
+      transition:transform .25s ease, opacity .25s ease; z-index:1001; }
     .drawer.open, .drawer-backdrop.open{ pointer-events:auto } 
     .drawer.open{ transform:translateY(0); opacity:1 } 
     .drawer-backdrop.open{ opacity:1 }
@@ -85,154 +54,87 @@
     .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
     .drawer a{ display:block; text-decoration:none; color:var(--text); font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted) }
 
-    /* ===== Main ===== */
-    main{
-      max-width:var(--maxw);
-      margin:0 auto;
-      padding: clamp(28px, 4vw, 48px) 16px calc(16px + var(--footer-h)); /* Platz für fixen Footer */
-    }
+    /* Main */
+    main{ max-width:var(--maxw); margin:0 auto; padding: clamp(28px, 4vw, 48px) 16px calc(16px + var(--footer-h)); }
 
-    /* Intro */
-    .intro-wrap{
-      max-width: var(--hero-w);
-      margin: 0 auto;
-      text-align:center;
-      padding-top: clamp(16px, 3vw, 28px);
-    }
-    .kicker{
-      font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65;
-      font-size:.9rem; text-align:center;
-      margin: clamp(16px, 3vw, 24px) 0 14px;
-    }
-    .title-stacked{
-      text-align:center; margin-inline:auto; max-width:100%; line-height:1.1; letter-spacing:.01em;
-      margin-bottom: clamp(14px, 3vw, 22px);
-    }
-    .title-stacked .line1{
-      display:block; font-size: clamp(20px, 3.0vw, 30px); font-weight:800; margin-bottom:8px;
-    }
-    .title-stacked .line2{
-      display:block; font-size: clamp(16px, 2.4vw, 24px); font-weight:700; opacity:.95;
-    }
-    .intro-wrap p{
-      margin: clamp(14px, 2.5vw, 22px) auto 0;
-      opacity:.95; max-width: 70ch;
-    }
+    .intro-wrap{ max-width: var(--hero-w); margin: 0 auto; text-align:center; padding-top: clamp(16px, 3vw, 28px); }
+    .kicker{ font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65; font-size:.9rem; text-align:center; margin: clamp(16px, 3vw, 24px) 0 14px; }
+    .title-stacked{ text-align:center; margin-inline:auto; line-height:1.1; letter-spacing:.01em; margin-bottom: clamp(14px, 3vw, 22px); }
+    .title-stacked .line1{ display:block; font-size: clamp(20px, 3.0vw, 30px); font-weight:800; margin-bottom:8px; }
+    .title-stacked .line2{ display:block; font-size: clamp(16px, 2.4vw, 24px); font-weight:700; opacity:.95; }
+    .intro-wrap p{ margin: clamp(14px, 2.5vw, 22px) auto 0; opacity:.95; max-width: 70ch; }
 
-    /* ===== Tabs ===== */
-    .tabs{ max-width: var(--hero-w); margin: clamp(18px,3vw,26px) auto 0;
-      display:flex; flex-direction:column; gap:14px; align-items:center; }
+    /* Tabs */
+    .tabs{ max-width: var(--hero-w); margin: clamp(18px,3vw,26px) auto 0; display:flex; flex-direction:column; gap:14px; align-items:center; }
     .tab-controls{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
     .tab-controls input{ position:absolute; opacity:0; pointer-events:none; }
-    .tab-controls label{
-      user-select:none; cursor:pointer; padding:10px 14px; border-radius:999px; font-weight:800;
-      background:var(--muted); border:1px solid rgba(255,255,255,.12);
-      transition:transform .12s ease, opacity .2s ease, background .2s ease;
-      opacity:.9;
-    }
+    .tab-controls label{ user-select:none; cursor:pointer; padding:10px 14px; border-radius:999px; font-weight:800;
+      background:var(--muted); border:1px solid rgba(255,255,255,.12); transition:transform .12s ease, opacity .2s ease, background .2s ease; opacity:.9; }
     .tab-controls label:hover{ transform:translateY(-1px); opacity:1; }
     .tab-controls input:checked + label{ background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.28); }
 
-    .panels{
-      width:100%; display:grid; place-items:center;
-      transition: min-height .2s ease;
-      min-height: 320px; /* Fallback vor JS-Messung */
-    }
-    .panel{
-      display:none; width:min(100%, var(--hero-w));
-      background:var(--panel); border:1px solid var(--border);
-      border-radius: var(--radius); box-shadow: var(--shadow);
-    }
+    .panels{ width:100%; display:grid; place-items:center; transition:min-height .2s ease; min-height:320px; }
+    .panel{ display:none; width:min(100%, var(--hero-w)); background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
     .panel.active{ display:block; }
-    .panel.measuring{
-      display:block !important;
-      position:absolute !important;
-      visibility:hidden !important;
-      left:-99999px !important;
-      top:0 !important;
-    }
-
+    .panel.measuring{ display:block !important; position:absolute !important; visibility:hidden !important; left:-99999px !important; top:0 !important; }
     .box-body{ padding:18px 16px 20px; display:flex; flex-direction:column; gap:18px; align-items:center; text-align:center; }
 
-    /* ===== Kartenraster einheitlich (2 Spalten) ===== */
+    /* Grid (2 Spalten) */
     .grid-cards{
       width:min(92%, 980px); margin:0 auto;
-      display:grid; grid-template-columns: 1fr; gap:14px; align-items:stretch;
-      grid-auto-rows: 1fr;            /* gleiche Höhe je Reihe */
+      display:grid; grid-template-columns:1fr; gap:14px; align-items:stretch; justify-items:stretch;
     }
-    @media (min-width:760px){
-      .grid-cards{ grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (min-width:760px){ .grid-cards{ grid-template-columns: repeat(2, 1fr); } }
 
+    /* GF: 1 Karte wirklich mittig, auf ALLEN Breakpoints */
+    .grid-cards.single{
+      grid-template-columns: 1fr !important;
+      justify-items: center;
+    }
+    .grid-cards.single .card{ max-width:520px; width:100%; }
+
+    /* Standort: breite Karte über zwei Spalten (auf Desktop) */
+    @media (min-width:760px){ .card.wide{ grid-column: 1 / -1; } }
+
+    /* Karten – feste (höhere) Höhe für ALLE */
     .card{
-      height:100%;                    /* füllt Raster-Zelle */
+      height:var(--card-h);
       background: rgba(255,255,255,.06);
       border:1px solid var(--border);
-      border-radius: 18px;
+      border-radius:18px;
       padding:18px 16px;
-      box-shadow: var(--shadow);
+      box-shadow:var(--shadow);
       transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
-      display:flex; flex-direction:column; align-items:center; text-align:center;
-      min-height: 230px;
+      display:flex; flex-direction:column; align-items:center; text-align:center; overflow:hidden;
     }
     .card:hover{ transform:translateY(-2px); background: var(--panel-strong); box-shadow: var(--shadow-strong); }
     .card h3{ margin:6px 0 6px; font-size:1.1rem; }
     .card p{ margin:0; opacity:.95; }
     .card a{ color:var(--text); text-decoration:none; font-weight:800; }
-    .spacer{ margin-top:auto; } /* schiebt Aktionen zuverlässig nach unten */
+    .spacer{ margin-top:auto; }
     .actions{ display:flex; justify-content:center; margin-top:10px; }
 
     /* Buttons */
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      padding:10px 14px; border-radius:12px; text-decoration:none; color:var(--text);
-      background:var(--muted); border:1px solid var(--border);
-      font-weight:800; transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease;
-      box-shadow: var(--shadow);
-      min-height:40px;
-    }
+    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border-radius:12px; text-decoration:none; color:var(--text);
+      background:var(--muted); border:1px solid var(--border); font-weight:800; transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease; box-shadow:var(--shadow); min-height:40px; }
     .btn:hover{ transform:translateY(-2px); background:var(--muted-strong); box-shadow:var(--shadow-strong); }
 
-    /* Team-Fotos */
-    .team-photo{
-      width:130px; height:130px; border-radius:50%; object-fit:cover; background:#ccc;
-      border:2px solid rgba(255,255,255,.2);
-      margin-bottom:8px;
-    }
+    /* Team-Foto */
+    .team-photo{ width:160px; height:160px; border-radius:50%; object-fit:cover; background:#ccc; border:2px solid rgba(255,255,255,.2); margin-bottom:8px; }
 
-    /* Medien-Wrapper (Karte) */
-    .media{
-      width:100%; border-radius:12px; overflow:hidden;
-      aspect-ratio:16/9; margin-bottom:8px; background:rgba(255,255,255,.08);
-    }
+    /* Medien (Standort-Karte als Banner) – höheres Verhältnis */
+    .media{ width:100%; border-radius:12px; overflow:hidden; aspect-ratio:16/9; margin-bottom:8px; background:rgba(255,255,255,.08); }
     .media > iframe{ width:100%; height:100%; border:0; display:block; }
 
-    /* SVG-Icons (Landingpage-Stil) */
-    .icon{
-      width:28px; height:28px; margin-bottom:6px;
-    }
-    .icon svg{
-      width:100%; height:100%;
-      stroke:var(--icon); fill:none; stroke-width:2;
-      stroke-linecap:round; stroke-linejoin:round;
-      display:block;
-    }
+    /* SVG-Icons */
+    .icon{ width:28px; height:28px; margin-bottom:6px; }
+    .icon svg{ width:100%; height:100%; stroke:var(--icon); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; display:block; }
 
     /* Footer fixiert */
-    footer{
-      position:fixed; left:0; right:0; bottom:0;
-      height:var(--footer-h);
-      background:var(--brand-700); color:var(--text);
-      display:grid; place-items:center;
-      padding:0 18px;
-      font-size:.95rem;
-      box-shadow:0 -2px 10px rgba(0,0,0,.25);
-      z-index:900;
-    }
+    footer{ position:fixed; left:0; right:0; bottom:0; height:var(--footer-h); background:var(--brand-700); color:var(--text);
+      display:grid; place-items:center; padding:0 18px; font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25); z-index:900; }
 
-    @media (min-width:900px){
-      nav.primary{ display:block } .menu-toggle{ display:none } .drawer, .drawer-backdrop{ display:none }
-    }
+    @media (min-width:900px){ nav.primary{ display:block } .menu-toggle{ display:none } .drawer, .drawer-backdrop{ display:none } }
   </style>
 </head>
 <body>
@@ -323,20 +225,14 @@
         </div>
       </article>
 
-      <!-- Panel 2: Geschäftsführung (2 Karten, keine Kontakte) -->
+      <!-- Panel 2: Geschäftsführung (nur du, zentriert) -->
       <article class="panel">
         <div class="box-body">
           <h3>Geschäftsführung</h3>
-          <div class="grid-cards">
+          <div class="grid-cards single">
             <div class="card">
               <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo">
               <h3>Tobias Bücking</h3>
-              <p>Geschäftsführung</p>
-              <div class="spacer"></div>
-            </div>
-            <div class="card">
-              <img src="bernfried.jpeg" alt="Bernfried Bücking" class="team-photo">
-              <h3>Bernfried Bücking</h3>
               <p>Geschäftsführung</p>
               <div class="spacer"></div>
             </div>
@@ -344,35 +240,20 @@
         </div>
       </article>
 
-      <!-- Panel 3: Standort (2 Karten, Icons ohne Emojis) -->
+      <!-- Panel 3: Standort (nur breite Karte) -->
       <article class="panel">
         <div class="box-body">
           <h3>Unser Standort</h3>
           <div class="grid-cards">
-            <div class="card">
+            <div class="card wide">
               <div class="media">
                 <iframe src="https://www.google.com/maps?q=53.06272,8.57508&z=14&output=embed" allowfullscreen loading="lazy" title="Karte"></iframe>
               </div>
               <h3>Standortkarte</h3>
-              <p>Ganderkesee, Baumstraße&nbsp;35A</p>
+              <p>Baumstraße&nbsp;35A, 27777&nbsp;Ganderkesee</p>
               <div class="spacer"></div>
               <div class="actions">
                 <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps?q=Baumstraße%2035A%2C%2027777%20Ganderkesee">In Karten öffnen</a>
-              </div>
-            </div>
-            <div class="card">
-              <div class="icon" aria-hidden="true">
-                <!-- Gebäude/Adresse -->
-                <svg viewBox="0 0 24 24">
-                  <path d="M3 21V8a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v11"/>
-                  <path d="M3 21h18M6 21v-6h4v6M14 21v-4h4v4"/>
-                </svg>
-              </div>
-              <h3>Adresse</h3>
-              <p><strong>Bücking Immobilien GmbH &amp; Co. KG</strong><br>Baumstraße&nbsp;35A<br>27777&nbsp;Ganderkesee</p>
-              <div class="spacer"></div>
-              <div class="actions">
-                <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps?q=Baumstraße%2035A%2C%2027777%20Ganderkesee">Route planen</a>
               </div>
             </div>
           </div>
@@ -403,7 +284,7 @@
     setPanelsMinHeight();
   }));
 
-  // Einheitliche Panel-Höhe (immer wie höchstes Panel)
+  // Panel-Höhe wie höchstes Panel
   function setPanelsMinHeight(){
     let maxH = 0;
     panels.forEach(p=>{
@@ -422,17 +303,12 @@
     rsId = setTimeout(setPanelsMinHeight, 100);
   });
 
-  // Nach Fonts neu messen
+  // Nach Fonts/Bildern neu messen
   if(document.fonts && document.fonts.ready){
     document.fonts.ready.then(setPanelsMinHeight);
   }
-
-  // Nach Laden von Bildern (Team-Fotos)
-  document.querySelectorAll('.panel img').forEach(img=>{
-    if(!img.complete){
-      img.addEventListener('load', setPanelsMinHeight, {once:true});
-      img.addEventListener('error', setPanelsMinHeight, {once:true});
-    }
+  document.querySelectorAll('img, iframe').forEach(el=>{
+    el.addEventListener('load', setPanelsMinHeight);
   });
 
   // Initial
