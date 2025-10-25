@@ -2,202 +2,367 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kontakt – Bücking Immobilien GmbH & Co. KG</title>
+
   <style>
     :root{
-      --brand:#004225;
-      --muted:#f5f5f5;
-      --text:#004225;
+      --brand:#004225;          /* Smyrna-Grün */
+      --brand-700:#00361e;
+      --text:#ffffff;           /* Weiß für Text */
+      --bg:#004225;             /* Hintergrundfarbe */
+      --muted:#ffffff1a;        /* leichte Akzente */
+      --muted-strong:#ffffff26; /* Hover-Akzent */
+      --shadow:0 2px 10px rgba(0,0,0,.25);
+      --shadow-strong:0 10px 30px rgba(0,0,0,.35);
       --radius:12px;
-      --header-h:70px;
-      --shadow:0 2px 10px rgba(0,0,0,0.2);
+      --maxw:1200px;
+      --nav-h:46px;
+      --hero-w:980px;           /* gemeinsame Breite Panels */
     }
-    *{ box-sizing:border-box; }
+
+    *{box-sizing:border-box}
     html,body{
-      margin:0; padding:0; font-family:"Avenir",sans-serif;
-      color:var(--text); background:#fff; scroll-behavior:smooth;
-      max-width:100%; overflow-x:hidden;
+      margin:0; padding:0;
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      scroll-behavior:smooth;
     }
 
-    /* ===== Header ===== */
-    header{position:fixed; top:0; left:0; right:0; height:var(--header-h);
-      background:var(--brand); color:#fff; z-index:1000; box-shadow:var(--shadow);}
-    .header-inner{max-width:1200px; margin:0 auto; height:100%;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 16px; gap:16px;}
-    .brand{color:#fff; text-decoration:none; white-space:nowrap; font-weight:800;}
+    /* ===== Header (identisch) ===== */
+    header.site-header{
+      position:sticky; top:0; left:0; right:0; z-index:1000;
+      background:var(--brand-700);
+      color:var(--text);
+      box-shadow:var(--shadow);
+    }
+    .header-top{ display:grid; place-items:center; padding:14px 16px; }
+    .brand-link{ display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; }
+    .brand-logo{ height:46px; width:auto; display:block; filter:brightness(0) invert(1); }
 
-    nav.primary{display:none;}
-    nav.primary ul{list-style:none; display:flex; gap:40px; margin:0; padding:0;}
-    nav.primary a{color:#fff; text-decoration:none; font-weight:600;}
-    nav.primary a[aria-current="page"]{text-decoration:underline;}
-    nav.primary a:hover{opacity:.85;}
+    .header-nav{
+      display:flex; align-items:center; justify-content:center;
+      border-top:1px solid rgba(255,255,255,.15);
+      min-height:var(--nav-h); padding:0 8px; position:relative;
+    }
+    nav.primary{ display:none; }
+    nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
+    nav.primary a{ color:var(--text); text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; transition:opacity .2s ease; }
+    nav.primary a:hover{ opacity:.8; }
+    nav.primary a[aria-current="page"]{ text-decoration:underline; }
 
-    /* Hamburger */
-    .menu-toggle{appearance:none; border:0; background:transparent; color:#fff;
-      width:44px; height:44px; display:grid; place-items:center; cursor:pointer;}
-    .menu-icon,.menu-icon::before,.menu-icon::after{
-      content:""; display:block; width:22px; height:2px; background:#fff; border-radius:2px;
-      transition:transform .25s,opacity .2s;}
-    .menu-icon::before{transform:translateY(-7px);}
-    .menu-icon::after{transform:translateY(5px);}
-    .menu-toggle[aria-expanded="true"] .menu-icon{transform:rotate(45deg);}
-    .menu-toggle[aria-expanded="true"] .menu-icon::before{transform:rotate(90deg);}
-    .menu-toggle[aria-expanded="true"] .menu-icon::after{opacity:0;}
+    .menu-toggle{
+      position:absolute; right:8px; width:44px; height:44px;
+      border:0; background:transparent; color:var(--text);
+      display:grid; place-items:center; border-radius:8px; cursor:pointer;
+    }
+    .menu-icon, .menu-icon::before, .menu-icon::after{
+      content:""; display:block; width:22px; height:2px;
+      background:var(--text); border-radius:2px; transition:transform .25s ease, opacity .2s ease;
+    }
+    .menu-icon::before{ transform:translateY(-7px) } .menu-icon::after{ transform:translateY(5px) }
+    .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg) }
+    .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
+    .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
 
-    /* Drawer mobil */
-    .drawer-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.4); opacity:0;
-      pointer-events:none; transition:.25s; z-index:999;}
-    .drawer{position:fixed; top:var(--header-h); left:0; right:0; background:#fff; color:var(--text);
-      transform:translateY(-8px); opacity:0; pointer-events:none;
-      border-bottom:1px solid #e5e5e5; box-shadow:0 10px 25px rgba(0,0,0,0.15);
-      transition:.25s; z-index:1001;}
-    .drawer.open,.drawer-backdrop.open{pointer-events:auto;}
-    .drawer.open{transform:translateY(0); opacity:1;}
-    .drawer-backdrop.open{opacity:1;}
-    .drawer nav{padding:14px 16px 18px;}
-    .drawer ul{list-style:none; margin:0; padding:0; display:grid; gap:8px;}
-    .drawer a{display:block; padding:12px 10px; background:var(--muted);
-      border-radius:10px; font-weight:700; color:var(--text); text-decoration:none;}
+    .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999; }
+    .drawer{
+      position:fixed; top:calc(46px + 28px + var(--nav-h)); left:0; right:0; background:var(--brand); color:var(--text);
+      transform:translateY(-8px); opacity:0; pointer-events:none; border-bottom:1px solid rgba(255,255,255,.15); box-shadow:0 10px 25px rgba(0,0,0,.25);
+      transition:transform .25s ease, opacity .25s ease; z-index:1001;
+    }
+    .drawer.open, .drawer-backdrop.open{ pointer-events:auto } 
+    .drawer.open{ transform:translateY(0); opacity:1 } 
+    .drawer-backdrop.open{ opacity:1 }
+    .drawer nav{ padding:14px 16px 18px } 
+    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+    .drawer a{ display:block; text-decoration:none; color:var(--text); font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted) }
 
-    /* Footer */
-    footer{background:var(--brand); color:#fff; text-align:center; padding:20px; font-size:.9em;
-      position:fixed; bottom:0; left:0; right:0; box-shadow:0 -2px 10px rgba(0,0,0,0.2);}
+    /* ===== Main ===== */
+    main{ max-width:var(--maxw); margin:0 auto; padding: clamp(28px, 4vw, 48px) 16px 56px; }
 
-    /* Main */
-    main{padding-top:var(--header-h); margin-bottom:100px; display:flex; flex-direction:column; gap:60px;}
-    section{padding:60px 20px; text-align:center;}
-    section h2{font-size:2.2rem; margin-bottom:16px;}
-    section p{max-width:900px; margin:0 auto 16px; line-height:1.6;}
+    .intro-wrap{ max-width: var(--hero-w); margin: 0 auto; text-align:center; padding: clamp(8px, 2vw, 16px) 0 0; }
+    .kicker{
+      font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65;
+      font-size:.9rem; text-align:center; margin: clamp(12px, 2vw, 18px) 0 10px;
+    }
+    .title-stacked{
+      text-align:center; margin-inline:auto; max-width:100%; line-height:1.1; letter-spacing:.01em;
+      margin-bottom: clamp(8px, 2vw, 14px);
+    }
+    .title-stacked .line1{
+      display:block; font-size: clamp(20px, 3.0vw, 30px); font-weight:800; margin-bottom: 4px;
+    }
+    .title-stacked .line2{
+      display:block; font-size: clamp(16px, 2.4vw, 24px); font-weight:700; opacity:.95;
+    }
+    .intro-wrap p{ margin: 10px auto 0; opacity:.95; max-width: 70ch; }
 
-    /* Kontaktkarten */
-    .contact-container{max-width:1000px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:30px;}
-    .contact-box{flex:1 1 280px; background:#f9f9f9; border-radius:var(--radius); padding:30px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.05); transition:.3s; text-align:center;}
-    .contact-box:hover{transform:translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.1);}
-    .contact-icon{font-size:2rem; margin-bottom:10px;}
-    .contact-box h3{margin-bottom:10px; color:var(--brand);}
-    .contact-box p,.contact-box a{color:var(--text); font-size:1rem; text-decoration:none;}
+    /* ===== Tabs ===== */
+    .tabs{ max-width: var(--hero-w); margin: clamp(18px,3vw,26px) auto 0;
+      display:flex; flex-direction:column; gap:14px; align-items:center; }
+    .tab-controls{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    .tab-controls input{ position:absolute; opacity:0; pointer-events:none; }
+    .tab-controls label{
+      user-select:none; cursor:pointer; padding:10px 14px; border-radius:999px; font-weight:800;
+      background:var(--muted); border:1px solid rgba(255,255,255,.12);
+      transition:transform .12s ease, opacity .2s ease, background .2s ease;
+      opacity:.9;
+    }
+    .tab-controls label:hover{ transform:translateY(-1px); opacity:1; }
+    .tab-controls input:checked + label{ background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.28); }
 
-    /* Teamkarten */
-    .team-container{display:flex; flex-wrap:wrap; justify-content:center; gap:30px;}
-    .team-box{width:320px; background:var(--brand); color:#fff; border-radius:var(--radius);
-      text-align:center; padding:25px; transition:.3s;}
-    .team-box:hover{transform:translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.2);}
-    .team-photo{width:160px; height:160px; border-radius:50%; background:#ccc; margin-bottom:15px; object-fit:cover;}
-    .team-info p{margin:5px 0;}
+    .panels{ width:100%; display:grid; place-items:center; }
+    .panel{
+      display:none; width:min(100%, var(--hero-w));
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    .panel.active{ display:block; }
 
-    /* Karte */
-    .map{width:100%; max-width:1000px; height:350px; margin:0 auto; border-radius:var(--radius); overflow:hidden;}
+    .box-body{ padding:18px 16px 20px; display:flex; flex-direction:column; gap:18px; align-items:center; text-align:center; }
 
-    /* Fade */
-    .fade-in{opacity:0; transform:translateY(30px); transition:.8s;}
-    .fade-in.visible{opacity:1; transform:translateY(0);}
+    /* Karten/Gruppen – Buttons unten auf gleicher Höhe */
+    .grid-cards{
+      width:min(92%, 980px); margin:0 auto;
+      display:grid; grid-template-columns: 1fr; gap:14px; align-items:stretch;
+    }
+    @media (min-width:760px){
+      .grid-cards{ grid-template-columns: repeat(3, 1fr); }
+    }
 
-    @media(min-width:980px){nav.primary{display:block;} .menu-toggle{display:none;} .drawer,.drawer-backdrop{display:none;}}
-    @media(max-width:768px){.contact-container,.team-container{flex-direction:column; align-items:center;} section h2{font-size:2rem;}}
+    .card{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding:18px 16px;
+      box-shadow: var(--shadow);
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+      display:flex; flex-direction:column; /* wichtig */
+      min-height: 210px; /* sorgt für identische optische Höhe */
+    }
+    .card:hover{ transform:translateY(-2px); background: rgba(255,255,255,.09); box-shadow: var(--shadow-strong); }
+
+    .card .icon{ font-size:1.6rem; opacity:.95; margin-bottom:6px; }
+    .card h3{ margin:4px 0 6px; font-size:1.1rem; }
+    .card p{ margin:0; opacity:.95; }
+    .card a{ color:var(--text); text-decoration:none; font-weight:800; }
+
+    .card .actions{ margin-top:auto; display:flex; justify-content:center; } /* Button ganz unten */
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 14px; border-radius:12px; text-decoration:none; color:var(--text);
+      background:var(--muted); border:1px solid rgba(255,255,255,.14);
+      font-weight:800; transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease;
+      box-shadow: var(--shadow);
+    }
+    .btn:hover{ transform:translateY(-2px); background:var(--muted-strong); box-shadow:var(--shadow-strong); }
+
+    /* Team */
+    .team-wrap{
+      width:min(92%, 980px); margin:0 auto;
+      display:grid; grid-template-columns: 1fr; gap:14px;
+    }
+    @media (min-width:760px){
+      .team-wrap{ grid-template-columns: repeat(2, 1fr); }
+    }
+    .team-card{
+      display:flex; flex-direction:column; align-items:center; text-align:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px; padding:18px 16px; box-shadow:var(--shadow);
+      gap:10px;
+    }
+    .team-photo{
+      width:160px; height:160px; border-radius:50%; object-fit:cover; background:#ccc;
+      border:2px solid rgba(255,255,255,.2);
+    }
+    .team-card p{ margin:0; }
+
+    /* Standort / Karte */
+    .map-card{
+      width:min(92%, 980px); margin:0 auto;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px; padding:12px; box-shadow:var(--shadow);
+    }
+    .map-embed{
+      width:100%; aspect-ratio: 16/9; border:0; border-radius:12px; overflow:hidden; display:block;
+    }
+    .address{ margin:10px auto 0; text-align:center; opacity:.95; }
+
+    footer{
+      background:var(--brand-700); color:var(--text);
+      text-align:center; padding:18px; font-size:.95rem;
+      box-shadow:0 -2px 10px rgba(0,0,0,.25);
+    }
+
+    @media (min-width:900px){
+      nav.primary{ display:block } .menu-toggle{ display:none } .drawer, .drawer-backdrop{ display:none }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-inner">
-      <a class="brand" href="index.html">Bücking Immobilien GmbH &amp; Co. KG</a>
-      <nav class="primary"><ul>
-        <li><a href="index.html">Home</a></li>
+<header class="site-header">
+  <div class="header-top">
+    <a class="brand-link" href="index.html#top">
+      <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
+    </a>
+  </div>
+  <div class="header-nav">
+    <nav class="primary">
+      <ul>
+        <li><a href="index.html#home">Home</a></li>
+        <li><a href="projekte.html">Projekte</a></li>
+        <li><a href="wohnungen.html">Wohnungen</a></li>
         <li><a href="unternehmen.html">Unternehmen</a></li>
-        <li><a href="referenzen.html">Referenzen</a></li>
         <li><a href="kontakt.html" aria-current="page">Kontakt</a></li>
         <li><a href="impressum.html">Impressum</a></li>
-      </ul></nav>
-      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer"><span class="menu-icon"></span></button>
-    </div>
-    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
-    <div class="drawer" id="mobile-drawer" hidden>
-      <nav><ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="unternehmen.html">Unternehmen</a></li>
-        <li><a href="referenzen.html">Referenzen</a></li>
-        <li><a href="kontakt.html" aria-current="page">Kontakt</a></li>
-        <li><a href="impressum.html">Impressum</a></li>
-      </ul></nav>
-    </div>
-  </header>
+      </ul>
+    </nav>
+    <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-drawer"><span class="menu-icon"></span></button>
+  </div>
+</header>
 
-  <main>
-    <!-- Kontaktkarten -->
-    <section class="fade-in">
-      <h2>So erreichen Sie uns</h2>
-      <p>Wir stehen Ihnen gerne für Anfragen, Besichtigungen und weitere Informationen zur Verfügung.</p>
-      <div class="contact-container">
-        <div class="contact-box">
-          <div class="contact-icon">☎️</div>
-          <h3>Telefon</h3>
-          <p><a href="tel:+4917657960759">+49 176 57960759</a></p>
-        </div>
-        <div class="contact-box">
-          <div class="contact-icon">📍</div>
-          <h3>Adresse</h3>
-          <p>Baumstraße 35A<br>27777 Ganderkesee</p>
-        </div>
-        <div class="contact-box">
-          <div class="contact-icon">✉️</div>
-          <h3>E-Mail</h3>
-          <p><a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
-        </div>
-      </div>
-    </section>
+<!-- Mobile Drawer -->
+<div class="drawer-backdrop" id="backdrop"></div>
+<div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+  <nav>
+    <ul>
+      <li><a href="index.html#home">Home</a></li>
+      <li><a href="projekte.html">Projekte</a></li>
+      <li><a href="wohnungen.html">Wohnungen</a></li>
+      <li><a href="unternehmen.html">Unternehmen</a></li>
+      <li><a href="kontakt.html" aria-current="page">Kontakt</a></li>
+      <li><a href="impressum.html">Impressum</a></li>
+    </ul>
+  </nav>
+</div>
 
-    <!-- Teamkarten -->
-    <section class="fade-in">
-      <h2>Geschäftsführung</h2>
-      <div class="team-container">
-        <div class="team-box">
-          <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo">
-          <div class="team-info">
-            <p><strong>Tobias Bücking</strong></p>
-            <p>Geschäftsführung</p>
+<main id="top">
+  <section class="intro-wrap">
+    <div class="kicker">Kontakt</div>
+    <h2 class="title-stacked">
+      <span class="line1">Wir sind für Sie da</span>
+      <span class="line2">Bücking Immobilien GmbH &amp; Co. KG</span>
+    </h2>
+    <p>Sie haben Fragen, wünschen eine Besichtigung oder benötigen weitere Informationen?  
+       Kontaktieren Sie uns telefonisch oder per E-Mail – wir melden uns zeitnah.</p>
+  </section>
+
+  <!-- Tabs -->
+  <section class="tabs" aria-label="Kontaktbereiche">
+    <div class="tab-controls">
+      <input type="radio" name="tab" id="t1" checked><label for="t1">Kontakt</label>
+      <input type="radio" name="tab" id="t2"><label for="t2">Geschäftsführung</label>
+      <input type="radio" name="tab" id="t3"><label for="t3">Standort</label>
+    </div>
+
+    <div class="panels">
+      <!-- Panel 1: Kontakt -->
+      <article class="panel active" id="panel-kontakt">
+        <div class="box-body">
+          <h3>So erreichen Sie uns</h3>
+          <div class="grid-cards">
+            <div class="card">
+              <div>
+                <div class="icon">☎︎</div>
+                <h3>Telefon</h3>
+                <p><a href="tel:+4917657960759">+49&nbsp;176&nbsp;57960759</a></p>
+              </div>
+              <div class="actions">
+                <a class="btn" href="tel:+4917657960759">Jetzt anrufen</a>
+              </div>
+            </div>
+
+            <div class="card">
+              <div>
+                <div class="icon">✉︎</div>
+                <h3>E-Mail</h3>
+                <p><a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
+              </div>
+              <div class="actions">
+                <a class="btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20%C3%BCber%20Website&body=Guten%20Tag%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20...%0AName%3A%0ATelefon%3A%0A">E-Mail verfassen</a>
+              </div>
+            </div>
+
+            <div class="card">
+              <div>
+                <div class="icon">📍</div>
+                <h3>Adresse</h3>
+                <p>Baumstraße&nbsp;35A<br>27777&nbsp;Ganderkesee</p>
+              </div>
+              <div class="actions">
+                <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps?q=Baumstraße%2035A%2C%2027777%20Ganderkesee">In Karten öffnen</a>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="team-box">
-          <img src="bernfried.jpeg" alt="Bernfried Bücking" class="team-photo">
-          <div class="team-info">
-            <p><strong>Bernfried Bücking</strong></p>
-            <p>Geschäftsführung</p>
+      </article>
+
+      <!-- Panel 2: Geschäftsführung (ohne Kontakt-Buttons) -->
+      <article class="panel" id="panel-team">
+        <div class="box-body">
+          <h3>Geschäftsführung</h3>
+          <div class="team-wrap">
+            <div class="team-card">
+              <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo" />
+              <p><strong>Tobias Bücking</strong></p>
+              <p>Geschäftsführung</p>
+            </div>
+            <div class="team-card">
+              <img src="bernfried.jpeg" alt="Bernfried Bücking" class="team-photo" />
+              <p><strong>Bernfried Bücking</strong></p>
+              <p>Geschäftsführung</p>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </article>
 
-    <!-- Google Maps -->
-    <section class="fade-in">
-      <h2>Unser Standort</h2>
-      <div class="map">
-        <iframe
-          src="https://www.google.com/maps?q=53.06272,8.57508&z=14&output=embed"
-          width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
-        </iframe>
-      </div>
-      <p><strong>Bücking Immobilien GmbH &amp; Co. KG</strong><br>Baumstraße 35A, 27777 Ganderkesee</p>
-    </section>
-  </main>
+      <!-- Panel 3: Standort -->
+      <article class="panel" id="panel-standort">
+        <div class="box-body">
+          <h3>Unser Standort</h3>
+          <div class="map-card">
+            <iframe
+              class="map-embed"
+              src="https://www.google.com/maps?q=53.06272,8.57508&z=14&output=embed"
+              allowfullscreen=""
+              loading="lazy">
+            </iframe>
+          </div>
+          <p class="address"><strong>Bücking Immobilien GmbH &amp; Co. KG</strong><br>Baumstraße&nbsp;35A, 27777&nbsp;Ganderkesee</p>
+          <p><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps?q=Baumstraße%2035A%2C%2027777%20Ganderkesee">Route planen</a></p>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
 
-  <footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
+<footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
 
-  <script>
-    // Fade
-    const faders=document.querySelectorAll('.fade-in');
-    const obs=new IntersectionObserver((entries,o)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target);}});},{threshold:.2});
-    faders.forEach(f=>obs.observe(f));
+<script>
+  // Mobile Drawer
+  const toggle = document.querySelector('.menu-toggle');
+  const drawer = document.getElementById('mobile-drawer');
+  const backdrop = document.getElementById('backdrop');
+  const setOpen = (open) => {
+    toggle.setAttribute('aria-expanded', String(open));
+    drawer.classList.toggle('open', open);
+    backdrop.classList.toggle('open', open);
+  };
+  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  backdrop.addEventListener('click', () => setOpen(false));
 
-    // Menü
-    const body=document.body,toggle=document.querySelector('.menu-toggle'),drawer=document.getElementById('mobile-drawer'),backdrop=document.getElementById('drawer-backdrop');
-    function openMenu(){toggle.setAttribute('aria-expanded','true');drawer.hidden=false;backdrop.hidden=false;requestAnimationFrame(()=>{drawer.classList.add('open');backdrop.classList.add('open');body.classList.add('menu-open');});}
-    function closeMenu(){toggle.setAttribute('aria-expanded','false');drawer.classList.remove('open');backdrop.classList.remove('open');body.classList.remove('menu-open');setTimeout(()=>{drawer.hidden=true;backdrop.hidden=true;},200);}
-    toggle.addEventListener('click',()=>{toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu();});
-    backdrop.addEventListener('click',closeMenu);
-    window.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
-    drawer.addEventListener('click',e=>{if(e.target.closest('a'))closeMenu();});
-  </script>
+  // Tabs
+  const tabRadios = document.querySelectorAll('.tab-controls input');
+  const panels = document.querySelectorAll('.panel');
+  tabRadios.forEach((r, i) => {
+    r.addEventListener('change', () => {
+      panels.forEach((p, j) => p.classList.toggle('active', i === j));
+    });
+  });
+</script>
 </body>
 </html>
