@@ -35,7 +35,7 @@
 
     /* 3D Glass Cards */
     .card3d{
-      perspective: 1200px; position:relative; height: 240px;
+      perspective: 1200px; position:relative; height: 260px;
     }
     .flip{
       position:relative; width:100%; height:100%;
@@ -60,7 +60,15 @@
     }
 
     .front-content, .back-content{ max-width: 40ch }
-    .emoji{ font-size: 1.6rem; margin-bottom: 8px }
+    .icon{
+      width:44px; height:44px; margin:0 auto 12px;
+      background: rgba(255,255,255,.14);
+      border-radius: 12px;
+      display:grid; place-items:center;
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    .icon svg{ width:24px; height:24px; stroke:#fff; stroke-width:2; fill:none; }
     .title{
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       font-weight:900; letter-spacing:.01em; font-size: clamp(1.1rem,1.8vw,1.35rem); margin: 0 0 6px;
@@ -80,7 +88,6 @@
     /* Reveal on scroll */
     .card3d{ transform: translateY(10px); opacity:0; transition: transform .6s ease, opacity .6s ease }
     .card3d.reveal{ transform: translateY(0); opacity:1 }
-
   </style>
 
   <div class="container">
@@ -99,55 +106,61 @@
       <!-- Card 1 -->
       <article class="card3d" data-autoflip>
         <div class="flip" aria-live="polite">
-          <div class="face front" aria-hidden="false">
+          <div class="face front">
             <div class="front-content">
-              <div class="emoji" aria-hidden="true">🏗️</div>
+              <div class="icon">
+                <svg viewBox="0 0 24 24"><path d="M4 20v-8l8-4 8 4v8"/><path d="M12 12v8"/></svg>
+              </div>
               <h3 class="title">Nachhaltig bauen</h3>
             </div>
           </div>
-          <div class="face back" aria-hidden="true">
+          <div class="face back">
             <div class="back-content">
               <p class="copy">Ressourcenschonende Materialien und effiziente Haustechnik sind unser Standard.</p>
             </div>
           </div>
         </div>
-        <button class="toggle" aria-label="Nachhaltig bauen – Erklärung anzeigen"><span class="sr-only">Flip</span></button>
+        <button class="toggle"><span class="sr-only">Flip</span></button>
       </article>
 
       <!-- Card 2 -->
       <article class="card3d" data-autoflip style="transition-delay:.06s">
-        <div class="flip" aria-live="polite">
-          <div class="face front" aria-hidden="false">
+        <div class="flip">
+          <div class="face front">
             <div class="front-content">
-              <div class="emoji" aria-hidden="true">🤝</div>
+              <div class="icon">
+                <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+              </div>
               <h3 class="title">Vertrauen schaffen</h3>
             </div>
           </div>
-          <div class="face back" aria-hidden="true">
+          <div class="face back">
             <div class="back-content">
               <p class="copy">Vertrauen entsteht durch Transparenz, Ehrlichkeit und Kontinuität – von der Anfrage bis zur Betreuung.</p>
             </div>
           </div>
         </div>
-        <button class="toggle" class="toggle" aria-label="Vertrauen schaffen – Erklärung anzeigen"><span class="sr-only">Flip</span></button>
+        <button class="toggle"><span class="sr-only">Flip</span></button>
       </article>
 
       <!-- Card 3 -->
       <article class="card3d" data-autoflip style="transition-delay:.12s">
-        <div class="flip" aria-live="polite">
-          <div class="face front" aria-hidden="false">
+        <div class="flip">
+          <div class="face front">
             <div class="front-content">
-              <div class="emoji" aria-hidden="true">🌍</div>
+              <div class="icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2m14.14 7.14l-2.83-2.83M8.69 8.69L5.86 5.86"/></svg>
+              </div>
               <h3 class="title">Regional handeln</h3>
             </div>
           </div>
-          <div class="face back" aria-hidden="true">
+          <div class="face back">
             <div class="back-content">
               <p class="copy">Kurze Wege, verlässliche Strukturen: Wir arbeiten mit qualifizierten Handwerkspartnern vor Ort.</p>
             </div>
           </div>
         </div>
-        <button class="toggle" aria-label="Regional handeln – Erklärung anzeigen"><span class="sr-only">Flip</span></button>
+        <button class="toggle"><span class="sr-only">Flip</span></button>
       </article>
     </div>
   </div>
@@ -161,7 +174,6 @@
           if(e.isIntersecting){
             const el = e.target;
             el.classList.add('reveal');
-            // einmaliger Auto-Flip (dezent)
             if(el.hasAttribute('data-autoflip') && !el.dataset.autoflipped){
               el.dataset.autoflipped = '1';
               el.classList.add('flipped');
@@ -172,22 +184,15 @@
         });
       }, {threshold:.35});
       cards.forEach(c=>io.observe(c));
-
-      // Hover/Focus/Click Flip Steuerung
+      // Click Flip Steuerung
       cards.forEach(card=>{
         const btn = card.querySelector('button.toggle');
-        // Click/Touch
-        btn.addEventListener('click', (e)=>{
+        btn.addEventListener('click', e=>{
           e.preventDefault();
           card.classList.toggle('flipped');
         });
-        // Tastatur: Enter/Space handled by button default
-        // Hover wird via CSS erledigt; hier Fokus zurücksetzen beim Blur
-        card.addEventListener('focusout', (e)=>{
-          // nur zurückdrehen, wenn Fokus komplett raus ist
-          if(!card.contains(e.relatedTarget)){
-            card.classList.remove('flipped');
-          }
+        card.addEventListener('focusout', e=>{
+          if(!card.contains(e.relatedTarget)){ card.classList.remove('flipped'); }
         });
       });
     })();
