@@ -2,215 +2,342 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Impressum & Datenschutz – Bücking Immobilien GmbH & Co. KG</title>
   <style>
     :root{
-      --brand:#004225;
-      --muted:#f5f5f5;
-      --text:#004225;
-      --header-h:70px;
-      --shadow:0 2px 10px rgba(0,0,0,0.2);
-    }
-    *{ box-sizing:border-box; }
-    html,body{
-      margin:0; padding:0;
-      font-family:"Avenir",sans-serif;
-      color:var(--text); background:#fff;
-      scroll-behavior:smooth;
+      --brand:#004225;          /* Smyrna-Grün */
+      --text:#ffffff;
     }
 
-    header{
-      position:fixed; top:0; left:0; right:0; height:var(--header-h);
-      background:var(--brand); color:#fff;
-      z-index:1000; box-shadow:var(--shadow);
+    /* Basis-Layout (wie landing.html) */
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
     }
-    .header-inner{
-      max-width:1200px; margin:0 auto; height:100%;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 16px;
-    }
-    .brand{color:#fff; text-decoration:none; font-weight:800;}
+    body { background-color: var(--brand); color: var(--text); }
 
-    nav.primary{display:none;}
-    nav.primary ul{list-style:none; display:flex; gap:40px; margin:0; padding:0;}
-    nav.primary a{color:#fff; text-decoration:none; font-weight:600;}
-    nav.primary a[aria-current="page"]{text-decoration:underline;}
-
-    .menu-toggle{appearance:none; border:0; background:transparent; color:#fff;
-      width:44px; height:44px; display:grid; place-items:center; cursor:pointer;}
-    .menu-icon,.menu-icon::before,.menu-icon::after{
-      content:""; display:block; width:22px; height:2px; background:#fff;
-      border-radius:2px; transition:.25s;
-    }
-    .menu-icon::before{transform:translateY(-7px);}
-    .menu-icon::after{transform:translateY(5px);}
-    .menu-toggle[aria-expanded="true"] .menu-icon{transform:rotate(45deg);}
-    .menu-toggle[aria-expanded="true"] .menu-icon::before{transform:rotate(90deg);}
-    .menu-toggle[aria-expanded="true"] .menu-icon::after{opacity:0;}
-
-    .drawer-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.4);
-      opacity:0; pointer-events:none; transition:.25s; z-index:999;}
-    .drawer{position:fixed; top:var(--header-h); left:0; right:0; background:#fff;
-      transform:translateY(-8px); opacity:0; pointer-events:none;
-      border-bottom:1px solid #e5e5e5; box-shadow:0 10px 25px rgba(0,0,0,0.15);
-      transition:.25s; z-index:1001;}
-    .drawer.open,.drawer-backdrop.open{pointer-events:auto;}
-    .drawer.open{transform:translateY(0); opacity:1;}
-    .drawer-backdrop.open{opacity:1;}
-    .drawer nav{padding:14px 16px;}
-    .drawer ul{list-style:none; margin:0; padding:0; display:grid; gap:8px;}
-    .drawer a{display:block; padding:12px 10px; background:var(--muted);
-      border-radius:8px; font-weight:700; color:var(--text); text-decoration:none;}
-
-    footer{
-      background:var(--brand); color:#fff;
-      text-align:center; padding:20px; font-size:.9em;
-      position:fixed; bottom:0; left:0; right:0;
-      box-shadow:0 -2px 10px rgba(0,0,0,0.2);
+    .landing {
+      position: relative;
+      isolation: isolate;
+      color: var(--text);
+      background-color: var(--brand);
+      width: 100%;
+      padding: clamp(80px, 10vw, 140px) 16px clamp(80px, 8vw, 120px);
+      overflow: hidden;
+      box-sizing: border-box;
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
 
-    main{padding:calc(var(--header-h) + 20px) 20px 140px 20px;}
-    section{margin-bottom:40px;}
-    section h2{font-size:1.6rem; margin-bottom:10px; color:var(--brand);}
-    section p, section ul{line-height:1.6; margin:0 0 12px;}
-    section ul{padding-left:20px;}
+    .container {
+      max-width: 1100px;
+      margin-inline: auto;
+      text-align: center;
+      padding-inline: 16px;
+      box-sizing: border-box;
+    }
 
-    .fade-in{opacity:0; transform:translateY(20px); transition:.6s;}
-    .fade-in.visible{opacity:1; transform:translateY(0);}
+    /* Hero (identisch zur Landing) */
+    .hero .kicker {
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.65);
+      font-size: .9rem;
+      margin-bottom: 28px;
+    }
+    .hero .hed {
+      font-weight:900;
+      letter-spacing:.005em;
+      line-height:1.05;
+      margin:0 auto 22px;
+      font-size:clamp(1.5rem, 3.2vw, 2.2rem);
+    }
+    @media (min-width:1024px){ .hero .hed{ white-space:nowrap; } }
+    .hero .dek {
+      margin: 0 auto 36px;
+      max-width: 60ch;
+      font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+      line-height: 1.6;
+      color: rgba(255,255,255,.85);
+    }
+    .cta-row a {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      background: transparent;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-decoration: none;
+      padding: 12px 28px;
+      display: inline-flex;
+      align-items: center;
+      transition: all .25s ease;
+    }
+    .cta-row a:hover {
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.35);
+    }
 
-    @media(min-width:980px){nav.primary{display:block;} .menu-toggle{display:none;} .drawer,.drawer-backdrop{display:none;}}
+    /* Grid (wie Landing, 3 Spalten ab 800px) */
+    .grid {
+      display: grid;
+      gap: 28px;
+      margin-top: clamp(40px, 5vw, 60px);
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 800px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Card-Stil (wie Landing) */
+    .card {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 22px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      padding: 36px 28px;
+      transition: transform .35s ease, box-shadow .35s ease;
+      text-align: left;             /* Impressum liest sich linksbündig besser */
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 14px 30px rgba(0,0,0,.3);
+    }
+    .card .icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 0 18px 0;          /* linksbündig */
+      border-radius: 14px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.25);
+      display: grid;
+      place-items: center;
+    }
+    .card .icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: #fff;
+      stroke-width: 2;
+      fill: none;
+    }
+    .card-title {
+      font-weight: 900;
+      letter-spacing: .005em;
+      line-height: 1.1;
+      margin: 0 0 10px;
+      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      color: #fff;
+    }
+    .card-copy {
+      margin: 0;
+      color: rgba(255,255,255,.9);
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+    .card-copy a{ color:#fff; text-decoration: underline; text-underline-offset:3px; }
+
+    /* Längere Textabschnitte: 2-Spalten-Layout ab 1100px, aber Karten bleiben konsistent */
+    @media (min-width:1100px){
+      .card.long { grid-column: span 3; } /* volle Breite für lange Abschnitte */
+    }
+
+    /* Listen im Datenschutz */
+    .card-copy ul{ margin: 8px 0 0 20px; }
+    .card-copy li{ margin: 4px 0; }
+
+    /* Footer im Landing-Stil (schlicht) */
+    .site-footer{
+      margin-top: clamp(40px, 6vw, 80px);
+      color: rgba(255,255,255,.85);
+      font-size:.95rem;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-inner">
-      <a class="brand" href="index.html">Bücking Immobilien GmbH &amp; Co. KG</a>
-      <nav class="primary"><ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="unternehmen.html">Unternehmen</a></li>
-        <li><a href="referenzen.html">Referenzen</a></li>
-        <li><a href="kontakt.html">Kontakt</a></li>
-        <li><a href="impressum.html" aria-current="page">Impressum</a></li>
-      </ul></nav>
-      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer"><span class="menu-icon"></span></button>
+
+<section class="landing" aria-label="Impressum & Datenschutz">
+  <div class="container">
+    <header class="hero">
+      <div class="kicker">Bücking Immobilien GmbH &amp; Co. KG</div>
+      <h1 class="hed">Impressum &amp; Datenschutzerklärung</h1>
+      <p class="dek">
+        Rechtliche Pflichtangaben und Informationen zum Schutz Ihrer Daten.
+      </p>
+      <div class="cta-row">
+        <a href="kontakt.html">Kontakt aufnehmen</a>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Impressum -->
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 20V10l9-5 9 5v10"/><path d="M9 22V12h6v10"/></svg>
+        </div>
+        <h3 class="card-title">Impressum</h3>
+        <div class="card-copy">
+          <p><strong>Bücking Immobilien GmbH &amp; Co. KG</strong><br>
+          Baumstraße 35A<br>27777 Ganderkesee<br>Deutschland</p>
+          <p>Telefon: <a href="tel:+4917657960759">+49 176 57960759</a><br>
+          E-Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h3 class="card-title">Vertretung</h3>
+        <div class="card-copy">
+          <p>Komplementärin: <strong>Bücking Beteiligungs GmbH</strong><br>
+          Vertreten durch die Geschäftsführer Tobias Bücking und Bernfried Bücking.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 2v4M16 2v4M2 10h20"/></svg>
+        </div>
+        <h3 class="card-title">Register</h3>
+        <div class="card-copy">
+          <p>Bücking Immobilien GmbH &amp; Co. KG<br>
+          Amtsgericht Oldenburg, HRA [Platzhalter]</p>
+          <p>Bücking Beteiligungs GmbH (Komplementärin)<br>
+          Amtsgericht Oldenburg, HRB [Platzhalter]</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M9 14l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
+        </div>
+        <h3 class="card-title">Umsatzsteuer</h3>
+        <div class="card-copy">
+          <p>USt-IdNr.: DE [Platzhalter]</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 3h18v4H3z"/><path d="M8 7v14M16 7v14"/></svg>
+        </div>
+        <h3 class="card-title">Aufsichtsbehörde</h3>
+        <div class="card-copy">
+          <p>Industrie- und Handelskammer Oldenburg<br>
+          Moslestraße 6, 26122 Oldenburg</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16 20a6 6 0 1 0-8 0"/></svg>
+        </div>
+        <h3 class="card-title">Haftung für Inhalte</h3>
+        <div class="card-copy">
+          <p>Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte verantwortlich. Nach §§ 8 bis 10 TMG sind wir jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        </div>
+        <h3 class="card-title">Haftung für Links</h3>
+        <div class="card-copy">
+          <p>Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben. Für diese Inhalte ist stets der jeweilige Anbieter oder Betreiber verantwortlich.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M8 6h8M8 10h8M8 14h8M8 18h8"/></svg>
+        </div>
+        <h3 class="card-title">Urheberrecht</h3>
+        <div class="card-copy">
+          <p>Die durch die Seitenbetreiber erstellten Inhalte und Werke unterliegen dem deutschen Urheberrecht.</p>
+        </div>
+      </article>
+
+      <!-- Datenschutzerklärung (volle Breite für bessere Lesbarkeit) -->
+      <article class="card long">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="card-title">Datenschutzerklärung</h3>
+        <div class="card-copy">
+          <p>Wir nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Ihre personenbezogenen Daten werden vertraulich und gemäß der gesetzlichen Vorschriften behandelt.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-8a8 8 0 1 0-16 0v8"/><path d="M12 7v1"/></svg>
+        </div>
+        <h3 class="card-title">1. Verantwortlicher</h3>
+        <div class="card-copy">
+          <p>Bücking Immobilien GmbH &amp; Co. KG<br>
+          Baumstraße 35A, 27777 Ganderkesee<br>
+          E-Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h18"/><path d="M10 9h11"/><path d="M3 13h18"/><path d="M10 17h11"/></svg>
+        </div>
+        <h3 class="card-title">2. Datenverarbeitung</h3>
+        <div class="card-copy">
+          <p>Beim Besuch der Website werden automatisch technische Daten (IP-Adresse, Browser, Zeitpunkt) erfasst, um einen sicheren Betrieb zu gewährleisten.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-6 5 6"/><path d="M12 4v12"/></svg>
+        </div>
+        <h3 class="card-title">3. Kontaktaufnahme</h3>
+        <div class="card-copy">
+          <p>Bei Kontaktaufnahme per E-Mail speichern wir Ihre Angaben zur Bearbeitung der Anfrage. Eine Weitergabe erfolgt nicht ohne Ihre Einwilligung.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M2 12h20"/><path d="M12 2v20"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <h3 class="card-title">4. Google Maps</h3>
+        <div class="card-copy">
+          <p>Diese Seite verwendet Google Maps zur Darstellung unseres Standorts. Anbieter ist die Google Ireland Limited. Es werden Daten an Google übertragen.
+          Weitere Infos: <a href="https://policies.google.com/privacy?hl=de" target="_blank" rel="noopener">Datenschutzerklärung von Google</a>.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M8 12h8"/><path d="M8 16h8"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
+        </div>
+        <h3 class="card-title">5. Ihre Rechte</h3>
+        <div class="card-copy">
+          <ul>
+            <li>Auskunft</li>
+            <li>Berichtigung</li>
+            <li>Löschung</li>
+            <li>Einschränkung</li>
+            <li>Widerspruch</li>
+            <li>Datenübertragbarkeit</li>
+          </ul>
+        </div>
+      </article>
     </div>
-    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
-    <div class="drawer" id="mobile-drawer" hidden>
-      <nav><ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="unternehmen.html">Unternehmen</a></li>
-        <li><a href="referenzen.html">Referenzen</a></li>
-        <li><a href="kontakt.html">Kontakt</a></li>
-        <li><a href="impressum.html" aria-current="page">Impressum</a></li>
-      </ul></nav>
-    </div>
-  </header>
 
-  <main>
-    <!-- Impressum -->
-    <section class="fade-in">
-      <h2>Impressum</h2>
-      <p><strong>Bücking Immobilien GmbH &amp; Co. KG</strong><br>
-      Baumstraße 35A<br>27777 Ganderkesee<br>Deutschland</p>
-      <p>Telefon: <a href="tel:+4917657960759">+49 176 57960759</a><br>
-      E-Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
-    </section>
+    <p class="site-footer">&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</p>
+  </div>
+</section>
 
-    <section class="fade-in">
-      <h2>Vertreten durch</h2>
-      <p>Komplementärin: <strong>Bücking Beteiligungs GmbH</strong><br>
-      Diese wird vertreten durch die Geschäftsführer Tobias Bücking und Bernfried Bücking.</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>Registereintrag</h2>
-      <p>Bücking Immobilien GmbH &amp; Co. KG<br>
-      Amtsgericht Oldenburg, HRA [Platzhalter]</p>
-      <p>Bücking Beteiligungs GmbH (Komplementärin)<br>
-      Amtsgericht Oldenburg, HRB [Platzhalter]</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>Umsatzsteuer</h2>
-      <p>USt-IdNr.: DE [Platzhalter]</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>Aufsichtsbehörde</h2>
-      <p>Industrie- und Handelskammer Oldenburg, Moslestraße 6, 26122 Oldenburg</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>Haftung für Inhalte</h2>
-      <p>Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten verantwortlich. Nach §§ 8 bis 10 TMG sind wir jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>Haftung für Links</h2>
-      <p>Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben. Für diese fremden Inhalte ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>Urheberrecht</h2>
-      <p>Die durch die Seitenbetreiber erstellten Inhalte und Werke unterliegen dem deutschen Urheberrecht.</p>
-    </section>
-
-    <!-- Datenschutz -->
-    <section class="fade-in">
-      <h2>Datenschutzerklärung</h2>
-      <p>Wir nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Ihre personenbezogenen Daten werden vertraulich und gemäß der gesetzlichen Vorschriften behandelt.</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>1. Verantwortlicher</h2>
-      <p>Bücking Immobilien GmbH &amp; Co. KG<br>
-      Baumstraße 35A, 27777 Ganderkesee<br>
-      E-Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
-    </section>
-
-    <section class="fade-in">
-      <h2>2. Datenverarbeitung</h2>
-      <p>Beim Besuch der Website werden automatisch technische Daten (IP-Adresse, Browser, Zeitpunkt) erfasst, um einen sicheren Betrieb zu gewährleisten.</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>3. Kontaktaufnahme</h2>
-      <p>Bei Kontaktaufnahme per E-Mail speichern wir Ihre Angaben zur Bearbeitung der Anfrage. Eine Weitergabe erfolgt nicht ohne Ihre Einwilligung.</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>4. Google Maps</h2>
-      <p>Diese Seite verwendet Google Maps zur Darstellung unseres Standorts. Anbieter ist die Google Ireland Limited. Es werden Daten an Google übertragen. Weitere Infos: <a href="https://policies.google.com/privacy?hl=de" target="_blank">Datenschutzerklärung von Google</a>.</p>
-    </section>
-
-    <section class="fade-in">
-      <h2>5. Ihre Rechte</h2>
-      <ul>
-        <li>Auskunft</li>
-        <li>Berichtigung</li>
-        <li>Löschung</li>
-        <li>Einschränkung</li>
-        <li>Widerspruch</li>
-        <li>Datenübertragbarkeit</li>
-      </ul>
-    </section>
-  </main>
-
-  <footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
-
-  <script>
-    const faders=document.querySelectorAll('.fade-in');
-    const obs=new IntersectionObserver((entries,o)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target);}});},{threshold:.1});
-    faders.forEach(f=>obs.observe(f));
-
-    const body=document.body,toggle=document.querySelector('.menu-toggle'),drawer=document.getElementById('mobile-drawer'),backdrop=document.getElementById('drawer-backdrop');
-    function openMenu(){toggle.setAttribute('aria-expanded','true');drawer.hidden=false;backdrop.hidden=false;requestAnimationFrame(()=>{drawer.classList.add('open');backdrop.classList.add('open');body.classList.add('menu-open');});}
-    function closeMenu(){toggle.setAttribute('aria-expanded','false');drawer.classList.remove('open');backdrop.classList.remove('open');body.classList.remove('menu-open');setTimeout(()=>{drawer.hidden=true;backdrop.hidden=true;},200);}
-    toggle.addEventListener('click',()=>{toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu();});
-    backdrop.addEventListener('click',closeMenu);
-    window.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
-    drawer.addEventListener('click',e=>{if(e.target.closest('a'))closeMenu();});
-  </script>
 </body>
 </html>
