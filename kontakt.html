@@ -16,12 +16,16 @@
       --hero-w:980px; --footer-h:64px;
       --icon: rgba(255,255,255,.92); --border: rgba(255,255,255,.14);
       --panel: rgba(255,255,255,.04); --panel-strong: rgba(255,255,255,.09);
-      --card-h: 520px;              /* EINHEITLICHE, HÖHERE KARTENHÖHE */
+      --card-h: 520px;
     }
 
     *{box-sizing:border-box}
-    html,body{ margin:0; padding:0; font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text); background:var(--bg); scroll-behavior:smooth; min-height:100%; }
+    html,body{ 
+      margin:0; padding:0; 
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text); background:var(--bg);
+      scroll-behavior:smooth; min-height:100%;
+    }
 
     /* Header */
     header.site-header{ position:sticky; top:0; z-index:1000; background:var(--brand-700); color:var(--text); box-shadow:var(--shadow); }
@@ -54,18 +58,30 @@
     .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
     .drawer a{ display:block; text-decoration:none; color:var(--text); font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted) }
 
-    /* Main */
-    main{ max-width:var(--maxw); margin:0 auto; padding: clamp(28px, 4vw, 48px) 16px calc(16px + var(--footer-h)); }
+    /* Main (angepasste Abstände) */
+    main{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding: clamp(80px, 10vw, 140px) 16px calc(16px + var(--footer-h));
+    }
 
-    .intro-wrap{ max-width: var(--hero-w); margin: 0 auto; text-align:center; padding-top: clamp(16px, 3vw, 28px); }
-    .kicker{ font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65; font-size:.9rem; text-align:center; margin: clamp(16px, 3vw, 24px) 0 14px; }
-    .title-stacked{ text-align:center; margin-inline:auto; line-height:1.1; letter-spacing:.01em; margin-bottom: clamp(14px, 3vw, 22px); }
+    .intro-wrap{ 
+      max-width: var(--hero-w); 
+      margin: 0 auto; 
+      text-align:center; 
+      padding-top: 0;
+    }
+    .kicker{ 
+      font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65; font-size:.9rem;
+      text-align:center; margin: 0 0 28px;
+    }
+    .title-stacked{ text-align:center; margin-inline:auto; line-height:1.1; letter-spacing:.01em; margin-bottom:22px; }
     .title-stacked .line1{ display:block; font-size: clamp(20px, 3.0vw, 30px); font-weight:800; margin-bottom:8px; }
     .title-stacked .line2{ display:block; font-size: clamp(16px, 2.4vw, 24px); font-weight:700; opacity:.95; }
-    .intro-wrap p{ margin: clamp(14px, 2.5vw, 22px) auto 0; opacity:.95; max-width: 70ch; }
+    .intro-wrap p{ margin: 36px auto 0; opacity:.9; max-width: 60ch; }
 
     /* Tabs */
-    .tabs{ max-width: var(--hero-w); margin: clamp(18px,3vw,26px) auto 0; display:flex; flex-direction:column; gap:14px; align-items:center; }
+    .tabs{ max-width: var(--hero-w); margin: clamp(40px, 5vw, 60px) auto 0; display:flex; flex-direction:column; gap:14px; align-items:center; }
     .tab-controls{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
     .tab-controls input{ position:absolute; opacity:0; pointer-events:none; }
     .tab-controls label{ user-select:none; cursor:pointer; padding:10px 14px; border-radius:999px; font-weight:800;
@@ -79,24 +95,17 @@
     .panel.measuring{ display:block !important; position:absolute !important; visibility:hidden !important; left:-99999px !important; top:0 !important; }
     .box-body{ padding:18px 16px 20px; display:flex; flex-direction:column; gap:18px; align-items:center; text-align:center; }
 
-    /* Grid (2 Spalten) */
+    /* Grid */
     .grid-cards{
       width:min(92%, 980px); margin:0 auto;
       display:grid; grid-template-columns:1fr; gap:14px; align-items:stretch; justify-items:stretch;
     }
     @media (min-width:760px){ .grid-cards{ grid-template-columns: repeat(2, 1fr); } }
-
-    /* GF: 1 Karte wirklich mittig, auf ALLEN Breakpoints */
-    .grid-cards.single{
-      grid-template-columns: 1fr !important;
-      justify-items: center;
-    }
+    .grid-cards.single{ grid-template-columns: 1fr !important; justify-items:center; }
     .grid-cards.single .card{ max-width:520px; width:100%; }
-
-    /* Standort: breite Karte über zwei Spalten (auf Desktop) */
     @media (min-width:760px){ .card.wide{ grid-column: 1 / -1; } }
 
-    /* Karten – feste (höhere) Höhe für ALLE */
+    /* Karten */
     .card{
       height:var(--card-h);
       background: rgba(255,255,255,.06);
@@ -114,23 +123,18 @@
     .spacer{ margin-top:auto; }
     .actions{ display:flex; justify-content:center; margin-top:10px; }
 
-    /* Buttons */
     .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border-radius:12px; text-decoration:none; color:var(--text);
       background:var(--muted); border:1px solid var(--border); font-weight:800; transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease; box-shadow:var(--shadow); min-height:40px; }
     .btn:hover{ transform:translateY(-2px); background:var(--muted-strong); box-shadow:var(--shadow-strong); }
 
-    /* Team-Foto */
-    .team-photo{ width:160px; height:160px; border-radius:50%; object-fit:cover; background:#ccc; border:2px solid rgba(255,255,255,.2); margin-bottom:8px; }
-
-    /* Medien (Standort-Karte als Banner) – höheres Verhältnis */
     .media{ width:100%; border-radius:12px; overflow:hidden; aspect-ratio:16/9; margin-bottom:8px; background:rgba(255,255,255,.08); }
     .media > iframe{ width:100%; height:100%; border:0; display:block; }
 
-    /* SVG-Icons */
+    .team-photo{ width:160px; height:160px; border-radius:50%; object-fit:cover; background:#ccc; border:2px solid rgba(255,255,255,.2); margin-bottom:8px; }
+
     .icon{ width:28px; height:28px; margin-bottom:6px; }
     .icon svg{ width:100%; height:100%; stroke:var(--icon); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; display:block; }
 
-    /* Footer fixiert */
     footer{ position:fixed; left:0; right:0; bottom:0; height:var(--footer-h); background:var(--brand-700); color:var(--text);
       display:grid; place-items:center; padding:0 18px; font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25); z-index:900; }
 
@@ -158,7 +162,6 @@
   </div>
 </header>
 
-<!-- Drawer mobil -->
 <div class="drawer-backdrop" id="backdrop"></div>
 <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
   <nav>
@@ -192,40 +195,30 @@
     </div>
 
     <div class="panels" id="panels">
-      <!-- Panel 1: Kontakt (2 Karten) -->
+      <!-- Panel 1: Kontakt -->
       <article class="panel active">
         <div class="box-body">
           <h3>So erreichen Sie uns</h3>
           <div class="grid-cards">
             <div class="card">
-              <div class="icon" aria-hidden="true">
-                <!-- Telefon -->
-                <svg viewBox="0 0 24 24"><path d="M22 16.92v2a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 12 18a19.8 19.8 0 0 1-7.82-7.82A2 2 0 0 1 6.18 8h2a2 2 0 0 1 2 1.72c.12.89.35 1.75.69 2.57a2 2 0 0 1-.45 2.11l-.87.87a16 16 0 0 0 6.28 6.28l.87-.87a2 2 0 0 1 2.11-.45c.82.34 1.68.57 2.57.69A2 2 0 0 1 22 16.92z"/></svg>
-              </div>
+              <div class="icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v2a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 12 18a19.8 19.8 0 0 1-7.82-7.82A2 2 0 0 1 6.18 8h2a2 2 0 0 1 2 1.72c.12.89.35 1.75.69 2.57a2 2 0 0 1-.45 2.11l-.87.87a16 16 0 0 0 6.28 6.28l.87-.87a2 2 0 0 1 2.11-.45c.82.34 1.68.57 2.57.69A2 2 0 0 1 22 16.92z"/></svg></div>
               <h3>Telefon</h3>
               <p><a href="tel:+4917657960759">+49&nbsp;176&nbsp;57960759</a></p>
               <div class="spacer"></div>
-              <div class="actions">
-                <a class="btn" href="tel:+4917657960759">Jetzt anrufen</a>
-              </div>
+              <div class="actions"><a class="btn" href="tel:+4917657960759">Jetzt anrufen</a></div>
             </div>
             <div class="card">
-              <div class="icon" aria-hidden="true">
-                <!-- E-Mail -->
-                <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>
-              </div>
+              <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg></div>
               <h3>E-Mail</h3>
               <p><a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
               <div class="spacer"></div>
-              <div class="actions">
-                <a class="btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20%C3%BCber%20Website&body=Guten%20Tag%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20...%0AName%3A%0ATelefon%3A%0A">E-Mail verfassen</a>
-              </div>
+              <div class="actions"><a class="btn" href="mailto:info@buecking-immobilien.de?subject=Anfrage%20%C3%BCber%20Website&body=Guten%20Tag%2C%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20...%0AName%3A%0ATelefon%3A%0A">E-Mail verfassen</a></div>
             </div>
           </div>
         </div>
       </article>
 
-      <!-- Panel 2: Geschäftsführung (nur du, zentriert) -->
+      <!-- Panel 2: Geschäftsführung -->
       <article class="panel">
         <div class="box-body">
           <h3>Geschäftsführung</h3>
@@ -233,14 +226,14 @@
             <div class="card">
               <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo">
               <h3>Tobias Bücking</h3>
-              <p>Geschäftsführung</p>
+                            <p>Geschäftsführung</p>
               <div class="spacer"></div>
             </div>
           </div>
         </div>
       </article>
 
-      <!-- Panel 3: Standort (nur breite Karte) -->
+      <!-- Panel 3: Standort -->
       <article class="panel">
         <div class="box-body">
           <h3>Unser Standort</h3>
@@ -270,7 +263,11 @@
   const toggle = document.querySelector('.menu-toggle');
   const drawer = document.getElementById('mobile-drawer');
   const backdrop = document.getElementById('backdrop');
-  const setOpen = (open)=>{toggle.setAttribute('aria-expanded',String(open));drawer.classList.toggle('open',open);backdrop.classList.toggle('open',open)};
+  const setOpen = (open)=>{
+    toggle.setAttribute('aria-expanded',String(open));
+    drawer.classList.toggle('open',open);
+    backdrop.classList.toggle('open',open);
+  };
   toggle?.addEventListener('click',()=>setOpen(toggle.getAttribute('aria-expanded')!=='true'));
   backdrop?.addEventListener('click',()=>setOpen(false));
 
@@ -284,7 +281,7 @@
     setPanelsMinHeight();
   }));
 
-  // Panel-Höhe wie höchstes Panel
+  // Panel-Höhe anpassen
   function setPanelsMinHeight(){
     let maxH = 0;
     panels.forEach(p=>{
@@ -296,7 +293,7 @@
     panelsContainer.style.minHeight = Math.ceil(maxH + 4) + 'px';
   }
 
-  // Debounce für Resize
+  // Resize neu berechnen
   let rsId;
   window.addEventListener('resize', ()=>{
     clearTimeout(rsId);
