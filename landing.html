@@ -1,11 +1,19 @@
 <section id="home" class="landing" aria-label="Start">
   <style>
+    :root{
+      --brand:#004225;          /* Smyrna-Grün */
+      --text:#ffffff;
+    }
+
     .landing {
       position: relative;
       isolation: isolate;
-      color: #fff;
+      color: var(--text);
+      background-color: var(--brand);  /* Einheitliche Hintergrundfarbe */
+      width: 100vw;                    /* gesamte Bildschirmbreite */
+      margin-left: calc(50% - 50vw);   /* löst sich von Wrapper-Breite */
+      margin-right: calc(50% - 50vw);
       padding: clamp(80px, 10vw, 140px) 16px clamp(80px, 8vw, 120px);
-      background: linear-gradient(to bottom, rgba(255,255,255,.02), rgba(0,0,0,0.1));
       overflow: hidden;
     }
 
@@ -26,19 +34,19 @@
       margin-bottom: 12px;
     }
 
- .hed{
-  font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-  font-weight:900;
-  letter-spacing:.005em;     /* etwas kompakter */
-  line-height:1.05;
-  margin:0 auto 10px;
-  max-width:none;            /* keine künstliche Zeilenumbrüche */
-  font-size:clamp(1.5rem, 3.2vw, 2.2rem); /* kleiner als zuvor */
-}
+    .hed {
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-weight:900;
+      letter-spacing:.005em;
+      line-height:1.05;
+      margin:0 auto 10px;
+      max-width:none;
+      font-size:clamp(1.5rem, 3.2vw, 2.2rem);
+    }
 
-@media (min-width:1024px){
-  .hed{ white-space:nowrap; } /* hält es auf 13" sicher in einer Zeile */
-}
+    @media (min-width:1024px){
+      .hed{ white-space:nowrap; }
+    }
 
     .dek {
       margin: 0 auto 28px;
@@ -132,7 +140,9 @@
     <header class="hero">
       <div class="kicker">Bücking Immobilien GmbH &amp; Co. KG</div>
       <h1 class="hed">Nachhaltig. Verlässlich. Persönlich.</h1>
-      <p class="dek">Moderne Mietwohnungen mit regionaler Handschrift – klare Linien, langlebige Qualität und eine Zusammenarbeit auf Augenhöhe.</p>
+      <p class="dek">
+        Moderne Mietwohnungen mit regionaler Handschrift – klare Linien, langlebige Qualität und eine Zusammenarbeit auf Augenhöhe.
+      </p>
       <div class="cta-row">
         <a href="kontakt.html">Kontakt aufnehmen</a>
       </div>
@@ -167,8 +177,8 @@
         </div>
         <h3 class="title">Nachhaltigkeit</h3>
         <p class="copy">
-        Mit Verantwortung für Umwelt und Zukunft setzen wir auf nachhaltiges Bauen und regionale Wertschöpfung.
-        Unser Anspruch: Immobilien, die ökologisch durchdacht, wirtschaftlich sinnvoll und für kommende Generationen lebenswert bleiben.
+          Mit Verantwortung für Umwelt und Zukunft setzen wir auf nachhaltiges Bauen und regionale Wertschöpfung.
+          Unser Anspruch: Immobilien, die ökologisch durchdacht, wirtschaftlich sinnvoll und für kommende Generationen lebenswert bleiben.
         </p>
       </article>
     </div>
