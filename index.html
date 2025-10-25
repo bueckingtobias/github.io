@@ -6,9 +6,8 @@
   <title>Bücking Immobilien GmbH & Co. KG</title>
 
   <style>
-    /* ===== Design-Variablen ===== */
     :root{
-      --brand:#004225;         /* Smyrna-Grün */
+      --brand:#004225;
       --brand-700:#00361e;
       --text:#004225;
       --bg:#ffffff;
@@ -16,8 +15,6 @@
       --shadow:0 2px 10px rgba(0,0,0,.15);
       --radius:12px;
       --maxw:1200px;
-      --row-gap:16px;
-      --header-pad:14px;
       --nav-h:46px;
     }
 
@@ -29,112 +26,82 @@
       scroll-behavior:smooth;
     }
 
-    /* ===== Header (2-zeilig: Logo-Zeile + Menüband) ===== */
+    /* ===== Header ===== */
     header.site-header{
       position:sticky; top:0; left:0; right:0; z-index:1000;
-      background:var(--brand);
-      color:#fff;
-      box-shadow:var(--shadow);
+      background:var(--brand); color:#fff; box-shadow:var(--shadow);
     }
-
-    /* Zeile 1: Logo zentriert */
     .header-top{
-      display:grid; place-items:center;
-      padding:var(--header-pad) 16px;
+      display:grid; place-items:center; padding:14px 16px;
     }
-    .brand-link{
-      display:inline-flex; align-items:center; justify-content:center;
-      text-decoration:none; color:#fff;
-      gap:10px;
-    }
-    .brand-logo{
-      height:42px; width:auto; display:block;
-    }
-    .brand-text{ display:none; }
+    .brand-link{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; color:#fff; }
+    .brand-logo{ height:42px; width:auto; display:block; }
 
-    /* Zeile 2: Menüband */
     .header-nav{
       display:flex; align-items:center; justify-content:center;
       border-top:1px solid rgba(255,255,255,.12);
       min-height:var(--nav-h);
-      padding:0 8px;
-      position:relative;
+      padding:0 8px; position:relative;
     }
-    nav.primary{
-      display:none;
-    }
+
+    nav.primary{ display:none; }
     nav.primary ul{
-      list-style:none; margin:0; padding:0;
-      display:flex; gap:28px; align-items:center;
+      list-style:none; margin:0; padding:0; display:flex; gap:28px;
     }
     nav.primary a{
       color:#fff; text-decoration:none; font-weight:700;
       padding:10px 6px; border-radius:8px;
-      transition:opacity .2s ease, background .2s ease;
+      transition:opacity .2s ease;
     }
+    nav.primary a:hover{ opacity:.85; }
     nav.primary a[aria-current="page"]{ text-decoration:underline; }
-    nav.primary a:hover{ opacity:.9; }
 
-    /* Hamburger-Button (mobil / schmal) */
+    /* Hamburger mobil */
     .menu-toggle{
-      position:absolute; right:8px;
-      width:44px; height:44px; border:0; background:transparent; color:#fff;
-      display:grid; place-items:center; border-radius:8px; cursor:pointer;
+      position:absolute; right:8px; width:44px; height:44px;
+      border:0; background:transparent; color:#fff; display:grid; place-items:center;
+      border-radius:8px; cursor:pointer;
     }
-    .menu-toggle:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
     .menu-icon, .menu-icon::before, .menu-icon::after{
       content:""; display:block; width:22px; height:2px; background:#fff;
       border-radius:2px; transition:transform .25s ease, opacity .2s ease;
     }
-    .menu-icon::before{ transform:translateY(-7px) }
-    .menu-icon::after{  transform:translateY(5px) }
-    .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg) }
-    .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
-    .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
+    .menu-icon::before{ transform:translateY(-7px); }
+    .menu-icon::after{ transform:translateY(5px); }
+    .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg); }
+    .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg); }
+    .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0; }
 
-    /* Drawer (mobil) */
+    /* Drawer mobil */
     .drawer-backdrop{
       position:fixed; inset:0; background:rgba(0,0,0,.4);
       opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999;
     }
     .drawer{
-      position:fixed; top:calc(42px + var(--header-pad)*2 + var(--nav-h));
+      position:fixed; top:calc(42px + 28px + var(--nav-h));
       left:0; right:0; background:#fff; color:var(--text);
       transform:translateY(-8px); opacity:0; pointer-events:none;
       border-bottom:1px solid #e5e5e5; box-shadow:0 10px 25px rgba(0,0,0,.15);
       transition:transform .25s ease, opacity .25s ease; z-index:1001;
     }
-    .drawer.open,
-    .drawer-backdrop.open{ pointer-events:auto }
-    .drawer.open{ transform:translateY(0); opacity:1 }
-    .drawer-backdrop.open{ opacity:1 }
-
-    .drawer nav{ padding:14px 16px 18px }
-    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+    .drawer.open, .drawer-backdrop.open{ pointer-events:auto; }
+    .drawer.open{ transform:translateY(0); opacity:1; }
+    .drawer-backdrop.open{ opacity:1; }
+    .drawer nav{ padding:14px 16px 18px; }
+    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px; }
     .drawer a{
-      display:block; width:100%;
-      text-decoration:none; color:var(--text); font-weight:700;
-      padding:12px 10px; border-radius:10px; background:var(--muted);
+      display:block; text-decoration:none; color:var(--text);
+      font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted);
     }
-    .drawer a[aria-current="page"]{ outline:2px solid var(--brand) }
 
-    /* ===== Main ===== */
-    main{
-      max-width:var(--maxw);
-      margin:0 auto;
-      padding:0; /* kein Abstand – Hero liegt direkt unter Header */
-    }
-    .section-host{ display:grid; gap:32px }
-
-    /* ===== Hero: Vollbild unter Menüband ===== */
+    /* ===== Hero 21:9 ===== */
     .hero {
       position: relative;
-      width: 100vw;
-      height: 100vh; /* ganze Bildschirmhöhe */
+      width: 100%;
+      aspect-ratio: 21/9; /* modernes Seitenverhältnis */
       margin: 0;
       padding: 0;
       overflow: hidden;
-      display: block;
     }
     .hero img {
       width: 100%;
@@ -156,22 +123,24 @@
       color: #fff;
       text-align: center;
       max-width: 1100px;
-      margin: 0 auto;
     }
     .hero-caption h1 {
       margin: 0 0 10px;
-      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      font-size: clamp(1.6rem, 3vw, 2.6rem);
       letter-spacing: .4px;
       text-shadow: 0 2px 6px rgba(0,0,0,0.6);
     }
     .hero-caption p {
       margin: 0;
       font-size: clamp(1rem, 1.6vw, 1.25rem);
-      line-height: 1.5;
       font-weight: 700;
       color: #fff;
       text-shadow: 0 2px 6px rgba(0,0,0,0.6);
     }
+
+    /* ===== Main ===== */
+    main{ max-width:var(--maxw); margin:0 auto; padding:0; }
+    .section-host{ display:grid; gap:32px; }
 
     /* ===== Footer ===== */
     footer{
@@ -180,29 +149,23 @@
       box-shadow:0 -2px 10px rgba(0,0,0,.15);
     }
 
-    /* ===== 13" / iPad Optimierung ===== */
     @media (min-width:900px){
-      nav.primary{ display:block }
-      .menu-toggle{ display:none }
-      .drawer, .drawer-backdrop{ display:none }
-      .brand-logo{ height:46px }
-      :root{ --nav-h:50px }
+      nav.primary{ display:block; }
+      .menu-toggle, .drawer, .drawer-backdrop{ display:none; }
+      .brand-logo{ height:46px; }
     }
   </style>
 </head>
 
 <body>
-  <!-- ===== Header: Logo mittig, Menü darunter ===== -->
   <header class="site-header" role="banner">
     <div class="header-top">
       <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
         <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
-        <span class="brand-text">Bücking Immobilien GmbH &amp; Co. KG</span>
       </a>
     </div>
 
     <div class="header-nav">
-      <!-- Desktop-Menü -->
       <nav class="primary" aria-label="Hauptnavigation">
         <ul>
           <li><a href="index.html#home" aria-current="page">Home</a></li>
@@ -214,13 +177,11 @@
         </ul>
       </nav>
 
-      <!-- Hamburger (mobil) -->
       <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
         <span class="menu-icon"></span>
       </button>
     </div>
 
-    <!-- Drawer (mobil) -->
     <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
     <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
       <nav aria-label="Mobile Navigation">
@@ -236,8 +197,8 @@
     </div>
   </header>
 
-  <!-- ===== Hauptbereich mit Hero ===== -->
   <main id="top">
+    <!-- Hero 21:9 -->
     <section id="home" class="hero" aria-label="Titelbereich">
       <img src="hero-startseite.jpeg" alt="Immobilienprojekt Bücking Immobilien">
       <div class="hero-overlay">
@@ -247,6 +208,9 @@
         </div>
       </div>
     </section>
+
+    <!-- Dynamische Module -->
+    <div id="section-host" class="section-host" aria-live="polite"></div>
   </main>
 
   <footer>
@@ -269,6 +233,20 @@
     backdrop.addEventListener('click',closeMenu);
     window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
     drawer.addEventListener('click',e=>{ const a=e.target.closest('a'); if(a) closeMenu(); });
+
+    /* ===== Module laden ===== */
+    const files=['landing.html','ueber-uns.html','zitat.html','leitbild.html'];
+    const host=document.getElementById('section-host');
+    async function loadSection(file){
+      try{
+        const res=await fetch(file,{cache:'no-store'});
+        if(!res.ok) throw new Error(file+' '+res.status);
+        const html=await res.text();
+        const wrapper=document.createElement('div');
+        wrapper.className='module'; wrapper.innerHTML=html; host.appendChild(wrapper);
+      }catch(err){ console.error(err); }
+    }
+    (async()=>{ for(const f of files){ await loadSection(f); } })();
   </script>
 </body>
 </html>
