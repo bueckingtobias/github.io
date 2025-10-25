@@ -1,26 +1,195 @@
-<section id="home" class="hero" aria-label="Titelbereich"
-         style="position:relative;width:100%;aspect-ratio:21/9;margin:0;padding:0;overflow:hidden;">
-  <img src="hero-startseite.jpeg"
-       alt="Immobilienprojekt Bücking Immobilien"
-       style="width:100%;height:100%;object-fit:cover;object-position:center center;display:block;">
-  <div class="hero-overlay"
-       style="position:absolute;inset:0;display:grid;place-items:center;
-              background:linear-gradient(to bottom,rgba(0,0,0,.30),rgba(0,0,0,.10),rgba(0,0,0,.30));
-              text-align:center;padding:0 16px;">
-    <div class="hero-caption" style="color:#fff;max-width:1100px;margin:0 auto;">
-      <h1 style="margin:0 0 10px;font-size:clamp(1.6rem,3vw,2.6rem);letter-spacing:.4px;
-                 text-shadow:0 2px 6px rgba(0,0,0,.6);">
-        Nachhaltig. Verlässlich. Persönlich.
-      </h1>
-      <p style="margin:0;font-size:clamp(1rem,1.6vw,1.25rem);font-weight:700;color:#fff;
-                text-shadow:0 2px 6px rgba(0,0,0,.6);">
-        Moderne Mietwohnungen mit regionaler Handschrift.
-      </p>
+<section id="home" class="landing" aria-label="Start">
+  <style>
+    .landing{
+      position:relative; isolation:isolate; color:#fff;
+      padding: clamp(64px, 9vw, 120px) 16px clamp(56px, 8vw, 100px);
+      background: linear-gradient(to bottom, rgba(255,255,255,.03), rgba(0,0,0,0));
+      overflow:hidden;
+    }
+    .landing::before{
+      content:""; position:absolute; inset:-20% -10% auto -10%; height:60%;
+      background: radial-gradient(60% 50% at 50% 0%, rgba(255,255,255,.06), transparent 60%);
+      opacity:.9; pointer-events:none; animation: drift 18s ease-in-out infinite alternate;
+    }
+    @keyframes drift{ 0%{transform:translate3d(-1%,0,0)} 100%{transform:translate3d(1%,0,0)} }
+    @media (prefers-reduced-motion: reduce){ .landing::before{ animation:none } }
+
+    .container{ max-width: var(--maxw, 1200px); margin:0 auto; }
+
+    /* Hero */
+    .hero{ display:grid; gap:18px; justify-items:center; text-align:center; margin:0 auto clamp(32px,5vw,56px) }
+    .kicker{
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.78); font-size:.9rem;
+    }
+    .hed{
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-weight:900; letter-spacing:.01em; line-height:1.08; margin:0; max-width:18ch;
+      font-size: clamp(2.2rem,5vw,3.4rem);
+    }
+    .dek{ margin:0; max-width:62ch; font-size:clamp(1rem,1.6vw,1.22rem); line-height:1.6; color:rgba(255,255,255,.95) }
+
+    /* Grid */
+    .grid{ display:grid; gap:18px; margin-top: clamp(26px,4vw,40px); grid-template-columns:1fr }
+    @media (min-width:800px){ .grid{ grid-template-columns: repeat(3,1fr) } }
+
+    /* 3D Glass Cards */
+    .card3d{
+      perspective: 1200px; position:relative; height: 240px;
+    }
+    .flip{
+      position:relative; width:100%; height:100%;
+      transform-style: preserve-3d;
+      transition: transform .8s cubic-bezier(.2,.6,.2,1);
+    }
+    .card3d.flipped .flip{ transform: rotateY(180deg) }
+    .face{
+      position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+      padding: clamp(18px,3.2vw,26px);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 20px 50px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08);
+      transform: rotateY(0deg); backface-visibility: hidden;
+    }
+    .face.back{
+      transform: rotateY(180deg);
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.22);
+    }
+
+    .front-content, .back-content{ max-width: 40ch }
+    .emoji{ font-size: 1.6rem; margin-bottom: 8px }
+    .title{
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-weight:900; letter-spacing:.01em; font-size: clamp(1.1rem,1.8vw,1.35rem); margin: 0 0 6px;
+    }
+    .copy{ margin:0; color: rgba(255,255,255,.94); line-height:1.55; font-size: 1rem }
+
+    /* Hover/Focus/Touch flip */
+    .card3d:focus-within .flip,
+    .card3d:hover .flip{ transform: rotateY(180deg) }
+    .card3d button.toggle{
+      position:absolute; inset:0; opacity:0; border:0; background:transparent; cursor:pointer;
+    }
+    .sr-only{
+      position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
+
+    /* Reveal on scroll */
+    .card3d{ transform: translateY(10px); opacity:0; transition: transform .6s ease, opacity .6s ease }
+    .card3d.reveal{ transform: translateY(0); opacity:1 }
+
+  </style>
+
+  <div class="container">
+    <!-- Hero -->
+    <header class="hero" data-reveal>
+      <div class="kicker">Bücking Immobilien</div>
+      <h1 class="hed">Nachhaltig. Verlässlich. Persönlich.</h1>
+      <p class="dek">Moderne Mietwohnungen mit regionaler Handschrift – klare Linien, langlebige Qualität und eine Zusammenarbeit auf Augenhöhe.</p>
+      <div class="cta-row" style="margin-top:18px">
+        <a class="btn alt" href="kontakt.html" style="appearance:none;border:1px solid rgba(255,255,255,.34);border-radius:999px;background:transparent;color:#fff;font-weight:800;letter-spacing:.04em;text-decoration:none;padding:12px 22px;display:inline-flex;align-items:center">Kontakt aufnehmen</a>
+      </div>
+    </header>
+
+    <!-- Glass Cards mit Flip -->
+    <div class="grid">
+      <!-- Card 1 -->
+      <article class="card3d" data-autoflip>
+        <div class="flip" aria-live="polite">
+          <div class="face front" aria-hidden="false">
+            <div class="front-content">
+              <div class="emoji" aria-hidden="true">🏗️</div>
+              <h3 class="title">Nachhaltig bauen</h3>
+            </div>
+          </div>
+          <div class="face back" aria-hidden="true">
+            <div class="back-content">
+              <p class="copy">Ressourcenschonende Materialien und effiziente Haustechnik sind unser Standard.</p>
+            </div>
+          </div>
+        </div>
+        <button class="toggle" aria-label="Nachhaltig bauen – Erklärung anzeigen"><span class="sr-only">Flip</span></button>
+      </article>
+
+      <!-- Card 2 -->
+      <article class="card3d" data-autoflip style="transition-delay:.06s">
+        <div class="flip" aria-live="polite">
+          <div class="face front" aria-hidden="false">
+            <div class="front-content">
+              <div class="emoji" aria-hidden="true">🤝</div>
+              <h3 class="title">Vertrauen schaffen</h3>
+            </div>
+          </div>
+          <div class="face back" aria-hidden="true">
+            <div class="back-content">
+              <p class="copy">Vertrauen entsteht durch Transparenz, Ehrlichkeit und Kontinuität – von der Anfrage bis zur Betreuung.</p>
+            </div>
+          </div>
+        </div>
+        <button class="toggle" class="toggle" aria-label="Vertrauen schaffen – Erklärung anzeigen"><span class="sr-only">Flip</span></button>
+      </article>
+
+      <!-- Card 3 -->
+      <article class="card3d" data-autoflip style="transition-delay:.12s">
+        <div class="flip" aria-live="polite">
+          <div class="face front" aria-hidden="false">
+            <div class="front-content">
+              <div class="emoji" aria-hidden="true">🌍</div>
+              <h3 class="title">Regional handeln</h3>
+            </div>
+          </div>
+          <div class="face back" aria-hidden="true">
+            <div class="back-content">
+              <p class="copy">Kurze Wege, verlässliche Strukturen: Wir arbeiten mit qualifizierten Handwerkspartnern vor Ort.</p>
+            </div>
+          </div>
+        </div>
+        <button class="toggle" aria-label="Regional handeln – Erklärung anzeigen"><span class="sr-only">Flip</span></button>
+      </article>
     </div>
   </div>
-</section>
 
-<!-- Platzhalter für spätere Abschnitte, optisch neutral -->
-<section style="padding:24px 0;border-top:1px solid #eaeaea;">
-  <!-- leer – Inhalte folgen später als eigene Module -->
+  <script>
+    // Reveal + Auto-Flip beim Scrollen über die Karten
+    (function(){
+      const cards = document.querySelectorAll('.card3d');
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            const el = e.target;
+            el.classList.add('reveal');
+            // einmaliger Auto-Flip (dezent)
+            if(el.hasAttribute('data-autoflip') && !el.dataset.autoflipped){
+              el.dataset.autoflipped = '1';
+              el.classList.add('flipped');
+              setTimeout(()=>el.classList.remove('flipped'), 1400);
+            }
+            io.unobserve(el);
+          }
+        });
+      }, {threshold:.35});
+      cards.forEach(c=>io.observe(c));
+
+      // Hover/Focus/Click Flip Steuerung
+      cards.forEach(card=>{
+        const btn = card.querySelector('button.toggle');
+        // Click/Touch
+        btn.addEventListener('click', (e)=>{
+          e.preventDefault();
+          card.classList.toggle('flipped');
+        });
+        // Tastatur: Enter/Space handled by button default
+        // Hover wird via CSS erledigt; hier Fokus zurücksetzen beim Blur
+        card.addEventListener('focusout', (e)=>{
+          // nur zurückdrehen, wenn Fokus komplett raus ist
+          if(!card.contains(e.relatedTarget)){
+            card.classList.remove('flipped');
+          }
+        });
+      });
+    })();
+  </script>
 </section>
