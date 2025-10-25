@@ -5,339 +5,273 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Impressum & Datenschutz – Bücking Immobilien GmbH & Co. KG</title>
   <style>
-    :root{
-      --brand:#004225;          /* Smyrna-Grün */
-      --text:#ffffff;
-    }
+    :root{ --brand:#004225; --text:#ffffff; }
 
-    /* Basis-Layout (wie landing.html) */
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
-    body { background-color: var(--brand); color: var(--text); }
+    /* ====== GLOBAL (wie Landing) ====== */
+    html,body{ margin:0; padding:0; overflow-x:hidden; font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+    body{ background:var(--brand); color:var(--text); }
 
-    .landing {
-      position: relative;
-      isolation: isolate;
-      color: var(--text);
-      background-color: var(--brand);
-      width: 100%;
-      padding: clamp(80px, 10vw, 140px) 16px clamp(80px, 8vw, 120px);
-      overflow: hidden;
-      box-sizing: border-box;
-      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    /* Header (wie Landing) */
+    header.site-header{
+      position:sticky; top:0; z-index:1000;
+      background:#00361e; /* brand-700 aus Landing */
+      color:#fff; box-shadow:0 2px 10px rgba(0,0,0,.25);
     }
+    .header-top{ display:grid; place-items:center; padding:14px 16px; }
+    .brand-link{ display:inline-flex; align-items:center; gap:10px; color:#fff; text-decoration:none; }
+    .brand-logo{ height:46px; width:auto; filter:brightness(0) invert(1); display:block; }
 
-    .container {
-      max-width: 1100px;
-      margin-inline: auto;
-      text-align: center;
-      padding-inline: 16px;
-      box-sizing: border-box;
+    .header-nav{
+      display:flex; align-items:center; justify-content:center;
+      border-top:1px solid rgba(255,255,255,.15);
+      min-height:46px; padding:0 8px; position:relative;
     }
+    nav.primary{ display:none; }
+    nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
+    nav.primary a{ color:#fff; text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; }
+    nav.primary a:hover{ opacity:.85; }
+    nav.primary a[aria-current="page"]{ text-decoration:underline; }
 
-    /* Hero (identisch zur Landing) */
-    .hero .kicker {
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.65);
-      font-size: .9rem;
-      margin-bottom: 28px;
+    .menu-toggle{
+      position:absolute; right:8px; width:44px; height:44px; border:0; background:transparent; color:#fff;
+      display:grid; place-items:center; border-radius:10px; cursor:pointer;
     }
-    .hero .hed {
-      font-weight:900;
-      letter-spacing:.005em;
-      line-height:1.05;
-      margin:0 auto 22px;
-      font-size:clamp(1.5rem, 3.2vw, 2.2rem);
+    .menu-icon, .menu-icon::before, .menu-icon::after{
+      content:""; display:block; width:22px; height:2px; background:#fff; border-radius:2px; transition:.25s;
     }
+    .menu-icon::before{ transform:translateY(-7px) }
+    .menu-icon::after{ transform:translateY(5px) }
+    .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg) }
+    .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
+    .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
+
+    .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); opacity:0; pointer-events:none; transition:.25s; z-index:999; }
+    .drawer{ position:fixed; top:calc(46px + 28px + 46px); left:0; right:0; background:#004225;
+      transform:translateY(-8px); opacity:0; pointer-events:none; border-bottom:1px solid rgba(255,255,255,.15);
+      box-shadow:0 10px 25px rgba(0,0,0,.25); transition:.25s; z-index:1001; }
+    .drawer.open,.drawer-backdrop.open{ pointer-events:auto }
+    .drawer.open{ transform:translateY(0); opacity:1 }
+    .drawer-backdrop.open{ opacity:1 }
+    .drawer nav{ padding:14px 16px 18px }
+    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+    .drawer a{ display:block; font-weight:700; padding:12px 10px; border-radius:10px; background:rgba(255,255,255,.1); color:#fff; text-decoration:none; }
+
+    @media (min-width:900px){ nav.primary{ display:block } .menu-toggle{ display:none } .drawer,.drawer-backdrop{ display:none } }
+
+    /* ====== Landing-Section-Styles (1:1) ====== */
+    .landing{
+      position:relative; isolation:isolate; color:var(--text); background-color:var(--brand);
+      width:100%; padding: clamp(80px, 10vw, 140px) 16px clamp(80px, 8vw, 120px);
+      overflow:hidden; box-sizing:border-box;
+    }
+    .container{ max-width:1100px; margin-inline:auto; text-align:center; padding-inline:16px; box-sizing:border-box; }
+    .hero .kicker{ font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.65); font-size:.9rem; margin-bottom:28px; }
+    .hero .hed{ font-weight:900; letter-spacing:.005em; line-height:1.05; margin:0 auto 22px; font-size:clamp(1.5rem, 3.2vw, 2.2rem); }
     @media (min-width:1024px){ .hero .hed{ white-space:nowrap; } }
-    .hero .dek {
-      margin: 0 auto 36px;
-      max-width: 60ch;
-      font-size: clamp(0.95rem, 1.3vw, 1.1rem);
-      line-height: 1.6;
-      color: rgba(255,255,255,.85);
+    .hero .dek{ margin:0 auto 36px; max-width:60ch; font-size:clamp(.95rem,1.3vw,1.1rem); line-height:1.6; color:rgba(255,255,255,.85); }
+    .cta-row a{
+      appearance:none; border:1px solid rgba(255,255,255,.25); border-radius:999px; background:transparent; color:#fff;
+      font-weight:700; letter-spacing:.04em; text-decoration:none; padding:12px 28px; display:inline-flex; align-items:center; transition:all .25s ease;
     }
-    .cta-row a {
-      appearance: none;
-      border: 1px solid rgba(255,255,255,.25);
-      border-radius: 999px;
-      background: transparent;
-      color: #fff;
-      font-weight: 700;
-      letter-spacing: .04em;
-      text-decoration: none;
-      padding: 12px 28px;
-      display: inline-flex;
-      align-items: center;
-      transition: all .25s ease;
-    }
-    .cta-row a:hover {
-      background: rgba(255,255,255,.08);
-      border-color: rgba(255,255,255,.35);
-    }
+    .cta-row a:hover{ background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.35); }
 
-    /* Grid (wie Landing, 3 Spalten ab 800px) */
-    .grid {
-      display: grid;
-      gap: 28px;
-      margin-top: clamp(40px, 5vw, 60px);
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 800px) {
-      .grid { grid-template-columns: repeat(3, 1fr); }
-    }
+    .grid{ display:grid; gap:28px; margin-top:clamp(40px,5vw,60px); grid-template-columns:1fr; }
+    @media (min-width:800px){ .grid{ grid-template-columns:repeat(3,1fr); } }
 
-    /* Card-Stil (wie Landing) */
-    .card {
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 22px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 10px 25px rgba(0,0,0,.25);
-      padding: 36px 28px;
-      transition: transform .35s ease, box-shadow .35s ease;
-      text-align: left;             /* Impressum liest sich linksbündig besser */
+    .card{
+      background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15); border-radius:22px;
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      box-shadow:0 10px 25px rgba(0,0,0,.25); padding:36px 28px; transition:transform .35s ease, box-shadow .35s ease;
+      text-align:left;
     }
-    .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 14px 30px rgba(0,0,0,.3);
-    }
-    .card .icon {
-      width: 52px;
-      height: 52px;
-      margin: 0 0 18px 0;          /* linksbündig */
-      border-radius: 14px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.25);
-      display: grid;
-      place-items: center;
-    }
-    .card .icon svg {
-      width: 26px;
-      height: 26px;
-      stroke: #fff;
-      stroke-width: 2;
-      fill: none;
-    }
-    .card-title {
-      font-weight: 900;
-      letter-spacing: .005em;
-      line-height: 1.1;
-      margin: 0 0 10px;
-      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
-      color: #fff;
-    }
-    .card-copy {
-      margin: 0;
-      color: rgba(255,255,255,.9);
-      line-height: 1.65;
-      font-size: 1rem;
-    }
-    .card-copy a{ color:#fff; text-decoration: underline; text-underline-offset:3px; }
+    .card:hover{ transform:translateY(-6px); box-shadow:0 14px 30px rgba(0,0,0,.3); }
+    .card .icon{ width:52px; height:52px; margin:0 0 18px 0; border-radius:14px; background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.25); display:grid; place-items:center; }
+    .card .icon svg{ width:26px; height:26px; stroke:#fff; stroke-width:2; fill:none; }
+    .card-title{ font-weight:900; letter-spacing:.005em; line-height:1.1; margin:0 0 10px; font-size:clamp(1.1rem,2.2vw,1.6rem); color:#fff; }
+    .card-copy{ margin:0; color:rgba(255,255,255,.9); line-height:1.65; font-size:1rem; }
+    .card-copy a{ color:#fff; text-decoration:underline; text-underline-offset:3px; }
+    @media (min-width:1100px){ .card.long{ grid-column:span 3; } }
+    .card-copy ul{ margin:8px 0 0 20px; }
+    .card-copy li{ margin:4px 0; }
 
-    /* Längere Textabschnitte: 2-Spalten-Layout ab 1100px, aber Karten bleiben konsistent */
-    @media (min-width:1100px){
-      .card.long { grid-column: span 3; } /* volle Breite für lange Abschnitte */
-    }
-
-    /* Listen im Datenschutz */
-    .card-copy ul{ margin: 8px 0 0 20px; }
-    .card-copy li{ margin: 4px 0; }
-
-    /* Footer im Landing-Stil (schlicht) */
-    .site-footer{
-      margin-top: clamp(40px, 6vw, 80px);
-      color: rgba(255,255,255,.85);
-      font-size:.95rem;
+    /* Footer (wie Landing: schlicht unten) */
+    footer.site-footer{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#00361e; color:#fff; text-align:center; padding:20px; font-size:.95rem;
+      box-shadow:0 -2px 10px rgba(0,0,0,.25);
     }
   </style>
 </head>
 <body>
 
+<!-- ===== Header wie Landing ===== -->
+<header class="site-header">
+  <div class="header-top">
+    <a class="brand-link" href="index.html#top">
+      <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
+    </a>
+  </div>
+  <div class="header-nav">
+    <nav class="primary">
+      <ul>
+        <li><a href="index.html#home">Home</a></li>
+        <li><a href="unternehmen.html">Unternehmen</a></li>
+        <li><a href="referenzen.html">Referenzen</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+        <li><a href="impressum.html" aria-current="page">Impressum</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Menü öffnen">
+      <span class="menu-icon"></span>
+    </button>
+  </div>
+</header>
+<div class="drawer-backdrop" id="backdrop"></div>
+<div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+  <nav>
+    <ul>
+      <li><a href="index.html#home">Home</a></li>
+      <li><a href="unternehmen.html">Unternehmen</a></li>
+      <li><a href="referenzen.html">Referenzen</a></li>
+      <li><a href="kontakt.html">Kontakt</a></li>
+      <li><a href="impressum.html" aria-current="page">Impressum</a></li>
+    </ul>
+  </nav>
+</div>
+
+<!-- ===== Inhalt im Landing-Design ===== -->
 <section class="landing" aria-label="Impressum & Datenschutz">
   <div class="container">
     <header class="hero">
       <div class="kicker">Bücking Immobilien GmbH &amp; Co. KG</div>
       <h1 class="hed">Impressum &amp; Datenschutzerklärung</h1>
-      <p class="dek">
-        Rechtliche Pflichtangaben und Informationen zum Schutz Ihrer Daten.
-      </p>
-      <div class="cta-row">
-        <a href="kontakt.html">Kontakt aufnehmen</a>
-      </div>
+      <p class="dek">Rechtliche Pflichtangaben und Informationen zum Datenschutz – im gleichen Design wie unsere Startseite.</p>
+      <div class="cta-row"><a href="kontakt.html">Kontakt aufnehmen</a></div>
     </header>
 
     <div class="grid">
       <!-- Impressum -->
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 20V10l9-5 9 5v10"/><path d="M9 22V12h6v10"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20V10l9-5 9 5v10"/><path d="M9 22V12h6v10"/></svg></div>
         <h3 class="card-title">Impressum</h3>
         <div class="card-copy">
-          <p><strong>Bücking Immobilien GmbH &amp; Co. KG</strong><br>
-          Baumstraße 35A<br>27777 Ganderkesee<br>Deutschland</p>
-          <p>Telefon: <a href="tel:+4917657960759">+49 176 57960759</a><br>
-          E-Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
+          <p><strong>Bücking Immobilien GmbH &amp; Co. KG</strong><br>Baumstraße 35A<br>27777 Ganderkesee<br>Deutschland</p>
+          <p>Telefon: <a href="tel:+4917657960759">+49 176 57960759</a><br>E-Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
         </div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/></svg></div>
         <h3 class="card-title">Vertretung</h3>
         <div class="card-copy">
-          <p>Komplementärin: <strong>Bücking Beteiligungs GmbH</strong><br>
-          Vertreten durch die Geschäftsführer Tobias Bücking und Bernfried Bücking.</p>
+          <p>Komplementärin: <strong>Bücking Beteiligungs GmbH</strong><br>Vertreten durch die Geschäftsführer Tobias Bücking und Bernfried Bücking.</p>
         </div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 2v4M16 2v4M2 10h20"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 2v4M16 2v4M2 10h20"/></svg></div>
         <h3 class="card-title">Register</h3>
         <div class="card-copy">
-          <p>Bücking Immobilien GmbH &amp; Co. KG<br>
-          Amtsgericht Oldenburg, HRA [Platzhalter]</p>
-          <p>Bücking Beteiligungs GmbH (Komplementärin)<br>
-          Amtsgericht Oldenburg, HRB [Platzhalter]</p>
+          <p>Bücking Immobilien GmbH &amp; Co. KG<br>Amtsgericht Oldenburg, HRA [Platzhalter]</p>
+          <p>Bücking Beteiligungs GmbH (Komplementärin)<br>Amtsgericht Oldenburg, HRB [Platzhalter]</p>
         </div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M9 14l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 14l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg></div>
         <h3 class="card-title">Umsatzsteuer</h3>
-        <div class="card-copy">
-          <p>USt-IdNr.: DE [Platzhalter]</p>
-        </div>
+        <div class="card-copy"><p>USt-IdNr.: DE [Platzhalter]</p></div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 3h18v4H3z"/><path d="M8 7v14M16 7v14"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3h18v4H3z"/><path d="M8 7v14M16 7v14"/></svg></div>
         <h3 class="card-title">Aufsichtsbehörde</h3>
-        <div class="card-copy">
-          <p>Industrie- und Handelskammer Oldenburg<br>
-          Moslestraße 6, 26122 Oldenburg</p>
-        </div>
+        <div class="card-copy"><p>IHK Oldenburg, Moslestraße 6, 26122 Oldenburg</p></div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16 20a6 6 0 1 0-8 0"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16 20a6 6 0 1 0-8 0"/></svg></div>
         <h3 class="card-title">Haftung für Inhalte</h3>
-        <div class="card-copy">
-          <p>Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte verantwortlich. Nach §§ 8 bis 10 TMG sind wir jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
-        </div>
+        <div class="card-copy"><p>Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte verantwortlich. Nach §§ 8–10 TMG keine Pflicht zur Überwachung übermittelter oder gespeicherter fremder Informationen.</p></div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
         <h3 class="card-title">Haftung für Links</h3>
-        <div class="card-copy">
-          <p>Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben. Für diese Inhalte ist stets der jeweilige Anbieter oder Betreiber verantwortlich.</p>
-        </div>
+        <div class="card-copy"><p>Für Inhalte externer Links sind ausschließlich deren Betreiber verantwortlich.</p></div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M8 6h8M8 10h8M8 14h8M8 18h8"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M8 6h8M8 10h8M8 14h8M8 18h8"/></svg></div>
         <h3 class="card-title">Urheberrecht</h3>
-        <div class="card-copy">
-          <p>Die durch die Seitenbetreiber erstellten Inhalte und Werke unterliegen dem deutschen Urheberrecht.</p>
-        </div>
+        <div class="card-copy"><p>Die erstellten Inhalte und Werke unterliegen dem deutschen Urheberrecht.</p></div>
       </article>
 
-      <!-- Datenschutzerklärung (volle Breite für bessere Lesbarkeit) -->
       <article class="card long">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <h3 class="card-title">Datenschutzerklärung</h3>
-        <div class="card-copy">
-          <p>Wir nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Ihre personenbezogenen Daten werden vertraulich und gemäß der gesetzlichen Vorschriften behandelt.</p>
-        </div>
+        <div class="card-copy"><p>Wir nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Ihre personenbezogenen Daten werden vertraulich und gemäß der gesetzlichen Vorschriften behandelt.</p></div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-8a8 8 0 1 0-16 0v8"/><path d="M12 7v1"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 21v-8a8 8 0 1 0-16 0v8"/><path d="M12 7v1"/></svg></div>
         <h3 class="card-title">1. Verantwortlicher</h3>
         <div class="card-copy">
-          <p>Bücking Immobilien GmbH &amp; Co. KG<br>
-          Baumstraße 35A, 27777 Ganderkesee<br>
+          <p>Bücking Immobilien GmbH &amp; Co. KG<br>Baumstraße 35A, 27777 Ganderkesee<br>
           E-Mail: <a href="mailto:info@buecking-immobilien.de">info@buecking-immobilien.de</a></p>
         </div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 5h18"/><path d="M10 9h11"/><path d="M3 13h18"/><path d="M10 17h11"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5h18"/><path d="M10 9h11"/><path d="M3 13h18"/><path d="M10 17h11"/></svg></div>
         <h3 class="card-title">2. Datenverarbeitung</h3>
-        <div class="card-copy">
-          <p>Beim Besuch der Website werden automatisch technische Daten (IP-Adresse, Browser, Zeitpunkt) erfasst, um einen sicheren Betrieb zu gewährleisten.</p>
-        </div>
+        <div class="card-copy"><p>Beim Besuch der Website werden automatisch technische Daten (IP, Browser, Zeitpunkt) erfasst, um einen sicheren Betrieb zu gewährleisten.</p></div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-6 5 6"/><path d="M12 4v12"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-6 5 6"/><path d="M12 4v12"/></svg></div>
         <h3 class="card-title">3. Kontaktaufnahme</h3>
-        <div class="card-copy">
-          <p>Bei Kontaktaufnahme per E-Mail speichern wir Ihre Angaben zur Bearbeitung der Anfrage. Eine Weitergabe erfolgt nicht ohne Ihre Einwilligung.</p>
-        </div>
+        <div class="card-copy"><p>Bei Kontakt per E-Mail speichern wir Ihre Angaben zur Bearbeitung. Keine Weitergabe ohne Einwilligung.</p></div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M2 12h20"/><path d="M12 2v20"/><circle cx="12" cy="12" r="10"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 12h20"/><path d="M12 2v20"/><circle cx="12" cy="12" r="10"/></svg></div>
         <h3 class="card-title">4. Google Maps</h3>
         <div class="card-copy">
-          <p>Diese Seite verwendet Google Maps zur Darstellung unseres Standorts. Anbieter ist die Google Ireland Limited. Es werden Daten an Google übertragen.
-          Weitere Infos: <a href="https://policies.google.com/privacy?hl=de" target="_blank" rel="noopener">Datenschutzerklärung von Google</a>.</p>
+          <p>Diese Seite verwendet Google Maps (Google Ireland Limited). Es werden Daten an Google übertragen.
+            Mehr Infos: <a href="https://policies.google.com/privacy?hl=de" target="_blank" rel="noopener">Datenschutzerklärung von Google</a>.
+          </p>
         </div>
       </article>
 
       <article class="card">
-        <div class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M8 12h8"/><path d="M8 16h8"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
-        </div>
+        <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 12h8"/><path d="M8 16h8"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg></div>
         <h3 class="card-title">5. Ihre Rechte</h3>
         <div class="card-copy">
           <ul>
-            <li>Auskunft</li>
-            <li>Berichtigung</li>
-            <li>Löschung</li>
-            <li>Einschränkung</li>
-            <li>Widerspruch</li>
-            <li>Datenübertragbarkeit</li>
+            <li>Auskunft</li><li>Berichtigung</li><li>Löschung</li>
+            <li>Einschränkung</li><li>Widerspruch</li><li>Datenübertragbarkeit</li>
           </ul>
         </div>
       </article>
     </div>
-
-    <p class="site-footer">&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</p>
   </div>
 </section>
 
+<!-- ===== Footer wie Landing ===== -->
+<footer class="site-footer">&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
+
+<script>
+  // Mobile Navigation (wie Landing)
+  const toggle=document.querySelector('.menu-toggle');
+  const drawer=document.getElementById('mobile-drawer');
+  const backdrop=document.getElementById('backdrop');
+  const setOpen=(open)=>{ toggle?.setAttribute('aria-expanded',String(open)); drawer?.classList.toggle('open',open); backdrop?.classList.toggle('open',open) };
+  toggle?.addEventListener('click',()=>setOpen(toggle.getAttribute('aria-expanded')!=='true'));
+  backdrop?.addEventListener('click',()=>setOpen(false));
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape') setOpen(false) });
+  drawer?.addEventListener('click',e=>{ if(e.target.closest('a')) setOpen(false) });
+</script>
 </body>
 </html>
