@@ -4,9 +4,8 @@
       position:relative; color:#fff; isolation:isolate;
       padding: clamp(28px, 5vw, 56px) 16px clamp(36px, 6vw, 64px);
       background: linear-gradient(to bottom, rgba(255,255,255,.02), rgba(0,0,0,0));
-      /* sorgt dafür, dass Ankersprünge nicht unter den Fix-Header rutschen und nichts „hochschiebt“ */
       scroll-margin-top: var(--nav-h, 46px);
-      clear: both;            /* falls darüber Floats genutzt wurden */
+      clear: both;
     }
 
     .quote-wrap{
@@ -24,12 +23,12 @@
       display: grid;
       gap: clamp(14px, 2vw, 22px);
       align-items: center;
-      grid-template-columns: 1fr;   /* Mobile: untereinander */
+      grid-template-columns: 1fr;
     }
 
     @media (min-width: 900px){
       .quote-card{
-        grid-template-columns: auto 1fr; /* Desktop: Bild links, Text rechts */
+        grid-template-columns: auto 1fr;
       }
     }
 
@@ -47,34 +46,27 @@
     blockquote{
       margin:0;
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      font-weight:700; line-height:1.55; color:#fff;
+      font-weight:500;
+      font-style: italic;             /* kursiv */
+      line-height:1.55;
+      color:#fff;
       font-size: clamp(1.05rem, 1.8vw, 1.3rem);
-      position:relative; padding-left:36px;
-      max-width: 65ch;
+      position:relative;
+      padding-left:36px;
+      max-width:65ch;
     }
     blockquote::before{
       content:"“";
       position:absolute; left:0; top:-6px;
-      font-size: 2.2rem; line-height:1; opacity:.35;
+      font-size:2.2rem; line-height:1; opacity:.35;
     }
 
     .quote-author{
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-weight:800;
+      letter-spacing:.04em;
+      margin-top:6px;
+      margin-left:36px;               /* bündig mit Blockquote-Text */
       color: rgba(255,255,255,.85);
-      font-weight:800; letter-spacing:.04em; margin-top:6px;
     }
   </style>
-
-  <div class="quote-wrap">
-    <div class="quote-card">
-      <div class="quote-media">
-        <img class="quote-photo" src="tobias.jpeg" alt="Tobias Bücking">
-      </div>
-      <div class="quote-content">
-        <blockquote>
-          „Regional handeln heißt für uns: kurze Wege, transparente Entscheidungen und Verantwortung gegenüber Mietern, Partnern und Standort.“
-        </blockquote>
-        <div class="quote-author">Tobias Bücking</div>
-      </div>
-    </div>
-  </div>
-</section>
