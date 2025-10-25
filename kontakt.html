@@ -19,6 +19,7 @@
       --maxw:1200px;
       --nav-h:46px;
       --hero-w:980px;           /* gemeinsame Breite Panels */
+      --footer-h:64px;          /* feste Footer-Höhe für Fixierung */
     }
 
     *{box-sizing:border-box}
@@ -28,6 +29,7 @@
       color:var(--text);
       background:var(--bg);
       scroll-behavior:smooth;
+      min-height:100%;
     }
 
     /* ===== Header (identisch) ===== */
@@ -80,7 +82,11 @@
     .drawer a{ display:block; text-decoration:none; color:var(--text); font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted) }
 
     /* ===== Main ===== */
-    main{ max-width:var(--maxw); margin:0 auto; padding: clamp(28px, 4vw, 48px) 16px 56px; }
+    main{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding: clamp(28px, 4vw, 48px) 16px calc(16px + var(--footer-h)); /* Platz für fixen Footer */
+    }
 
     .intro-wrap{ max-width: var(--hero-w); margin: 0 auto; text-align:center; padding: clamp(8px, 2vw, 16px) 0 0; }
     .kicker{
@@ -192,10 +198,16 @@
     }
     .address{ margin:10px auto 0; text-align:center; opacity:.95; }
 
+    /* ===== Fixierter Footer ===== */
     footer{
+      position:fixed; left:0; right:0; bottom:0;
+      height:var(--footer-h);
       background:var(--brand-700); color:var(--text);
-      text-align:center; padding:18px; font-size:.95rem;
+      display:grid; place-items:center;
+      padding:0 18px; /* horizontales Padding, Höhe kommt über grid-centering */
+      font-size:.95rem;
       box-shadow:0 -2px 10px rgba(0,0,0,.25);
+      z-index:900; /* unterhalb Drawer/Backdrop (999/1001) */
     }
 
     @media (min-width:900px){
