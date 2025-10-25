@@ -10,16 +10,15 @@
       --brand:#004225;          /* Smyrna-Grün */
       --brand-700:#00361e;
       --text:#ffffff;           /* Weiß für Text */
-      --bg:#004225;             /* Hintergrund in Smyrna-Grün */
-      --muted:#ffffff1a;        /* leicht transparente Akzente */
-      --muted-strong:#ffffff26; /* etwas kräftiger für Hover */
+      --bg:#004225;             /* Hintergrundfarbe */
+      --muted:#ffffff1a;        /* leichte Akzente */
+      --muted-strong:#ffffff26; /* Hover-Akzent */
       --shadow:0 2px 10px rgba(0,0,0,.25);
       --shadow-strong:0 10px 30px rgba(0,0,0,.35);
       --radius:12px;
       --maxw:1200px;
       --nav-h:46px;
-      --tab-gap:8px;
-      --hero-w:980px;           /* bekannte Breite für Bild & Panel */
+      --hero-w:980px;           /* gemeinsame Breite Bild/Panel */
     }
 
     *{box-sizing:border-box}
@@ -31,7 +30,7 @@
       scroll-behavior:smooth;
     }
 
-    /* ===== Header (identisch) ===== */
+    /* ===== Header ===== */
     header.site-header{
       position:sticky; top:0; left:0; right:0; z-index:1000;
       background:var(--brand-700);
@@ -73,59 +72,46 @@
       transform:translateY(-8px); opacity:0; pointer-events:none; border-bottom:1px solid rgba(255,255,255,.15); box-shadow:0 10px 25px rgba(0,0,0,.25);
       transition:transform .25s ease, opacity .25s ease; z-index:1001;
     }
-    .drawer.open, .drawer-backdrop.open{ pointer-events:auto } .drawer.open{ transform:translateY(0); opacity:1 } .drawer-backdrop.open{ opacity:1 }
-    .drawer nav{ padding:14px 16px 18px } .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+    .drawer.open, .drawer-backdrop.open{ pointer-events:auto } 
+    .drawer.open{ transform:translateY(0); opacity:1 } 
+    .drawer-backdrop.open{ opacity:1 }
+    .drawer nav{ padding:14px 16px 18px } 
+    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
     .drawer a{ display:block; text-decoration:none; color:var(--text); font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted) }
 
     /* ===== Main ===== */
     main{ max-width:var(--maxw); margin:0 auto; padding: clamp(28px, 4vw, 48px) 16px 56px; }
+
+    .intro-wrap{ max-width: var(--hero-w); margin: 0 auto; text-align:center; padding: clamp(8px, 2vw, 16px) 0 0; }
     .kicker{
       font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65;
-      font-size:.9rem; margin:4px 0 12px; text-align:center;
+      font-size:.9rem; text-align:center; margin: clamp(12px, 2vw, 18px) 0 10px;
     }
-    h1,h2,h3,h4{ margin:0 0 8px; }
-
-    /* Zweizeilige Überschrift (untereinander) */
     .title-stacked{
-      text-align:center;
-      margin-inline:auto;
-      max-width:100%;
-      line-height:1.1;
-      letter-spacing:.01em;
+      text-align:center; margin-inline:auto; max-width:100%; line-height:1.1; letter-spacing:.01em;
+      margin-bottom: clamp(8px, 2vw, 14px);
     }
     .title-stacked .line1{
-      display:block;
-      font-size: clamp(20px, 3.0vw, 30px); /* Landingpage-Niveau */
-      font-weight: 800;
+      display:block; font-size: clamp(20px, 3.0vw, 30px); font-weight:800; margin-bottom: 4px;
     }
     .title-stacked .line2{
-      display:block;
-      font-size: clamp(16px, 2.4vw, 24px);
-      font-weight: 700;
-      opacity:.95;
+      display:block; font-size: clamp(16px, 2.4vw, 24px); font-weight:700; opacity:.95;
     }
-    p{ margin:0 0 14px; opacity:.95; }
+    .intro-wrap p{ margin: 10px auto 0; opacity:.95; max-width: 70ch; }
 
-    .intro-wrap{ max-width: var(--hero-w); margin: 0 auto; text-align:center; }
-
-    /* Hero: Originalverhältnis, fixe Content-Breite */
-    .project-intro{ margin-top:16px; }
+    /* Bildbereich */
     .project-hero{
       position:relative; overflow:hidden; border-radius: var(--radius);
       background: rgba(255,255,255,.04);
       box-shadow: var(--shadow);
-      max-width: var(--hero-w); margin: 0 auto;
+      max-width: var(--hero-w); margin: 20px auto;
     }
     .project-hero img{ display:block; width:100%; height:auto; object-fit:contain; }
 
-    /* Tabs / Radio-Menü wie Leitbild */
-    .tabs{
-      max-width: var(--hero-w); margin: clamp(18px,3vw,26px) auto 0;
-      display:flex; flex-direction:column; gap:14px; align-items:center;
-    }
-    .tab-controls{
-      display:flex; gap:var(--tab-gap); flex-wrap:wrap; justify-content:center;
-    }
+    /* Tabs */
+    .tabs{ max-width: var(--hero-w); margin: clamp(18px,3vw,26px) auto 0;
+      display:flex; flex-direction:column; gap:14px; align-items:center; }
+    .tab-controls{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
     .tab-controls input{ position:absolute; opacity:0; pointer-events:none; }
     .tab-controls label{
       user-select:none; cursor:pointer; padding:10px 14px; border-radius:999px; font-weight:800;
@@ -136,80 +122,68 @@
     .tab-controls label:hover{ transform:translateY(-1px); opacity:1; }
     .tab-controls input:checked + label{ background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.28); }
 
-    /* Detailpanel: gleiche Breite wie Hero-Bild */
     .panels{ width:100%; display:grid; place-items:center; }
     .panel{
-      display:none;
-      width:min(100%, var(--hero-w));
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
+      display:none; width:min(100%, var(--hero-w));
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius); box-shadow: var(--shadow);
     }
     .panel.active{ display:block; }
 
-    .panel .box-body{
-      padding:16px 16px 18px;
-      display:flex; flex-direction:column; gap:12px;
-      align-items:center; text-align:center;
-    }
-    .panel h4{ font-size:1.06rem; margin:2px 0 2px; letter-spacing:.01em; }
+    .box-body{ padding:16px 16px 18px; display:flex; flex-direction:column; gap:12px;
+      align-items:center; text-align:center; }
 
     .meta{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; opacity:.95; font-size:.98rem; }
-    .meta .chip{ background:var(--muted); padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); }
+    .chip{ background:var(--muted); padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); }
 
+    /* ==== Preisstruktur: links Labels untereinander, rechts Werte bündig ==== */
     .price-list{
-      list-style:none; margin:4px auto 0; padding:0;
-      display:grid; grid-template-columns: auto auto; gap:8px 14px;
-      width:min(92%, 420px); text-align:left;
+      list-style:none; margin:4px auto 0; padding:0; width:min(92%, 460px);
     }
-    .price-list li{ display:contents; }
-    .price-list .label{ opacity:.85; }
-    .price-list .value{ font-weight:800; }
+    .price-list li{
+      display:flex; justify-content:space-between; align-items:baseline;
+      gap:16px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .price-list .label{ opacity:.85; text-align:left; }
+    .price-list .value{
+      font-weight:800; text-align:right; min-width:120px;
+      flex:0 0 120px; /* feste Spaltenbreite für exakte vertikale Ausrichtung */
+    }
 
-    .badges{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:2px; }
-    .badge{ font-weight:700; padding:6px 10px; border-radius:999px; background:var(--muted); border:1px solid rgba(255,255,255,.12); }
-    .badge.vermietet{ opacity:.85; }
+    /* Gesamt – leicht hinterlegt (wie gewünscht) */
+    .total{
+      margin:10px auto 0; padding:10px 12px;
+      width:min(92%, 460px);
+      display:flex; justify-content:space-between; align-items:center;
+      font-weight:800; border-radius:10px;
+      background:var(--muted); border:1px solid rgba(255,255,255,.12);
+    }
 
-    /* Einheitliche Buttons + Hover-Animation */
+    .badges{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    .badge{ font-weight:700; padding:6px 10px; border-radius:999px;
+      background:var(--muted); border:1px solid rgba(255,255,255,.12); }
+    .vermietet{ opacity:.8; }
+
     .actions{ margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
     .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
       padding:10px 14px; border-radius:12px; text-decoration:none; color:var(--text);
       background:var(--muted); border:1px solid rgba(255,255,255,.14);
-      font-weight:800;
-      transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+      font-weight:800; transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease;
       box-shadow: var(--shadow);
-      will-change: transform;
     }
-    .btn:hover{
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-strong);
-      background: var(--muted-strong);
-      border-color: rgba(255,255,255,.28);
-    }
-    .btn:focus-visible{
-      outline:2px solid rgba(255,255,255,.6);
-      outline-offset:2px;
-    }
+    .btn:hover{ transform:translateY(-2px); background:var(--muted-strong); box-shadow:var(--shadow-strong); }
 
-    /* Zusatzinfo */
     .apartment-info{
-      margin-top: clamp(18px, 3vw, 28px);
-      padding:16px;
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.12);
-      max-width: var(--hero-w);
-      margin-inline:auto;
+      margin-top: clamp(18px, 3vw, 28px); padding:16px; border-radius:var(--radius);
+      background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12);
+      max-width: var(--hero-w); margin-inline:auto;
     }
-    .apartment-info p{ margin:0 0 10px; }
-    .apartment-info strong{ font-weight:800; }
 
-    /* ===== Footer (identisch) ===== */
     footer{
-      background:var(--brand-700); color:var(--text); text-align:center; padding:18px; font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25)
+      background:var(--brand-700); color:var(--text);
+      text-align:center; padding:18px; font-size:.95rem;
+      box-shadow:0 -2px 10px rgba(0,0,0,.25);
     }
 
     @media (min-width:900px){
@@ -218,257 +192,221 @@
   </style>
 </head>
 <body>
-  <!-- Header identisch -->
-  <header class="site-header" role="banner">
-    <div class="header-top">
-      <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
-        <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
-      </a>
+<header class="site-header">
+  <div class="header-top">
+    <a class="brand-link" href="index.html#top">
+      <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
+    </a>
+  </div>
+  <div class="header-nav">
+    <nav class="primary">
+      <ul>
+        <li><a href="index.html#home">Home</a></li>
+        <li><a href="projekte.html" aria-current="page">Projekte</a></li>
+        <li><a href="wohnungen.html">Wohnungen</a></li>
+        <li><a href="unternehmen.html">Unternehmen</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+        <li><a href="impressum.html">Impressum</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-drawer"><span class="menu-icon"></span></button>
+  </div>
+</header>
+
+<!-- Mobile Drawer -->
+<div class="drawer-backdrop" id="backdrop"></div>
+<div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+  <nav>
+    <ul>
+      <li><a href="index.html#home">Home</a></li>
+      <li><a href="projekte.html" aria-current="page">Projekte</a></li>
+      <li><a href="wohnungen.html">Wohnungen</a></li>
+      <li><a href="unternehmen.html">Unternehmen</a></li>
+      <li><a href="kontakt.html">Kontakt</a></li>
+      <li><a href="impressum.html">Impressum</a></li>
+    </ul>
+  </nav>
+</div>
+
+<main id="top">
+  <section class="intro-wrap">
+    <div class="kicker">Aktuelles Projekt</div>
+    <h2 class="title-stacked">
+      <span class="line1">Vom Hof zum Zuhause</span>
+      <span class="line2">Umbau eines landwirtschaftlichen Gebäudes</span>
+    </h2>
+    <p>Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde,
+       wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit
+       zeitgemäßem Wohnkomfort.</p>
+  </section>
+
+  <section class="project-hero">
+    <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
+  </section>
+
+  <section class="tabs">
+    <div class="tab-controls">
+      <input type="radio" name="apt" id="tab1" checked><label for="tab1">Wohnung 1</label>
+      <input type="radio" name="apt" id="tab2"><label for="tab2">Wohnung 2</label>
+      <input type="radio" name="apt" id="tab3"><label for="tab3">Wohnung 3</label>
+      <input type="radio" name="apt" id="tab4"><label for="tab4">Wohnung 4</label>
+      <input type="radio" name="apt" id="tab5"><label for="tab5">Wohnung 5</label>
     </div>
 
-    <div class="header-nav">
-      <nav class="primary" aria-label="Hauptnavigation">
-        <ul>
-          <li><a href="index.html#home">Home</a></li>
-          <li><a href="projekte.html" aria-current="page">Projekte</a></li>
-          <li><a href="wohnungen.html">Wohnungen</a></li>
-          <li><a href="unternehmen.html">Unternehmen</a></li>
-          <li><a href="kontakt.html">Kontakt</a></li>
-          <li><a href="impressum.html">Impressum</a></li>
-        </ul>
-      </nav>
+    <div class="panels">
+      <!-- Wohnung 1 -->
+      <article class="panel active" data-miete="1400" data-nk="250" data-kueche="75">
+        <div class="box-body">
+          <h4>Wohnung 1</h4>
+          <div class="meta"><span class="chip">107 m²</span><span class="chip">3 Zimmer</span></div>
 
-      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
-        <span class="menu-icon"></span>
-      </button>
+          <ul class="price-list">
+            <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
+            <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+            <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+          </ul>
+          <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+
+          <div class="badges"><span class="badge">Verfügbar</span></div>
+          <div class="actions">
+            <a class="btn" href="grundriss-wohnung1.pdf" download>⤓ Grundriss (PDF)</a>
+            <a class="btn" href="mailto:kontakt@buecking-immo.de?subject=Anfrage Wohnung 1">✉︎ Anfragen per E-Mail</a>
+            <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Wohnung 2 -->
+      <article class="panel" data-miete="1215" data-nk="250" data-kueche="75">
+        <div class="box-body">
+          <h4>Wohnung 2</h4>
+          <div class="meta"><span class="chip">93 m²</span><span class="chip">4 Zimmer</span></div>
+
+          <ul class="price-list">
+            <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
+            <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+            <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+          </ul>
+          <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+
+          <div class="badges"><span class="badge vermietet">Vermietet</span></div>
+          <div class="actions">
+            <a class="btn" href="grundriss-wohnung2.pdf" download>⤓ Grundriss (PDF)</a>
+            <a class="btn" href="mailto:kontakt@buecking-immo.de?subject=Rückfrage Wohnung 2">✉︎ Anfragen per E-Mail</a>
+            <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Wohnung 3 -->
+      <article class="panel" data-miete="1202" data-nk="250" data-kueche="75">
+        <div class="box-body">
+          <h4>Wohnung 3</h4>
+          <div class="meta"><span class="chip">92 m²</span><span class="chip">3 Zimmer</span></div>
+
+          <ul class="price-list">
+            <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
+            <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+            <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+          </ul>
+          <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+
+          <div class="badges"><span class="badge vermietet">Vermietet</span></div>
+          <div class="actions">
+            <a class="btn" href="grundriss-wohnung3.pdf" download>⤓ Grundriss (PDF)</a>
+            <a class="btn" href="mailto:kontakt@buecking-immo.de?subject=Rückfrage Wohnung 3">✉︎ Anfragen per E-Mail</a>
+            <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Wohnung 4 -->
+      <article class="panel" data-miete="1200" data-nk="250" data-kueche="75">
+        <div class="box-body">
+          <h4>Wohnung 4</h4>
+          <div class="meta"><span class="chip">92 m²</span><span class="chip">3 Zimmer</span></div>
+
+          <ul class="price-list">
+            <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
+            <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+            <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+          </ul>
+          <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+
+          <div class="badges"><span class="badge">Verfügbar</span></div>
+          <div class="actions">
+            <a class="btn" href="grundriss-wohnung4.pdf" download>⤓ Grundriss (PDF)</a>
+            <a class="btn" href="mailto:kontakt@buecking-immo.de?subject=Anfrage Wohnung 4">✉︎ Anfragen per E-Mail</a>
+            <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Wohnung 5 -->
+      <article class="panel" data-miete="1620" data-nk="250" data-kueche="75">
+        <div class="box-body">
+          <h4>Wohnung 5</h4>
+          <div class="meta"><span class="chip">124 m²</span><span class="chip">4 Zimmer</span></div>
+
+          <ul class="price-list">
+            <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
+            <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+            <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+          </ul>
+          <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+
+          <div class="badges"><span class="badge">Verfügbar</span></div>
+          <div class="actions">
+            <a class="btn" href="grundriss-wohnung5.pdf" download>⤓ Grundriss (PDF)</a>
+            <a class="btn" href="mailto:kontakt@buecking-immo.de?subject=Anfrage Wohnung 5">✉︎ Anfragen per E-Mail</a>
+            <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
+          </div>
+        </div>
+      </article>
     </div>
+  </section>
 
-    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
-    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
-      <nav aria-label="Mobile Navigation">
-        <ul>
-          <li><a href="index.html#home">Home</a></li>
-          <li><a href="projekte.html" aria-current="page">Projekte</a></li>
-          <li><a href="wohnungen.html">Wohnungen</a></li>
-          <li><a href="unternehmen.html">Unternehmen</a></li>
-          <li><a href="kontakt.html">Kontakt</a></li>
-          <li><a href="impressum.html">Impressum</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+  <div class="apartment-info">
+    <p><strong>Hinweis:</strong> Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. 
+    Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters.</p>
+    <p>Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.</p>
+  </div>
+</main>
 
-  <main id="top">
-    <!-- Projekt Intro -->
-    <section id="projekt" aria-labelledby="projekt-title" class="intro-wrap">
-      <div class="kicker">Aktuelles Projekt</div>
-      <h2 id="projekt-title" class="title-stacked">
-        <span class="line1">Vom Hof zum Zuhause</span>
-        <span class="line2">Umbau eines landwirtschaftlichen Gebäudes</span>
-      </h2>
-      <p>
-        Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde,
-        wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit
-        zeitgemäßem Wohnkomfort.
-      </p>
-    </section>
+<footer>&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
 
-    <!-- Außenansicht (Original-Seitenverhältnis beibehalten) -->
-    <section class="project-intro" aria-label="Außenansicht">
-      <div class="project-hero">
-        <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
-      </div>
-    </section>
+<script>
+  // Mobile Drawer
+  const toggle = document.querySelector('.menu-toggle');
+  const drawer = document.getElementById('mobile-drawer');
+  const backdrop = document.getElementById('backdrop');
+  const setOpen = (open) => {
+    toggle.setAttribute('aria-expanded', String(open));
+    drawer.classList.toggle('open', open);
+    backdrop.classList.toggle('open', open);
+  };
+  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  backdrop.addEventListener('click', () => setOpen(false));
 
-    <!-- Tabs / Radio-Menü für Wohnungen -->
-    <section class="tabs" aria-label="Wohnungen">
-      <!-- Controls -->
-      <div class="tab-controls" role="tablist" aria-label="Wohnung wählen">
-        <input type="radio" name="apt" id="tab-w1" checked aria-controls="panel-w1">
-        <label role="tab" for="tab-w1" aria-selected="true">Wohnung&nbsp;1</label>
-
-        <input type="radio" name="apt" id="tab-w2" aria-controls="panel-w2">
-        <label role="tab" for="tab-w2">Wohnung&nbsp;2</label>
-
-        <input type="radio" name="apt" id="tab-w3" aria-controls="panel-w3">
-        <label role="tab" for="tab-w3">Wohnung&nbsp;3</label>
-
-        <input type="radio" name="apt" id="tab-w4" aria-controls="panel-w4">
-        <label role="tab" for="tab-w4">Wohnung&nbsp;4</label>
-
-        <input type="radio" name="apt" id="tab-w5" aria-controls="panel-w5">
-        <label role="tab" for="tab-w5">Wohnung&nbsp;5</label>
-      </div>
-
-      <!-- Panels (gleiche Breite wie Hero, kompakt, ohne Grundrissbild) -->
-      <div class="panels">
-        <!-- W1 -->
-        <article id="panel-w1" class="panel active" role="tabpanel" aria-labelledby="tab-w1" aria-hidden="false">
-          <div class="box-body">
-            <h4>Wohnung 1</h4>
-            <div class="meta">
-              <span class="chip">107&nbsp;m²</span>
-              <span class="chip">3 Zimmer</span>
-            </div>
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value">1.400,00&nbsp;€</span></li>
-              <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
-              <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
-            </ul>
-            <div class="badges"><span class="badge">Verfügbar</span></div>
-            <div class="actions">
-              <a class="btn" href="grundriss-wohnung1.pdf" download>⤓&nbsp;Grundriss (PDF)</a>
-              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%201%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%201%20(107%20m%C2%B2%2C%203%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>✉︎&nbsp;Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- W2 -->
-        <article id="panel-w2" class="panel" role="tabpanel" aria-labelledby="tab-w2" aria-hidden="true">
-          <div class="box-body">
-            <h4>Wohnung 2</h4>
-            <div class="meta">
-              <span class="chip">93&nbsp;m²</span>
-              <span class="chip">4 Zimmer</span>
-            </div>
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value">1.215,00&nbsp;€</span></li>
-              <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
-              <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
-            </ul>
-            <div class="badges"><span class="badge vermietet">Vermietet</span><span class="badge">zuletzt beworben</span></div>
-            <div class="actions">
-              <a class="btn" href="grundriss-wohnung2.pdf" download>⤓&nbsp;Grundriss (PDF)</a>
-              <a class="btn" href="mailto:kontakt@buecking-immo.de?subject=R%C3%BCckfrage%20zu%20Wohnung%202%20(Vermietet)&body=Guten%20Tag,%0A%0Abitte%20informieren%20Sie%20mich%2C%20falls%20Wohnung%202%20wieder%20frei%20wird.%0A%0AName%3A%0ATelefon%3A%0A">✉︎&nbsp;Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- W3 -->
-        <article id="panel-w3" class="panel" role="tabpanel" aria-labelledby="tab-w3" aria-hidden="true">
-          <div class="box-body">
-            <h4>Wohnung 3</h4>
-            <div class="meta">
-              <span class="chip">92&nbsp;m²</span>
-              <span class="chip">3 Zimmer</span>
-            </div>
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value">1.202,00&nbsp;€</span></li>
-              <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
-              <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
-            </ul>
-            <div class="badges"><span class="badge vermietet">Vermietet</span><span class="badge">zuletzt beworben</span></div>
-            <div class="actions">
-              <a class="btn" href="grundriss-wohnung3.pdf" download>⤓&nbsp;Grundriss (PDF)</a>
-              <a class="btn" href="mailto:kontakt@buecking-immo.de?subject=R%C3%BCckfrage%20zu%20Wohnung%203%20(Vermietet)&body=Guten%20Tag,%0A%0Abitte%20informieren%20Sie%20mich%2C%20falls%20Wohnung%203%20wieder%20frei%20wird.%0A%0AName%3A%0ATelefon%3A%0A">✉︎&nbsp;Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- W4 -->
-        <article id="panel-w4" class="panel" role="tabpanel" aria-labelledby="tab-w4" aria-hidden="true">
-          <div class="box-body">
-            <h4>Wohnung 4</h4>
-            <div class="meta">
-              <span class="chip">92&nbsp;m²</span>
-              <span class="chip">3 Zimmer</span>
-            </div>
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value">1.200,00&nbsp;€</span></li>
-              <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
-              <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
-            </ul>
-            <div class="badges"><span class="badge">Verfügbar</span></div>
-            <div class="actions">
-              <a class="btn" href="grundriss-wohnung4.pdf" download>⤓&nbsp;Grundriss (PDF)</a>
-              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%204%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%204%20(92%20m%C2%B2%2C%203%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>✉︎&nbsp;Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- W5 -->
-        <article id="panel-w5" class="panel" role="tabpanel" aria-labelledby="tab-w5" aria-hidden="true">
-          <div class="box-body">
-            <h4>Wohnung 5</h4>
-            <div class="meta">
-              <span class="chip">124&nbsp;m²</span>
-              <span class="chip">4 Zimmer</span>
-            </div>
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value">1.620,00&nbsp;€</span></li>
-              <li><span class="label">Nebenkosten</span><span class="value">zzgl.</span></li>
-              <li><span class="label">Küche</span><span class="value">zzgl.</span></li>
-            </ul>
-            <div class="badges"><span class="badge">Verfügbar</span></div>
-            <div class="actions">
-              <a class="btn" href="grundriss-wohnung5.pdf" download>⤓&nbsp;Grundriss (PDF)</a>
-              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%205%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%205%20(124%20m%C2%B2%2C%204%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>✉︎&nbsp;Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- Zusatzinfo -->
-    <div class="apartment-info" role="note" aria-label="Hinweise zur Vermietung">
-      <p><strong>Hinweis:</strong></p>
-      <p>
-        Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten.
-        Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. Der Strombezug
-        erfolgt über die hauseigene Solaranlage des Vermieters.
-      </p>
-      <p>Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.</p>
-    </div>
-  </main>
-
-  <footer>
-    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
-  </footer>
-
-  <script>
-    /* Mobiles Menü (identisch) */
-    const body=document.body, toggle=document.querySelector('.menu-toggle'),
-          drawer=document.getElementById('mobile-drawer'),
-          backdrop=document.getElementById('drawer-backdrop');
-
-    const openMenu=()=>{ 
-      toggle.setAttribute('aria-expanded','true');
-      drawer.hidden=false; backdrop.hidden=false;
-      requestAnimationFrame(()=>{
-        drawer.classList.add('open'); backdrop.classList.add('open');
-        body.style.overflow='hidden';
-        const firstLink=drawer.querySelector('a'); firstLink&&firstLink.focus();
-      });
-    };
-    const closeMenu=()=>{ 
-      toggle.setAttribute('aria-expanded','false');
-      drawer.classList.remove('open'); backdrop.classList.remove('open');
-      body.style.overflow='';
-      setTimeout(()=>{ drawer.hidden=true; backdrop.hidden=true; },200); toggle.focus();
-    };
-    toggle.addEventListener('click',()=>toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu());
-    backdrop.addEventListener('click',closeMenu);
-    window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
-
-    /* Tabs-Logik */
-    const controls = document.querySelectorAll('.tab-controls input');
-    const panels = document.querySelectorAll('.panel');
-    controls.forEach(ctrl=>{
-      ctrl.addEventListener('change', ()=>{
-        panels.forEach(p=>{
-          const isActive = p.id === ('panel-' + ctrl.id.split('tab-')[1]);
-          p.classList.toggle('active', isActive);
-          p.setAttribute('aria-hidden', !isActive);
-        });
-        document.querySelectorAll('.tab-controls label').forEach(l=>l.setAttribute('aria-selected','false'));
-        document.querySelector(`label[for="${ctrl.id}"]`)?.setAttribute('aria-selected','true');
-      });
+  // Tabs
+  const radios = document.querySelectorAll('.tab-controls input');
+  const panels = document.querySelectorAll('.panel');
+  radios.forEach((r,i)=>{
+    r.addEventListener('change',()=>{
+      panels.forEach((p,j)=>p.classList.toggle('active', i===j));
     });
-  </script>
+  });
+
+  // Mieten summieren & formatieren
+  const euro = v => v.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+  document.querySelectorAll('.panel').forEach(p=>{
+    const m=+p.dataset.miete||0, n=+p.dataset.nk||0, k=+p.dataset.kueche||0;
+    const sum=m+n+k;
+    p.querySelector('.js-miete').textContent=euro(m);
+    p.querySelector('.js-nk').textContent=euro(n);
+    p.querySelector('.js-kueche').textContent=euro(k);
+    p.querySelector('.js-total').textContent=euro(sum);
+  });
+</script>
 </body>
 </html>
