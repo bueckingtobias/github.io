@@ -1,1 +1,201 @@
-<section id="home" class="landing" aria-label="Start"> <style> .landing { position: relative; isolation: isolate; color: #fff; padding: clamp(80px, 10vw, 140px) 16px clamp(80px, 8vw, 120px); background: linear-gradient(to bottom, rgba(255,255,255,.02), rgba(0,0,0,0.1)); overflow: hidden; } .container { max-width: 1100px; margin: 0 auto; text-align: center; } /* Hero */ .kicker { font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.65); font-size: .9rem; margin-bottom: 12px; } .hed{ font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-weight:900; letter-spacing:.005em; /* etwas kompakter */ line-height:1.05; margin:0 auto 10px; max-width:none; /* keine künstliche Zeilenumbrüche */ font-size:clamp(1.5rem, 3.2vw, 2.2rem); /* kleiner als zuvor */ } @media (min-width:1024px){ .hed{ white-space:nowrap; } /* hält es auf 13" sicher in einer Zeile */ } .dek { margin: 0 auto 28px; max-width: 60ch; font-size: clamp(0.95rem, 1.3vw, 1.1rem); line-height: 1.6; color: rgba(255,255,255,.85); } .cta-row a { appearance: none; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; background: transparent; color: #fff; font-weight: 700; letter-spacing: .04em; text-decoration: none; padding: 12px 28px; display: inline-flex; align-items: center; transition: all .25s ease; } .cta-row a:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.35); } /* Grid */ .grid { display: grid; gap: 28px; margin-top: clamp(40px, 5vw, 60px); grid-template-columns: 1fr; } @media (min-width: 800px) { .grid { grid-template-columns: repeat(3, 1fr); } } /* Cards */ .card { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); border-radius: 22px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,.25); padding: 36px 28px; transition: transform .35s ease, box-shadow .35s ease; } .card:hover { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(0,0,0,.3); } .icon { width: 52px; height: 52px; margin: 0 auto 18px; border-radius: 14px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.25); display: grid; place-items: center; } .icon svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 2; fill: none; } .title { font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-weight: 800; margin-bottom: 10px; font-size: 1.25rem; } .copy { margin: 0 auto; color: rgba(255,255,255,.9); line-height: 1.6; font-size: 1rem; max-width: 35ch; } </style> <div class="container"> <header class="hero"> <div class="kicker">Bücking Immobilien GmbH &amp; Co. KG</div> <h1 class="hed">Nachhaltig. Verlässlich. Persönlich.</h1> <p class="dek">Moderne Mietwohnungen mit regionaler Handschrift – klare Linien, langlebige Qualität und eine Zusammenarbeit auf Augenhöhe.</p> <div class="cta-row"> <a href="kontakt.html">Kontakt aufnehmen</a> </div> </header> <div class="grid"> <article class="card"> <div class="icon"> <svg viewBox="0 0 24 24"><path d="M3 20V10l9-5 9 5v10"/><path d="M9 22V12h6v10"/></svg> </div> <h3 class="title">Projektentwicklung</h3> <p class="copy"> Wir entwickeln Wohnraum dort, wo er gebraucht wird – mit Fokus auf regionale Strukturen, lokale Handwerksbetriebe und nachhaltige Bauweise. So entstehen Projekte, die unsere Region langfristig stärken und Lebensqualität schaffen. </p> </article> <article class="card"> <div class="icon"> <svg viewBox="0 0 24 24"><path d="M3 21h18M9 21V9h6v12M12 3v3"/></svg> </div> <h3 class="title">Objektverwaltung</h3> <p class="copy"> Unsere Verwaltung steht für Ansprechbarkeit, Nähe und Verlässlichkeit. Wir kennen unsere Objekte, unsere Mieter und unsere Partner – und sorgen für einen reibungslosen Ablauf im täglichen Betrieb. </p> </article> <article class="card"> <div class="icon"> <svg viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h16"/></svg> </div> <h3 class="title">Nachhaltigkeit</h3> <p class="copy"> Mit Verantwortung für Umwelt und Zukunft setzen wir auf nachhaltiges Bauen und regionale Wertschöpfung. Unser Anspruch: Immobilien, die ökologisch durchdacht, wirtschaftlich sinnvoll und für kommende Generationen lebenswert bleiben. </p> </article> </div> </div> </section>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bücking Immobilien GmbH & Co. KG</title>
+
+  <style>
+    :root{
+      --brand:#004225;          /* Smyrna-Grün */
+      --brand-700:#00361e;
+      --text:#ffffff;           /* Weiß für Text */
+      --bg:#004225;             /* Hintergrund in Smyrna-Grün */
+      --muted:#ffffff1a;        /* leicht transparente Akzente */
+      --shadow:0 2px 10px rgba(0,0,0,.25);
+      --radius:12px;
+      --maxw:1200px;
+      --nav-h:46px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0; padding:0;
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      scroll-behavior:smooth;
+    }
+
+    /* ===== Header ===== */
+    header.site-header{
+      position:sticky; top:0; left:0; right:0; z-index:1000;
+      background:var(--brand-700);
+      color:var(--text);
+      box-shadow:var(--shadow);
+    }
+
+    .header-top{ display:grid; place-items:center; padding:14px 16px; }
+    .brand-link{ display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; }
+    .brand-logo{ height:46px; width:auto; display:block; filter:brightness(0) invert(1); }
+
+    .header-nav{
+      display:flex; align-items:center; justify-content:center;
+      border-top:1px solid rgba(255,255,255,.15);
+      min-height:var(--nav-h); padding:0 8px; position:relative;
+    }
+    nav.primary{ display:none; }
+    nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
+    nav.primary a{ color:var(--text); text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; transition:opacity .2s ease; }
+    nav.primary a:hover{ opacity:.8; }
+    nav.primary a[aria-current="page"]{ text-decoration:underline; }
+
+    /* Hamburger mobil */
+    .menu-toggle{
+      position:absolute; right:8px; width:44px; height:44px;
+      border:0; background:transparent; color:var(--text);
+      display:grid; place-items:center; border-radius:8px; cursor:pointer;
+    }
+    .menu-icon, .menu-icon::before, .menu-icon::after{
+      content:""; display:block; width:22px; height:2px;
+      background:var(--text); border-radius:2px; transition:transform .25s ease, opacity .2s ease;
+    }
+    .menu-icon::before{ transform:translateY(-7px) } .menu-icon::after{ transform:translateY(5px) }
+    .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg) }
+    .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
+    .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
+
+    .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999; }
+    .drawer{
+      position:fixed; top:calc(46px + 28px + var(--nav-h)); left:0; right:0; background:var(--brand); color:var(--text);
+      transform:translateY(-8px); opacity:0; pointer-events:none; border-bottom:1px solid rgba(255,255,255,.15); box-shadow:0 10px 25px rgba(0,0,0,.25);
+      transition:transform .25s ease, opacity .25s ease; z-index:1001;
+    }
+    .drawer.open, .drawer-backdrop.open{ pointer-events:auto } .drawer.open{ transform:translateY(0); opacity:1 } .drawer-backdrop.open{ opacity:1 }
+    .drawer nav{ padding:14px 16px 18px } .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+    .drawer a{ display:block; text-decoration:none; color:var(--text); font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted) }
+
+    /* ===== Main ===== */
+    main{ max-width:var(--maxw); margin:0 auto; padding:0; }
+    .section-host{ display:grid; gap:32px; }
+
+    /* ===== Footer ===== */
+    footer{
+      background:var(--brand-700); color:var(--text); text-align:center; padding:18px; font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25)
+    }
+
+    @media (min-width:900px){
+      nav.primary{ display:block } .menu-toggle{ display:none } .drawer, .drawer-backdrop{ display:none }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header" role="banner">
+    <div class="header-top">
+      <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
+        <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
+      </a>
+    </div>
+
+    <div class="header-nav">
+      <nav class="primary" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="index.html#home" aria-current="page">Home</a></li>
+          <li><a href="projekte.html">Projekte</a></li>
+          <li><a href="wohnungen.html">Wohnungen</a></li>
+          <li><a href="unternehmen.html">Unternehmen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+
+      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
+        <span class="menu-icon"></span>
+      </button>
+    </div>
+
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
+      <nav aria-label="Mobile Navigation">
+        <ul>
+          <li><a href="index.html#home" aria-current="page">Home</a></li>
+          <li><a href="projekte.html">Projekte</a></li>
+          <li><a href="wohnungen.html">Wohnungen</a></li>
+          <li><a href="unternehmen.html">Unternehmen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <div id="section-host" class="section-host" aria-live="polite"></div>
+  </main>
+
+  <footer>
+    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
+  </footer>
+
+  <script>
+    /* ===== Mobiles Menü ===== */
+    const body=document.body, toggle=document.querySelector('.menu-toggle'),
+          drawer=document.getElementById('mobile-drawer'),
+          backdrop=document.getElementById('drawer-backdrop');
+
+    const openMenu=()=>{ 
+      toggle.setAttribute('aria-expanded','true');
+      drawer.hidden=false; backdrop.hidden=false;
+      requestAnimationFrame(()=>{
+        drawer.classList.add('open'); backdrop.classList.add('open');
+        body.style.overflow='hidden';
+        const firstLink=drawer.querySelector('a'); firstLink&&firstLink.focus();
+      });
+    };
+    const closeMenu=()=>{ 
+      toggle.setAttribute('aria-expanded','false');
+      drawer.classList.remove('open'); backdrop.classList.remove('open');
+      body.style.overflow='';
+      setTimeout(()=>{ drawer.hidden=true; backdrop.hidden=true; },200); toggle.focus();
+    };
+    toggle.addEventListener('click',()=>toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu());
+    backdrop.addEventListener('click',closeMenu);
+    window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
+
+    /* ===== Module: dynamisches Laden (mit Style-Hoisting) ===== */
+    const files = ['landing.html','ueber.uns.html','zitat.html','leitbild.html'];
+    const host=document.getElementById('section-host');
+
+    async function loadSection(file){
+      try{
+        const res=await fetch(file,{cache:'no-store'});
+        if(!res.ok) throw new Error(file+' '+res.status);
+        const html=await res.text();
+
+        // In Fragment parsen
+        const range = document.createRange();
+        const frag  = range.createContextualFragment(html);
+
+        // Styles in den Head heben (damit Glas/Animationen greifen)
+        frag.querySelectorAll('style').forEach(styleTag=>{
+          document.head.appendChild(styleTag.cloneNode(true));
+          styleTag.remove();
+        });
+        // optional: externe Styles übernehmen
+        frag.querySelectorAll('link[rel="stylesheet"]').forEach(linkTag=>{
+          document.head.appendChild(linkTag.cloneNode(true));
+          linkTag.remove();
+        });
+
+        // Inhalt anhängen
+        const wrapper=document.createElement('div');
+        wrapper.className='module';
+        wrapper.appendChild(frag);
+        host.appendChild(wrapper);
+      }catch(err){ console.error(err); }
+    }
+    (async()=>{ for(const f of files){ await loadSection(f); } })();
+  </script>
+</body>
+</html>
