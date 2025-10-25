@@ -1,69 +1,164 @@
-<section id="leitbild" class="mission" aria-label="Leitbild">
+<section id="leitbild" class="mission" aria-label="Leitbild, Philosophie & Über uns">
   <style>
     .mission{
-      position:relative; color:#fff; isolation:isolate;
-      padding: clamp(36px, 6vw, 72px) 16px;
-      background: linear-gradient(to bottom, rgba(255,255,255,.02), rgba(0,0,0,0));
-    }
-    .mission .wrap{
-      max-width: var(--maxw,1200px); margin:0 auto;
-      display:grid; gap:18px;
+      position: relative;
+      isolation: isolate;
+      color: var(--text, #fff);
+      background-color: var(--brand, #004225); /* identisch zum Rest */
+      width: 100%;
+      padding: clamp(60px, 8vw, 100px) 16px clamp(40px, 5vw, 70px); /* unten kompakter wie gewünscht */
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
-    /* Glasband für die drei Prinzipien */
-    .band{
-      display:grid; gap:18px; grid-template-columns:1fr;
+    /* Gleiche Breite/Ausrichtung wie Landing & Zitat */
+    .mission .container{
+      max-width: 1100px;               /* exakt wie oben */
+      margin-inline: auto;
+      padding-inline: 16px;
+      box-sizing: border-box;
+      text-align: center;
     }
-    @media (min-width:900px){ .band{ grid-template-columns: repeat(3,1fr); } }
 
-    .tile{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 20px;
-      padding: clamp(18px, 3.2vw, 28px);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 20px 56px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08);
+    /* Section-Header */
+    .mission .eyebrow{
+      font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.65);
+      font-size: .9rem;
+      margin-bottom: 10px;
     }
-    .kicker{ font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.78); font-size:.84rem; margin-bottom:8px; }
-    .hed{ margin:0 0 8px; font-weight:900; letter-spacing:.01em; line-height:1.15; font-size: clamp(1.3rem,2.8vw,1.8rem); }
-    .txt{ margin:0; color: rgba(255,255,255,.92); line-height:1.6; }
+    .mission .title{
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-weight:900;
+      letter-spacing:.005em;
+      line-height:1.08;
+      margin: 0 auto 12px;
+      font-size: clamp(1.35rem, 2.8vw, 2rem);
+      max-width: 28ch;
+    }
+    .mission .lead{
+      margin: 0 auto clamp(28px, 4vw, 42px);
+      max-width: 65ch;
+      font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+      line-height: 1.6;
+      color: rgba(255,255,255,.85);
+    }
 
-    /* Abschlusspanel mit Statement */
-    .statement{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.18);
+    /* Glasband mit drei Kacheln – identische Optik zu den Cards */
+    .mission .band{
+      display: grid;
+      gap: 28px;
+      grid-template-columns: 1fr;
+      margin-top: clamp(24px, 3vw, 32px);
+    }
+    @media (min-width: 800px){
+      .mission .band{ grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .mission .tile{
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.15);
       border-radius: 22px;
-      padding: clamp(20px, 3.6vw, 32px);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 22px 60px rgba(0,0,0,.32);
-      text-align:center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      padding: clamp(24px, 3.2vw, 32px);
+      text-align: left;
     }
-    .statement p{ margin:0; font-size: clamp(1rem,1.8vw,1.25rem); line-height:1.6; }
+
+    .mission .kicker{
+      font-family: "Avenir", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.78);
+      font-size: .82rem;
+      margin-bottom: 8px;
+    }
+    .mission .hed{
+      margin: 0 0 8px;
+      font-weight: 900;
+      letter-spacing: .01em;
+      line-height: 1.15;
+      font-size: clamp(1.15rem, 2.3vw, 1.5rem);
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    .mission .txt{
+      margin: 0;
+      color: rgba(255,255,255,.92);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    /* Abschluss-Panel – gleiche Glasoptik, zentriert */
+    .mission .statement{
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 22px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 14px 30px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08);
+      padding: clamp(22px, 3.6vw, 34px);
+      text-align: center;
+      margin-top: 28px;
+    }
+    .mission .statement p{
+      margin: 0;
+      font-size: clamp(1rem, 1.6vw, 1.2rem);
+      line-height: 1.6;
+      color: rgba(255,255,255,.92);
+    }
   </style>
 
-  <div class="wrap">
+  <div class="container">
+    <!-- Header: Leitbild + Philosophie + Über uns -->
+    <div class="eyebrow">Leitbild &amp; Philosophie</div>
+    <h2 class="title">Wer wir sind und was uns antreibt</h2>
+    <p class="lead">
+      Aus landwirtschaftlichen Wurzeln gewachsen, verbinden wir regionale Verbundenheit mit
+      moderner Immobilienkompetenz. Unser Anspruch: Wohnungen schaffen, die architektonisch klar,
+      nachhaltig gedacht und im Alltag verlässlich betreut sind – damit aus vier Wänden ein Zuhause wird.
+    </p>
+
+    <!-- Drei Prinzipien -->
     <div class="band">
       <section class="tile">
         <div class="kicker">Prinzip 01</div>
-        <h3 class="hed">Nachhaltig bauen</h3>
-        <p class="txt">Ressourcenschonende Materialien, effiziente Haustechnik und zeitlose Gestaltung – sinnvoll für heute, tragfähig für morgen.</p>
+        <h3 class="hed">Nachhaltig denken &amp; bauen</h3>
+        <p class="txt">
+          Wir planen langfristig: ressourcenschonende Materialien, effiziente Gebäudetechnik und eine zeitlose
+          Gestaltung. So entstehen Werte, die heute sinnvoll und morgen tragfähig sind.
+        </p>
       </section>
 
       <section class="tile">
         <div class="kicker">Prinzip 02</div>
-        <h3 class="hed">Vertrauen schaffen</h3>
-        <p class="txt">Transparenz, Ehrlichkeit und Kontinuität: Verlässliche Entscheidungen und klare Kommunikation auf Augenhöhe.</p>
+        <h3 class="hed">Verlässlich &amp; nah verwalten</h3>
+        <p class="txt">
+          Persönliche Ansprechbarkeit, klare Kommunikation und kurze Wege. Wir kennen unsere Objekte und Mieter –
+          und sorgen für reibungslose Abläufe im täglichen Betrieb.
+        </p>
       </section>
 
       <section class="tile">
         <div class="kicker">Prinzip 03</div>
         <h3 class="hed">Regional handeln</h3>
-        <p class="txt">Kurze Wege und qualifizierte Partner vor Ort – für Qualität, schnelle Reaktion und starke Nachbarschaft.</p>
+        <p class="txt">
+          Wir arbeiten mit qualifizierten Partnern aus der Region. Das stärkt Qualität, Reaktionsgeschwindigkeit
+          und die Nachbarschaft – und hält Wertschöpfung vor Ort.
+        </p>
       </section>
     </div>
 
-    <article class="statement" style="margin-top:18px">
-      <p>Unser Leitbild ist einfach: Räume schaffen, die Menschen gerne ihr Zuhause nennen – mit Anspruch, Verantwortung und echter Verbundenheit zur Region.</p>
+    <!-- Statement / Über uns in einem Satz -->
+    <article class="statement">
+      <p>
+        Bücking Immobilien GmbH &amp; Co. KG steht für klare Architektur, verlässliche Zusammenarbeit und
+        eine nachhaltige Entwicklung von Wohnraum – aus der Region, für die Region.
+      </p>
     </article>
   </div>
 </section>
