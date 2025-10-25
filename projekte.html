@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Projekte – Bücking Immobilien GmbH & Co. KG</title>
+
+  <style>
+    :root{
+      --brand:#004225;          /* Smyrna-Grün */
+      --brand-700:#00361e;
+      --text:#ffffff;           /* Weiß für Text */
+      --bg:#004225;             /* Hintergrund in Smyrna-Grün */
+      --muted:#ffffff1a;        /* leicht transparente Akzente */
+      --shadow:0 2px 10px rgba(0,0,0,.25);
+      --radius:12px;
+      --maxw:1200px;
+      --nav-h:46px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0; padding:0;
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      scroll-behavior:smooth;
+    }
+
+    /* ===== Header (identisch) ===== */
+    header.site-header{
+      position:sticky; top:0; left:0; right:0; z-index:1000;
+      background:var(--brand-700);
+      color:var(--text);
+      box-shadow:var(--shadow);
+    }
+    .header-top{ display:grid; place-items:center; padding:14px 16px; }
+    .brand-link{ display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; }
+    .brand-logo{ height:46px; width:auto; display:block; filter:brightness(0) invert(1); }
+
+    .header-nav{
+      display:flex; align-items:center; justify-content:center;
+      border-top:1px solid rgba(255,255,255,.15);
+      min-height:var(--nav-h); padding:0 8px; position:relative;
+    }
+    nav.primary{ display:none; }
+    nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
+    nav.primary a{ color:var(--text); text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; transition:opacity .2s ease; }
+    nav.primary a:hover{ opacity:.8; }
+    nav.primary a[aria-current="page"]{ text-decoration:underline; }
+
+    .menu-toggle{
+      position:absolute; right:8px; width:44px; height:44px;
+      border:0; background:transparent; color:var(--text);
+      display:grid; place-items:center; border-radius:8px; cursor:pointer;
+    }
+    .menu-icon, .menu-icon::before, .menu-icon::after{
+      content:""; display:block; width:22px; height:2px;
+      background:var(--text); border-radius:2px; transition:transform .25s ease, opacity .2s ease;
+    }
+    .menu-icon::before{ transform:translateY(-7px) } .menu-icon::after{ transform:translateY(5px) }
+    .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg) }
+    .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
+    .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
+
+    .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999; }
+    .drawer{
+      position:fixed; top:calc(46px + 28px + var(--nav-h)); left:0; right:0; background:var(--brand); color:var(--text);
+      transform:translateY(-8px); opacity:0; pointer-events:none; border-bottom:1px solid rgba(255,255,255,.15); box-shadow:0 10px 25px rgba(0,0,0,.25);
+      transition:transform .25s ease, opacity .25s ease; z-index:1001;
+    }
+    .drawer.open, .drawer-backdrop.open{ pointer-events:auto } .drawer.open{ transform:translateY(0); opacity:1 } .drawer-backdrop.open{ opacity:1 }
+    .drawer nav{ padding:14px 16px 18px } .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+    .drawer a{ display:block; text-decoration:none; color:var(--text); font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted) }
+
+    /* ===== Main ===== */
+    main{ max-width:var(--maxw); margin:0 auto; padding: clamp(28px, 4vw, 48px) 16px 56px; }
+    .kicker{
+      font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.65;
+      font-size:.9rem; margin:4px 0 12px;
+    }
+    h1,h2,h3,h4{ margin:0 0 8px; }
+    h2{
+      font-size: clamp(26px, 4.2vw, 40px);
+      line-height:1.15;
+      letter-spacing:.01em;
+    }
+    p{ margin:0 0 14px; opacity:.95; }
+
+    /* Projekt-Intro */
+    .project-intro{ margin-top:16px; }
+    .project-hero{
+      position:relative; overflow:hidden; border-radius: var(--radius);
+      background: rgba(255,255,255,.04);
+      box-shadow: var(--shadow);
+    }
+    .project-hero img{
+      width:100%; height:auto; display:block;
+    }
+
+    /* Wohnungen Grid */
+    .apartment-row{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+      margin-top: clamp(20px, 3vw, 28px);
+    }
+    @media (min-width:700px){
+      .apartment-row{ grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width:1024px){
+      .apartment-row{ grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .apartment-box{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      display:flex; flex-direction:column;
+    }
+    .apartment-box img{
+      width:100%; height:auto; display:block;
+      aspect-ratio: 4/3; object-fit:cover;
+      background:rgba(255,255,255,.06);
+    }
+    .apartment-box .box-body{
+      padding:14px;
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .apartment-box h4{
+      font-size:1.05rem; margin:0 0 4px; letter-spacing:.01em;
+    }
+    .meta{ display:flex; gap:10px; flex-wrap:wrap; opacity:.95; font-size:.98rem; }
+    .meta .chip{
+      background:var(--muted); padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12);
+    }
+
+    /* Status/Preis Badge */
+    .status{
+      margin-top:8px;
+      font-weight:700;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:10px;
+      background:var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .status.vermietet{ opacity:.7; }
+    .status .dot{
+      width:8px; height:8px; border-radius:99px; background:#65d38a;
+    }
+    .status.vermietet .dot{ background:#bbbbbb; }
+
+    /* Aktionen (für verfügbar) */
+    .actions{
+      margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 12px; border-radius:10px; text-decoration:none; color:var(--text);
+      background:var(--muted); border:1px solid rgba(255,255,255,.12);
+      font-weight:700;
+    }
+    .btn:hover{ opacity:.9; }
+
+    /* Zusatzinfo */
+    .apartment-info{
+      margin-top: clamp(18px, 3vw, 28px);
+      padding:16px;
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .apartment-info p{ margin:0 0 10px; }
+    .apartment-info strong{ font-weight:800; }
+
+    /* ===== Footer (identisch) ===== */
+    footer{
+      background:var(--brand-700); color:var(--text); text-align:center; padding:18px; font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25)
+    }
+
+    @media (min-width:900px){
+      nav.primary{ display:block } .menu-toggle{ display:none } .drawer, .drawer-backdrop{ display:none }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header identisch -->
+  <header class="site-header" role="banner">
+    <div class="header-top">
+      <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
+        <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
+      </a>
+    </div>
+
+    <div class="header-nav">
+      <nav class="primary" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="index.html#home">Home</a></li>
+          <li><a href="projekte.html" aria-current="page">Projekte</a></li>
+          <li><a href="wohnungen.html">Wohnungen</a></li>
+          <li><a href="unternehmen.html">Unternehmen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+
+      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
+        <span class="menu-icon"></span>
+      </button>
+    </div>
+
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
+      <nav aria-label="Mobile Navigation">
+        <ul>
+          <li><a href="index.html#home">Home</a></li>
+          <li><a href="projekte.html" aria-current="page">Projekte</a></li>
+          <li><a href="wohnungen.html">Wohnungen</a></li>
+          <li><a href="unternehmen.html">Unternehmen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Projekt -->
+    <section id="projekt" aria-labelledby="projekt-title">
+      <div class="kicker">Aktuelles Projekt</div>
+      <h2 id="projekt-title">Vom Hof zum Zuhause – Umbau eines landwirtschaftlichen Gebäudes</h2>
+      <p>
+        Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde,
+        wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit
+        zeitgemäßem Wohnkomfort.
+      </p>
+
+      <!-- Außenansicht -->
+      <div class="project-intro">
+        <div class="project-hero">
+          <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
+        </div>
+      </div>
+
+      <!-- Wohnungen -->
+      <div class="apartment-row" aria-label="Wohnungen">
+        <!-- Whg 1 -->
+        <article class="apartment-box" aria-labelledby="w1-title">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 1">
+          <div class="box-body">
+            <h4 id="w1-title">Wohnung 1</h4>
+            <div class="meta">
+              <span class="chip">Größe: 107&nbsp;m²</span>
+              <span class="chip">Zimmer: 3</span>
+            </div>
+            <div class="status"><span class="dot" aria-hidden="true"></span><span>Preis: 1.400,00&nbsp;€ (Nettokalt)</span></div>
+            <div class="actions">
+              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%201%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%201%20(107%20m%C2%B2%2C%203%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>
+                ✉︎&nbsp;Anfragen per E-Mail
+              </a>
+              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Whg 2 (vermietet) -->
+        <article class="apartment-box" aria-labelledby="w2-title">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 2">
+          <div class="box-body">
+            <h4 id="w2-title">Wohnung 2</h4>
+            <div class="meta">
+              <span class="chip">Größe: 93&nbsp;m²</span>
+              <span class="chip">Zimmer: 4</span>
+            </div>
+            <div class="status vermietet"><span class="dot" aria-hidden="true"></span><span>Vermietet</span></div>
+          </div>
+        </article>
+
+        <!-- Whg 3 (vermietet) -->
+        <article class="apartment-box" aria-labelledby="w3-title">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 3">
+          <div class="box-body">
+            <h4 id="w3-title">Wohnung 3</h4>
+            <div class="meta">
+              <span class="chip">Größe: 92&nbsp;m²</span>
+              <span class="chip">Zimmer: 3</span>
+            </div>
+            <div class="status vermietet"><span class="dot" aria-hidden="true"></span><span>Vermietet</span></div>
+          </div>
+        </article>
+
+        <!-- Whg 4 -->
+        <article class="apartment-box" aria-labelledby="w4-title">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 4">
+          <div class="box-body">
+            <h4 id="w4-title">Wohnung 4</h4>
+            <div class="meta">
+              <span class="chip">Größe: 92&nbsp;m²</span>
+              <span class="chip">Zimmer: 3</span>
+            </div>
+            <div class="status"><span class="dot" aria-hidden="true"></span><span>Preis: 1.200,00&nbsp;€ (Nettokalt)</span></div>
+            <div class="actions">
+              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%204%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%204%20(92%20m%C2%B2%2C%203%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>
+                ✉︎&nbsp;Anfragen per E-Mail
+              </a>
+              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Whg 5 -->
+        <article class="apartment-box" aria-labelledby="w5-title">
+          <img src="grundriss-platzhalter.jpeg" alt="Grundriss Wohnung 5">
+          <div class="box-body">
+            <h4 id="w5-title">Wohnung 5</h4>
+            <div class="meta">
+              <span class="chip">Größe: 124&nbsp;m²</span>
+              <span class="chip">Zimmer: 4</span>
+            </div>
+            <div class="status"><span class="dot" aria-hidden="true"></span><span>Preis: 1.620,00&nbsp;€ (Nettokalt)</span></div>
+            <div class="actions">
+              <a class="btn" href='mailto:kontakt@buecking-immo.de?subject=Anfrage%20Wohnung%205%20–%20Projekt%20"Vom%20Hof%20zum%20Zuhause"&body=Guten%20Tag%20B%C3%BCcking%20Immobilien%20GmbH%20%26%20Co.%20KG,%0A%0Aich%20interessiere%20mich%20f%C3%BCr%20Wohnung%205%20(124%20m%C2%B2%2C%204%20Zimmer).%0A%0AName%3A%0ATelefon%3A%0ABeste%20R%C3%BCckrufzeit%3A%0ANutzungsbeginn%20(ab%20wann)%3A%0AKurze%20Vorstellung%3A%0A%0AVielen%20Dank!%0A'>
+                ✉︎&nbsp;Anfragen per E-Mail
+              </a>
+              <a class="btn" href="tel:+494201234567">☎︎&nbsp;Anrufen</a>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Zusatzinfo -->
+      <div class="apartment-info" role="note" aria-label="Hinweise zur Vermietung">
+        <p><strong>Hinweis:</strong></p>
+        <p>
+          Die angegebenen Preise verstehen sich als Nettokaltmiete und sind jeweils zzgl. Küche und Nebenkosten.
+          Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens. Der Strombezug
+          erfolgt über die hauseigene Solaranlage des Vermieters.
+        </p>
+        <p>Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
+  </footer>
+
+  <script>
+    /* Mobiles Menü (identisch) */
+    const body=document.body, toggle=document.querySelector('.menu-toggle'),
+          drawer=document.getElementById('mobile-drawer'),
+          backdrop=document.getElementById('drawer-backdrop');
+
+    const openMenu=()=>{ 
+      toggle.setAttribute('aria-expanded','true');
+      drawer.hidden=false; backdrop.hidden=false;
+      requestAnimationFrame(()=>{
+        drawer.classList.add('open'); backdrop.classList.add('open');
+        body.style.overflow='hidden';
+        const firstLink=drawer.querySelector('a'); firstLink&&firstLink.focus();
+      });
+    };
+    const closeMenu=()=>{ 
+      toggle.setAttribute('aria-expanded','false');
+      drawer.classList.remove('open'); backdrop.classList.remove('open');
+      body.style.overflow='';
+      setTimeout(()=>{ drawer.hidden=true; backdrop.hidden=true; },200); toggle.focus();
+    };
+    toggle.addEventListener('click',()=>toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu());
+    backdrop.addEventListener('click',closeMenu);
+    window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
+  </script>
+</body>
+</html>
