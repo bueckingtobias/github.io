@@ -9,16 +9,21 @@
     :root{
       --brand:#004225;          /* Smyrna-Grün */
       --brand-700:#00361e;
-      --text:#ffffff;           /* Weiß für Text */
-      --bg:#004225;             /* Hintergrund in Smyrna-Grün */
-      --muted:#ffffff1a;        /* leicht transparente Akzente */
+      --text:#ffffff;
+      --bg:#004225;
+      --muted:#ffffff1a;
       --shadow:0 2px 10px rgba(0,0,0,.25);
       --radius:12px;
       --maxw:1200px;
       --nav-h:46px;
+
+      /* werden per JS präzise gesetzt */
+      --header-h: 110px;         /* Fallback */
+      --footer-h: 64px;          /* Fallback */
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    *{box-sizing:border-box}
+    *{ box-sizing:border-box }
     html,body{
       margin:0; padding:0;
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
@@ -27,7 +32,10 @@
       scroll-behavior:smooth;
     }
 
-    /* ===== Header ===== */
+    /* sorgt dafür, dass Anker-Scroll nicht unter dem Header verschwindet */
+    html{ scroll-padding-top: calc(var(--header-h) + 10px) }
+
+    /* ===== Header (immer sichtbar) ===== */
     header.site-header{
       position:sticky; top:0; left:0; right:0; z-index:1000;
       background:var(--brand-700);
@@ -65,27 +73,50 @@
     .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
     .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
 
-    .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999; }
-    .drawer{
-      position:fixed; top:calc(46px + 28px + var(--nav-h)); left:0; right:0; background:var(--brand); color:var(--text);
-      transform:translateY(-8px); opacity:0; pointer-events:none; border-bottom:1px solid rgba(255,255,255,.15); box-shadow:0 10px 25px rgba(0,0,0,.25);
-      transition:transform .25s ease, opacity .25s ease; z-index:1001;
+    .drawer-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.4);
+      opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999;
     }
-    .drawer.open, .drawer-backdrop.open{ pointer-events:auto } .drawer.open{ transform:translateY(0); opacity:1 } .drawer-backdrop.open{ opacity:1 }
-    .drawer nav{ padding:14px 16px 18px } .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
-    .drawer a{ display:block; text-decoration:none; color:var(--text); font-weight:700; padding:12px 10px; border-radius:10px; background:var(--muted) }
-
-    /* ===== Main ===== */
-    main{ max-width:var(--maxw); margin:0 auto; padding:0; }
-    .section-host{ display:grid; gap:32px; }
-
-    /* ===== Footer ===== */
-    footer{
-      background:var(--brand-700); color:var(--text); text-align:center; padding:18px; font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25)
+    .drawer{
+      position:fixed;
+      left:0; right:0;
+      top:var(--header-h);                 /* exakt unter dem sichtbaren Header */
+      bottom:calc(var(--footer-h) + var(--safe-bottom)); /* endet über fixem Footer */
+      background:var(--brand); color:var(--text);
+      transform:translateY(-8px); opacity:0; pointer-events:none;
+      border-bottom:1px solid rgba(255,255,255,.15);
+      box-shadow:0 10px 25px rgba(0,0,0,.25);
+      transition:transform .25s ease, opacity .25s ease; z-index:1001;
+      overflow:auto; -webkit-overflow-scrolling:touch;
+    }
+    .drawer.open, .drawer-backdrop.open{ pointer-events:auto }
+    .drawer.open{ transform:translateY(0); opacity:1 }
+    .drawer-backdrop.open{ opacity:1 }
+    .drawer nav{ padding:14px 16px 18px }
+    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+    .drawer a{
+      display:block; text-decoration:none; color:var(--text); font-weight:700;
+      padding:12px 10px; border-radius:10px; background:var(--muted)
     }
 
     @media (min-width:900px){
       nav.primary{ display:block } .menu-toggle{ display:none } .drawer, .drawer-backdrop{ display:none }
+    }
+
+    /* ===== Main ===== */
+    main{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding: 0 0 calc(var(--footer-h) + var(--safe-bottom)); /* Platz für fixen Footer */
+    }
+    .section-host{ display:grid; gap:32px; }
+
+    /* ===== Footer (immer sichtbar) ===== */
+    footer.site-footer{
+      position:fixed; left:0; right:0; bottom:0; z-index:1000;
+      background:var(--brand-700); color:var(--text);
+      text-align:center; padding:14px 18px calc(14px + var(--safe-bottom));
+      font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25);
     }
   </style>
 </head>
@@ -132,11 +163,26 @@
     <div id="section-host" class="section-host" aria-live="polite"></div>
   </main>
 
-  <footer>
+  <footer class="site-footer">
     &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
   </footer>
 
   <script>
+    /* ===== Höhen dynamisch als Variablen setzen ===== */
+    function updateChromeVars(){
+      const header = document.querySelector('.site-header');
+      const footer = document.querySelector('.site-footer');
+      const root   = document.documentElement;
+
+      const headerH = header?.offsetHeight || 110;
+      const footerH = footer?.offsetHeight || 64;
+
+      root.style.setProperty('--header-h', headerH + 'px');
+      root.style.setProperty('--footer-h', footerH + 'px');
+    }
+    window.addEventListener('load', updateChromeVars);
+    window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(updateChromeVars, 100); });
+
     /* ===== Mobiles Menü ===== */
     const body=document.body, toggle=document.querySelector('.menu-toggle'),
           drawer=document.getElementById('mobile-drawer'),
@@ -171,22 +217,19 @@
         if(!res.ok) throw new Error(file+' '+res.status);
         const html=await res.text();
 
-        // In Fragment parsen
         const range = document.createRange();
         const frag  = range.createContextualFragment(html);
 
-        // Styles in den Head heben (damit Glas/Animationen greifen)
+        // Inline-Styles in den Head heben (Glas/Animationen)
         frag.querySelectorAll('style').forEach(styleTag=>{
           document.head.appendChild(styleTag.cloneNode(true));
           styleTag.remove();
         });
-        // optional: externe Styles übernehmen
         frag.querySelectorAll('link[rel="stylesheet"]').forEach(linkTag=>{
           document.head.appendChild(linkTag.cloneNode(true));
           linkTag.remove();
         });
 
-        // Inhalt anhängen
         const wrapper=document.createElement('div');
         wrapper.className='module';
         wrapper.appendChild(frag);
