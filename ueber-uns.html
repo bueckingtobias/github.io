@@ -3,7 +3,7 @@
   <style>
     :root{
       --brand:#004225; --brand-700:#00361e; --text:#ffffff;
-      --peek: 120px;   /* wie viel der Nachbarn sichtbar ist (je Seite) */
+      --peek: 60px;   /* Reduzierter Peek – ~10% Andeutung je Seite */
       --maxw: 1100px;
     }
 
@@ -19,7 +19,7 @@
     .hed{ font-weight:900; letter-spacing:.005em; line-height:1.08; margin:0 auto 10px; font-size:clamp(1.35rem,2.8vw,2rem); max-width:28ch; }
     .dek{ margin:0 auto clamp(24px,4vw,36px); max-width:65ch; font-size:clamp(.95rem,1.3vw,1.1rem); line-height:1.6; color:rgba(255,255,255,.85); }
 
-    /* ==== TABS – Optik exakt wie in der Leitbild-Sektion ==== */
+    /* ==== TABS ==== */
     .seg{ margin-top:clamp(14px,2.5vw,20px); position:relative; }
     .seg .tablist{
       display:grid; gap:10px; grid-template-columns:repeat(3,1fr);
@@ -46,24 +46,25 @@
       box-shadow:0 10px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.1);
     }
 
-    /* ==== DECK & KARTEN – ORIGINAL belassen ==== */
+    /* ==== DECK & KARTEN ==== */
     .deck{
       margin-top:clamp(28px,3vw,40px);
       position:relative;
-      display:grid; place-items:center; /* alle Panes zentriert übereinander */
+      display:grid; place-items:center;
       perspective:1200px;
       height:auto;
     }
     .pane{
       grid-area:1 / 1;
-      width: calc(100% - 2 * var(--peek)); /* aktive Kartenbreite = Container minus beide Peeks */
-      max-width: calc(var(--maxw) - 2 * var(--peek)); /* Sicherung bei sehr breiten Screens */
+      width: calc(100% - 2 * var(--peek));
+      max-width: calc(var(--maxw) - 2 * var(--peek));
       padding: 0 10px; box-sizing:border-box;
       transform-style: preserve-3d;
-      transition: transform .5s cubic-bezier(.22,.8,.26,1), opacity .5s, z-index .2s;
+      transition: transform .6s cubic-bezier(.22,.8,.26,1), opacity .6s, z-index .3s, filter .5s;
+      border-radius: 24px;           /* NEU: weiche Rundung */
+      overflow: hidden;              /* NEU: schneidet Ecken sauber ab */
     }
 
-    /* Card Look (GENAU wie vorher) */
     .card{
       width:100%;
       background:rgba(255,255,255,.07);
@@ -74,6 +75,7 @@
       transform: translateZ(0) scale(.985);
       transition: transform .5s cubic-bezier(.22,.8,.26,1), box-shadow .5s;
     }
+
     .card .icon{
       width:52px; height:52px; margin:0 auto 18px; border-radius:14px;
       background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.25);
@@ -88,20 +90,33 @@
     .feature-list .dot{ width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.6); margin-top:.45em; }
     .feature-list .txt{ color:rgba(255,255,255,.92); line-height:1.6; }
 
-    /* Positionen im Deck (alles innerhalb des Containers) */
-    .pane[data-pos="0"]{ z-index:3; transform: translateX(0) translateZ(64px); }
+    /* ==== Positionen im Deck ==== */
+    .pane[data-pos="0"]{ z-index:3; transform: translateX(0) translateZ(64px); opacity:1; filter:none; }
     .pane[data-pos="0"] .card{ transform: translateZ(64px) scale(1.02); box-shadow:0 22px 46px rgba(0,0,0,.42), 0 2px 0 rgba(255,255,255,.08) inset; }
-    .pane[data-pos="-1"]{ z-index:2; transform: translateX(calc(-50% + var(--peek))) rotateY(-16deg) translateZ(-24px); }
-    .pane[data-pos="-1"] .card{ box-shadow:0 12px 28px rgba(0,0,0,.3); transform: translateZ(0) scale(.985); }
-    .pane[data-pos="1"]{  z-index:2; transform: translateX(calc(50% - var(--peek))) rotateY(16deg) translateZ(-24px); }
-    .pane[data-pos="1"] .card{ box-shadow:0 12px 28px rgba(0,0,0,.3); transform: translateZ(0) scale(.985); }
+
+    .pane[data-pos="-1"]{
+      z-index:2;
+      transform: translateX(calc(-35% + var(--peek))) rotateY(-14deg) translateZ(-32px);
+      opacity:.35; filter:blur(1px);
+    }
+    .pane[data-pos="1"]{
+      z-index:2;
+      transform: translateX(calc(35% - var(--peek))) rotateY(14deg) translateZ(-32px);
+      opacity:.35; filter:blur(1px);
+    }
+
+    .pane[data-pos="-1"] .card,
+    .pane[data-pos="1"] .card{
+      box-shadow:0 12px 28px rgba(0,0,0,.25);
+      transform: translateZ(0) scale(.975);
+    }
 
     .pane[hidden]{ display:none; }
 
     /* Responsiv */
-    @media (max-width:900px){ :root{ --peek: 90px; } }
+    @media (max-width:900px){ :root{ --peek: 50px; } }
     @media (max-width:680px){
-      :root{ --peek: 56px; }
+      :root{ --peek: 36px; }
       .feature-list{ max-width: 40ch; }
       .seg .tablist{ grid-template-columns:1fr; max-width:520px; }
     }
@@ -116,7 +131,7 @@
       </p>
     </header>
 
-    <!-- Tabs im Leitbild-Stil -->
+    <!-- Tabs -->
     <div class="seg" role="tablist" aria-label="Themenauswahl">
       <div class="tablist">
         <button role="tab" aria-selected="false" aria-controls="pane-1" id="tab-1">Profil</button>
@@ -125,7 +140,7 @@
       </div>
     </div>
 
-    <!-- DECK -->
+    <!-- Deck -->
     <div class="deck" id="deck">
       <!-- PROFIL -->
       <section class="pane" id="pane-1" role="tabpanel" aria-labelledby="tab-1" data-pos="-1">
@@ -143,7 +158,7 @@
         </article>
       </section>
 
-      <!-- QUALITÄT (aktiv) -->
+      <!-- QUALITÄT -->
       <section class="pane" id="pane-2" role="tabpanel" aria-labelledby="tab-2" data-pos="0">
         <article class="card">
           <div class="icon">
@@ -182,8 +197,7 @@
       const root = document.currentScript.closest('.landing');
       const tabs = Array.from(root.querySelectorAll('.seg .tablist button[role="tab"]'));
       const panes = [ '#pane-1', '#pane-2', '#pane-3' ].map(sel=>root.querySelector(sel));
-
-      let idx = 1; // Start mittig (Qualität)
+      let idx = 1; // Start mittig
 
       function paint(){
         panes.forEach((p,i)=>{
@@ -193,12 +207,10 @@
         });
         tabs.forEach((t,i)=>t.setAttribute('aria-selected', String(i===idx)));
       }
-
       function show(i){
         idx = Math.max(0, Math.min(panes.length-1, i));
         paint();
       }
-
       tabs.forEach((t,i)=>{
         t.addEventListener('click', ()=>show(i));
         t.addEventListener('keydown', (e)=>{
@@ -206,7 +218,6 @@
           if(e.key==='ArrowLeft')  show(i-1);
         });
       });
-
       paint();
     })();
   </script>
