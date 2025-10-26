@@ -3,7 +3,8 @@
   <style>
     :root{
       --brand:#004225; --brand-700:#00361e; --text:#ffffff;
-      --peek: 120px;         /* wie viel der Nachbarn sichtbar ist (je Seite) */
+      --peek: 120px;   /* wie viel der Nachbarn sichtbar ist (je Seite) */
+      --maxw: 1100px;
     }
 
     .landing{
@@ -12,44 +13,57 @@
       box-sizing:border-box; overflow:hidden;
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
-    .landing .container{ max-width:1100px; margin-inline:auto; text-align:center; padding-inline:16px; }
+    .landing .container{ max-width:var(--maxw); margin-inline:auto; text-align:center; padding-inline:16px; }
 
-    .kicker{ font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.65); font-size:.9rem; margin-bottom:28px; }
-    .hed{ font-weight:900; letter-spacing:.005em; line-height:1.05; margin:0 auto 22px; font-size:clamp(1.5rem,3.2vw,2.2rem); }
-    .dek{ margin:0 auto 36px; max-width:60ch; font-size:clamp(.95rem,1.3vw,1.1rem); line-height:1.6; color:rgba(255,255,255,.85); }
+    .kicker{ font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.65); font-size:.9rem; margin-bottom:10px; }
+    .hed{ font-weight:900; letter-spacing:.005em; line-height:1.08; margin:0 auto 10px; font-size:clamp(1.35rem,2.8vw,2rem); max-width:28ch; }
+    .dek{ margin:0 auto clamp(24px,4vw,36px); max-width:65ch; font-size:clamp(.95rem,1.3vw,1.1rem); line-height:1.6; color:rgba(255,255,255,.85); }
 
-    /* Segmented Tabs */
-    .seg{
-      width:100%; max-width:860px; margin:0 auto;
-      background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15);
-      border-radius:14px; position:relative; display:grid; grid-auto-flow:column; overflow:hidden;
+    /* ==== TABS – Optik exakt wie in der Leitbild-Sektion ==== */
+    .seg{ margin-top:clamp(14px,2.5vw,20px); position:relative; }
+    .seg .tablist{
+      display:grid; gap:10px; grid-template-columns:repeat(3,1fr);
+      margin:0 auto clamp(16px,2.8vw,24px); max-width:900px;
     }
-    .seg button{ appearance:none; border:0; background:transparent; color:#fff; font-weight:800; letter-spacing:.02em; padding:12px 18px; cursor:pointer; white-space:nowrap; }
-    .seg button:hover{ opacity:.9; }
-    .seg .pill{
-      position:absolute; inset:0 auto 0 0; height:100%; background:rgba(255,255,255,.14);
-      border-right:1px solid rgba(255,255,255,.18); border-left:1px solid rgba(255,255,255,.18);
-      border-radius:12px; pointer-events:none; width:0;
-      transition: transform .28s cubic-bezier(.22,.8,.26,1), width .28s;
+    .seg button{
+      display:flex; align-items:center; justify-content:center;
+      height:46px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.25);
+      background:rgba(255,255,255,.05);
+      font-weight:800; letter-spacing:.04em; color:#fff;
+      cursor:pointer; user-select:none; text-decoration:none;
+      transition:all .25s ease;
+      box-shadow:0 6px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .seg button:hover{
+      background:rgba(255,255,255,.09);
+      border-color:rgba(255,255,255,.35);
+      transform:translateY(-1px);
+    }
+    .seg button[aria-selected="true"]{
+      background:rgba(255,255,255,.14);
+      border-color:rgba(255,255,255,.45);
+      box-shadow:0 10px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.1);
     }
 
-    /* === DECK: überlagerte Karten, Peek strikt im Container === */
+    /* ==== DECK & KARTEN – ORIGINAL belassen ==== */
     .deck{
       margin-top:clamp(28px,3vw,40px);
       position:relative;
-      display:grid; place-items:center;
+      display:grid; place-items:center; /* alle Panes zentriert übereinander */
       perspective:1200px;
       height:auto;
     }
     .pane{
       grid-area:1 / 1;
-      width: calc(100% - 2 * var(--peek));
-      max-width: calc(1100px - 2 * var(--peek));
+      width: calc(100% - 2 * var(--peek)); /* aktive Kartenbreite = Container minus beide Peeks */
+      max-width: calc(var(--maxw) - 2 * var(--peek)); /* Sicherung bei sehr breiten Screens */
       padding: 0 10px; box-sizing:border-box;
       transform-style: preserve-3d;
       transition: transform .5s cubic-bezier(.22,.8,.26,1), opacity .5s, z-index .2s;
     }
 
+    /* Card Look (GENAU wie vorher) */
     .card{
       width:100%;
       background:rgba(255,255,255,.07);
@@ -74,47 +88,46 @@
     .feature-list .dot{ width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.6); margin-top:.45em; }
     .feature-list .txt{ color:rgba(255,255,255,.92); line-height:1.6; }
 
+    /* Positionen im Deck (alles innerhalb des Containers) */
     .pane[data-pos="0"]{ z-index:3; transform: translateX(0) translateZ(64px); }
     .pane[data-pos="0"] .card{ transform: translateZ(64px) scale(1.02); box-shadow:0 22px 46px rgba(0,0,0,.42), 0 2px 0 rgba(255,255,255,.08) inset; }
-
-    .pane[data-pos="-1"]{
-      z-index:2;
-      transform: translateX(calc(-50% + var(--peek))) rotateY(-16deg) translateZ(-24px);
-    }
+    .pane[data-pos="-1"]{ z-index:2; transform: translateX(calc(-50% + var(--peek))) rotateY(-16deg) translateZ(-24px); }
     .pane[data-pos="-1"] .card{ box-shadow:0 12px 28px rgba(0,0,0,.3); transform: translateZ(0) scale(.985); }
-
-    .pane[data-pos="1"]{
-      z-index:2;
-      transform: translateX(calc(50% - var(--peek))) rotateY(16deg) translateZ(-24px);
-    }
+    .pane[data-pos="1"]{  z-index:2; transform: translateX(calc(50% - var(--peek))) rotateY(16deg) translateZ(-24px); }
     .pane[data-pos="1"] .card{ box-shadow:0 12px 28px rgba(0,0,0,.3); transform: translateZ(0) scale(.985); }
 
     .pane[hidden]{ display:none; }
 
-    @media (max-width:900px){
-      :root{ --peek: 90px; }
-    }
+    /* Responsiv */
+    @media (max-width:900px){ :root{ --peek: 90px; } }
     @media (max-width:680px){
       :root{ --peek: 56px; }
       .feature-list{ max-width: 40ch; }
+      .seg .tablist{ grid-template-columns:1fr; max-width:520px; }
     }
   </style>
 
   <div class="container">
     <header class="hero">
-      <div class="kicker">Bücking Immobilien GmbH & Co. KG</div>
-      <h1 class="hed">Wofür wir stehen</h1>
-      <p class="dek">Profil, Qualität und Zusammenarbeit – mit 3D-Fokus. Die Nachbarn werden innerhalb des Containers angedeutet, Start ist mittig.</p>
+      <div class="kicker">Leitbild &amp; Philosophie</div>
+      <h1 class="hed">Wer wir sind und was uns antreibt</h1>
+      <p class="dek">
+        Bestand, Vermietung und Verwaltung mit Haltung: regional verwurzelt, verlässlich in der Ausführung, persönlich im Umgang.
+      </p>
     </header>
 
+    <!-- Tabs im Leitbild-Stil -->
     <div class="seg" role="tablist" aria-label="Themenauswahl">
-      <span class="pill" aria-hidden="true"></span>
-      <button role="tab" aria-selected="false" aria-controls="pane-1" id="tab-1">Profil</button>
-      <button role="tab" aria-selected="true"  aria-controls="pane-2" id="tab-2">Qualität</button>
-      <button role="tab" aria-selected="false" aria-controls="pane-3" id="tab-3">Zusammenarbeit</button>
+      <div class="tablist">
+        <button role="tab" aria-selected="false" aria-controls="pane-1" id="tab-1">Profil</button>
+        <button role="tab" aria-selected="true"  aria-controls="pane-2" id="tab-2">Qualität</button>
+        <button role="tab" aria-selected="false" aria-controls="pane-3" id="tab-3">Zusammenarbeit</button>
+      </div>
     </div>
 
+    <!-- DECK -->
     <div class="deck" id="deck">
+      <!-- PROFIL -->
       <section class="pane" id="pane-1" role="tabpanel" aria-labelledby="tab-1" data-pos="-1">
         <article class="card">
           <div class="icon">
@@ -130,6 +143,7 @@
         </article>
       </section>
 
+      <!-- QUALITÄT (aktiv) -->
       <section class="pane" id="pane-2" role="tabpanel" aria-labelledby="tab-2" data-pos="0">
         <article class="card">
           <div class="icon">
@@ -145,6 +159,7 @@
         </article>
       </section>
 
+      <!-- ZUSAMMENARBEIT -->
       <section class="pane" id="pane-3" role="tabpanel" aria-labelledby="tab-3" data-pos="1">
         <article class="card">
           <div class="icon">
@@ -165,42 +180,23 @@
   <script>
     (function(){
       const root = document.currentScript.closest('.landing');
-      const seg  = root.querySelector('.seg');
-      const tabs = Array.from(seg.querySelectorAll('button[role="tab"]'));
-      const pill = seg.querySelector('.pill');
-      const panes = [
-        root.querySelector('#pane-1'),
-        root.querySelector('#pane-2'),
-        root.querySelector('#pane-3')
-      ];
+      const tabs = Array.from(root.querySelectorAll('.seg .tablist button[role="tab"]'));
+      const panes = [ '#pane-1', '#pane-2', '#pane-3' ].map(sel=>root.querySelector(sel));
 
       let idx = 1; // Start mittig (Qualität)
 
-      function setPill(){
-        const btn = tabs[idx];
-        const rect = btn.getBoundingClientRect();
-        const crect = seg.getBoundingClientRect();
-        pill.style.width = rect.width + 'px';
-        pill.style.transform = `translateX(${rect.left - crect.left + seg.scrollLeft}px)`;
-      }
-
-      function setPositions(){
+      function paint(){
         panes.forEach((p,i)=>{
           const d = i - idx;
-          if (Math.abs(d) <= 1){
-            p.hidden = false;
-            p.dataset.pos = String(d);
-          } else {
-            p.hidden = true;
-          }
+          if (Math.abs(d) <= 1){ p.hidden = false; p.dataset.pos = String(d); }
+          else { p.hidden = true; }
         });
-        tabs.forEach((t,j)=>t.setAttribute('aria-selected', j===idx));
+        tabs.forEach((t,i)=>t.setAttribute('aria-selected', String(i===idx)));
       }
 
       function show(i){
         idx = Math.max(0, Math.min(panes.length-1, i));
-        setPositions();
-        setPill();
+        paint();
       }
 
       tabs.forEach((t,i)=>{
@@ -211,9 +207,7 @@
         });
       });
 
-      window.addEventListener('resize', ()=>{ setTimeout(setPill, 50); });
-
-      show(idx);
+      paint();
     })();
   </script>
 </section>
