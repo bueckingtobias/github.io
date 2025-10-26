@@ -9,43 +9,60 @@
       --brand:#004225;
       --brand-700:#00361e;
       --text:#ffffff;
+
+      /* Akzente & Layout */
+      --muted:#ffffff1a;
+      --shadow:0 2px 10px rgba(0,0,0,.25);
+      --radius:22px;
+      --maxw:1100px;
+      --nav-h:46px;
+
+      /* durch JS exakt gesetzt (mit Fallback) */
+      --header-h:110px;
+      --footer-h:64px;
+      --safe-bottom:env(safe-area-inset-bottom,0px);
     }
 
     /* ===== GLOBAL ===== */
+    *{ box-sizing:border-box }
     html,body{
       margin:0; padding:0; overflow-x:hidden;
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       background:var(--brand); color:var(--text);
+      scroll-behavior:smooth;
     }
+    /* Anker-Scroll kollidiert nicht mit sticky Header */
+    html{ scroll-padding-top:calc(var(--header-h) + 10px) }
 
-    /* ===== HEADER ===== */
+    /* ===== HEADER (identisch) ===== */
     header.site-header{
-      position:sticky; top:0; z-index:1000;
+      position:sticky; top:0; left:0; right:0; z-index:1000;
       background:var(--brand-700);
-      box-shadow:0 2px 10px rgba(0,0,0,.25);
+      box-shadow:var(--shadow);
+      color:var(--text);
     }
     .header-top{ display:grid; place-items:center; padding:14px 16px; }
-    .brand-link{ display:inline-flex; align-items:center; gap:10px; color:#fff; text-decoration:none; }
+    .brand-link{ display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; }
     .brand-logo{ height:46px; width:auto; filter:brightness(0) invert(1); display:block; }
 
     .header-nav{
       display:flex; align-items:center; justify-content:center;
       border-top:1px solid rgba(255,255,255,.15);
-      min-height:46px; padding:0 8px; position:relative;
+      min-height:var(--nav-h); padding:0 8px; position:relative;
     }
     nav.primary{ display:none; }
     nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
-    nav.primary a{ color:#fff; text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; }
+    nav.primary a{ color:var(--text); text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; transition:opacity .2s ease; }
     nav.primary a:hover{ opacity:.85; }
     nav.primary a[aria-current="page"]{ text-decoration:underline; }
 
     .menu-toggle{
       position:absolute; right:8px; width:44px; height:44px;
-      border:0; background:transparent; color:#fff;
+      border:0; background:transparent; color:var(--text);
       display:grid; place-items:center; border-radius:10px; cursor:pointer;
     }
     .menu-icon,.menu-icon::before,.menu-icon::after{
-      content:""; display:block; width:22px; height:2px; background:#fff;
+      content:""; display:block; width:22px; height:2px; background:var(--text);
       border-radius:2px; transition:.25s;
     }
     .menu-icon::before{ transform:translateY(-7px) }
@@ -54,50 +71,58 @@
     .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
     .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
 
-    .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45);
-      opacity:0; pointer-events:none; transition:.25s; z-index:999;
+    .drawer-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.45);
+      opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999;
     }
     .drawer{
-      position:fixed; top:calc(46px + 28px + 46px); left:0; right:0;
+      position:fixed; left:0; right:0;
+      top:var(--header-h);
+      bottom:calc(var(--footer-h) + var(--safe-bottom));
       background:var(--brand);
+      color:var(--text);
       transform:translateY(-8px); opacity:0; pointer-events:none;
       border-bottom:1px solid rgba(255,255,255,.15);
       box-shadow:0 10px 25px rgba(0,0,0,.25);
-      transition:.25s; z-index:1001;
+      transition:transform .25s ease, opacity .25s ease; z-index:1001;
+      overflow:auto; -webkit-overflow-scrolling:touch;
     }
-    .drawer.open,.drawer-backdrop.open{ pointer-events:auto; }
-    .drawer.open{ transform:translateY(0); opacity:1; }
-    .drawer-backdrop.open{ opacity:1; }
+    .drawer.open,.drawer-backdrop.open{ pointer-events:auto }
+    .drawer.open{ transform:translateY(0); opacity:1 }
+    .drawer-backdrop.open{ opacity:1 }
     .drawer nav{ padding:14px 16px 18px; }
     .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px; }
     .drawer a{
       display:block; font-weight:700;
       padding:12px 10px; border-radius:10px;
       background:rgba(255,255,255,.1);
-      color:#fff; text-decoration:none;
+      color:var(--text); text-decoration:none;
     }
     @media(min-width:900px){
-      nav.primary{display:block;}
-      .menu-toggle{display:none;}
-      .drawer,.drawer-backdrop{display:none;}
+      nav.primary{display:block}
+      .menu-toggle{display:none}
+      .drawer,.drawer-backdrop{display:none}
     }
+
+    /* ===== MAIN WRAPPER (Platz für fixen Footer) ===== */
+    main{ padding-bottom:calc(var(--footer-h) + var(--safe-bottom)); }
 
     /* ===== SECTION BASE ===== */
     .landing{
       position:relative; isolation:isolate;
-      background-color:var(--brand); color:var(--text);
-      width:100%; padding:clamp(80px,10vw,140px) 16px clamp(80px,8vw,120px);
+      width:100%;
+      padding:clamp(80px,10vw,140px) 16px clamp(80px,8vw,120px);
       overflow:hidden; box-sizing:border-box;
     }
     .container{
-      max-width:1100px;
+      max-width:var(--maxw);
       margin-inline:auto;
       text-align:center;
       padding-inline:16px;
       box-sizing:border-box;
     }
 
-    /* ===== HERO ===== */
+    /* ===== HERO (identisches Design wie oben) ===== */
     .hero .kicker{
       font-weight:700; letter-spacing:.14em; text-transform:uppercase;
       color:rgba(255,255,255,.65);
@@ -117,10 +142,27 @@
       color:rgba(255,255,255,.85);
     }
 
+    /* ===== SUB-HERO (für Chronik – identische Typo, kleiner Abstand) ===== */
+    .sub-hero{ margin-top:64px; margin-bottom:10px; }
+    .sub-hero .kicker{ composes: kicker from ".hero"; } /* falls Compiler ignoriert, nächste Zeilen gelten */
+    .sub-hero .kicker{
+      font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:rgba(255,255,255,.65); font-size:.9rem; margin-bottom:18px;
+    }
+    .sub-hero .hed{
+      font-weight:900; letter-spacing:.005em; line-height:1.05;
+      margin:0 auto 14px; font-size:clamp(1.3rem,2.8vw,2rem);
+    }
+    .sub-hero .dek{
+      margin:0 auto 28px; max-width:60ch; font-size:clamp(.95rem,1.2vw,1.05rem);
+      line-height:1.6; color:rgba(255,255,255,.85);
+    }
+
+    /* ===== CARD ===== */
     .card{
       background:rgba(255,255,255,.07);
       border:1px solid rgba(255,255,255,.15);
-      border-radius:22px;
+      border-radius:var(--radius);
       backdrop-filter:blur(10px);
       -webkit-backdrop-filter:blur(10px);
       box-shadow:0 10px 25px rgba(0,0,0,.25);
@@ -129,12 +171,9 @@
       transition:transform .35s ease, box-shadow .35s ease;
     }
     .card:hover{ transform:translateY(-6px); box-shadow:0 14px 30px rgba(0,0,0,.3); }
-
     .card .icon{
-      width:52px; height:52px;
-      margin:0 auto 18px;
-      border-radius:14px;
-      background:rgba(255,255,255,.1);
+      width:52px; height:52px; margin:0 auto 18px;
+      border-radius:14px; background:rgba(255,255,255,.1);
       border:1px solid rgba(255,255,255,.25);
       display:grid; place-items:center;
     }
@@ -153,139 +192,186 @@
       text-align:center;
     }
 
-    /* Chronik Cards einzeln untereinander */
+    /* ===== CHRONIK ===== */
     .chronik{
-      display:flex;
-      flex-direction:column;
-      gap:32px;
-      margin-top:60px;
+      display:flex; flex-direction:column; gap:32px; margin-top:28px;
     }
 
+    /* ===== FOOTER (identisch, fix) ===== */
     footer.site-footer{
-      position:fixed; left:0; right:0; bottom:0;
-      background:var(--brand-700);
-      color:#fff;
-      text-align:center;
-      padding:20px;
-      font-size:.95rem;
-      box-shadow:0 -2px 10px rgba(0,0,0,.25);
+      position:fixed; left:0; right:0; bottom:0; z-index:1000;
+      background:var(--brand-700); color:var(--text);
+      text-align:center; padding:14px 18px calc(14px + var(--safe-bottom));
+      font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25);
     }
   </style>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="header-top">
-    <a class="brand-link" href="index.html#top">
-      <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo">
-    </a>
-  </div>
-  <div class="header-nav">
-    <nav class="primary">
-      <ul>
-        <li><a href="index.html#home">Home</a></li>
-<li><a href="projekte.html">Projekte</a></li>
-<li><a href="unternehmen.html" aria-current="page">Unternehmen</a></li>
-<li><a href="kontakt.html">Kontakt</a></li>
-<li><a href="impressum.html">Impressum</a></li>
-      </ul>
-    </nav>
-    <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Menü öffnen">
-      <span class="menu-icon"></span>
-    </button>
-  </div>
-</header>
-
-<div class="drawer-backdrop" id="backdrop"></div>
-<div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
-  <nav>
-    <ul>
-<li><a href="index.html#home">Home</a></li>
-<li><a href="projekte.html">Projekte</a></li>
-<li><a href="unternehmen.html" aria-current="page">Unternehmen</a></li>
-<li><a href="kontakt.html">Kontakt</a></li>
-<li><a href="impressum.html">Impressum</a></li>
-    </ul>
-  </nav>
-</div>
-
-<section class="landing" aria-label="Unternehmen">
-  <div class="container">
-    <header class="hero">
-      <div class="kicker">Bücking Immobilien GmbH &amp; Co. KG</div>
-      <h1 class="hed">Unternehmen</h1>
-      <p class="dek">Philosophie & Chronik – im einheitlichen Stil wie unsere Startseite.</p>
-    </header>
-
-    <!-- Philosophie -->
-    <article class="card">
-      <div class="icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <h3 class="card-title">Unsere Philosophie</h3>
-      <div class="card-copy">
-        <p>Die Bücking Immobilien GmbH &amp; Co. KG steht für zielgerichtete, nachhaltige Immobilienentwicklung und eine professionelle Vermietung mit klaren Prozessen. Wir realisieren moderne Wohnprojekte mit hoher Energieeffizienz und funktionalen Grundrissen – immer mit Blick auf Mieterzufriedenheit und langfristige Wirtschaftlichkeit.</p>
-        <p>Unser Ansatz verbindet regionale Verantwortung mit unternehmerischer Disziplin: ressourcenschonende Bauweisen, transparente Kommunikation und partnerschaftliche Zusammenarbeit mit lokalen Betrieben. So entsteht Substanz, die heute überzeugt und morgen Bestand hat.</p>
-        <p>Wir verfolgen einen klaren Plan: entwickeln, in den eigenen Bestand übernehmen und kontinuierlich vermieten. Dabei wächst unser Portfolio bewusst und qualitätsorientiert – wir priorisieren Werthaltigkeit, Beständigkeit und eine sorgfältige Pflege statt kurzfristiger Skalierung. Ziel ist verlässlicher Wohnraum in der Region, der ökologische Standards erfüllt und stabile Perspektiven für Mieterinnen und Mieter bietet.</p>
-      </div>
-    </article>
-
-    <!-- Chronik -->
-    <div class="chronik">
-      <article class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 22V3"/><path d="M4 3h10l-1.5 3L14 9H4"/></svg></div>
-        <h3 class="card-title">Ausblick</h3>
-        <div class="card-copy">
-          <p>Wir schließen die Wohnungen Schritt für Schritt fertig ab und vermieten sie fair und transparent. Für Mieterinnen und Mieter bleiben wir gut erreichbar, kümmern uns zügig um Anliegen und halten die Häuser zuverlässig in Schuss. Unser Bestand wächst langsam – lieber ordentlich und dauerhaft, statt zu schnell.</p>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 4h18"/><path d="M8 2v4M16 2v4"/><rect x="3" y="6" width="18" height="14" rx="2"/></svg></div>
-        <h3 class="card-title">2025</h3>
-        <div class="card-copy">
-          <p>Start des ersten Projekts: Aus dem Familienhof entstehen fünf Wohnungen mit hellen Räumen und praktischen Grundrissen. Dämmung, Haustechnik und Ausstattung werden so gewählt, dass Wohnen komfortabel und gut zu betreiben ist. Übergaben, Ansprechpartner und Abläufe für die Vermietung werden klar geregelt.</p>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 4h18"/><path d="M8 2v4M16 2v4"/><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 10h8"/></svg></div>
-        <h3 class="card-title">2024</h3>
-        <div class="card-copy">
-          <p>Gründung der Bücking Immobilien GmbH &amp; Co. KG. Damit gibt es feste Zuständigkeiten, klare Unterlagen und einen verlässlichen Kontakt – für Mieter, Handwerksbetriebe und Partner.</p>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 4h18"/><path d="M8 2v4M16 2v4"/><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M6 12h12M6 16h10"/></svg></div>
-        <h3 class="card-title">2023</h3>
-        <div class="card-copy">
-          <p>Beginn der Planung: Entwürfe, Genehmigungen und Vorbereitung der Arbeiten. Wir holen Betriebe aus der Region mit ins Boot und stimmen die Schritte sorgfältig ab.</p>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 20V8l-9-5-9 5v12"/><path d="M7 20v-6h10v6"/></svg></div>
-        <h3 class="card-title">Vor 2023</h3>
-        <div class="card-copy">
-          <p>Landwirtschaftliche Nutzung über viele Jahre. Diese Herkunft prägt unseren Blick: bodenständig, verlässlich und mit Verantwortung für den Ort.</p>
-        </div>
-      </article>
+  <!-- Header -->
+  <header class="site-header" role="banner">
+    <div class="header-top">
+      <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
+        <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo">
+      </a>
     </div>
-  </div>
-</section>
+    <div class="header-nav">
+      <nav class="primary" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="index.html#home">Home</a></li>
+          <li><a href="projekte.html">Projekte</a></li>
+          <li><a href="unternehmen.html" aria-current="page">Unternehmen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+      <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Menü öffnen">
+        <span class="menu-icon"></span>
+      </button>
+    </div>
 
-<footer class="site-footer">&copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
+    <!-- Mobile Drawer -->
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
+      <nav>
+        <ul>
+          <li><a href="index.html#home">Home</a></li>
+          <li><a href="projekte.html">Projekte</a></li>
+          <li><a href="unternehmen.html" aria-current="page">Unternehmen</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-<script>
-  const toggle=document.querySelector('.menu-toggle');
-  const drawer=document.getElementById('mobile-drawer');
-  const backdrop=document.getElementById('backdrop');
-  const setOpen=(open)=>{toggle?.setAttribute('aria-expanded',String(open));drawer?.classList.toggle('open',open);backdrop?.classList.toggle('open',open);}
-  toggle?.addEventListener('click',()=>setOpen(toggle.getAttribute('aria-expanded')!=='true'));
-  backdrop?.addEventListener('click',()=>setOpen(false));
-  window.addEventListener('keydown',e=>{if(e.key==='Escape')setOpen(false)});
-  drawer?.addEventListener('click',e=>{if(e.target.closest('a'))setOpen(false)});
-</script>
+  <!-- Main -->
+  <main>
+    <section class="landing" aria-label="Unternehmen">
+      <div class="container">
+        <!-- Hero -->
+        <header class="hero">
+          <div class="kicker">Bücking Immobilien GmbH &amp; Co. KG</div>
+          <h1 class="hed">Unternehmen</h1>
+          <p class="dek">Philosophie &amp; Chronik – im einheitlichen Stil wie unsere Startseite.</p>
+        </header>
+
+        <!-- Philosophie -->
+        <article class="card">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="card-title">Unsere Philosophie</h3>
+          <div class="card-copy">
+            <p>Die Bücking Immobilien GmbH &amp; Co. KG steht für zielgerichtete, nachhaltige Immobilienentwicklung und eine professionelle Vermietung mit klaren Prozessen. Wir realisieren moderne Wohnprojekte mit hoher Energieeffizienz und funktionalen Grundrissen – immer mit Blick auf Mieterzufriedenheit und langfristige Wirtschaftlichkeit.</p>
+            <p>Unser Ansatz verbindet regionale Verantwortung mit unternehmerischer Disziplin: ressourcenschonende Bauweisen, transparente Kommunikation und partnerschaftliche Zusammenarbeit mit lokalen Betrieben. So entsteht Substanz, die heute überzeugt und morgen Bestand hat.</p>
+            <p>Wir verfolgen einen klaren Plan: entwickeln, in den eigenen Bestand übernehmen und kontinuierlich vermieten. Dabei wächst unser Portfolio bewusst und qualitätsorientiert – wir priorisieren Werthaltigkeit, Beständigkeit und eine sorgfältige Pflege statt kurzfristiger Skalierung.</p>
+          </div>
+        </article>
+
+        <!-- Sub-Hero für Chronik (Überschrift + Einleitung im identischen Design) -->
+        <header class="sub-hero" id="chronik">
+          <div class="kicker">Historie</div>
+          <h2 class="hed">Chronik</h2>
+          <p class="dek">Vom landwirtschaftlichen Ursprung bis heute – Entwicklung, Meilensteine und der Blick nach vorn.</p>
+        </header>
+
+        <!-- Chronik Cards -->
+        <div class="chronik">
+          <!-- Ausblick -->
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 22V3"/><path d="M4 3h10l-1.5 3L14 9H4"/></svg></div>
+            <h3 class="card-title">Ausblick</h3>
+            <div class="card-copy">
+              <p>Wir schließen die Wohnungen Schritt für Schritt ab und vermieten sie fair und transparent. Für Mieterinnen und Mieter bleiben wir gut erreichbar, kümmern uns zügig um Anliegen und halten die Häuser zuverlässig in Schuss. Unser Bestand wächst bewusst und beständig – Qualität vor Tempo.</p>
+            </div>
+          </article>
+
+          <!-- 2025 -->
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 4h18"/><path d="M8 2v4M16 2v4"/><rect x="3" y="6" width="18" height="14" rx="2"/></svg></div>
+            <h3 class="card-title">2025</h3>
+            <div class="card-copy">
+              <p>Start des ersten Projekts: Aus dem Familienhof entstehen fünf Wohnungen mit hellen Räumen und praktischen Grundrissen. Technik und Ausstattung sind auf effizienten Betrieb und Komfort ausgelegt. Übergaben, Ansprechpartner und Vermietungsprozesse sind klar geregelt.</p>
+            </div>
+          </article>
+
+          <!-- 2024 -->
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 4h18"/><path d="M8 2v4M16 2v4"/><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 10h8"/></svg></div>
+            <h3 class="card-title">2024</h3>
+            <div class="card-copy">
+              <p>Gründung der Bücking Immobilien GmbH &amp; Co. KG – klare Zuständigkeiten, saubere Unterlagen und verlässliche Erreichbarkeit für Mieter, Betriebe und Partner.</p>
+            </div>
+          </article>
+
+          <!-- 2023 -->
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 4h18"/><path d="M8 2v4M16 2v4"/><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M6 12h12M6 16h10"/></svg></div>
+            <h3 class="card-title">2023</h3>
+            <div class="card-copy">
+              <p>Beginn der Planung: Entwürfe, Genehmigungen und Vergaben. Wir setzen auf regionale Betriebe und abgestimmte Abläufe.</p>
+            </div>
+          </article>
+
+          <!-- Vor 2023 -->
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 20V8l-9-5-9 5v12"/><path d="M7 20v-6h10v6"/></svg></div>
+            <h3 class="card-title">Vor 2023</h3>
+            <div class="card-copy">
+              <p>Landwirtschaftliche Nutzung über viele Jahre. Diese Herkunft prägt unseren Blick: bodenständig, verlässlich und mit Verantwortung für den Ort.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer (fix) -->
+  <footer class="site-footer">
+    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
+  </footer>
+
+  <script>
+    /* ===== Header/Footer-Höhen dynamisch setzen ===== */
+    function updateChromeVars(){
+      const header = document.querySelector('.site-header');
+      const footer = document.querySelector('.site-footer');
+      const root   = document.documentElement;
+      const hh = header?.offsetHeight || 110;
+      const fh = footer?.offsetHeight || 64;
+      root.style.setProperty('--header-h', hh + 'px');
+      root.style.setProperty('--footer-h', fh + 'px');
+    }
+    window.addEventListener('load', updateChromeVars);
+    window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(updateChromeVars, 100); });
+
+    /* ===== Mobiles Menü ===== */
+    const body=document.body,
+          toggle=document.querySelector('.menu-toggle'),
+          drawer=document.getElementById('mobile-drawer'),
+          backdrop=document.getElementById('drawer-backdrop');
+
+    function openMenu(){
+      toggle.setAttribute('aria-expanded','true');
+      drawer.hidden=false; backdrop.hidden=false;
+      requestAnimationFrame(()=>{
+        drawer.classList.add('open'); backdrop.classList.add('open');
+        body.style.overflow='hidden';
+        const firstLink=drawer.querySelector('a'); firstLink&&firstLink.focus();
+      });
+    }
+    function closeMenu(){
+      toggle.setAttribute('aria-expanded','false');
+      drawer.classList.remove('open'); backdrop.classList.remove('open');
+      body.style.overflow='';
+      setTimeout(()=>{ drawer.hidden=true; backdrop.hidden=true; },200);
+      toggle.focus();
+    }
+    toggle?.addEventListener('click',()=>toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu());
+    backdrop?.addEventListener('click',closeMenu);
+    window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
+    drawer?.addEventListener('click',e=>{ if(e.target.closest('a')) closeMenu(); });
+  </script>
 </body>
 </html>
