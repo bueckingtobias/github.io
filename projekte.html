@@ -262,7 +262,7 @@
 
             <div class="badges"><span class="badge">Verfügbar</span></div>
             <div class="actions">
-              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung1.jpeg">⤓ Grundriss (JPEG)</a>
+              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung1.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
               <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
             </div>
@@ -284,7 +284,7 @@
 
             <div class="badges"><span class="badge vermietet">Vermietet</span></div>
             <div class="actions">
-              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung2.jpeg">⤓ Grundriss (JPEG)</a>
+              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung2.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
               <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
             </div>
@@ -306,7 +306,7 @@
 
             <div class="badges"><span class="badge vermietet">Vermietet</span></div>
             <div class="actions">
-              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung3.jpeg">⤓ Grundriss (JPEG)</a>
+              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung3.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
               <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
             </div>
@@ -328,7 +328,7 @@
 
             <div class="badges"><span class="badge">Verfügbar</span></div>
             <div class="actions">
-              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung4.jpeg">⤓ Grundriss (JPEG)</a>
+              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung4.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
               <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
             </div>
@@ -350,7 +350,7 @@
 
             <div class="badges"><span class="badge">Verfügbar</span></div>
             <div class="actions">
-              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung5.jpeg">⤓ Grundriss (JPEG)</a>
+              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung5.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
               <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
             </div>
@@ -415,7 +415,7 @@
     const panels = document.querySelectorAll('.panel');
     radios.forEach((r,i)=> r.addEventListener('change',()=> panels.forEach((p,j)=>p.classList.toggle('active', i===j))));
 
-    /* ===== Preise formatieren ===== */
+    /* ===== Preise formatieren (nur Anzeige, nicht in Mail) ===== */
     const euro = v => (+v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
     document.querySelectorAll('.panel').forEach(p=>{
       const m=+p.dataset.miete||0, n=+p.dataset.nk||0, k=+p.dataset.kueche||0;
@@ -425,44 +425,37 @@
       p.querySelector('.js-total').textContent  = euro(m+n+k);
     });
 
-    /* ===== Vorgefüllte Mail beim Klick auf E-Mail-Button ===== */
+    /* ===== Sauber formatierte Mail ohne Preise ===== */
     function buildMailto(panel){
       const id      = panel.dataset.id;
       const groesse = panel.dataset.groesse;
       const zimmer  = panel.dataset.zimmer;
       const status  = panel.dataset.status;
-      const miete   = panel.querySelector('.js-miete')?.textContent || '';
-      const nk      = panel.querySelector('.js-nk')?.textContent || '';
-      const kueche  = panel.querySelector('.js-kueche')?.textContent || '';
-      const total   = panel.querySelector('.js-total')?.textContent || '';
 
       const subject = `Anfrage Wohnung ${id} – Vom Hof zum Zuhause`;
-      const body = [
-        `Guten Tag,`,
-        ``,
-        `ich interessiere mich für *Wohnung ${id}* (Projekt "Vom Hof zum Zuhause").`,
-        `Daten: ${groesse}, ${zimmer}, Status: ${status}`,
-        `Kostenübersicht:`,
-        `• Kaltmiete: ${miete}`,
-        `• Nebenkosten: ${nk}`,
-        `• Küche: ${kueche}`,
-        `• Gesamt: ${total}`,
-        ``,
-        `Meine Kontaktdaten:`,
-        `Name: `,
-        `E-Mail: `,
-        `Telefon: `,
-        ``,
-        `Bitte senden Sie mir weitere Informationen und – sofern verfügbar – einen Besichtigungstermin-Vorschlag.`,
-        ``,
-        `Vielen Dank und freundliche Grüße`
-      ].join('\n');
 
-      const params = new URLSearchParams({
-        subject,
-        body
-      }).toString();
+      const bodyLines = [
+        'Guten Tag,',
+        '',
+        `ich interessiere mich für Wohnung ${id} im Projekt „Vom Hof zum Zuhause“.`,
+        '',
+        'Eckdaten:',
+        `• Größe: ${groesse}`,
+        `• Zimmer: ${zimmer}`,
+        `• Status: ${status}`,
+        '',
+        'Bitte senden Sie mir weitere Informationen und – sofern möglich – Terminvorschläge für eine Besichtigung.',
+        '',
+        'Meine Kontaktdaten:',
+        'Name:',
+        'E-Mail:',
+        'Telefon:',
+        '',
+        'Vielen Dank und freundliche Grüße'
+      ];
+      const body = bodyLines.join('\r\n');
 
+      const params = new URLSearchParams({ subject, body }).toString();
       return `mailto:kontakt@buecking-immo.de?${params}`;
     }
 
@@ -471,12 +464,11 @@
         e.preventDefault();
         const panel = e.currentTarget.closest('.panel');
         const href = buildMailto(panel);
-        // Sofort öffnen
         window.location.href = href;
       });
     });
 
-    /* ===== Grundriss-Download: immer platzhalter, Dateiname passend ===== */
+    /* ===== Grundriss-Download: immer Platzhalter, Dateiname passend ===== */
     document.querySelectorAll('.btn-plan').forEach(btn=>{
       const panel = btn.closest('.panel');
       const id = panel?.dataset.id || '';
