@@ -1,4 +1,4 @@
-<!-- SECTION: Rondell-Deck (Slider an Wortmitten begrenzt, harte Rundungen, Smyrna-Grün aktiv) -->
+<!-- SECTION: Rondell-Deck (Rundungen transform-sicher + Landing-Schatten) -->
 <section class="landing" aria-label="Überblick">
   <style>
     :root{
@@ -7,7 +7,7 @@
       --radius-pane:24px; --radius-card:22px;
       --peek: clamp(16px, 6%, 72px);   /* sichtbarer Streifen der Seitenkarten */
       --dur:650ms; --ease:cubic-bezier(.22,.8,.26,1);
-      --knob:22px;                     /* Durchmesser des sichtbaren Punkts */
+      --knob:22px;                     /* Slider-Punkt */
       --rail-h:4px;
     }
 
@@ -26,27 +26,18 @@
     /* === Slider: Custom-Knob, exakt auf Wortmitten begrenzt === */
     .slider-wrap{max-width:720px; margin: 10px auto 8px; padding-inline:6px}
     .slider-rail{ position:relative; width:100%; height:calc(var(--knob) + 12px); display:flex; align-items:center; justify-content:center; }
-    /* unsichtbarer nativer Slider, übernimmt die Interaktion */
     .slider{
       position:absolute; inset:0; margin:0; width:100%; height:100%;
       -webkit-appearance:none; appearance:none; background:transparent; outline:none; cursor:pointer; z-index:3;
     }
     .slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:0; height:0; opacity:0 }
     .slider::-moz-range-thumb{ width:0; height:0; border:0; opacity:0 }
-
-    /* sichtbare Schiene */
-    .rail{
-      position:absolute; left:0; right:0; height:var(--rail-h);
-      background: rgba(255,255,255,.22); border-radius:999px; z-index:1;
-    }
-    /* Ticks werden dynamisch exakt unter den Wortmitten gesetzt */
+    .rail{ position:absolute; left:0; right:0; height:var(--rail-h); background: rgba(255,255,255,.22); border-radius:999px; z-index:1; }
     .ticks{ position:absolute; inset:0; z-index:1; pointer-events:none; }
     .ticks i{
       position:absolute; top:50%; width:2px; height:10px; background:rgba(255,255,255,.45);
       transform: translate(-1px, calc(-50% - 2px)); border-radius:2px;
     }
-
-    /* sichtbarer Punkt (Knob) */
     .knob{
       position:absolute; top:50%; left:0;
       width:var(--knob); height:var(--knob); margin-top:calc(var(--knob) / -2);
@@ -55,11 +46,7 @@
       box-shadow:0 6px 16px rgba(0,0,0,.25);
       z-index:2; pointer-events:none; transition: transform .12s ease;
     }
-
-    .slider-labels{
-      display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;
-      margin-top:8px; font-weight:800; letter-spacing:.04em; font-size:.9rem; color:rgba(255,255,255,.86);
-    }
+    .slider-labels{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:8px; font-weight:800; letter-spacing:.04em; font-size:.9rem; color:rgba(255,255,255,.86); }
     .slider-labels span{opacity:.6; transition:opacity .2s; white-space:nowrap}
     .slider-labels span[aria-current="true"]{opacity:1}
 
@@ -72,22 +59,34 @@
 
     .pane{
       grid-area:1/1;
-      width: calc(100% - 2*var(--peek));     /* aktive Kartenbreite minus Peek links/rechts */
+      width: calc(100% - 2*var(--peek));
       max-width: calc(var(--maxw) - 2*var(--peek));
       transform-style: preserve-3d;
       transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease), z-index .2s linear;
       will-change: transform, opacity;
       pointer-events:none;
+      backface-visibility: hidden; /* verhindert Flimmern an Kanten */
     }
 
-    /* HARTE Rundungen (gegen Overrides geschützt) */
+    /* >>> TRANSFORM-SICHERE RUNDUNG (Clip-Path statt overflow) <<< */
     .landing .deck .pane > .pane-clip{
+      position:relative;
       width:100%;
-      border-radius: var(--radius-pane) !important;
-      overflow: hidden !important;
+      /* Clip-Path hält die Ecken auch bei scale/rotate sauber rund */
+      -webkit-clip-path: inset(0 round var(--radius-pane)) !important;
+      clip-path: inset(0 round var(--radius-pane)) !important;
+      /* Safari-Fallback, falls Clip-Path zickt */
       -webkit-mask-image: -webkit-radial-gradient(white, black);
       mask-image: radial-gradient(white, black);
-      box-sizing:border-box;
+      /* NICHT mit overflow:hidden arbeiten, das schneidet Schatten/Ecken hart ab */
+      overflow: visible !important;
+      isolation: isolate; /* eigene Stacking-Context, verhindert Überschreiben */
+    }
+    /* feiner innerer Kantenstrich wie auf der Landing */
+    .landing .deck .pane > .pane-clip::after{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      border-radius:var(--radius-pane);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
     }
 
     .card{
@@ -98,9 +97,10 @@
       backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       padding:36px 28px; text-align:center;
       transform: translateZ(0) scale(.985);
-      box-shadow:0 10px 25px rgba(0,0,0,.28);
+      box-shadow: 0 14px 32px rgba(0,0,0,.28);      /* Landing-ähnlicher Shadow (Side) */
       transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background-color .2s ease, border-color .2s ease, opacity var(--dur) var(--ease);
       will-change: transform, box-shadow, opacity;
+      backface-visibility: hidden;
     }
     .card .icon{
       width:52px;height:52px;margin:0 auto 18px;border-radius:14px;
@@ -116,16 +116,17 @@
     .feature-list .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.6);margin-top:.45em}
     .feature-list .txt{color:rgba(255,255,255,.92);line-height:1.6}
 
-    /* === Rondell-Positionen === */
+    /* === Rondell-Positionen + Landing-Schatten === */
     .pane[data-pos="0"]{
       z-index:3; opacity:1; transform: translateX(0) translateZ(72px) scale(1.01) rotateY(0deg);
       pointer-events:auto;
     }
     .pane[data-pos="0"] .card{
-      background: var(--brand);                          /* Smyrna-Grün */
+      background: var(--brand);                          /* Smyrna-Grün aktiv */
       border-color: rgba(255,255,255,.20);
       transform: translateZ(48px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.06);
+      /* Landing-Shadow – kräftiger */
+      box-shadow: 0 22px 46px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.06);
       opacity: 1;
     }
 
@@ -136,6 +137,12 @@
     .pane[data-pos="1"]{
       z-index:2; opacity:.60;
       transform: translateX(calc( 50% - var(--peek))) rotateY( 18deg) translateZ(-24px) scale(.985);
+    }
+    /* Seitenkarten: weicher Landing-Shadow */
+    .pane[data-pos="-1"] .card,
+    .pane[data-pos="1"]  .card{
+      box-shadow: 0 14px 32px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05);
+      opacity:.95;
     }
 
     /* Punkt (Icon) bei Seitenkarten frontal halten */
@@ -151,10 +158,7 @@
       :root{ --peek: clamp(10px, 8vw, 44px) }
       .feature-list{ max-width:40ch }
     }
-
-    @media (prefers-reduced-motion: reduce){
-      .pane,.card{ transition:none !important }
-    }
+    @media (prefers-reduced-motion: reduce){ .pane,.card{ transition:none !important } }
   </style>
 
   <div class="container">
@@ -166,7 +170,7 @@
       </p>
     </header>
 
-    <!-- SLIDER (knob bewegt sich nur zwischen Wortmitten) -->
+    <!-- SLIDER -->
     <div class="slider-wrap" aria-label="Themenauswahl">
       <div class="slider-rail" id="sliderRail">
         <div class="rail"></div>
@@ -229,12 +233,12 @@
         </div>
       </section>
 
-      <!-- ZUSAMMENARBEIT (Icon ersetzt / robust) -->
+      <!-- ZUSAMMENARBEIT -->
       <section class="pane" id="pane-3" role="tabpanel" aria-label="Zusammenarbeit" data-pos="1">
         <div class="pane-clip">
           <article class="card">
             <div class="icon">
-              <!-- Neues robustes SVG: „Team + Haken“ -->
+              <!-- robustes Team+Haken-Icon -->
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M8 7a4 4 0 1 1 8 0"/>
@@ -262,7 +266,6 @@
       const panes = ['#pane-1','#pane-2','#pane-3'].map(sel=>root.querySelector(sel));
       const deck = root.querySelector('#deck');
 
-      // Slider & Knob
       const slider = root.querySelector('#deckSlider');
       const rail = root.querySelector('#sliderRail');
       const ticksWrap = root.querySelector('#sliderTicks');
@@ -271,43 +274,36 @@
 
       const DUR = 650;
       let idx = 1, anim = false;
-      let centers = []; // Pixel-Positionen der Label-Zentren relativ zur Rail
-      let usableMin = 0, usableMax = 0; // Begrenzung des Knobs (Mitte zu Mitte)
+      let centers = []; let usableMin = 0, usableMax = 0;
 
       function paint(){
         panes.forEach((p,i)=>p.dataset.pos = String(i - idx));
         labels.forEach((el,i)=>el.setAttribute('aria-current', String(i===idx)));
       }
 
-      // Zentren der Labels ermitteln & Knob-Bereich begrenzen
       function computeCenters(){
         const railRect = rail.getBoundingClientRect();
         centers = labels.map(el=>{
           const r = el.getBoundingClientRect();
           return (r.left + r.width/2) - railRect.left;
         });
-        // Ticks exakt setzen
         ticksWrap.innerHTML = '';
         centers.forEach(x=>{
           const i = document.createElement('i');
           i.style.left = `${x}px`;
           ticksWrap.appendChild(i);
         });
-        // Begrenzung: Knob-Mitte nur zwischen erster und letzter Labelmitte
         usableMin = centers[0];
         usableMax = centers[centers.length-1];
-        positionKnob(); // neu positionieren
+        positionKnob();
       }
 
-      // Positioniere den Knopf (auch während Drag)
       function positionKnob(){
         const k = parseFloat(slider.value); // 0..2
-        // Interpolation zwischen Zentren
         const i0 = Math.floor(k);
         const i1 = Math.min(centers.length-1, i0+1);
-        const t = k - i0; // 0..1
+        const t = k - i0;
         const cx = (centers[i0] ?? centers[0])*(1-t) + (centers[i1] ?? centers[i0])*t;
-        // Begrenzen & um halbe Knob-Breite korrigieren
         const knobW = knob.getBoundingClientRect().width || parseFloat(getComputedStyle(knob).width);
         const minX = usableMin - knobW/2;
         const maxX = usableMax - knobW/2;
@@ -331,22 +327,19 @@
         positionKnob();
       }
 
-      // Events: Drag -> weich; Loslassen -> Snap
       slider.addEventListener('input', ()=>{
-        // live highlight des nächstliegenden Labels
         const near = Math.round(parseFloat(slider.value));
         labels.forEach((el,i)=>el.setAttribute('aria-current', String(i===near)));
         positionKnob();
       });
       slider.addEventListener('change', snapToNearest);
 
-      // Label-Klick springt exakt
       labels.forEach((el,i)=>el.addEventListener('click', ()=>{
         slider.value = String(i);
         snapToNearest();
       }));
 
-      // Swipe für das Deck
+      // Swipe
       let sx=null, lx=null, tracking=false;
       deck.addEventListener('pointerdown', e=>{ if(anim) return; tracking=true; sx=lx=e.clientX; });
       deck.addEventListener('pointermove', e=>{ if(tracking) lx=e.clientX; });
@@ -364,16 +357,13 @@
       deck.addEventListener('pointercancel', end);
       deck.addEventListener('pointerleave', end);
 
-      // Initial
       const ready = ()=>{
         computeCenters();
-        // Start bei Mitte
         slider.value = '1';
         snapToNearest();
       };
       window.addEventListener('load', ready);
       window.addEventListener('resize', computeCenters);
-      // Fallback sofort, falls load schon durch ist:
       if (document.readyState !== 'loading') ready();
     })();
   </script>
