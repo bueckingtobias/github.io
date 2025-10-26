@@ -1,14 +1,14 @@
-<!-- SECTION: Rondell-Deck (Smyrna-Grün aktive Karte + sanftes Überblenden) -->
+<!-- SECTION: Rondell-Deck (Slider an Wortmitten begrenzt, harte Rundungen, Smyrna-Grün aktiv) -->
 <section class="landing" aria-label="Überblick">
   <style>
     :root{
-      --brand:#004225;
-      --brand-700:#00361e;
-      --text:#ffffff;
+      --brand:#004225; --brand-700:#00361e; --text:#ffffff;
       --maxw:1100px;
-      --radius:22px;
-      --dur:700ms;
-      --ease:cubic-bezier(.22,.8,.26,1);
+      --radius-pane:24px; --radius-card:22px;
+      --peek: clamp(16px, 6%, 72px);   /* sichtbarer Streifen der Seitenkarten */
+      --dur:650ms; --ease:cubic-bezier(.22,.8,.26,1);
+      --knob:22px;                     /* Durchmesser des sichtbaren Punkts */
+      --rail-h:4px;
     }
 
     .landing{
@@ -17,78 +17,144 @@
       box-sizing:border-box; overflow:hidden;
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
-    .landing .container{max-width:var(--maxw);margin:auto;text-align:center;padding-inline:16px}
+    .landing .container{ max-width:var(--maxw); margin:auto; text-align:center; padding-inline:16px; box-sizing:border-box; }
 
     .kicker{font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.65);font-size:.9rem;margin-bottom:10px}
     .hed{font-weight:900;letter-spacing:.005em;line-height:1.08;margin:0 auto 10px;font-size:clamp(1.35rem,2.8vw,2rem);max-width:28ch}
     .dek{margin:0 auto clamp(24px,4vw,36px);max-width:65ch;font-size:clamp(.95rem,1.3vw,1.1rem);line-height:1.6;color:rgba(255,255,255,.85)}
 
-    .seg{margin-top:clamp(14px,2.5vw,20px)}
-    .seg .tablist{display:grid;gap:10px;grid-template-columns:repeat(3,1fr);margin:0 auto clamp(16px,2.8vw,24px);max-width:900px}
-    .seg button{
-      height:46px;border-radius:999px;border:1px solid rgba(255,255,255,.25);
-      background:rgba(255,255,255,.05);font-weight:800;letter-spacing:.04em;
-      color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0 6px 16px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06)
+    /* === Slider: Custom-Knob, exakt auf Wortmitten begrenzt === */
+    .slider-wrap{max-width:720px; margin: 10px auto 8px; padding-inline:6px}
+    .slider-rail{ position:relative; width:100%; height:calc(var(--knob) + 12px); display:flex; align-items:center; justify-content:center; }
+    /* unsichtbarer nativer Slider, übernimmt die Interaktion */
+    .slider{
+      position:absolute; inset:0; margin:0; width:100%; height:100%;
+      -webkit-appearance:none; appearance:none; background:transparent; outline:none; cursor:pointer; z-index:3;
     }
-    .seg button:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.35);transform:translateY(-1px)}
-    .seg button[aria-selected="true"]{
-      background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.45);
-      box-shadow:0 10px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.1)
+    .slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:0; height:0; opacity:0 }
+    .slider::-moz-range-thumb{ width:0; height:0; border:0; opacity:0 }
+
+    /* sichtbare Schiene */
+    .rail{
+      position:absolute; left:0; right:0; height:var(--rail-h);
+      background: rgba(255,255,255,.22); border-radius:999px; z-index:1;
+    }
+    /* Ticks werden dynamisch exakt unter den Wortmitten gesetzt */
+    .ticks{ position:absolute; inset:0; z-index:1; pointer-events:none; }
+    .ticks i{
+      position:absolute; top:50%; width:2px; height:10px; background:rgba(255,255,255,.45);
+      transform: translate(-1px, calc(-50% - 2px)); border-radius:2px;
     }
 
-    /* ==== DECK ==== */
+    /* sichtbarer Punkt (Knob) */
+    .knob{
+      position:absolute; top:50%; left:0;
+      width:var(--knob); height:var(--knob); margin-top:calc(var(--knob) / -2);
+      transform: translateX(0);
+      background:#fff; border:2px solid rgba(0,0,0,.06); border-radius:50%;
+      box-shadow:0 6px 16px rgba(0,0,0,.25);
+      z-index:2; pointer-events:none; transition: transform .12s ease;
+    }
+
+    .slider-labels{
+      display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;
+      margin-top:8px; font-weight:800; letter-spacing:.04em; font-size:.9rem; color:rgba(255,255,255,.86);
+    }
+    .slider-labels span{opacity:.6; transition:opacity .2s; white-space:nowrap}
+    .slider-labels span[aria-current="true"]{opacity:1}
+
+    /* === Deck === */
     .deck{
-      margin-top:clamp(28px,3vw,40px);
-      position:relative;display:grid;place-items:center;
-      perspective:1000px;touch-action:pan-y;user-select:none;
+      width:100%; max-width:var(--maxw); margin:clamp(24px,3vw,40px) auto 0;
+      position:relative; display:grid; place-items:center; perspective:1200px;
+      touch-action: pan-y; user-select:none;
     }
 
     .pane{
-      grid-area:1/1;width:100%;max-width:var(--maxw);padding:0 10px;box-sizing:border-box;
-      transform-style:preserve-3d;transition:transform var(--dur) var(--ease),opacity var(--dur) var(--ease);
-      will-change:transform,opacity;pointer-events:none;opacity:0;
+      grid-area:1/1;
+      width: calc(100% - 2*var(--peek));     /* aktive Kartenbreite minus Peek links/rechts */
+      max-width: calc(var(--maxw) - 2*var(--peek));
+      transform-style: preserve-3d;
+      transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease), z-index .2s linear;
+      will-change: transform, opacity;
+      pointer-events:none;
+    }
+
+    /* HARTE Rundungen (gegen Overrides geschützt) */
+    .landing .deck .pane > .pane-clip{
+      width:100%;
+      border-radius: var(--radius-pane) !important;
+      overflow: hidden !important;
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      mask-image: radial-gradient(white, black);
+      box-sizing:border-box;
     }
 
     .card{
+      width:100%; box-sizing:border-box;
       background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:var(--radius);
-      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-      padding:36px 28px;text-align:center;
-      transform:translateZ(0) scale(.98);
-      box-shadow:0 8px 24px rgba(0,0,0,.25);
-      transition:all var(--dur) var(--ease);
-      will-change:transform,opacity,background-color;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      padding:36px 28px; text-align:center;
+      transform: translateZ(0) scale(.985);
+      box-shadow:0 10px 25px rgba(0,0,0,.28);
+      transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background-color .2s ease, border-color .2s ease, opacity var(--dur) var(--ease);
+      will-change: transform, box-shadow, opacity;
     }
     .card .icon{
       width:52px;height:52px;margin:0 auto 18px;border-radius:14px;
       background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);
       display:grid;place-items:center;
     }
-    .card .icon svg{width:26px;height:26px;stroke:#fff;stroke-width:2;fill:none}
+    .card .icon svg{width:26px;height:26px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
     .card-title{font-weight:900;letter-spacing:.005em;line-height:1.1;margin-bottom:14px;font-size:clamp(1.1rem,2.2vw,1.6rem);color:#fff}
+
     .feature-list{margin:0 auto;padding:0;list-style:none;max-width:48ch;text-align:left}
     .feature-list li{display:grid;grid-template-columns:auto 1fr;align-items:start;gap:10px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.18)}
     .feature-list li:last-child{border-bottom:none}
     .feature-list .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.6);margin-top:.45em}
     .feature-list .txt{color:rgba(255,255,255,.92);line-height:1.6}
 
-    /* === Zustände === */
+    /* === Rondell-Positionen === */
     .pane[data-pos="0"]{
-      z-index:3;opacity:1;transform:translateZ(64px) scale(1.02);
+      z-index:3; opacity:1; transform: translateX(0) translateZ(72px) scale(1.01) rotateY(0deg);
       pointer-events:auto;
     }
     .pane[data-pos="0"] .card{
-      background:var(--brand);              /* SMYRNA-GRÜN */
-      border-color:rgba(255,255,255,.18);
-      box-shadow:0 20px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
-      transform:translateZ(40px) scale(1.02);
+      background: var(--brand);                          /* Smyrna-Grün */
+      border-color: rgba(255,255,255,.20);
+      transform: translateZ(48px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.06);
+      opacity: 1;
     }
 
-    .pane[data-pos="-1"]{transform:translateX(-20%) rotateY(-12deg) translateZ(-60px);opacity:0}
-    .pane[data-pos="1"]{transform:translateX(20%) rotateY(12deg) translateZ(-60px);opacity:0}
+    .pane[data-pos="-1"]{
+      z-index:2; opacity:.60;
+      transform: translateX(calc(-50% + var(--peek))) rotateY(-18deg) translateZ(-24px) scale(.985);
+    }
+    .pane[data-pos="1"]{
+      z-index:2; opacity:.60;
+      transform: translateX(calc( 50% - var(--peek))) rotateY( 18deg) translateZ(-24px) scale(.985);
+    }
 
-    @media (prefers-reduced-motion: reduce){.pane,.card{transition:none!important}}
+    /* Punkt (Icon) bei Seitenkarten frontal halten */
+    .pane[data-pos="-1"] .card .icon,
+    .pane[data-pos="1"]  .card .icon { transform: rotateY(18deg); transform-origin:center }
+    .pane[data-pos="-1"] .card .icon svg,
+    .pane[data-pos="1"]  .card .icon svg { transform: rotateY(-18deg) }
+
+    .pane[hidden]{ display:none }
+
+    @media (max-width:900px){ :root{ --peek: clamp(12px, 7vw, 56px) } }
+    @media (max-width:680px){
+      :root{ --peek: clamp(10px, 8vw, 44px) }
+      .feature-list{ max-width:40ch }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .pane,.card{ transition:none !important }
+    }
   </style>
 
   <div class="container">
@@ -100,105 +166,215 @@
       </p>
     </header>
 
-    <div class="seg" role="tablist" aria-label="Themenauswahl">
-      <div class="tablist">
-        <button role="tab" aria-selected="false" aria-controls="pane-1" id="tab-1">Profil</button>
-        <button role="tab" aria-selected="true"  aria-controls="pane-2" id="tab-2">Qualität</button>
-        <button role="tab" aria-selected="false" aria-controls="pane-3" id="tab-3">Zusammenarbeit</button>
+    <!-- SLIDER (knob bewegt sich nur zwischen Wortmitten) -->
+    <div class="slider-wrap" aria-label="Themenauswahl">
+      <div class="slider-rail" id="sliderRail">
+        <div class="rail"></div>
+        <div class="ticks" id="sliderTicks" aria-hidden="true"></div>
+        <div class="knob" id="sliderKnob" aria-hidden="true"></div>
+        <input class="slider" type="range" min="0" max="2" step="0.001" value="1" id="deckSlider"
+               aria-valuemin="0" aria-valuemax="2" aria-valuenow="1" aria-describedby="deckSliderLabels" />
+      </div>
+      <div class="slider-labels" id="deckSliderLabels" aria-live="polite">
+        <span data-i="0">Profil</span>
+        <span data-i="1" aria-current="true">Qualität</span>
+        <span data-i="2">Zusammenarbeit</span>
       </div>
     </div>
 
+    <!-- DECK -->
     <div class="deck" id="deck">
-      <section class="pane" id="pane-1" data-pos="-1">
-        <article class="card">
-          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l9 4.5V21l-9 4.5L3 21V7.5L12 3z"/><path d="M12 12l9-4.5"/><path d="M12 12L3 7.5"/></svg></div>
-          <h3 class="card-title">PROFIL</h3>
-          <ul class="feature-list">
-            <li><span class="dot"></span><span class="txt">Regional &amp; langfristig</span></li>
-            <li><span class="dot"></span><span class="txt">Fokus: Ganderkesee, Elmeloh &amp; Umgebung</span></li>
-            <li><span class="dot"></span><span class="txt">Langfristige Bewirtschaftung statt kurzfristiger Handel</span></li>
-            <li><span class="dot"></span><span class="txt">Klare Prozesse &amp; verlässliche Ansprechpartner</span></li>
-          </ul>
-        </article>
+      <!-- PROFIL -->
+      <section class="pane" id="pane-1" role="tabpanel" aria-label="Profil" data-pos="-1">
+        <div class="pane-clip">
+          <article class="card">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3l9 4.5V21l-9 4.5L3 21V7.5L12 3z"/>
+                  <path d="M12 12l9-4.5M12 12L3 7.5"/>
+                </g>
+              </svg>
+            </div>
+            <h3 class="card-title">PROFIL</h3>
+            <ul class="feature-list">
+              <li><span class="dot"></span><span class="txt">Regional &amp; langfristig</span></li>
+              <li><span class="dot"></span><span class="txt">Fokus: Ganderkesee, Elmeloh &amp; Umgebung</span></li>
+              <li><span class="dot"></span><span class="txt">Langfristige Bewirtschaftung statt kurzfristiger Handel</span></li>
+              <li><span class="dot"></span><span class="txt">Klare Prozesse &amp; verlässliche Ansprechpartner</span></li>
+            </ul>
+          </article>
+        </div>
       </section>
 
-      <section class="pane" id="pane-2" data-pos="0">
-        <article class="card">
-          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z"/></svg></div>
-          <h3 class="card-title">QUALITÄT</h3>
-          <ul class="feature-list">
-            <li><span class="dot"></span><span class="txt">Wertige Details</span></li>
-            <li><span class="dot"></span><span class="txt">Effiziente Haustechnik &amp; sinnvolle Grundrisse</span></li>
-            <li><span class="dot"></span><span class="txt">Reduziertes Design mit sauberer Ausführung</span></li>
-            <li><span class="dot"></span><span class="txt">Langlebige Materialien &amp; pflegeleichte Lösungen</span></li>
-          </ul>
-        </article>
+      <!-- QUALITÄT (aktiv) -->
+      <section class="pane" id="pane-2" role="tabpanel" aria-label="Qualität" data-pos="0">
+        <div class="pane-clip">
+          <article class="card">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z"/>
+                </g>
+              </svg>
+            </div>
+            <h3 class="card-title">QUALITÄT</h3>
+            <ul class="feature-list">
+              <li><span class="dot"></span><span class="txt">Wertige Details</span></li>
+              <li><span class="dot"></span><span class="txt">Effiziente Haustechnik &amp; sinnvolle Grundrisse</span></li>
+              <li><span class="dot"></span><span class="txt">Reduziertes Design mit sauberer Ausführung</span></li>
+              <li><span class="dot"></span><span class="txt">Langlebige Materialien &amp; pflegeleichte Lösungen</span></li>
+            </ul>
+          </article>
+        </div>
       </section>
 
-      <section class="pane" id="pane-3" data-pos="1">
-        <article class="card">
-          <div class="icon"><svg viewBox="0 0 24 24"><path d="M8 17l-3 3"/><path d="M22 11l-7 7-3-3"/><path d="M2 12h6l2 3h6l6-6"/></svg></div>
-          <h3 class="card-title">ZUSAMMENARBEIT</h3>
-          <ul class="feature-list">
-            <li><span class="dot"></span><span class="txt">Kurze Wege</span></li>
-            <li><span class="dot"></span><span class="txt">Direkter Draht zu Eigentümer &amp; Verwaltung</span></li>
-            <li><span class="dot"></span><span class="txt">Regionale Handwerkspartner</span></li>
-            <li><span class="dot"></span><span class="txt">Transparente Entscheidungen</span></li>
-          </ul>
-        </article>
+      <!-- ZUSAMMENARBEIT (Icon ersetzt / robust) -->
+      <section class="pane" id="pane-3" role="tabpanel" aria-label="Zusammenarbeit" data-pos="1">
+        <div class="pane-clip">
+          <article class="card">
+            <div class="icon">
+              <!-- Neues robustes SVG: „Team + Haken“ -->
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 7a4 4 0 1 1 8 0"/>
+                  <path d="M2 21c0-4 4-7 10-7s10 3 10 7"/>
+                  <path d="M9 14l3 3 5-5"/>
+                </g>
+              </svg>
+            </div>
+            <h3 class="card-title">ZUSAMMENARBEIT</h3>
+            <ul class="feature-list">
+              <li><span class="dot"></span><span class="txt">Kurze Wege</span></li>
+              <li><span class="dot"></span><span class="txt">Direkter Draht zu Eigentümer &amp; Verwaltung</span></li>
+              <li><span class="dot"></span><span class="txt">Regionale Handwerkspartner</span></li>
+              <li><span class="dot"></span><span class="txt">Transparente Entscheidungen</span></li>
+            </ul>
+          </article>
+        </div>
       </section>
     </div>
   </div>
 
   <script>
     (function(){
-      const root=document.currentScript.closest('.landing');
-      const tabs=[...root.querySelectorAll('.seg button[role="tab"]')];
-      const panes=['#pane-1','#pane-2','#pane-3'].map(s=>root.querySelector(s));
-      const deck=root.querySelector('#deck');
-      const DUR=700; let idx=1,isAnimating=false;
+      const root = document.currentScript.closest('.landing');
+      const panes = ['#pane-1','#pane-2','#pane-3'].map(sel=>root.querySelector(sel));
+      const deck = root.querySelector('#deck');
+
+      // Slider & Knob
+      const slider = root.querySelector('#deckSlider');
+      const rail = root.querySelector('#sliderRail');
+      const ticksWrap = root.querySelector('#sliderTicks');
+      const knob = root.querySelector('#sliderKnob');
+      const labels = [...root.querySelectorAll('.slider-labels span')];
+
+      const DUR = 650;
+      let idx = 1, anim = false;
+      let centers = []; // Pixel-Positionen der Label-Zentren relativ zur Rail
+      let usableMin = 0, usableMax = 0; // Begrenzung des Knobs (Mitte zu Mitte)
 
       function paint(){
-        panes.forEach((p,i)=>p.dataset.pos=String(i-idx));
-        tabs.forEach((t,i)=>t.setAttribute('aria-selected',String(i===idx)));
-      }
-      function show(i){
-        if(isAnimating) return;
-        const next=Math.max(0,Math.min(panes.length-1,i));
-        if(next===idx) return;
-        isAnimating=true;
-        panes.forEach((p,j)=>{
-          p.style.transition='none';
-          if(j===idx){p.style.opacity='1';}
-        });
-        requestAnimationFrame(()=>{
-          panes.forEach((p,j)=>{
-            p.style.transition='';
-            p.style.opacity=j===next?'1':'0';
-          });
-          idx=next;paint();
-          setTimeout(()=>isAnimating=false,DUR+50);
-        });
+        panes.forEach((p,i)=>p.dataset.pos = String(i - idx));
+        labels.forEach((el,i)=>el.setAttribute('aria-current', String(i===idx)));
       }
 
-      tabs.forEach((t,i)=>{
-        t.addEventListener('click',()=>show(i));
-        t.addEventListener('keydown',e=>{
-          if(e.key==='ArrowRight')show(idx+1);
-          if(e.key==='ArrowLeft')show(idx-1);
+      // Zentren der Labels ermitteln & Knob-Bereich begrenzen
+      function computeCenters(){
+        const railRect = rail.getBoundingClientRect();
+        centers = labels.map(el=>{
+          const r = el.getBoundingClientRect();
+          return (r.left + r.width/2) - railRect.left;
         });
+        // Ticks exakt setzen
+        ticksWrap.innerHTML = '';
+        centers.forEach(x=>{
+          const i = document.createElement('i');
+          i.style.left = `${x}px`;
+          ticksWrap.appendChild(i);
+        });
+        // Begrenzung: Knob-Mitte nur zwischen erster und letzter Labelmitte
+        usableMin = centers[0];
+        usableMax = centers[centers.length-1];
+        positionKnob(); // neu positionieren
+      }
+
+      // Positioniere den Knopf (auch während Drag)
+      function positionKnob(){
+        const k = parseFloat(slider.value); // 0..2
+        // Interpolation zwischen Zentren
+        const i0 = Math.floor(k);
+        const i1 = Math.min(centers.length-1, i0+1);
+        const t = k - i0; // 0..1
+        const cx = (centers[i0] ?? centers[0])*(1-t) + (centers[i1] ?? centers[i0])*t;
+        // Begrenzen & um halbe Knob-Breite korrigieren
+        const knobW = knob.getBoundingClientRect().width || parseFloat(getComputedStyle(knob).width);
+        const minX = usableMin - knobW/2;
+        const maxX = usableMax - knobW/2;
+        const x = Math.max(minX, Math.min(maxX, cx - knobW/2));
+        knob.style.transform = `translateX(${x}px)`;
+      }
+
+      function setIndex(next){
+        if(anim) return;
+        next = Math.max(0, Math.min(panes.length-1, next));
+        if(next === idx){ paint(); return; }
+        anim = true;
+        idx = next; paint();
+        setTimeout(()=>{ anim = false; }, DUR + 40);
+      }
+
+      function snapToNearest(){
+        const v = Math.round(parseFloat(slider.value)); // 0,1,2
+        slider.value = String(v);
+        setIndex(v);
+        positionKnob();
+      }
+
+      // Events: Drag -> weich; Loslassen -> Snap
+      slider.addEventListener('input', ()=>{
+        // live highlight des nächstliegenden Labels
+        const near = Math.round(parseFloat(slider.value));
+        labels.forEach((el,i)=>el.setAttribute('aria-current', String(i===near)));
+        positionKnob();
       });
+      slider.addEventListener('change', snapToNearest);
 
-      let startX=null,lastX=null,track=false;
-      deck.addEventListener('pointerdown',e=>{if(isAnimating)return;track=true;startX=lastX=e.clientX});
-      deck.addEventListener('pointermove',e=>{if(track)lastX=e.clientX});
-      const end=()=>{if(!track)return;const dx=(lastX??0)-(startX??0);track=false;startX=lastX=null;
-        if(Math.abs(dx)>50) show(dx<0?idx+1:idx-1);
+      // Label-Klick springt exakt
+      labels.forEach((el,i)=>el.addEventListener('click', ()=>{
+        slider.value = String(i);
+        snapToNearest();
+      }));
+
+      // Swipe für das Deck
+      let sx=null, lx=null, tracking=false;
+      deck.addEventListener('pointerdown', e=>{ if(anim) return; tracking=true; sx=lx=e.clientX; });
+      deck.addEventListener('pointermove', e=>{ if(tracking) lx=e.clientX; });
+      const end=()=>{
+        if(!tracking) return;
+        const dx = (lx??0) - (sx??0);
+        tracking=false; sx=lx=null;
+        if(Math.abs(dx) > 50){
+          const next = Math.max(0, Math.min(panes.length-1, idx + (dx<0?1:-1)));
+          slider.value = String(next);
+          snapToNearest();
+        }
       };
-      deck.addEventListener('pointerup',end);
-      deck.addEventListener('pointercancel',end);
-      deck.addEventListener('pointerleave',end);
-      paint();
+      deck.addEventListener('pointerup', end);
+      deck.addEventListener('pointercancel', end);
+      deck.addEventListener('pointerleave', end);
+
+      // Initial
+      const ready = ()=>{
+        computeCenters();
+        // Start bei Mitte
+        slider.value = '1';
+        snapToNearest();
+      };
+      window.addEventListener('load', ready);
+      window.addEventListener('resize', computeCenters);
+      // Fallback sofort, falls load schon durch ist:
+      if (document.readyState !== 'loading') ready();
     })();
   </script>
 </section>
