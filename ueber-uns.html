@@ -1,10 +1,14 @@
-<!-- SECTION: Rondell-Deck (Peek IM Container, Start mittig) -->
+<!-- SECTION: Rondell-Deck (Smyrna-Grün aktive Karte + sanftes Überblenden) -->
 <section class="landing" aria-label="Überblick">
   <style>
     :root{
-      --brand:#004225; --brand-700:#00361e; --text:#ffffff;
-      --peek: 60px;   /* Reduzierter Peek – ~10% Andeutung je Seite */
-      --maxw: 1100px;
+      --brand:#004225;
+      --brand-700:#00361e;
+      --text:#ffffff;
+      --maxw:1100px;
+      --radius:22px;
+      --dur:700ms;
+      --ease:cubic-bezier(.22,.8,.26,1);
     }
 
     .landing{
@@ -13,113 +17,78 @@
       box-sizing:border-box; overflow:hidden;
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
-    .landing .container{ max-width:var(--maxw); margin-inline:auto; text-align:center; padding-inline:16px; }
+    .landing .container{max-width:var(--maxw);margin:auto;text-align:center;padding-inline:16px}
 
-    .kicker{ font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.65); font-size:.9rem; margin-bottom:10px; }
-    .hed{ font-weight:900; letter-spacing:.005em; line-height:1.08; margin:0 auto 10px; font-size:clamp(1.35rem,2.8vw,2rem); max-width:28ch; }
-    .dek{ margin:0 auto clamp(24px,4vw,36px); max-width:65ch; font-size:clamp(.95rem,1.3vw,1.1rem); line-height:1.6; color:rgba(255,255,255,.85); }
+    .kicker{font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.65);font-size:.9rem;margin-bottom:10px}
+    .hed{font-weight:900;letter-spacing:.005em;line-height:1.08;margin:0 auto 10px;font-size:clamp(1.35rem,2.8vw,2rem);max-width:28ch}
+    .dek{margin:0 auto clamp(24px,4vw,36px);max-width:65ch;font-size:clamp(.95rem,1.3vw,1.1rem);line-height:1.6;color:rgba(255,255,255,.85)}
 
-    /* ==== TABS ==== */
-    .seg{ margin-top:clamp(14px,2.5vw,20px); position:relative; }
-    .seg .tablist{
-      display:grid; gap:10px; grid-template-columns:repeat(3,1fr);
-      margin:0 auto clamp(16px,2.8vw,24px); max-width:900px;
-    }
+    .seg{margin-top:clamp(14px,2.5vw,20px)}
+    .seg .tablist{display:grid;gap:10px;grid-template-columns:repeat(3,1fr);margin:0 auto clamp(16px,2.8vw,24px);max-width:900px}
     .seg button{
-      display:flex; align-items:center; justify-content:center;
-      height:46px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.25);
-      background:rgba(255,255,255,.05);
-      font-weight:800; letter-spacing:.04em; color:#fff;
-      cursor:pointer; user-select:none; text-decoration:none;
-      transition:all .25s ease;
-      box-shadow:0 6px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06);
+      height:46px;border-radius:999px;border:1px solid rgba(255,255,255,.25);
+      background:rgba(255,255,255,.05);font-weight:800;letter-spacing:.04em;
+      color:#fff;cursor:pointer;transition:all .25s ease;box-shadow:0 6px 16px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06)
     }
-    .seg button:hover{
-      background:rgba(255,255,255,.09);
-      border-color:rgba(255,255,255,.35);
-      transform:translateY(-1px);
-    }
+    .seg button:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.35);transform:translateY(-1px)}
     .seg button[aria-selected="true"]{
-      background:rgba(255,255,255,.14);
-      border-color:rgba(255,255,255,.45);
-      box-shadow:0 10px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.1);
+      background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.45);
+      box-shadow:0 10px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.1)
     }
 
-    /* ==== DECK & KARTEN ==== */
+    /* ==== DECK ==== */
     .deck{
       margin-top:clamp(28px,3vw,40px);
-      position:relative;
-      display:grid; place-items:center;
-      perspective:1200px;
-      height:auto;
+      position:relative;display:grid;place-items:center;
+      perspective:1000px;touch-action:pan-y;user-select:none;
     }
+
     .pane{
-      grid-area:1 / 1;
-      width: calc(100% - 2 * var(--peek));
-      max-width: calc(var(--maxw) - 2 * var(--peek));
-      padding: 0 10px; box-sizing:border-box;
-      transform-style: preserve-3d;
-      transition: transform .6s cubic-bezier(.22,.8,.26,1), opacity .6s, z-index .3s, filter .5s;
-      border-radius: 24px;           /* NEU: weiche Rundung */
-      overflow: hidden;              /* NEU: schneidet Ecken sauber ab */
+      grid-area:1/1;width:100%;max-width:var(--maxw);padding:0 10px;box-sizing:border-box;
+      transform-style:preserve-3d;transition:transform var(--dur) var(--ease),opacity var(--dur) var(--ease);
+      will-change:transform,opacity;pointer-events:none;opacity:0;
     }
 
     .card{
-      width:100%;
-      background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.15);
-      border-radius:22px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-      box-shadow:0 10px 25px rgba(0,0,0,.25);
-      padding:36px 28px; text-align:center;
-      transform: translateZ(0) scale(.985);
-      transition: transform .5s cubic-bezier(.22,.8,.26,1), box-shadow .5s;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--radius);
+      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      padding:36px 28px;text-align:center;
+      transform:translateZ(0) scale(.98);
+      box-shadow:0 8px 24px rgba(0,0,0,.25);
+      transition:all var(--dur) var(--ease);
+      will-change:transform,opacity,background-color;
     }
-
     .card .icon{
-      width:52px; height:52px; margin:0 auto 18px; border-radius:14px;
-      background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.25);
-      display:grid; place-items:center;
+      width:52px;height:52px;margin:0 auto 18px;border-radius:14px;
+      background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);
+      display:grid;place-items:center;
     }
-    .card .icon svg{ width:26px; height:26px; stroke:#fff; stroke-width:2; fill:none; }
-    .card-title{ font-weight:900; letter-spacing:.005em; line-height:1.1; margin-bottom:14px; font-size:clamp(1.1rem,2.2vw,1.6rem); color:#fff; }
+    .card .icon svg{width:26px;height:26px;stroke:#fff;stroke-width:2;fill:none}
+    .card-title{font-weight:900;letter-spacing:.005em;line-height:1.1;margin-bottom:14px;font-size:clamp(1.1rem,2.2vw,1.6rem);color:#fff}
+    .feature-list{margin:0 auto;padding:0;list-style:none;max-width:48ch;text-align:left}
+    .feature-list li{display:grid;grid-template-columns:auto 1fr;align-items:start;gap:10px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.18)}
+    .feature-list li:last-child{border-bottom:none}
+    .feature-list .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.6);margin-top:.45em}
+    .feature-list .txt{color:rgba(255,255,255,.92);line-height:1.6}
 
-    .feature-list{ margin:0 auto; padding:0; list-style:none; max-width:48ch; text-align:left; }
-    .feature-list li{ display:grid; grid-template-columns:auto 1fr; align-items:start; gap:10px; padding:8px 0; border-bottom:1px dashed rgba(255,255,255,.18); }
-    .feature-list li:last-child{ border-bottom:none; }
-    .feature-list .dot{ width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.6); margin-top:.45em; }
-    .feature-list .txt{ color:rgba(255,255,255,.92); line-height:1.6; }
-
-    /* ==== Positionen im Deck ==== */
-    .pane[data-pos="0"]{ z-index:3; transform: translateX(0) translateZ(64px); opacity:1; filter:none; }
-    .pane[data-pos="0"] .card{ transform: translateZ(64px) scale(1.02); box-shadow:0 22px 46px rgba(0,0,0,.42), 0 2px 0 rgba(255,255,255,.08) inset; }
-
-    .pane[data-pos="-1"]{
-      z-index:2;
-      transform: translateX(calc(-35% + var(--peek))) rotateY(-14deg) translateZ(-32px);
-      opacity:.35; filter:blur(1px);
+    /* === Zustände === */
+    .pane[data-pos="0"]{
+      z-index:3;opacity:1;transform:translateZ(64px) scale(1.02);
+      pointer-events:auto;
     }
-    .pane[data-pos="1"]{
-      z-index:2;
-      transform: translateX(calc(35% - var(--peek))) rotateY(14deg) translateZ(-32px);
-      opacity:.35; filter:blur(1px);
+    .pane[data-pos="0"] .card{
+      background:var(--brand);              /* SMYRNA-GRÜN */
+      border-color:rgba(255,255,255,.18);
+      box-shadow:0 20px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
+      transform:translateZ(40px) scale(1.02);
     }
 
-    .pane[data-pos="-1"] .card,
-    .pane[data-pos="1"] .card{
-      box-shadow:0 12px 28px rgba(0,0,0,.25);
-      transform: translateZ(0) scale(.975);
-    }
+    .pane[data-pos="-1"]{transform:translateX(-20%) rotateY(-12deg) translateZ(-60px);opacity:0}
+    .pane[data-pos="1"]{transform:translateX(20%) rotateY(12deg) translateZ(-60px);opacity:0}
 
-    .pane[hidden]{ display:none; }
-
-    /* Responsiv */
-    @media (max-width:900px){ :root{ --peek: 50px; } }
-    @media (max-width:680px){
-      :root{ --peek: 36px; }
-      .feature-list{ max-width: 40ch; }
-      .seg .tablist{ grid-template-columns:1fr; max-width:520px; }
-    }
+    @media (prefers-reduced-motion: reduce){.pane,.card{transition:none!important}}
   </style>
 
   <div class="container">
@@ -131,7 +100,6 @@
       </p>
     </header>
 
-    <!-- Tabs -->
     <div class="seg" role="tablist" aria-label="Themenauswahl">
       <div class="tablist">
         <button role="tab" aria-selected="false" aria-controls="pane-1" id="tab-1">Profil</button>
@@ -140,14 +108,10 @@
       </div>
     </div>
 
-    <!-- Deck -->
     <div class="deck" id="deck">
-      <!-- PROFIL -->
-      <section class="pane" id="pane-1" role="tabpanel" aria-labelledby="tab-1" data-pos="-1">
+      <section class="pane" id="pane-1" data-pos="-1">
         <article class="card">
-          <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M12 3l9 4.5V21l-9 4.5L3 21V7.5L12 3z"/><path d="M12 12l9-4.5"/><path d="M12 12L3 7.5"/></svg>
-          </div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l9 4.5V21l-9 4.5L3 21V7.5L12 3z"/><path d="M12 12l9-4.5"/><path d="M12 12L3 7.5"/></svg></div>
           <h3 class="card-title">PROFIL</h3>
           <ul class="feature-list">
             <li><span class="dot"></span><span class="txt">Regional &amp; langfristig</span></li>
@@ -158,12 +122,9 @@
         </article>
       </section>
 
-      <!-- QUALITÄT -->
-      <section class="pane" id="pane-2" role="tabpanel" aria-labelledby="tab-2" data-pos="0">
+      <section class="pane" id="pane-2" data-pos="0">
         <article class="card">
-          <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z"/></svg>
-          </div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z"/></svg></div>
           <h3 class="card-title">QUALITÄT</h3>
           <ul class="feature-list">
             <li><span class="dot"></span><span class="txt">Wertige Details</span></li>
@@ -174,12 +135,9 @@
         </article>
       </section>
 
-      <!-- ZUSAMMENARBEIT -->
-      <section class="pane" id="pane-3" role="tabpanel" aria-labelledby="tab-3" data-pos="1">
+      <section class="pane" id="pane-3" data-pos="1">
         <article class="card">
-          <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M8 17l-3 3"/><path d="M22 11l-7 7-3-3"/><path d="M2 12h6l2 3h6l6-6"/></svg>
-          </div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M8 17l-3 3"/><path d="M22 11l-7 7-3-3"/><path d="M2 12h6l2 3h6l6-6"/></svg></div>
           <h3 class="card-title">ZUSAMMENARBEIT</h3>
           <ul class="feature-list">
             <li><span class="dot"></span><span class="txt">Kurze Wege</span></li>
@@ -194,30 +152,52 @@
 
   <script>
     (function(){
-      const root = document.currentScript.closest('.landing');
-      const tabs = Array.from(root.querySelectorAll('.seg .tablist button[role="tab"]'));
-      const panes = [ '#pane-1', '#pane-2', '#pane-3' ].map(sel=>root.querySelector(sel));
-      let idx = 1; // Start mittig
+      const root=document.currentScript.closest('.landing');
+      const tabs=[...root.querySelectorAll('.seg button[role="tab"]')];
+      const panes=['#pane-1','#pane-2','#pane-3'].map(s=>root.querySelector(s));
+      const deck=root.querySelector('#deck');
+      const DUR=700; let idx=1,isAnimating=false;
 
       function paint(){
-        panes.forEach((p,i)=>{
-          const d = i - idx;
-          if (Math.abs(d) <= 1){ p.hidden = false; p.dataset.pos = String(d); }
-          else { p.hidden = true; }
-        });
-        tabs.forEach((t,i)=>t.setAttribute('aria-selected', String(i===idx)));
+        panes.forEach((p,i)=>p.dataset.pos=String(i-idx));
+        tabs.forEach((t,i)=>t.setAttribute('aria-selected',String(i===idx)));
       }
       function show(i){
-        idx = Math.max(0, Math.min(panes.length-1, i));
-        paint();
+        if(isAnimating) return;
+        const next=Math.max(0,Math.min(panes.length-1,i));
+        if(next===idx) return;
+        isAnimating=true;
+        panes.forEach((p,j)=>{
+          p.style.transition='none';
+          if(j===idx){p.style.opacity='1';}
+        });
+        requestAnimationFrame(()=>{
+          panes.forEach((p,j)=>{
+            p.style.transition='';
+            p.style.opacity=j===next?'1':'0';
+          });
+          idx=next;paint();
+          setTimeout(()=>isAnimating=false,DUR+50);
+        });
       }
+
       tabs.forEach((t,i)=>{
-        t.addEventListener('click', ()=>show(i));
-        t.addEventListener('keydown', (e)=>{
-          if(e.key==='ArrowRight') show(i+1);
-          if(e.key==='ArrowLeft')  show(i-1);
+        t.addEventListener('click',()=>show(i));
+        t.addEventListener('keydown',e=>{
+          if(e.key==='ArrowRight')show(idx+1);
+          if(e.key==='ArrowLeft')show(idx-1);
         });
       });
+
+      let startX=null,lastX=null,track=false;
+      deck.addEventListener('pointerdown',e=>{if(isAnimating)return;track=true;startX=lastX=e.clientX});
+      deck.addEventListener('pointermove',e=>{if(track)lastX=e.clientX});
+      const end=()=>{if(!track)return;const dx=(lastX??0)-(startX??0);track=false;startX=lastX=null;
+        if(Math.abs(dx)>50) show(dx<0?idx+1:idx-1);
+      };
+      deck.addEventListener('pointerup',end);
+      deck.addEventListener('pointercancel',end);
+      deck.addEventListener('pointerleave',end);
       paint();
     })();
   </script>
