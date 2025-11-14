@@ -35,9 +35,9 @@
     /* sorgt dafür, dass Anker-Scroll nicht unter dem Header verschwindet */
     html{ scroll-padding-top: calc(var(--header-h) + 10px) }
 
-    /* ===== Header (immer sichtbar) ===== */
+    /* ===== Header (fix) ===== */
     header.site-header{
-      position:sticky; top:0; left:0; right:0; z-index:1000;
+      position:fixed; top:0; left:0; right:0; z-index:1000;
       background:var(--brand-700);
       color:var(--text);
       box-shadow:var(--shadow);
@@ -107,11 +107,11 @@
     main{
       max-width:var(--maxw);
       margin:0 auto;
-      padding: 0 0 calc(var(--footer-h) + var(--safe-bottom)); /* Platz für fixen Footer */
+      padding: calc(var(--header-h)) 0 calc(var(--footer-h) + var(--safe-bottom)); /* Platz für fixen Header & Footer */
     }
     .section-host{ display:grid; gap:32px; }
 
-    /* ===== Footer (immer sichtbar) ===== */
+    /* ===== Footer (fix) ===== */
     footer.site-footer{
       position:fixed; left:0; right:0; bottom:0; z-index:1000;
       background:var(--brand-700); color:var(--text);
@@ -208,7 +208,8 @@
     window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
 
     /* ===== Module: dynamisches Laden (mit Style-Hoisting) ===== */
-    const files = ['landing.html','leitbild.html','zitat.html','ueber-uns.html'];
+    // Zitat soll über Leitbild -> Reihenfolge angepasst
+    const files = ['landing.html','zitat.html','leitbild.html','ueber-uns.html'];
     const host=document.getElementById('section-host');
 
     async function loadSection(file){
