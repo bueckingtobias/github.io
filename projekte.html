@@ -36,9 +36,9 @@
     /* Ankerziele verschwinden nicht unter dem Header */
     html{ scroll-padding-top:calc(var(--header-h) + 10px) }
 
-    /* ===== Header (identisch) ===== */
+    /* ===== Header (fix) ===== */
     header.site-header{
-      position:sticky; top:0; left:0; right:0; z-index:1000;
+      position:fixed; top:0; left:0; right:0; z-index:1000;
       background:var(--brand-700); color:var(--text); box-shadow:var(--shadow);
     }
     .header-top{display:grid;place-items:center;padding:14px 16px;}
@@ -96,7 +96,7 @@
     /* ===== Main ===== */
     main{
       max-width:var(--maxw); margin:0 auto;
-      padding:clamp(28px,4vw,48px) 16px calc(var(--footer-h) + var(--safe-bottom));
+      padding:calc(var(--header-h) + clamp(24px,4vw,40px)) 16px calc(var(--footer-h) + var(--safe-bottom) + 24px);
     }
 
     .intro-wrap{max-width:var(--hero-w);margin:0 auto;text-align:center;padding:clamp(8px,2vw,16px) 0 0;}
@@ -124,7 +124,7 @@
     .meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;opacity:.95;font-size:.98rem;}
     .chip{background:var(--muted);padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);}
 
-    /* Preise (Seite anzeigen, aber nicht in Mail verwenden) */
+    /* Preise */
     .price-list{list-style:none;margin:4px auto 0;padding:0;width:min(92%,460px);}
     .price-list li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);}
     .price-list .label{opacity:.85;text-align:left;}
@@ -134,7 +134,11 @@
 
     .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
     .badge{font-weight:700;padding:6px 10px;border-radius:999px;background:var(--muted);border:1px solid rgba(255,255,255,.12);}
-    .vermietet{opacity:.8;}
+    /* Vermietet-Badge in Rot */
+    .badge.vermietet{
+      background:#b30000;
+      border-color:#ff8080;
+    }
 
     .actions{margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;text-decoration:none;color:var(--text);background:var(--muted);border:1px solid rgba(255,255,255,.14);font-weight:800;transition:transform .15s ease,box-shadow .2s ease,background-color .2s ease;box-shadow:var(--shadow);}
@@ -142,7 +146,24 @@
 
     .apartment-info{margin-top:clamp(18px,3vw,28px);padding:16px;border-radius:var(--radius);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);max-width:var(--hero-w);margin-inline:auto;}
 
-    /* ===== Footer (identisch, fix) ===== */
+    /* Vermietete Wohnungen: keine Preise, keine Buttons */
+    .panel.is-rented .price-list,
+    .panel.is-rented .total,
+    .panel.is-rented .actions{
+      display:none;
+    }
+
+    /* Hinweistext für vermietete Wohnungen */
+    .rented-note{
+      display:none;
+      margin-top:8px;
+      opacity:.9;
+    }
+    .panel.is-rented .rented-note{
+      display:block;
+    }
+
+    /* ===== Footer (fix) ===== */
     footer.site-footer{
       position:fixed; left:0; right:0; bottom:0; z-index:1000;
       background:var(--brand-700); color:var(--text);
@@ -232,6 +253,8 @@
             <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
 
             <div class="badges"><span class="badge">Verfügbar</span></div>
+            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
+
             <div class="actions">
               <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung1.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
@@ -240,7 +263,7 @@
           </div>
         </article>
 
-        <!-- Wohnung 2 -->
+        <!-- Wohnung 2 (Vermietet) -->
         <article class="panel"
                  data-id="2" data-groesse="93 m²" data-zimmer="4 Zimmer" data-status="Vermietet"
                  data-miete="1215" data-nk="250" data-kueche="75">
@@ -256,6 +279,8 @@
             <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
 
             <div class="badges"><span class="badge vermietet">Vermietet</span></div>
+            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
+
             <div class="actions">
               <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung2.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
@@ -264,7 +289,7 @@
           </div>
         </article>
 
-        <!-- Wohnung 3 -->
+        <!-- Wohnung 3 (Vermietet) -->
         <article class="panel"
                  data-id="3" data-groesse="92 m²" data-zimmer="3 Zimmer" data-status="Vermietet"
                  data-miete="1202" data-nk="250" data-kueche="75">
@@ -280,6 +305,8 @@
             <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
 
             <div class="badges"><span class="badge vermietet">Vermietet</span></div>
+            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
+
             <div class="actions">
               <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung3.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
@@ -304,6 +331,8 @@
             <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
 
             <div class="badges"><span class="badge">Verfügbar</span></div>
+            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
+
             <div class="actions">
               <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung4.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
@@ -328,6 +357,8 @@
             <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
 
             <div class="badges"><span class="badge">Verfügbar</span></div>
+            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
+
             <div class="actions">
               <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung5.jpeg">⤓ Grundriss</a>
               <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
@@ -394,9 +425,16 @@
     const panels = document.querySelectorAll('.panel');
     radios.forEach((r,i)=> r.addEventListener('change',()=> panels.forEach((p,j)=>p.classList.toggle('active', i===j))));
 
-    /* ===== Preise formatieren (nur Anzeige, nicht in Mail) ===== */
+    /* ===== Preise formatieren + Vermietet-Logik ===== */
     const euro = v => (+v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-    document.querySelectorAll('.panel').forEach(p=>{
+
+    panels.forEach(p=>{
+      const status = p.dataset.status || '';
+      // Vermietet: Flag setzen, später alles ausblenden und Hinweis anzeigen
+      if(status === 'Vermietet'){
+        p.classList.add('is-rented');
+        return; // keine Preise berechnen
+      }
       const m=+p.dataset.miete||0, n=+p.dataset.nk||0, k=+p.dataset.kueche||0;
       p.querySelector('.js-miete').textContent  = euro(m);
       p.querySelector('.js-nk').textContent     = euro(n);
@@ -432,7 +470,6 @@
         'Vielen Dank und freundliche Grüße'
       ].join('\r\n');
 
-      // Manuell kodieren -> keine '+' Zeichen
       const href =
         'mailto:kontakt@buecking-immo.de'
         + '?subject=' + encodeURIComponent(subject)
@@ -441,17 +478,20 @@
       return href;
     }
 
+    // Nur bei nicht vermieteten Wohnungen Listener setzen
     document.querySelectorAll('.btn-email').forEach(btn=>{
+      const panel = btn.closest('.panel');
+      if(panel?.dataset.status === 'Vermietet') return;
       btn.addEventListener('click',(e)=>{
         e.preventDefault();
-        const panel = e.currentTarget.closest('.panel');
         window.location.href = buildMailto(panel);
       });
     });
 
-    /* ===== Grundriss-Download: immer Platzhalter, Dateiname passend ===== */
+    /* ===== Grundriss-Download: immer Platzhalter, Dateiname passend (nur verfügbar) ===== */
     document.querySelectorAll('.btn-plan').forEach(btn=>{
       const panel = btn.closest('.panel');
+      if(panel?.dataset.status === 'Vermietet') return;
       const id = panel?.dataset.id || '';
       btn.setAttribute('href','grundriss-platzhalter.jpeg');
       btn.setAttribute('download', `grundriss-wohnung${id}.jpeg`);
