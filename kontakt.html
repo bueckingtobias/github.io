@@ -1,8 +1,15 @@
+Hier ist der angepasste komplette Code mit deinen Wünschen umgesetzt:
+	•	„Geschäftsführung“ unter deinem Namen entfernt
+	•	Header jetzt fix (nicht nur sticky)
+	•	Extra Top-Padding für den Inhalt, damit nichts unter dem Header verschwindet
+	•	iOS-Meta hinzugefügt, damit Telefonnummer auf Mobile nicht blau markiert wird
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="format-detection" content="telephone=no" />
   <title>Kontakt – Bücking Immobilien GmbH & Co. KG</title>
 
   <style>
@@ -14,71 +21,177 @@
     }
 
     *{box-sizing:border-box}
-    html,body{ margin:0; padding:0; overflow-x:hidden; font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text); background:var(--brand); scroll-behavior:smooth; }
+    html,body{
+      margin:0; padding:0; overflow-x:hidden;
+      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text); background:var(--brand); scroll-behavior:smooth;
+    }
     html{ scroll-padding-top:calc(var(--header-h) + 10px) }
 
-    /* Header */
-    header.site-header{ position:sticky; top:0; left:0; right:0; z-index:1000; background:var(--brand-700); color:var(--text); box-shadow:var(--shadow); }
+    /* Header (fix) */
+    header.site-header{
+      position:fixed; top:0; left:0; right:0; z-index:1000;
+      background:var(--brand-700); color:var(--text); box-shadow:var(--shadow);
+    }
     .header-top{ display:grid; place-items:center; padding:14px 16px; }
     .brand-link{ display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; }
     .brand-logo{ height:46px; width:auto; filter:brightness(0) invert(1); display:block; }
-    .header-nav{ display:flex; align-items:center; justify-content:center; border-top:1px solid rgba(255,255,255,.15); min-height:var(--nav-h); padding:0 8px; position:relative; }
+    .header-nav{
+      display:flex; align-items:center; justify-content:center;
+      border-top:1px solid rgba(255,255,255,.15); min-height:var(--nav-h);
+      padding:0 8px; position:relative;
+    }
     nav.primary{ display:none; }
     nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
-    nav.primary a{ color:var(--text); text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; transition:opacity .2s ease; }
+    nav.primary a{
+      color:var(--text); text-decoration:none; font-weight:700;
+      padding:10px 6px; border-radius:8px; transition:opacity .2s ease;
+    }
     nav.primary a:hover{ opacity:.85; }
     nav.primary a[aria-current="page"]{ text-decoration:underline; }
-    .menu-toggle{ position:absolute; right:8px; width:44px; height:44px; border:0; background:transparent; color:var(--text); display:grid; place-items:center; border-radius:10px; cursor:pointer; }
-    .menu-icon,.menu-icon::before,.menu-icon::after{ content:""; display:block; width:22px; height:2px; background:var(--text); border-radius:2px; transition:.25s; }
-    .menu-icon::before{ transform:translateY(-7px) } .menu-icon::after{ transform:translateY(5px) }
+
+    .menu-toggle{
+      position:absolute; right:8px; width:44px; height:44px; border:0;
+      background:transparent; color:var(--text);
+      display:grid; place-items:center; border-radius:10px; cursor:pointer;
+    }
+    .menu-icon,.menu-icon::before,.menu-icon::after{
+      content:""; display:block; width:22px; height:2px;
+      background:var(--text); border-radius:2px; transition:.25s;
+    }
+    .menu-icon::before{ transform:translateY(-7px) }
+    .menu-icon::after{ transform:translateY(5px) }
     .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg) }
     .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
     .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
-    .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999; }
-    .drawer{
-      position:fixed; left:0; right:0; top:var(--header-h); bottom:calc(var(--footer-h) + var(--safe-bottom));
-      background:var(--brand); color:var(--text);
-      transform:translateY(-8px); opacity:0; pointer-events:none; border-bottom:1px solid rgba(255,255,255,.15); box-shadow:0 10px 25px rgba(0,0,0,.25);
-      transition:transform .25s ease, opacity .25s ease; z-index:1001; overflow:auto; -webkit-overflow-scrolling:touch;
+
+    .drawer-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.45);
+      opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999;
     }
-    .drawer.open,.drawer-backdrop.open{ pointer-events:auto } .drawer.open{ transform:translateY(0); opacity:1 } .drawer-backdrop.open{ opacity:1 }
-    .drawer nav{ padding:14px 16px 18px } .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
-    .drawer a{ display:block; font-weight:700; padding:12px 10px; border-radius:10px; background:rgba(255,255,255,.1); color:var(--text); text-decoration:none; }
-    @media(min-width:900px){ nav.primary{display:block} .menu-toggle{display:none} .drawer,.drawer-backdrop{display:none} }
+    .drawer{
+      position:fixed; left:0; right:0;
+      top:var(--header-h); bottom:calc(var(--footer-h) + var(--safe-bottom));
+      background:var(--brand); color:var(--text);
+      transform:translateY(-8px); opacity:0; pointer-events:none;
+      border-bottom:1px solid rgba(255,255,255,.15);
+      box-shadow:0 10px 25px rgba(0,0,0,.25);
+      transition:transform .25s ease, opacity .25s ease; z-index:1001;
+      overflow:auto; -webkit-overflow-scrolling:touch;
+    }
+    .drawer.open,.drawer-backdrop.open{ pointer-events:auto }
+    .drawer.open{ transform:translateY(0); opacity:1 }
+    .drawer-backdrop.open{ opacity:1 }
+    .drawer nav{ padding:14px 16px 18px }
+    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+    .drawer a{
+      display:block; font-weight:700; padding:12px 10px;
+      border-radius:10px; background:rgba(255,255,255,.1);
+      color:var(--text); text-decoration:none;
+    }
+
+    @media(min-width:900px){
+      nav.primary{display:block}
+      .menu-toggle{display:none}
+      .drawer,.drawer-backdrop{display:none}
+    }
 
     /* Main */
-    main{ padding-bottom:calc(var(--footer-h) + var(--safe-bottom)); }
-    .landing{ width:100%; padding:clamp(64px,8vw,120px) 16px clamp(64px,7vw,100px); }
-    .container{ max-width:var(--maxw); margin-inline:auto; text-align:center; padding-inline:16px; }
+    main{
+      padding-top:calc(var(--header-h) + clamp(32px,6vw,60px));
+      padding-bottom:calc(var(--footer-h) + var(--safe-bottom));
+    }
+    .landing{
+      width:100%;
+      padding:0 16px clamp(64px,7vw,100px);
+    }
+    .container{
+      max-width:var(--maxw);
+      margin-inline:auto;
+      text-align:center;
+      padding-inline:16px;
+    }
 
     /* Hero */
-    .hero .kicker{ font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.65); font-size:.9rem; margin-bottom:24px; }
-    .hero .hed{ font-weight:900; letter-spacing:.005em; line-height:1.05; margin:0 auto 18px; font-size:clamp(1.5rem,3.2vw,2.2rem); }
-    .hero .dek{ margin:0 auto 26px; max-width:60ch; font-size:clamp(.95rem,1.2vw,1.05rem); line-height:1.6; color:rgba(255,255,255,.85); }
+    .hero .kicker{
+      font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:rgba(255,255,255,.65); font-size:.9rem; margin-bottom:24px;
+    }
+    .hero .hed{
+      font-weight:900; letter-spacing:.005em; line-height:1.05;
+      margin:0 auto 18px; font-size:clamp(1.5rem,3.2vw,2.2rem);
+    }
+    .hero .dek{
+      margin:0 auto 26px; max-width:60ch;
+      font-size:clamp(.95rem,1.2vw,1.05rem);
+      line-height:1.6; color:rgba(255,255,255,.85);
+    }
 
     /* Cards */
     .card{
-      background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15); border-radius:22px;
-      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-      box-shadow:0 10px 25px rgba(0,0,0,.25); padding:28px 22px; text-align:center;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:22px;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      box-shadow:0 10px 25px rgba(0,0,0,.25);
+      padding:28px 22px;
+      text-align:center;
       transition:transform .35s ease, box-shadow .35s ease;
     }
     .card + .card{ margin-top:20px; }
     .card:hover{ transform:translateY(-6px); box-shadow:0 14px 30px rgba(0,0,0,.3); }
-    .card .icon{ width:48px; height:48px; margin:0 auto 14px; border-radius:14px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); display:grid; place-items:center; }
-    .card .icon svg{ width:24px; height:24px; stroke:#fff; fill:none; stroke-width:2; }
-    .card-title{ font-weight:900; letter-spacing:.005em; line-height:1.1; margin:0 0 8px; font-size:clamp(1.05rem,2.1vw,1.4rem); }
-    .card-copy{ margin:0 auto; color:rgba(255,255,255,.9); line-height:1.65; font-size:1rem; max-width:60ch; }
-    .actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
-    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:8px 12px; border-radius:10px; text-decoration:none; color:var(--text); background:var(--muted); border:1px solid rgba(255,255,255,.16); font-weight:800; box-shadow:var(--shadow); min-height:36px; font-size:.95rem; transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease; }
+    .card .icon{
+      width:48px; height:48px; margin:0 auto 14px;
+      border-radius:14px; background:rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.25);
+      display:grid; place-items:center;
+    }
+    .card .icon svg{
+      width:24px; height:24px;
+      stroke:#fff; fill:none; stroke-width:2;
+    }
+    .card-title{
+      font-weight:900; letter-spacing:.005em;
+      line-height:1.1; margin:0 0 8px;
+      font-size:clamp(1.05rem,2.1vw,1.4rem);
+    }
+    .card-copy{
+      margin:0 auto;
+      color:rgba(255,255,255,.9);
+      line-height:1.65;
+      font-size:1rem;
+      max-width:60ch;
+    }
+    .actions{
+      display:flex; gap:10px;
+      justify-content:center; flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:8px 12px; border-radius:10px;
+      text-decoration:none; color:var(--text);
+      background:var(--muted); border:1px solid rgba(255,255,255,.16);
+      font-weight:800; box-shadow:var(--shadow);
+      min-height:36px; font-size:.95rem;
+      transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease;
+    }
     .btn:hover{ transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,.35); }
 
-    /* Bilder/Medien */
-    .team-photo{ width:132px; height:132px; border-radius:50%; object-fit:cover; background:#ccc; border:2px solid rgba(255,255,255,.2); }
-    .media{ width:100%; border-radius:14px; overflow:hidden; aspect-ratio:16/9; background:rgba(255,255,255,.08); }
+    .team-photo{
+      width:132px; height:132px;
+      border-radius:50%; object-fit:cover;
+      background:#ccc; border:2px solid rgba(255,255,255,.2);
+    }
+    .media{
+      width:100%; border-radius:14px;
+      overflow:hidden; aspect-ratio:16/9;
+      background:rgba(255,255,255,.08);
+    }
     .media > iframe{ width:100%; height:100%; border:0; display:block; }
 
-    /* Mehr Abstand zwischen Überschrift und Bild in GF & Standort */
+    /* Abstände Überschrift / Bild */
     #geschaeftsfuehrung .card-title{ margin-bottom:18px; }
     #geschaeftsfuehrung .team-photo{ margin-top:6px; }
     #standort .card-title{ margin-bottom:18px; }
@@ -168,20 +281,25 @@
         <!-- Karte 2: Geschäftsführung -->
         <article class="card" id="geschaeftsfuehrung">
           <div class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5z"/><path d="M2 22a10 10 0 0 1 20 0"/></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5z"/>
+              <path d="M2 22a10 10 0 0 1 20 0"/>
+            </svg>
           </div>
           <h3 class="card-title">Geschäftsführung</h3>
           <div class="card-copy">
             <img src="tobias.jpeg" alt="Tobias Bücking" class="team-photo">
-            <p><strong>Tobias Bücking</strong><br>Geschäftsführung</p>
-            <!-- Keine Kontakt-Buttons hier -->
+            <p><strong>Tobias Bücking</strong></p>
           </div>
         </article>
 
         <!-- Karte 3: Standort -->
         <article class="card" id="standort">
           <div class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 21s-6-5.3-6-10a6 6 0 1 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2.5"/></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M12 21s-6-5.3-6-10a6 6 0 1 1 12 0c0 4.7-6 10-6 10z"/>
+              <circle cx="12" cy="11" r="2.5"/>
+            </svg>
           </div>
           <h3 class="card-title">Standort</h3>
           <div class="card-copy">
@@ -214,7 +332,10 @@
       root.style.setProperty('--footer-h', fh + 'px');
     }
     window.addEventListener('load', updateChromeVars);
-    window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(updateChromeVars, 100); });
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__rz);
+      window.__rz = setTimeout(updateChromeVars, 100);
+    });
 
     /* Mobiles Menü */
     const body=document.body,
