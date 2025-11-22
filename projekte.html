@@ -522,8 +522,8 @@
       const panel = btn.closest('.panel');
       if(panel?.dataset.status === 'Vermietet') return;
       const id = panel?.dataset.id || '';
-      btn.setAttribute('href','grundriss-platzhalter.jpeg');
-      btn.setAttribute('download', `grundriss-wohnung${id}.jpeg`);
+      btn.setAttribute('href',`grundriss-wohnung${id}.pdf`);
+      btn.setAttribute('download', `grundriss-wohnung${id}.pdf`);
     });
   </script>
 </body>
