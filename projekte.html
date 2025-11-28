@@ -5,17 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Projekte – Bücking Immobilien GmbH & Co. KG</title>
 
-  <!-- ===== SEO GRUNDDATEN (Projekte) ===== -->
-  <meta name="description" content="Aktuelle Immobilienprojekte der Bücking Immobilien GmbH & Co. KG – Umbau eines traditionellen Hofs zu modernen Wohneinheiten in Ganderkesee. Verfügbare Wohnungen, Grundrisse und Projektdetails.">
-  <meta name="keywords" content="Immobilien Projekte Ganderkesee, Wohnung mieten, Umbau Hof, Neubau Wohnungen, Bücking Immobilien, Vermietung">
+  <!-- ===== SEO GRUNDDATEN (Projekte Übersicht) ===== -->
+  <meta name="description" content="Aktuelle Immobilienprojekte der Bücking Immobilien GmbH & Co. KG – Projektübersicht mit Umbau eines Hofes zu modernen Wohnungen und weiteren Sanierungs- und Ausbauvorhaben.">
+  <meta name="keywords" content="Immobilien Projekte Ganderkesee, Wohnung mieten, Sanierung, Bücking Immobilien, Vermietung">
   <meta name="author" content="Bücking Immobilien GmbH & Co. KG">
 
-  <!-- Canonical: sagt Google, dass dies die offizielle Projekte-Seite ist -->
   <link rel="canonical" href="https://www.buecking-immobilien.de/projekte.html" />
 
-  <!-- OpenGraph für WhatsApp, LinkedIn, Instagram-DMs -->
+  <!-- OpenGraph -->
   <meta property="og:title" content="Projekte – Bücking Immobilien GmbH & Co. KG">
-  <meta property="og:description" content="Aktuelles Projekt: Umbau eines landwirtschaftlichen Gebäudes zu fünf hochwertigen Wohneinheiten. Jetzt freie Wohnungen ansehen.">
+  <meta property="og:description" content="Entdecken Sie aktuelle Projekte wie den Umbau eines Hofes zu modernen Wohneinheiten und eine renovierte Doppelhaushälfte in Syke.">
   <meta property="og:url" content="https://www.buecking-immobilien.de/projekte.html">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://www.buecking-immobilien.de/og-projekt.jpg">
@@ -23,17 +22,13 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Projekte – Bücking Immobilien GmbH & Co. KG">
-  <meta name="twitter:description" content="Umbau eines Hofes zu modernen Wohneinheiten. Jetzt Details ansehen.">
+  <meta name="twitter:description" content="Projektübersicht der Bücking Immobilien GmbH & Co. KG.">
   <meta name="twitter:image" content="https://www.buecking-immobilien.de/og-projekt.jpg">
 
-  <!-- Sitemap Hinweis -->
   <link rel="sitemap" type="application/xml" href="https://www.buecking-immobilien.de/sitemap.xml" />
-
-  <!-- Favicon -->
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="icon" type="image/png" href="/favicon.png" />
-  <!-- ===== ENDE SEO ===== -->
-  
+
   <style>
     :root{
       --brand:#004225;
@@ -47,9 +42,7 @@
       --radius:12px;
       --maxw:1200px;
       --nav-h:46px;
-      --hero-w:980px;
 
-      /* werden per JS exakt gesetzt; Fallbacks: */
       --header-h:110px;
       --footer-h:64px;
       --safe-bottom:env(safe-area-inset-bottom,0px);
@@ -62,10 +55,9 @@
       color:var(--text); background:var(--bg);
       scroll-behavior:smooth;
     }
-    /* Ankerziele verschwinden nicht unter dem Header */
     html{ scroll-padding-top:calc(var(--header-h) + 10px) }
 
-    /* ===== Header (fix) ===== */
+    /* ===== Header ===== */
     header.site-header{
       position:fixed; top:0; left:0; right:0; z-index:1000;
       background:var(--brand-700); color:var(--text); box-shadow:var(--shadow);
@@ -85,7 +77,6 @@
     nav.primary a:hover{opacity:.8;}
     nav.primary a[aria-current="page"]{text-decoration:underline;}
 
-    /* Hamburger mobil */
     .menu-toggle{
       position:absolute; right:8px; width:44px; height:44px;
       border:0; background:transparent; color:var(--text);
@@ -122,77 +113,144 @@
       nav.primary{display:block} .menu-toggle{display:none} .drawer,.drawer-backdrop{display:none}
     }
 
-    /* ===== Main ===== */
+    /* ===== Main / Projekte-Grid ===== */
     main{
       max-width:var(--maxw); margin:0 auto;
       padding:calc(var(--header-h) + clamp(24px,4vw,40px)) 16px calc(var(--footer-h) + var(--safe-bottom) + 24px);
     }
 
-    .intro-wrap{max-width:var(--hero-w);margin:0 auto;text-align:center;padding:clamp(8px,2vw,16px) 0 0;}
+    .intro-wrap{max-width:900px;margin:0 auto;text-align:center;padding:clamp(8px,2vw,16px) 0 0;}
     .kicker{font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.65;font-size:.9rem;text-align:center;margin:clamp(12px,2vw,18px) 0 10px;}
-    .title-stacked{text-align:center;margin-inline:auto;max-width:100%;line-height:1.1;letter-spacing:.01em;margin-bottom:clamp(8px,2vw,14px);}
-    .title-stacked .line1{display:block;font-size:clamp(20px,3vw,30px);font-weight:800;margin-bottom:4px;}
-    .title-stacked .line2{display:block;font-size:clamp(16px,2.4vw,24px);font-weight:700;opacity:.95;}
+    .title-stacked{text-align:center;margin-inline:auto;max-width:100%;line-height:1.1;letter-spacing:.01em;margin-bottom:clamp(10px,2.4vw,18px);}
+    .title-stacked .line1{display:block;font-size:clamp(22px,3.2vw,32px);font-weight:800;margin-bottom:4px;}
+    .title-stacked .line2{display:block;font-size:clamp(16px,2.4vw,22px);font-weight:600;opacity:.95;}
     .intro-wrap p{margin:10px auto 0;opacity:.95;max-width:70ch;}
 
-    .project-hero{position:relative;overflow:hidden;border-radius:var(--radius);background:rgba(255,255,255,.04);box-shadow:var(--shadow);max-width:var(--hero-w);margin:20px auto;}
-    .project-hero img{display:block;width:100%;height:auto;object-fit:contain;}
-
-    .tabs{max-width:var(--hero-w);margin:clamp(18px,3vw,26px) auto 0;display:flex;flex-direction:column;gap:14px;align-items:center;}
-    .tab-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
-    .tab-controls input{position:absolute;opacity:0;pointer-events:none;}
-    .tab-controls label{user-select:none;cursor:pointer;padding:10px 14px;border-radius:999px;font-weight:800;background:var(--muted);border:1px solid rgba(255,255,255,.12);transition:transform .12s ease,opacity .2s ease,background .2s ease;opacity:.9;}
-    .tab-controls label:hover{transform:translateY(-1px);opacity:1;}
-    .tab-controls input:checked + label{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);}
-
-    .panels{width:100%;display:grid;place-items:center;}
-    .panel{display:none;width:min(100%,var(--hero-w));background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);box-shadow:var(--shadow);}
-    .panel.active{display:block;}
-
-    .box-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;}
-    .meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;opacity:.95;font-size:.98rem;}
-    .chip{background:var(--muted);padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);}
-
-    /* Preise */
-    .price-list{list-style:none;margin:4px auto 0;padding:0;width:min(92%,460px);}
-    .price-list li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);}
-    .price-list .label{opacity:.85;text-align:left;}
-    .price-list .value{font-weight:800;text-align:right;min-width:120px;flex:0 0 120px;}
-
-    .total{margin:10px auto 0;padding:10px 12px;width:min(92%,460px);display:flex;justify-content:space-between;align-items:center;font-weight:800;border-radius:10px;background:var(--muted);border:1px solid rgba(255,255,255,.12);}
-
-    .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
-    .badge{font-weight:700;padding:6px 10px;border-radius:999px;background:var(--muted);border:1px solid rgba(255,255,255,.12);}
-    /* Vermietet-Badge in Rot */
-    .badge.vermietet{
-      background:#b30000;
-      border-color:#ff8080;
+    .projects-grid{
+      margin:clamp(22px,4vw,32px) auto 0;
+      display:grid;
+      gap:18px;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      max-width:1000px;
     }
 
-    .actions{margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;text-decoration:none;color:var(--text);background:var(--muted);border:1px solid rgba(255,255,255,.14);font-weight:800;transition:transform .15s ease,box-shadow .2s ease,background-color .2s ease;box-shadow:var(--shadow);}
-    .btn:hover{transform:translateY(-2px);background:var(--muted-strong);box-shadow:var(--shadow-strong);}
-
-    .apartment-info{margin-top:clamp(18px,3vw,28px);padding:16px;border-radius:var(--radius);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);max-width:var(--hero-w);margin-inline:auto;}
-
-    /* Vermietete Wohnungen: keine Preise, keine Buttons */
-    .panel.is-rented .price-list,
-    .panel.is-rented .total,
-    .panel.is-rented .actions{
-      display:none;
+    /* ===== Projektkarten ===== */
+    .project-card{
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:var(--shadow);
+      padding:18px 18px 20px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      position:relative;
+      overflow:hidden;
+    }
+    .project-card::after{
+      content:"";
+      position:absolute;
+      inset:auto -40px -60px;
+      height:120px;
+      background:radial-gradient(circle at top,rgba(255,255,255,.25),transparent 55%);
+      opacity:.16;
+      pointer-events:none;
     }
 
-    /* Hinweistext für vermietete Wohnungen */
-    .rented-note{
-      display:none;
-      margin-top:8px;
-      opacity:.9;
+    /* Bild-Bereich auf der Registerkarte */
+    .project-media{
+      position:relative;
+      border-radius:10px;
+      overflow:hidden;
+      margin:-4px -4px 10px;
+      height:0;
+      padding-bottom:56%;
+      background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.03));
     }
-    .panel.is-rented .rented-note{
+    .project-media img{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
       display:block;
     }
 
-    /* ===== Footer (fix) ===== */
+    .project-kicker{
+      font-size:.8rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      opacity:.7;
+    }
+    .project-title{
+      font-size:1.2rem;
+      font-weight:800;
+      margin:2px 0 2px;
+    }
+    .project-location{
+      font-size:.98rem;
+      opacity:.9;
+      margin-bottom:4px;
+    }
+    .project-text{
+      font-size:.95rem;
+      opacity:.96;
+    }
+
+    /* optimierte Shortfacts */
+    .project-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:6px;
+    }
+    .badge{
+      font-size:.85rem;
+      font-weight:700;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--muted);
+      border:1px solid rgba(255,255,255,.16);
+      white-space:nowrap;
+    }
+    .badge.status-green{
+      background:rgba(0,184,118,.22);
+      border-color:rgba(152,251,206,.5);
+    }
+    .badge.status-soon{
+      background:rgba(255,193,7,.24);
+      border-color:rgba(255,224,130,.7);
+    }
+
+    .project-actions{
+      margin-top:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:12px;
+      text-decoration:none;
+      color:var(--text);
+      background:var(--muted);
+      border:1px solid rgba(255,255,255,.18);
+      font-weight:800;
+      font-size:.95rem;
+      transition:transform .15s ease,box-shadow .2s ease,background-color .2s ease;
+      box-shadow:var(--shadow);
+    }
+    .btn:hover{
+      transform:translateY(-2px);
+      background:var(--muted-strong);
+      box-shadow:var(--shadow-strong);
+    }
+
+    /* ===== Footer ===== */
     footer.site-footer{
       position:fixed; left:0; right:0; bottom:0; z-index:1000;
       background:var(--brand-700); color:var(--text);
@@ -225,7 +283,6 @@
       </button>
     </div>
 
-    <!-- Mobile Drawer -->
     <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
     <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
       <nav>
@@ -242,168 +299,67 @@
 
   <main id="top">
     <section class="intro-wrap">
-      <div class="kicker">Aktuelles Projekt</div>
+      <div class="kicker">Projekte</div>
       <h2 class="title-stacked">
-        <span class="line1">Vom Hof zum Zuhause</span>
-        <span class="line2">Umbau eines landwirtschaftlichen Gebäudes</span>
+        <span class="line1">Aktuelle Immobilienprojekte</span>
+        <span class="line2">Ausgewählte Sanierungs- und Umbauvorhaben</span>
       </h2>
-      <p>Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde,
-         wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit
-         zeitgemäßem Wohnkomfort.</p>
+      <p>Hier erhalten Sie einen Überblick über laufende und geplante Projekte der
+         Bücking Immobilien GmbH &amp; Co. KG. Wählen Sie ein Projekt, um weitere Details,
+         Grundrisse und Konditionen einzusehen.</p>
     </section>
 
-    <section class="project-hero">
-      <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
+    <section class="projects-grid" aria-label="Projektübersicht">
+      <!-- Projekt 1: Vom Hof zum Zuhause -->
+      <article class="project-card">
+        <div class="project-media">
+          <!-- Bild ersetzen durch eigenes Projektbild -->
+          <img src="img/projekt-vom-hof-zum-zuhause-thumb.jpg" alt="Visualisierung des Projekts &quot;Vom Hof zum Zuhause&quot; in Ganderkesee">
+        </div>
+
+        <div class="project-kicker">Umbauprojekt</div>
+        <h3 class="project-title">Vom Hof zum Zuhause</h3>
+        <div class="project-location">Ganderkesee</div>
+        <p class="project-text">
+          Umbau eines über Generationen geführten landwirtschaftlichen Gebäudes zu fünf
+          modernen Wohneinheiten mit ländlichem Charme, zeitgemäßem Wohnkomfort
+          und hauseigener Solaranlage.
+        </p>
+        <div class="project-meta" aria-label="Kurzinfos zum Projekt Vom Hof zum Zuhause">
+          <span class="badge status-green">Bezug ab April 2026 geplant</span>
+          <span class="badge">5 Wohneinheiten</span>
+          <span class="badge">Solaranlage auf dem Dach</span>
+        </div>
+        <div class="project-actions">
+          <a class="btn" href="projekt-vom-hof-zum-zuhause.html">Zum Projekt</a>
+        </div>
+      </article>
+
+      <!-- Projekt 2: Doppelhaushälfte in Syke (Sanierung im Bestand, kein Neubau) -->
+      <article class="project-card">
+        <div class="project-media">
+          <!-- Bild ersetzen durch eigenes Projektbild -->
+          <img src="img/projekt-syke-doppelhaus-thumb.jpg" alt="Ansicht der sanierten Doppelhaushälfte in Syke">
+        </div>
+
+        <div class="project-kicker">Sanierungsprojekt</div>
+        <h3 class="project-title">Doppelhaushälfte in Syke</h3>
+        <div class="project-location">Syke</div>
+        <p class="project-text">
+          Umfassend modernisierte Doppelhaushälfte in ruhiger Wohnlage in Syke.
+          Bestehende Bausubstanz trifft auf zeitgemäße Ausstattung – Details zu
+          Grundriss, Ausstattungsniveau und Mietkonditionen folgen in Kürze.
+        </p>
+        <div class="project-meta" aria-label="Kurzinfos zum Projekt Doppelhaushälfte Syke">
+          <span class="badge status-soon">Sanierung im Bestand</span>
+          <span class="badge">Ruhige Wohnlage</span>
+          <span class="badge">Vermietung in Vorbereitung</span>
+        </div>
+        <div class="project-actions">
+          <a class="btn" href="kontakt.html">Interesse vormerken</a>
+        </div>
+      </article>
     </section>
-
-    <section class="tabs">
-      <div class="tab-controls">
-        <input type="radio" name="apt" id="tab1" checked><label for="tab1">Wohnung 1</label>
-        <input type="radio" name="apt" id="tab2"><label for="tab2">Wohnung 2</label>
-        <input type="radio" name="apt" id="tab3"><label for="tab3">Wohnung 3</label>
-        <input type="radio" name="apt" id="tab4"><label for="tab4">Wohnung 4</label>
-        <input type="radio" name="apt" id="tab5"><label for="tab5">Wohnung 5</label>
-      </div>
-
-      <div class="panels">
-        <!-- Wohnung 1 -->
-        <article class="panel active"
-                 data-id="1" data-groesse="107 m²" data-zimmer="3 Zimmer" data-status="Verfügbar"
-                 data-miete="1391" data-nk="214" data-kueche="70">
-          <div class="box-body">
-            <h4>Wohnung 1</h4>
-            <div class="meta"><span class="chip">107 m²</span><span class="chip">3 Zimmer</span></div>
-
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
-
-            <div class="badges"><span class="badge">Verfügbar</span></div>
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
-
-            <div class="actions">
-              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung1.jpeg">⤓ Grundriss</a>
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+4917657960759">☎︎ Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Wohnung 2 (Vermietet) -->
-        <article class="panel"
-                 data-id="2" data-groesse="93 m²" data-zimmer="4 Zimmer" data-status="Vermietet"
-                 data-miete="1215" data-nk="250" data-kueche="75">
-          <div class="box-body">
-            <h4>Wohnung 2</h4>
-            <div class="meta"><span class="chip">93 m²</span><span class="chip">4 Zimmer</span></div>
-
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
-
-            <div class="badges"><span class="badge vermietet">Vermietet</span></div>
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
-
-            <div class="actions">
-              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung2.jpeg">⤓ Grundriss</a>
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Wohnung 3 (Vermietet) -->
-        <article class="panel"
-                 data-id="3" data-groesse="92 m²" data-zimmer="3 Zimmer" data-status="Vermietet"
-                 data-miete="1202" data-nk="250" data-kueche="75">
-          <div class="box-body">
-            <h4>Wohnung 3</h4>
-            <div class="meta"><span class="chip">92 m²</span><span class="chip">3 Zimmer</span></div>
-
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
-
-            <div class="badges"><span class="badge vermietet">Vermietet</span></div>
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
-
-            <div class="actions">
-              <a class="btn btn-plan" href="grundriss-platzhalter.jpeg" download="grundriss-wohnung3.jpeg">⤓ Grundriss</a>
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Wohnung 4 -->
-        <article class="panel"
-                 data-id="4" data-groesse="92 m²" data-zimmer="3 Zimmer" data-status="Verfügbar"
-                 data-miete="1199" data-nk="184" data-kueche="70">
-          <div class="box-body">
-            <h4>Wohnung 4</h4>
-            <div class="meta"><span class="chip">92 m²</span><span class="chip">3 Zimmer</span></div>
-
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
-
-            <div class="badges"><span class="badge">Verfügbar</span></div>
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
-
-            <div class="actions">
-              <a class="btn btn-plan" href="grundriss-wohnung4.pdf" download="grundriss-wohnung4.pdf">⤓ Grundriss</a>
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+4917657960759">☎︎ Anrufen</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Wohnung 5 -->
-        <article class="panel"
-                 data-id="5" data-groesse="124 m²" data-zimmer="4 Zimmer" data-status="Verfügbar"
-                 data-miete="1612" data-nk="248" data-kueche="70">
-          <div class="box-body">
-            <h4>Wohnung 5</h4>
-            <div class="meta"><span class="chip">124 m²</span><span class="chip">4 Zimmer</span></div>
-
-            <ul class="price-list">
-              <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
-
-            <div class="badges"><span class="badge">Verfügbar</span></div>
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
-
-            <div class="actions">
-              <a class="btn btn-plan" href="grundriss-wohnung5.pdf" download="grundriss-wohnung5.pdf">⤓ Grundriss</a>
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+4917657960759">☎︎ Anrufen</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <div class="apartment-info">
-      <p><strong>Bezugszeitraum:</strong> Die Wohnungen sind voraussichtlich ab April 2026 bezugsbereit – sichern Sie sich schon heute Ihr neues Zuhause.</p>
-      <p><strong>Hinweis:</strong> Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens.
-      Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters.</p>
-      <p>Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.</p>
-    </div>
   </main>
 
   <footer class="site-footer">
@@ -411,7 +367,6 @@
   </footer>
 
   <script>
-    /* ===== Header/Footer-Höhen als Variablen setzen ===== */
     function updateChromeVars(){
       const header = document.querySelector('.site-header');
       const footer = document.querySelector('.site-footer');
@@ -422,9 +377,11 @@
       root.style.setProperty('--footer-h', footerH + 'px');
     }
     window.addEventListener('load', updateChromeVars);
-    window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(updateChromeVars, 100); });
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__rz);
+      window.__rz = setTimeout(updateChromeVars, 100);
+    });
 
-    /* ===== Mobiles Menü ===== */
     const body=document.body,
           toggle=document.querySelector('.menu-toggle'),
           drawer=document.getElementById('mobile-drawer'),
@@ -449,83 +406,6 @@
     toggle.addEventListener('click',()=>toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu());
     backdrop.addEventListener('click',closeMenu);
     window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
-
-    /* ===== Tabs ===== */
-    const radios = document.querySelectorAll('.tab-controls input');
-    const panels = document.querySelectorAll('.panel');
-    radios.forEach((r,i)=> r.addEventListener('change',()=> panels.forEach((p,j)=>p.classList.toggle('active', i===j))));
-
-    /* ===== Preise formatieren + Vermietet-Logik ===== */
-    const euro = v => (+v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-
-    panels.forEach(p=>{
-      const status = p.dataset.status || '';
-      // Vermietet: Flag setzen, später alles ausblenden und Hinweis anzeigen
-      if(status === 'Vermietet'){
-        p.classList.add('is-rented');
-        return; // keine Preise berechnen
-      }
-      const m=+p.dataset.miete||0, n=+p.dataset.nk||0, k=+p.dataset.kueche||0;
-      p.querySelector('.js-miete').textContent  = euro(m);
-      p.querySelector('.js-nk').textContent     = euro(n);
-      p.querySelector('.js-kueche').textContent = euro(k);
-      p.querySelector('.js-total').textContent  = euro(m+n+k);
-    });
-
-    /* ===== Sauber formatierte Mail ohne '+' und ohne Preise ===== */
-    function buildMailto(panel){
-      const id      = panel.dataset.id;
-      const groesse = panel.dataset.groesse;
-      const zimmer  = panel.dataset.zimmer;
-      const status  = panel.dataset.status;
-
-      const subject = `Anfrage Wohnung ${id} – Vom Hof zum Zuhause`;
-      const body = [
-        'Guten Tag,',
-        '',
-        `ich interessiere mich für Wohnung ${id} im Projekt „Vom Hof zum Zuhause“.`,
-        '',
-        'Eckdaten:',
-        `• Größe: ${groesse}`,
-        `• Zimmer: ${zimmer}`,
-        `• Status: ${status}`,
-        '',
-        'Bitte senden Sie mir weitere Informationen und – sofern möglich – Terminvorschläge für eine Besichtigung.',
-        '',
-        'Meine Kontaktdaten:',
-        'Name:',
-        'E-Mail:',
-        'Telefon:',
-        '',
-        'Vielen Dank und freundliche Grüße'
-      ].join('\r\n');
-
-      const href =
-        'mailto:info@buecking-immobilien.de'
-        + '?subject=' + encodeURIComponent(subject)
-        + '&body='    + encodeURIComponent(body);
-
-      return href;
-    }
-
-    // Nur bei nicht vermieteten Wohnungen Listener setzen
-    document.querySelectorAll('.btn-email').forEach(btn=>{
-      const panel = btn.closest('.panel');
-      if(panel?.dataset.status === 'Vermietet') return;
-      btn.addEventListener('click',(e)=>{
-        e.preventDefault();
-        window.location.href = buildMailto(panel);
-      });
-    });
-
-    /* ===== Grundriss-Download: immer Platzhalter, Dateiname passend (nur verfügbar) ===== */
-    document.querySelectorAll('.btn-plan').forEach(btn=>{
-      const panel = btn.closest('.panel');
-      if(panel?.dataset.status === 'Vermietet') return;
-      const id = panel?.dataset.id || '';
-      btn.setAttribute('href',`grundriss-wohnung${id}.pdf`);
-      btn.setAttribute('download', `grundriss-wohnung${id}.pdf`);
-    });
   </script>
 </body>
 </html>
