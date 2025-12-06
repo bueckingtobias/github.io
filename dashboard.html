@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bücking Immobilien – Dashboard</title>
+
+  <!-- Kein Indexing: Suchmaschinen sollen das nicht listen -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    :root {
+      --bg: #05060a;
+      --bg-elevated: #11131c;
+      --accent: #004225;           /* Smyrna-Grün an dein CI angelehnt */
+      --accent-soft: rgba(0,66,37,0.16);
+      --text: #f5f5f7;
+      --text-soft: #a3a6b7;
+      --border: #262938;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #181b29 0, #05060a 60%);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+    }
+
+    /* LOGIN OVERLAY */
+
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #151724 0, #02030a 60%);
+      z-index: 20;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      background: linear-gradient(145deg, #10121c, #171927);
+      padding: 26px 24px 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .logo-mark {
+      width: 26px;
+      height: 26px;
+      border-radius: 9px;
+      background: radial-gradient(circle at 30% 0, #2ad18b, #004225);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .login-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .login-subtitle {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .login-label {
+      font-size: 13px;
+      margin-bottom: 6px;
+      margin-top: 10px;
+      display: block;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(4,4,10,0.9);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .login-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(0,66,37,0.5);
+    }
+
+    .login-actions {
+      display: flex;
+      margin-top: 16px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, #1f7f4b, #004225);
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.5);
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .login-error {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #ff4b5c;
+      min-height: 18px;
+    }
+
+    .login-meta {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      opacity: 0.75;
+    }
+
+    /* APP LAYOUT */
+
+    #app {
+      display: none; /* wird nach Login sichtbar */
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      height: 100vh;
+    }
+
+    aside {
+      background: radial-gradient(circle at top, #181a27 0, #05060b 60%);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sidebar-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .nav-section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      margin: 4px 3px;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 10px;
+      background: transparent;
+      color: var(--text-soft);
+      font-size: 13px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .nav-item span.icon {
+      width: 18px;
+      text-align: center;
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--text-soft);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 8px;
+    }
+
+    .main {
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .topbar-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .topbar-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .pill-accent {
+      border-color: rgba(0,66,37,0.7);
+      background: var(--accent-soft);
+      color: #eafff6;
+    }
+
+    .view {
+      display: none;
+    }
+    .view.active {
+      display: block;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #11131d, #090a12);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 14px 14px 10px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 8px;
+    }
+
+    .dummy-block {
+      font-size: 12px;
+      color: var(--text-soft);
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px dashed rgba(255,255,255,0.12);
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        grid-template-columns: 70px 1fr;
+      }
+      .sidebar-title,
+      .nav-section-label,
+      .sidebar-footer {
+        display: none;
+      }
+      .nav-item span.label {
+        display: none;
+      }
+      .nav-item {
+        justify-content: center;
+        padding-inline: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login-overlay">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-mark">BI</div>
+        <div>
+          <div class="login-title">Bücking Immobilien Dashboard</div>
+          <div class="login-subtitle">Geschützter Zugang – Dummy-Version.</div>
+        </div>
+      </div>
+
+      <label class="login-label" for="login-password">Passwort</label>
+      <input type="password" id="login-password" class="login-input" autocomplete="current-password" />
+
+      <div class="login-actions">
+        <button class="btn btn-primary" id="login-button">Login</button>
+      </div>
+
+      <div class="login-error" id="login-error"></div>
+      <div class="login-meta">
+        <span>Dashboard v0.1 (Dummy)</span>
+        <span id="login-date"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app">
+    <div class="shell">
+      <aside>
+        <div class="sidebar-title">Dashboard</div>
+
+        <div class="nav-section-label">Übersicht</div>
+        <div class="nav-list">
+          <button class="nav-item active" data-view="view-portfolio">
+            <span class="icon">📊</span><span class="label">Portfolio</span>
+          </button>
+          <button class="nav-item" data-view="view-objects">
+            <span class="icon">🏢</span><span class="label">Objekte</span>
+          </button>
+          <button class="nav-item" data-view="view-projects">
+            <span class="icon">🛠️</span><span class="label">Projekte/Bau</span>
+          </button>
+        </div>
+
+        <div class="nav-section-label">Finanzen</div>
+        <div class="nav-list">
+          <button class="nav-item" data-view="view-finance">
+            <span class="icon">💶</span><span class="label">Finanzen</span>
+          </button>
+          <button class="nav-item" data-view="view-reports">
+            <span class="icon">📑</span><span class="label">Reports</span>
+          </button>
+        </div>
+
+        <div class="nav-section-label">System</div>
+        <div class="nav-list">
+          <button class="nav-item" data-view="view-settings">
+            <span class="icon">⚙️</span><span class="label">Einstellungen</span>
+          </button>
+        </div>
+
+        <div class="sidebar-footer">
+          <div>Angemeldet als: Geschäftsführung</div>
+          <div style="margin-top:4px;">(Dummy-Layout, noch ohne echte Daten)</div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <div class="topbar-title" id="topbar-title">Portfolio-Cockpit</div>
+            <div class="topbar-sub" id="topbar-sub">Übersicht über alle Objekte & Kennzahlen (Dummy).</div>
+          </div>
+          <div>
+            <span class="pill" id="topbar-date"></span>
+            <span class="pill pill-accent">Bücking Immobilien</span>
+          </div>
+        </div>
+
+        <!-- VIEWS -->
+
+        <section class="view active" id="view-portfolio">
+          <div class="card">
+            <div class="card-title">Portfolio</div>
+            <div class="card-sub">Dummy-Ansicht für Gesamtübersicht.</div>
+            <div class="dummy-block">
+              ● Später: Gesamt-Cashflow, Vermietungsquote, Portfolio-ROI, offene Forderungen, Objektliste.<br>
+              ● Diese Struktur ist nur der Rahmen – Daten werden später dynamisch ergänzt.
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-objects">
+          <div class="card">
+            <div class="card-title">Objekte & Mieter</div>
+            <div class="card-sub">Struktur für Objektebene inkl. Einheiten & Mieter.</div>
+            <div class="dummy-block">
+              ● Objekt-Auswahl (Dropdown)<br>
+              ● Tab "Übersicht" (Stammdaten, ROI, Kennzahlen)<br>
+              ● Tab "Einheiten & Mieter" (wer wohnt wo, Miete, NK, Status)<br>
+              ● Tab "Einnahmen & NK"<br>
+              ● Tab "Projekt/Bau" je Objekt
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-projects">
+          <div class="card">
+            <div class="card-title">Projekte / Bau</div>
+            <div class="card-sub">Struktur für Bau- und Projektcontrolling.</div>
+            <div class="dummy-block">
+              ● Liste aller Projekte (Objekt, Status, Budget, Kosten, Abweichung)<br>
+              ● Später: Drilldown je Projekt mit Gewerken und Bau-/Kostenfortschritt.
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-finance">
+          <div class="card">
+            <div class="card-title">Finanzen</div>
+            <div class="card-sub">Struktur für Cashflow, Darlehen, Zins-/Tilgungsübersicht.</div>
+            <div class="dummy-block">
+              ● Bankkonten-Übersicht<br>
+              ● Zins-/Tilgungspläne<br>
+              ● Cashflow-Entwicklung pro Monat/Jahr.
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-reports">
+          <div class="card">
+            <div class="card-title">Reports</div>
+            <div class="card-sub">Struktur für Export & Reporting.</div>
+            <div class="dummy-block">
+              ● Monatsbericht<br>
+              ● Bankreport / Objekt-Exposés<br>
+              ● Export als PDF / CSV.
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-settings">
+          <div class="card">
+            <div class="card-title">Einstellungen</div>
+            <div class="card-sub">Struktur für Stammdaten & Zugriffe.</div>
+            <div class="dummy-block">
+              ● Objektdaten verwalten<br>
+              ● Benutzer / Rollen<br>
+              ● Schnittstellen (Bank, Hausverwaltung, etc.).
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // ===== Einfacher Passwortschutz (Frontend) =====
+    const PASSWORD = "DEIN_STARKES_PASSWORT"; // <-- HIER dein Passwort setzen
+
+    const loginOverlay = document.getElementById("login-overlay");
+    const loginInput = document.getElementById("login-password");
+    const loginButton = document.getElementById("login-button");
+    const loginError = document.getElementById("login-error");
+    const loginDate = document.getElementById("login-date");
+
+    const app = document.getElementById("app");
+
+    function formatDate(d) {
+      return d.toLocaleDateString("de-DE", {
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+    }
+
+    loginDate.textContent = formatDate(new Date());
+
+    function openApp() {
+      loginOverlay.style.display = "none";
+      app.style.display = "block";
+      localStorage.setItem("bi_dashboard_logged_in", "1");
+    }
+
+    function handleLogin() {
+      const value = (loginInput.value || "").trim();
+      if (!value) {
+        loginError.textContent = "Bitte Passwort eingeben.";
+        return;
+      }
+      if (value === PASSWORD) {
+        loginError.textContent = "";
+        openApp();
+      } else {
+        loginError.textContent = "Falsches Passwort.";
+      }
+    }
+
+    loginButton.addEventListener("click", handleLogin);
+    loginInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") handleLogin();
+    });
+
+    // Bereits eingeloggt?
+    if (localStorage.getItem("bi_dashboard_logged_in") === "1") {
+      openApp();
+    }
+
+    // ===== Navigation =====
+    const navItems = document.querySelectorAll(".nav-item");
+    const views = document.querySelectorAll(".view");
+    const topbarTitle = document.getElementById("topbar-title");
+    const topbarSub = document.getElementById("topbar-sub");
+    const topbarDate = document.getElementById("topbar-date");
+
+    topbarDate.textContent = formatDate(new Date());
+
+    const VIEW_TEXT = {
+      "view-portfolio": {
+        title: "Portfolio-Cockpit",
+        sub: "Übersicht über alle Objekte & Kennzahlen (Dummy)."
+      },
+      "view-objects": {
+        title: "Objekte & Mieter",
+        sub: "Struktur für Objektebene, Einheiten und Mieter."
+      },
+      "view-projects": {
+        title: "Projekte / Bau",
+        sub: "Struktur für Bauprojekte und Gewerke."
+      },
+      "view-finance": {
+        title: "Finanzen",
+        sub: "Struktur für Cashflows, Darlehen und Liquidität."
+      },
+      "view-reports": {
+        title: "Reports",
+        sub: "Struktur für Auswertungen und Exporte."
+      },
+      "view-settings": {
+        title: "Einstellungen",
+        sub: "Struktur für Stammdaten und Zugriffe."
+      }
+    };
+
+    navItems.forEach(item => {
+      item.addEventListener("click", () => {
+        const viewId = item.getAttribute("data-view");
+
+        navItems.forEach(n => n.classList.remove("active"));
+        item.classList.add("active");
+
+        views.forEach(v => v.classList.remove("active"));
+        const activeView = document.getElementById(viewId);
+        if (activeView) activeView.classList.add("active");
+
+        const cfg = VIEW_TEXT[viewId];
+        if (cfg) {
+          topbarTitle.textContent = cfg.title;
+          topbarSub.textContent = cfg.sub;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
