@@ -1340,14 +1340,14 @@
         ? `${obj.vacancyUnits} Einheit(en) leer (${formatArea(obj.vacancyArea)})`
         : "voll vermietet";
 
-      summary.innerHTML = `
-        <strong>${obj.name}</strong> in ${obj.city}<br>
-        Miete (Ist): <strong>${formatEuro(obj.monthlyRentActual)} p.m.</strong> &nbsp;•&nbsp;
-        Potenzial: <strong>${formatEuro(obj.monthlyRentPotential)} p.m.</strong><br>
-        Leerstand: <strong>${vacancyText}</strong><br>
-        Jahres-Cashflow (Dummy): <strong>${formatEuro(obj.cashflowYear)}</strong> &nbsp;•&nbsp;
-        EK-Einsatz (Dummy): <strong>${formatEuro(obj.equity)}</strong>
-      ";
+     summary.innerHTML = `
+  <strong>${obj.name}</strong> in ${obj.city}<br>
+  Miete (Ist): <strong>${formatEuro(obj.monthlyRentActual)} p.m.</strong> &nbsp;•&nbsp;
+  Potenzial: <strong>${formatEuro(obj.monthlyRentPotential)} p.m.</strong><br>
+  Leerstand: <strong>${vacancyText}</strong><br>
+  Jahres-Cashflow (Dummy): <strong>${formatEuro(obj.cashflowYear)}</strong> &nbsp;•&nbsp;
+  EK-Einsatz (Dummy): <strong>${formatEuro(obj.equity)}</strong>
+`;
 
       unitsTbody.innerHTML = "";
       obj.units.forEach(unit => {
