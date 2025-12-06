@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bücking Immobilien – Dashboard</title>
 
-  <!-- Kein Indexing: Suchmaschinen sollen das nicht listen -->
+  <!-- Dashboard soll nicht im Index von Google auftauchen -->
   <meta name="robots" content="noindex, nofollow">
 
   <style>
@@ -237,6 +237,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      overflow: auto;
     }
 
     .topbar {
@@ -244,6 +245,8 @@
       justify-content: space-between;
       align-items: center;
       font-size: 13px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .topbar-title {
@@ -262,6 +265,7 @@
       border: 1px solid rgba(255,255,255,0.12);
       font-size: 11px;
       color: var(--text-soft);
+      white-space: nowrap;
     }
 
     .pill-accent {
@@ -286,24 +290,132 @@
       margin-bottom: 10px;
     }
 
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
     .card-title {
       font-size: 14px;
       font-weight: 500;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .card-sub {
       font-size: 12px;
       color: var(--text-soft);
+    }
+
+    .kpi-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .kpi-chip {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.03);
+      font-size: 11px;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .kpi-chip strong {
+      color: #fff;
+    }
+
+    .tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      font-size: 11px;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .table-wrapper {
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: auto;
+      margin-top: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 500;
+      color: var(--text-soft);
+      background: rgba(255,255,255,0.03);
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .badge-status {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .badge-status.ok {
+      background: rgba(0,140,80,0.18);
+      color: #a0ffe0;
+    }
+    .badge-status.leer {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-soft);
+    }
+    .badge-status.risky {
+      background: rgba(255,75,92,0.18);
+      color: #ffbac4;
+    }
+
+    .summary-block {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .summary-block strong {
+      color: #fff;
+    }
+
+    .object-select-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
       margin-bottom: 8px;
     }
 
-    .dummy-block {
-      font-size: 12px;
-      color: var(--text-soft);
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px dashed rgba(255,255,255,0.12);
+    select {
+      background: #05060b;
+      color: var(--text);
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      font-size: 13px;
+      outline: none;
     }
 
     @media (max-width: 900px) {
@@ -334,7 +446,7 @@
         <div class="logo-mark">BI</div>
         <div>
           <div class="login-title">Bücking Immobilien Dashboard</div>
-          <div class="login-subtitle">Geschützter Zugang – Dummy-Version.</div>
+          <div class="login-subtitle">Geschützter Zugang – interne Übersicht.</div>
         </div>
       </div>
 
@@ -347,7 +459,7 @@
 
       <div class="login-error" id="login-error"></div>
       <div class="login-meta">
-        <span>Dashboard v0.1 (Dummy)</span>
+        <span>Dashboard v0.2 (Dummy-Daten)</span>
         <span id="login-date"></span>
       </div>
     </div>
@@ -391,7 +503,7 @@
 
         <div class="sidebar-footer">
           <div>Angemeldet als: Geschäftsführung</div>
-          <div style="margin-top:4px;">(Dummy-Layout, noch ohne echte Daten)</div>
+          <div style="margin-top:4px;">Dummy-Daten, nur intern.</div>
         </div>
       </aside>
 
@@ -399,7 +511,7 @@
         <div class="topbar">
           <div>
             <div class="topbar-title" id="topbar-title">Portfolio-Cockpit</div>
-            <div class="topbar-sub" id="topbar-sub">Übersicht über alle Objekte & Kennzahlen (Dummy).</div>
+            <div class="topbar-sub" id="topbar-sub">Überblick über alle Objekte & Kennzahlen (Dummy-Daten).</div>
           </div>
           <div>
             <span class="pill" id="topbar-date"></span>
@@ -407,76 +519,161 @@
           </div>
         </div>
 
-        <!-- VIEWS -->
-
+        <!-- PORTFOLIO VIEW -->
         <section class="view active" id="view-portfolio">
           <div class="card">
-            <div class="card-title">Portfolio</div>
-            <div class="card-sub">Dummy-Ansicht für Gesamtübersicht.</div>
-            <div class="dummy-block">
-              ● Später: Gesamt-Cashflow, Vermietungsquote, Portfolio-ROI, offene Forderungen, Objektliste.<br>
-              ● Diese Struktur ist nur der Rahmen – Daten werden später dynamisch ergänzt.
+            <div class="card-header">
+              <div>
+                <div class="card-title">Portfolio-Status</div>
+                <div class="card-sub">Aggregierte Kennzahlen über alle Objekte (aus JSON-Dummy-Daten).</div>
+              </div>
+              <span class="tag" id="portfolio-object-count-tag"></span>
+            </div>
+            <div class="kpi-row">
+              <div class="kpi-chip" id="kpi-monthly-cf"></div>
+              <div class="kpi-chip" id="kpi-rent-total"></div>
+              <div class="kpi-chip" id="kpi-vacancy"></div>
+              <div class="kpi-chip" id="kpi-avg-roi"></div>
+              <div class="kpi-chip" id="kpi-equity-total"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Objektübersicht</div>
+                <div class="card-sub">Je Objekt: Ort, Miete, Leerstand & ROI – aus der Datenstruktur.</div>
+              </div>
+              <span class="tag">Klick auf Objektname → später Drilldown</span>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Objekt</th>
+                    <th>Ort</th>
+                    <th>Miete (p.m.)</th>
+                    <th>Leerstand</th>
+                    <th>ROI</th>
+                    <th>Fläche</th>
+                  </tr>
+                </thead>
+                <tbody id="portfolio-objects-tbody"></tbody>
+              </table>
             </div>
           </div>
         </section>
 
+        <!-- OBJECTS VIEW -->
         <section class="view" id="view-objects">
           <div class="card">
-            <div class="card-title">Objekte & Mieter</div>
-            <div class="card-sub">Struktur für Objektebene inkl. Einheiten & Mieter.</div>
-            <div class="dummy-block">
-              ● Objekt-Auswahl (Dropdown)<br>
-              ● Tab "Übersicht" (Stammdaten, ROI, Kennzahlen)<br>
-              ● Tab "Einheiten & Mieter" (wer wohnt wo, Miete, NK, Status)<br>
-              ● Tab "Einnahmen & NK"<br>
-              ● Tab "Projekt/Bau" je Objekt
+            <div class="card-header">
+              <div>
+                <div class="card-title">Objekte & Mieter</div>
+                <div class="card-sub">Realitätsnahe Struktur mit Objekten, Einheiten & Mietern.</div>
+              </div>
+            </div>
+
+            <div class="object-select-row">
+              <label for="object-select" style="font-size:12px;">Objekt:</label>
+              <select id="object-select"></select>
+              <span class="pill" id="object-meta-pill"></span>
+            </div>
+
+            <div class="summary-block" id="object-summary"></div>
+
+            <div class="table-wrapper" style="margin-top:10px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Einheit</th>
+                    <th>Etage</th>
+                    <th>Fläche</th>
+                    <th>Status</th>
+                    <th>Mieter</th>
+                    <th>Kaltmiete</th>
+                    <th>NK</th>
+                    <th>Zahlung</th>
+                  </tr>
+                </thead>
+                <tbody id="units-tbody"></tbody>
+              </table>
             </div>
           </div>
         </section>
 
+        <!-- PROJECTS VIEW -->
         <section class="view" id="view-projects">
           <div class="card">
-            <div class="card-title">Projekte / Bau</div>
-            <div class="card-sub">Struktur für Bau- und Projektcontrolling.</div>
-            <div class="dummy-block">
-              ● Liste aller Projekte (Objekt, Status, Budget, Kosten, Abweichung)<br>
-              ● Später: Drilldown je Projekt mit Gewerken und Bau-/Kostenfortschritt.
+            <div class="card-header">
+              <div>
+                <div class="card-title">Projekte / Bau</div>
+                <div class="card-sub">Datenstruktur für Bau- und Projektcontrolling (Dummy-Projekte).</div>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Projekt</th>
+                    <th>Objekt</th>
+                    <th>Status</th>
+                    <th>Budget</th>
+                    <th>Kosten bisher</th>
+                    <th>Abweichung</th>
+                  </tr>
+                </thead>
+                <tbody id="projects-tbody"></tbody>
+              </table>
             </div>
           </div>
         </section>
 
+        <!-- FINANCE VIEW -->
         <section class="view" id="view-finance">
           <div class="card">
-            <div class="card-title">Finanzen</div>
-            <div class="card-sub">Struktur für Cashflow, Darlehen, Zins-/Tilgungsübersicht.</div>
-            <div class="dummy-block">
-              ● Bankkonten-Übersicht<br>
-              ● Zins-/Tilgungspläne<br>
-              ● Cashflow-Entwicklung pro Monat/Jahr.
+            <div class="card-header">
+              <div>
+                <div class="card-title">Finanzen</div>
+                <div class="card-sub">Kurzüberblick auf Basis der Dummy-Objektdaten.</div>
+              </div>
             </div>
+            <div class="summary-block" id="finance-summary"></div>
           </div>
         </section>
 
+        <!-- REPORTS VIEW -->
         <section class="view" id="view-reports">
           <div class="card">
-            <div class="card-title">Reports</div>
-            <div class="card-sub">Struktur für Export & Reporting.</div>
-            <div class="dummy-block">
-              ● Monatsbericht<br>
-              ● Bankreport / Objekt-Exposés<br>
-              ● Export als PDF / CSV.
+            <div class="card-header">
+              <div>
+                <div class="card-title">Reports</div>
+                <div class="card-sub">Platzhalter für Exporte, Bank-Reports etc.</div>
+              </div>
+            </div>
+            <div class="summary-block">
+              Idee für später:<br>
+              • Monatsreport pro Objekt (PDF)<br>
+              • Portfolio-Übersicht für Bank / Finanzierungsgespräche<br>
+              • Export der Mieter-/Einheitenliste als CSV.
             </div>
           </div>
         </section>
 
+        <!-- SETTINGS VIEW -->
         <section class="view" id="view-settings">
           <div class="card">
-            <div class="card-title">Einstellungen</div>
-            <div class="card-sub">Struktur für Stammdaten & Zugriffe.</div>
-            <div class="dummy-block">
-              ● Objektdaten verwalten<br>
-              ● Benutzer / Rollen<br>
-              ● Schnittstellen (Bank, Hausverwaltung, etc.).
+            <div class="card-header">
+              <div>
+                <div class="card-title">Einstellungen</div>
+                <div class="card-sub">Später: Stammdaten, Benutzer & API-Schnittstellen.</div>
+              </div>
+            </div>
+            <div class="summary-block">
+              Hier könntest du später:<br>
+              • Objekte & Einheiten pflegen<br>
+              • Benutzer/Rollen definieren (z.B. Verwaltung vs. GF)<br>
+              • Datenquellen anbinden (Bank-CSV, Hausverwalter-Export, Excel etc.).
             </div>
           </div>
         </section>
@@ -486,15 +683,174 @@
   </div>
 
   <script>
-    // ===== Einfacher Passwortschutz (Frontend) =====
-    const PASSWORD = "DEIN_STARKES_PASSWORT"; // <-- HIER dein Passwort setzen
+    // ===== Passwort festgelegt =====
+    const PASSWORD = "BI_Dashboard_2025";
 
+    // ===== Dummy-Datenstruktur (JSON-ähnlich) =====
+    const DATA = {
+      objects: [
+        {
+          id: "hof-ganderkesee",
+          name: "Hof Ganderkesee",
+          city: "Ganderkesee",
+          totalArea: 1150,
+          monthlyRentActual: 32400,
+          monthlyRentPotential: 33800,
+          vacancyUnits: 1,
+          vacancyArea: 65,
+          roi: 8.4,
+          equity: 1250000,
+          cashflowYear: 105000,
+          units: [
+            {
+              name: "Whg 1 | EG links",
+              floor: "EG",
+              area: 78,
+              status: "vermietet",
+              tenant: "M. Beispiel",
+              rent: 980,
+              nk: 240,
+              paymentStatus: "pünktlich"
+            },
+            {
+              name: "Whg 2 | EG rechts",
+              floor: "EG",
+              area: 82,
+              status: "leer",
+              tenant: "",
+              rent: 1050,
+              nk: 260,
+              paymentStatus: ""
+            },
+            {
+              name: "Whg 3 | OG links",
+              floor: "OG",
+              area: 94,
+              status: "vermietet",
+              tenant: "F. Mieter",
+              rent: 1280,
+              nk: 290,
+              paymentStatus: "Rückstand"
+            }
+          ],
+          projects: [
+            {
+              id: "p-ausbau-scheune",
+              name: "Ausbau Scheune",
+              status: "laufend",
+              budget: 1100000,
+              spent: 630000,
+              deviationPercent: 2
+            }
+          ]
+        },
+        {
+          id: "neubau-syke",
+          name: "Neubau Syke",
+          city: "Syke",
+          totalArea: 840,
+          monthlyRentActual: 18200,
+          monthlyRentPotential: 20500,
+          vacancyUnits: 2,
+          vacancyArea: 90,
+          roi: 7.1,
+          equity: 950000,
+          cashflowYear: 68000,
+          units: [
+            {
+              name: "Whg 1 | Haus A",
+              floor: "EG",
+              area: 70,
+              status: "vermietet",
+              tenant: "A. Mustermann",
+              rent: 1100,
+              nk: 230,
+              paymentStatus: "pünktlich"
+            },
+            {
+              name: "Whg 2 | Haus A",
+              floor: "OG",
+              area: 75,
+              status: "leer",
+              tenant: "",
+              rent: 1200,
+              nk: 240,
+              paymentStatus: ""
+            }
+          ],
+          projects: [
+            {
+              id: "p-neubau-haus-b",
+              name: "Neubau Haus B",
+              status: "kritisch",
+              budget: 2400000,
+              spent: 1280000,
+              deviationPercent: 8
+            }
+          ]
+        },
+        {
+          id: "stadtvilla-bremen",
+          name: "Stadtvilla Bremen",
+          city: "Bremen",
+          totalArea: 520,
+          monthlyRentActual: 11600,
+          monthlyRentPotential: 11600,
+          vacancyUnits: 0,
+          vacancyArea: 0,
+          roi: 6.3,
+          equity: 600000,
+          cashflowYear: 38000,
+          units: [
+            {
+              name: "Whg 1 | 1. OG",
+              floor: "1. OG",
+              area: 120,
+              status: "vermietet",
+              tenant: "Familie Hanse",
+              rent: 1950,
+              nk: 320,
+              paymentStatus: "pünktlich"
+            }
+          ],
+          projects: [
+            {
+              id: "p-fassade-dach",
+              name: "Fassade & Dach",
+              status: "abgeschlossen",
+              budget: 280000,
+              spent: 280000,
+              deviationPercent: 0
+            }
+          ]
+        }
+      ]
+    };
+
+    // ===== Utility-Funktionen =====
+    function formatEuro(value) {
+      return value.toLocaleString("de-DE", { minimumFractionDigits: 0 }) + " €";
+    }
+
+    function formatPercent(value) {
+      return value.toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " %";
+    }
+
+    function formatArea(value) {
+      return value.toLocaleString("de-DE", { maximumFractionDigits: 0 }) + " m²";
+    }
+
+    function formatDeviation(deviationPercent) {
+      const sign = deviationPercent > 0 ? "+" : "";
+      return sign + deviationPercent.toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " %";
+    }
+
+    // ===== Passwortschutz / Login =====
     const loginOverlay = document.getElementById("login-overlay");
     const loginInput = document.getElementById("login-password");
     const loginButton = document.getElementById("login-button");
     const loginError = document.getElementById("login-error");
     const loginDate = document.getElementById("login-date");
-
     const app = document.getElementById("app");
 
     function formatDate(d) {
@@ -533,7 +889,6 @@
       if (e.key === "Enter") handleLogin();
     });
 
-    // Bereits eingeloggt?
     if (localStorage.getItem("bi_dashboard_logged_in") === "1") {
       openApp();
     }
@@ -550,27 +905,27 @@
     const VIEW_TEXT = {
       "view-portfolio": {
         title: "Portfolio-Cockpit",
-        sub: "Übersicht über alle Objekte & Kennzahlen (Dummy)."
+        sub: "Überblick über alle Objekte & Kennzahlen (Dummy-Daten)."
       },
       "view-objects": {
         title: "Objekte & Mieter",
-        sub: "Struktur für Objektebene, Einheiten und Mieter."
+        sub: "Objektebene mit Einheiten und Mietern aus der Datenstruktur."
       },
       "view-projects": {
         title: "Projekte / Bau",
-        sub: "Struktur für Bauprojekte und Gewerke."
+        sub: "Bauprojekte und Gewerke basierend auf Dummy-Projekten."
       },
       "view-finance": {
         title: "Finanzen",
-        sub: "Struktur für Cashflows, Darlehen und Liquidität."
+        sub: "Abgeleitete Kennzahlen aus den Objekt-Daten."
       },
       "view-reports": {
         title: "Reports",
-        sub: "Struktur für Auswertungen und Exporte."
+        sub: "Platzhalter für Reporting & Exporte."
       },
       "view-settings": {
         title: "Einstellungen",
-        sub: "Struktur für Stammdaten und Zugriffe."
+        sub: "Später: Stammdaten, Benutzer & Schnittstellen."
       }
     };
 
@@ -591,6 +946,184 @@
           topbarSub.textContent = cfg.sub;
         }
       });
+    });
+
+    // ===== Portfolio aus Daten füllen =====
+    function initPortfolioView() {
+      const objects = DATA.objects;
+      const objectCount = objects.length;
+
+      const totalMonthlyCF = objects.reduce((sum, obj) => sum + obj.cashflowYear / 12, 0);
+      const totalMonthlyRent = objects.reduce((sum, obj) => sum + obj.monthlyRentActual, 0);
+      const totalVacancyArea = objects.reduce((sum, obj) => sum + obj.vacancyArea, 0);
+      const avgRoi = objects.reduce((sum, obj) => sum + obj.roi, 0) / objectCount;
+      const totalEquity = objects.reduce((sum, obj) => sum + obj.equity, 0);
+
+      document.getElementById("portfolio-object-count-tag").textContent =
+        objectCount + " Objekte im Portfolio";
+
+      document.getElementById("kpi-monthly-cf").innerHTML =
+        "<strong>Monats-Cashflow:</strong> " + formatEuro(Math.round(totalMonthlyCF));
+
+      document.getElementById("kpi-rent-total").innerHTML =
+        "<strong>Miete gesamt (p.m.):</strong> " + formatEuro(totalMonthlyRent);
+
+      document.getElementById("kpi-vacancy").innerHTML =
+        "<strong>Leerstand Fläche:</strong> " + formatArea(totalVacancyArea);
+
+      document.getElementById("kpi-avg-roi").innerHTML =
+        "<strong>Ø ROI:</strong> " + formatPercent(avgRoi);
+
+      document.getElementById("kpi-equity-total").innerHTML =
+        "<strong>Eigenkapital:</strong> " + formatEuro(totalEquity);
+
+      const tbody = document.getElementById("portfolio-objects-tbody");
+      tbody.innerHTML = "";
+
+      objects.forEach(obj => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${obj.name}</td>
+          <td>${obj.city}</td>
+          <td>${formatEuro(obj.monthlyRentActual)}</td>
+          <td>${obj.vacancyUnits} Einh. / ${formatArea(obj.vacancyArea)}</td>
+          <td>${formatPercent(obj.roi)}</td>
+          <td>${formatArea(obj.totalArea)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ===== Objekte & Mieter View =====
+    function initObjectsView() {
+      const select = document.getElementById("object-select");
+      const objects = DATA.objects;
+
+      select.innerHTML = "";
+      objects.forEach(obj => {
+        const opt = document.createElement("option");
+        opt.value = obj.id;
+        opt.textContent = obj.name;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener("change", () => {
+        updateObjectDetail(select.value);
+      });
+
+      if (objects.length > 0) {
+        select.value = objects[0].id;
+        updateObjectDetail(objects[0].id);
+      }
+    }
+
+    function updateObjectDetail(objectId) {
+      const obj = DATA.objects.find(o => o.id === objectId);
+      if (!obj) return;
+
+      const metaPill = document.getElementById("object-meta-pill");
+      const summary = document.getElementById("object-summary");
+      const unitsTbody = document.getElementById("units-tbody");
+
+      metaPill.textContent = `${obj.city} • ${formatArea(obj.totalArea)} • ROI ${formatPercent(obj.roi)}`;
+
+      const vacancyText = obj.vacancyUnits > 0
+        ? `${obj.vacancyUnits} Einheit(en) leer (${formatArea(obj.vacancyArea)})`
+        : "voll vermietet";
+
+      summary.innerHTML = `
+        <strong>${obj.name}</strong> in ${obj.city}<br>
+        Miete (Ist): <strong>${formatEuro(obj.monthlyRentActual)} p.m.</strong> &nbsp;•&nbsp;
+        Potenzial: <strong>${formatEuro(obj.monthlyRentPotential)} p.m.</strong><br>
+        Leerstand: <strong>${vacancyText}</strong><br>
+        Jahres-Cashflow (Dummy): <strong>${formatEuro(obj.cashflowYear)}</strong> &nbsp;•&nbsp;
+        EK-Einsatz (Dummy): <strong>${formatEuro(obj.equity)}</strong>
+      `;
+
+      unitsTbody.innerHTML = "";
+      obj.units.forEach(unit => {
+        const tr = document.createElement("tr");
+
+        const statusClass =
+          unit.status === "vermietet" ? "ok" :
+          unit.status === "leer" ? "leer" : "";
+
+        let paymentBadge = "";
+        if (unit.paymentStatus === "pünktlich") {
+          paymentBadge = `<span class="badge-status ok">pünktlich</span>`;
+        } else if (unit.paymentStatus === "Rückstand") {
+          paymentBadge = `<span class="badge-status risky">Rückstand</span>`;
+        } else {
+          paymentBadge = "";
+        }
+
+        tr.innerHTML = `
+          <td>${unit.name}</td>
+          <td>${unit.floor}</td>
+          <td>${formatArea(unit.area)}</td>
+          <td>${unit.status
+            ? `<span class="badge-status ${statusClass}">${unit.status}</span>`
+            : ""}</td>
+          <td>${unit.tenant || "–"}</td>
+          <td>${formatEuro(unit.rent)}</td>
+          <td>${formatEuro(unit.nk)}</td>
+          <td>${paymentBadge || "–"}</td>
+        `;
+        unitsTbody.appendChild(tr);
+      });
+    }
+
+    // ===== Projekte / Bau View =====
+    function initProjectsView() {
+      const tbody = document.getElementById("projects-tbody");
+      tbody.innerHTML = "";
+
+      DATA.objects.forEach(obj => {
+        (obj.projects || []).forEach(p => {
+          let statusClass = "ok";
+          if (p.status === "kritisch") statusClass = "risky";
+          if (p.status === "abgeschlossen") statusClass = "ok";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${p.name}</td>
+            <td>${obj.name}</td>
+            <td><span class="badge-status ${statusClass}">${p.status}</span></td>
+            <td>${formatEuro(p.budget)}</td>
+            <td>${formatEuro(p.spent)}</td>
+            <td>${formatDeviation(p.deviationPercent)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    // ===== Finanzen View =====
+    function initFinanceView() {
+      const summaryEl = document.getElementById("finance-summary");
+      const objects = DATA.objects;
+
+      const totalCFYear = objects.reduce((sum, obj) => sum + obj.cashflowYear, 0);
+      const totalEquity = objects.reduce((sum, obj) => sum + obj.equity, 0);
+      const totalRentYear = objects.reduce((sum, obj) => sum + obj.monthlyRentActual * 12, 0);
+
+      const roiPortfolio = (totalCFYear / totalEquity) * 100;
+
+      summaryEl.innerHTML = `
+        Basierend auf den Dummy-Daten:<br>
+        • Jahres-Mieteinnahmen (Ist): <strong>${formatEuro(totalRentYear)}</strong><br>
+        • Jahres-Cashflow (netto, Dummy): <strong>${formatEuro(totalCFYear)}</strong><br>
+        • Eingesetztes Eigenkapital: <strong>${formatEuro(totalEquity)}</strong><br>
+        • Portfolio-ROI (Cash-on-Cash, Dummy): <strong>${formatPercent(roiPortfolio)}</strong>
+      `;
+    }
+
+    // ===== Initialisierung nach Laden =====
+    window.addEventListener("load", () => {
+      initPortfolioView();
+      initObjectsView();
+      initProjectsView();
+      initFinanceView();
     });
   </script>
 </body>
