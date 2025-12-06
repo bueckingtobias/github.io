@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bücking Immobilien – Dashboard</title>
 
-  <!-- Dashboard soll nicht im Index von Google auftauchen -->
+  <!-- Dashboard nicht indexieren -->
   <meta name="robots" content="noindex, nofollow">
 
   <style>
     :root {
       --bg: #05060a;
       --bg-elevated: #11131c;
-      --accent: #004225;           /* Smyrna-Grün an dein CI angelehnt */
+      --accent: #004225;           /* Smyrna-Grün */
       --accent-soft: rgba(0,66,37,0.16);
       --text: #f5f5f7;
       --text-soft: #a3a6b7;
@@ -233,10 +233,10 @@
     }
 
     .main {
-      padding: 14px 18px;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       overflow: auto;
     }
 
@@ -247,6 +247,7 @@
       font-size: 13px;
       gap: 8px;
       flex-wrap: wrap;
+      margin-bottom: 4px;
     }
 
     .topbar-title {
@@ -276,6 +277,7 @@
 
     .view {
       display: none;
+      min-height: calc(100vh - 80px); /* iPad: Fläche füllen */
     }
     .view.active {
       display: block;
@@ -285,9 +287,8 @@
       background: linear-gradient(145deg, #11131d, #090a12);
       border-radius: var(--radius);
       border: 1px solid var(--border);
-      padding: 14px 14px 10px;
+      padding: 10px 12px 10px;
       box-shadow: 0 12px 28px rgba(0,0,0,0.6);
-      margin-bottom: 10px;
     }
 
     .card-header {
@@ -309,26 +310,6 @@
       color: var(--text-soft);
     }
 
-    .kpi-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .kpi-chip {
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.03);
-      font-size: 11px;
-      color: var(--text-soft);
-      white-space: nowrap;
-    }
-
-    .kpi-chip strong {
-      color: #fff;
-    }
-
     .tag {
       padding: 3px 8px;
       border-radius: 999px;
@@ -338,11 +319,88 @@
       white-space: nowrap;
     }
 
+    .summary-block {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+    .summary-block strong { color: #fff; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-card {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: radial-gradient(circle at top, rgba(255,255,255,0.05), rgba(0,0,0,0.85));
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .kpi-value {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 2px 0 0;
+    }
+
+    .kpi-subline {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .chart-card {
+      height: 260px; /* füllt Höhe, responsive durch Chart.js */
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .chart-title {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+
+    .chart-container.small {
+      height: 160px;
+    }
+
     .table-wrapper {
       border-radius: 10px;
       border: 1px solid rgba(255,255,255,0.08);
       overflow: auto;
       margin-top: 6px;
+      max-height: 280px; /* damit es auf iPad in den View passt und scrollbar ist */
     }
 
     table {
@@ -389,23 +447,12 @@
       color: #ffbac4;
     }
 
-    .summary-block {
-      font-size: 12px;
-      color: var(--text-soft);
-      margin-top: 4px;
-      line-height: 1.5;
-    }
-
-    .summary-block strong {
-      color: #fff;
-    }
-
     .object-select-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     select {
@@ -434,6 +481,19 @@
         justify-content: center;
         padding-inline: 0;
       }
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .charts-grid,
+      .chart-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .chart-card {
+        height: 230px;
+      }
+      .table-wrapper {
+        max-height: 260px;
+      }
     }
   </style>
 </head>
@@ -459,7 +519,7 @@
 
       <div class="login-error" id="login-error"></div>
       <div class="login-meta">
-        <span>Dashboard v0.2 (Dummy-Daten)</span>
+        <span>Dashboard v0.3 (KPIs & Charts)</span>
         <span id="login-date"></span>
       </div>
     </div>
@@ -521,30 +581,98 @@
 
         <!-- PORTFOLIO VIEW -->
         <section class="view active" id="view-portfolio">
+          <!-- KPI Zeile -->
           <div class="card">
             <div class="card-header">
               <div>
-                <div class="card-title">Portfolio-Status</div>
-                <div class="card-sub">Aggregierte Kennzahlen über alle Objekte (aus JSON-Dummy-Daten).</div>
+                <div class="card-title">Portfolio-KPIs</div>
+                <div class="card-sub">Verdichtete Steuerungskennzahlen aus allen Objekten.</div>
               </div>
               <span class="tag" id="portfolio-object-count-tag"></span>
             </div>
-            <div class="kpi-row">
-              <div class="kpi-chip" id="kpi-monthly-cf"></div>
-              <div class="kpi-chip" id="kpi-rent-total"></div>
-              <div class="kpi-chip" id="kpi-vacancy"></div>
-              <div class="kpi-chip" id="kpi-avg-roi"></div>
-              <div class="kpi-chip" id="kpi-equity-total"></div>
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-label">Monats-Cashflow (netto)</div>
+                <div class="kpi-value" id="kpi-monthly-cf"></div>
+                <div class="kpi-subline" id="kpi-monthly-cf-sub"></div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Miete gesamt (p.m.)</div>
+                <div class="kpi-value" id="kpi-rent-total"></div>
+                <div class="kpi-subline" id="kpi-rent-total-sub"></div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Leerstand Fläche</div>
+                <div class="kpi-value" id="kpi-vacancy"></div>
+                <div class="kpi-subline" id="kpi-vacancy-sub"></div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Portfolio-ROI</div>
+                <div class="kpi-value" id="kpi-avg-roi"></div>
+                <div class="kpi-subline" id="kpi-equity-total"></div>
+              </div>
             </div>
           </div>
 
+          <!-- Charts: CF + Miete -->
+          <div class="charts-grid">
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Cashflow-Verlauf</div>
+                  <div class="card-sub">Monatlicher Netto-CF (Dummy-Historie, 12 Monate).</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-cashflow"></canvas>
+              </div>
+            </div>
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Miete je Objekt</div>
+                  <div class="card-sub">Aktuelle Monatsmiete pro Objekt.</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-rent-per-object"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts: ROI + Belegung -->
+          <div class="charts-grid">
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">ROI je Objekt</div>
+                  <div class="card-sub">Cash-on-Cash-Rendite pro Objekt.</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-roi-per-object"></canvas>
+              </div>
+            </div>
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Belegung vs. Leerstand</div>
+                  <div class="card-sub">Flächengewichtete Verteilung im Portfolio.</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-vacancy"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Objekt-Tabelle unten -->
           <div class="card">
             <div class="card-header">
               <div>
                 <div class="card-title">Objektübersicht</div>
-                <div class="card-sub">Je Objekt: Ort, Miete, Leerstand & ROI – aus der Datenstruktur.</div>
+                <div class="card-sub">Ort, Miete, Leerstand, ROI & Fläche.</div>
               </div>
-              <span class="tag">Klick auf Objektname → später Drilldown</span>
             </div>
             <div class="table-wrapper">
               <table>
@@ -566,11 +694,11 @@
 
         <!-- OBJECTS VIEW -->
         <section class="view" id="view-objects">
-          <div class="card">
+          <div class="card" style="display:flex; flex-direction:column; gap:6px; height:100%;">
             <div class="card-header">
               <div>
                 <div class="card-title">Objekte & Mieter</div>
-                <div class="card-sub">Realitätsnahe Struktur mit Objekten, Einheiten & Mietern.</div>
+                <div class="card-sub">Objektebene inkl. KPIs, Charts & Einheitenliste.</div>
               </div>
             </div>
 
@@ -582,7 +710,24 @@
 
             <div class="summary-block" id="object-summary"></div>
 
-            <div class="table-wrapper" style="margin-top:10px;">
+            <!-- Objektbezogene Charts -->
+            <div class="chart-row">
+              <div class="chart-card" style="height:200px;">
+                <div class="chart-title">Miete Ist vs. Potenzial</div>
+                <div class="chart-container small">
+                  <canvas id="chart-object-rent"></canvas>
+                </div>
+              </div>
+              <div class="chart-card" style="height:200px;">
+                <div class="chart-title">Belegung (vermietet vs. leer)</div>
+                <div class="chart-container small">
+                  <canvas id="chart-object-occupancy"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Einheiten / Mieter Tabelle -->
+            <div class="table-wrapper">
               <table>
                 <thead>
                   <tr>
@@ -604,14 +749,14 @@
 
         <!-- PROJECTS VIEW -->
         <section class="view" id="view-projects">
-          <div class="card">
+          <div class="card" style="height:100%; display:flex; flex-direction:column;">
             <div class="card-header">
               <div>
                 <div class="card-title">Projekte / Bau</div>
-                <div class="card-sub">Datenstruktur für Bau- und Projektcontrolling (Dummy-Projekte).</div>
+                <div class="card-sub">Bau- und Projektcontrolling mit Budget, Kosten & Abweichung.</div>
               </div>
             </div>
-            <div class="table-wrapper">
+            <div class="table-wrapper" style="flex:1;">
               <table>
                 <thead>
                   <tr>
@@ -631,11 +776,11 @@
 
         <!-- FINANCE VIEW -->
         <section class="view" id="view-finance">
-          <div class="card">
+          <div class="card" style="height:100%; display:flex; flex-direction:column; gap:6px;">
             <div class="card-header">
               <div>
                 <div class="card-title">Finanzen</div>
-                <div class="card-sub">Kurzüberblick auf Basis der Dummy-Objektdaten.</div>
+                <div class="card-sub">Cashflow, Eigenkapital & Portfolio-ROI aus den Dummy-Daten.</div>
               </div>
             </div>
             <div class="summary-block" id="finance-summary"></div>
@@ -644,11 +789,11 @@
 
         <!-- REPORTS VIEW -->
         <section class="view" id="view-reports">
-          <div class="card">
+          <div class="card" style="height:100%; display:flex; flex-direction:column; gap:6px;">
             <div class="card-header">
               <div>
                 <div class="card-title">Reports</div>
-                <div class="card-sub">Platzhalter für Exporte, Bank-Reports etc.</div>
+                <div class="card-sub">Platzhalter für Exportfunktionen & Bankreports.</div>
               </div>
             </div>
             <div class="summary-block">
@@ -662,11 +807,11 @@
 
         <!-- SETTINGS VIEW -->
         <section class="view" id="view-settings">
-          <div class="card">
+          <div class="card" style="height:100%; display:flex; flex-direction:column; gap:6px;">
             <div class="card-header">
               <div>
                 <div class="card-title">Einstellungen</div>
-                <div class="card-sub">Später: Stammdaten, Benutzer & API-Schnittstellen.</div>
+                <div class="card-sub">Später: Stammdaten, Benutzer & Schnittstellen.</div>
               </div>
             </div>
             <div class="summary-block">
@@ -682,11 +827,14 @@
     </div>
   </div>
 
+  <!-- Chart.js von CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
     // ===== Passwort festgelegt =====
     const PASSWORD = "BI_Dashboard_2025";
 
-    // ===== Dummy-Datenstruktur (JSON-ähnlich) =====
+    // ===== Dummy-Datenstruktur =====
     const DATA = {
       objects: [
         {
@@ -909,15 +1057,15 @@
       },
       "view-objects": {
         title: "Objekte & Mieter",
-        sub: "Objektebene mit Einheiten und Mietern aus der Datenstruktur."
+        sub: "Objektebene mit Einheiten- & Mieterübersicht."
       },
       "view-projects": {
         title: "Projekte / Bau",
-        sub: "Bauprojekte und Gewerke basierend auf Dummy-Projekten."
+        sub: "Bauprojekte und Gewerke im Überblick."
       },
       "view-finance": {
         title: "Finanzen",
-        sub: "Abgeleitete Kennzahlen aus den Objekt-Daten."
+        sub: "Aggregierte Finanzkennzahlen aus den Objekt-Daten."
       },
       "view-reports": {
         title: "Reports",
@@ -948,6 +1096,10 @@
       });
     });
 
+    // ===== Charts Referenzen =====
+    let cashflowChart, rentPerObjectChart, roiPerObjectChart, vacancyChart;
+    let objectRentChart, objectOccupancyChart;
+
     // ===== Portfolio aus Daten füllen =====
     function initPortfolioView() {
       const objects = DATA.objects;
@@ -955,27 +1107,38 @@
 
       const totalMonthlyCF = objects.reduce((sum, obj) => sum + obj.cashflowYear / 12, 0);
       const totalMonthlyRent = objects.reduce((sum, obj) => sum + obj.monthlyRentActual, 0);
+      const totalMonthlyRentPotential = objects.reduce((sum, obj) => sum + obj.monthlyRentPotential, 0);
       const totalVacancyArea = objects.reduce((sum, obj) => sum + obj.vacancyArea, 0);
+      const totalArea = objects.reduce((sum, obj) => sum + obj.totalArea, 0);
       const avgRoi = objects.reduce((sum, obj) => sum + obj.roi, 0) / objectCount;
       const totalEquity = objects.reduce((sum, obj) => sum + obj.equity, 0);
+      const totalCFYear = objects.reduce((sum, obj) => sum + obj.cashflowYear, 0);
+      const totalRentYear = objects.reduce((sum, obj) => sum + obj.monthlyRentActual * 12, 0);
 
       document.getElementById("portfolio-object-count-tag").textContent =
         objectCount + " Objekte im Portfolio";
 
-      document.getElementById("kpi-monthly-cf").innerHTML =
-        "<strong>Monats-Cashflow:</strong> " + formatEuro(Math.round(totalMonthlyCF));
+      document.getElementById("kpi-monthly-cf").textContent =
+        formatEuro(Math.round(totalMonthlyCF));
+      document.getElementById("kpi-monthly-cf-sub").textContent =
+        "Jahres-CF: " + formatEuro(totalCFYear);
 
-      document.getElementById("kpi-rent-total").innerHTML =
-        "<strong>Miete gesamt (p.m.):</strong> " + formatEuro(totalMonthlyRent);
+      document.getElementById("kpi-rent-total").textContent =
+        formatEuro(totalMonthlyRent);
+      document.getElementById("kpi-rent-total-sub").textContent =
+        "p.a.: " + formatEuro(totalRentYear);
 
-      document.getElementById("kpi-vacancy").innerHTML =
-        "<strong>Leerstand Fläche:</strong> " + formatArea(totalVacancyArea);
+      document.getElementById("kpi-vacancy").textContent =
+        formatArea(totalVacancyArea);
+      const occupancyArea = Math.max(totalArea - totalVacancyArea, 0);
+      const occupancyPct = totalArea > 0 ? (occupancyArea / totalArea) * 100 : 0;
+      document.getElementById("kpi-vacancy-sub").textContent =
+        "Belegung: " + formatPercent(occupancyPct);
 
-      document.getElementById("kpi-avg-roi").innerHTML =
-        "<strong>Ø ROI:</strong> " + formatPercent(avgRoi);
-
-      document.getElementById("kpi-equity-total").innerHTML =
-        "<strong>Eigenkapital:</strong> " + formatEuro(totalEquity);
+      document.getElementById("kpi-avg-roi").textContent =
+        formatPercent(avgRoi);
+      document.getElementById("kpi-equity-total").textContent =
+        "EK gesamt: " + formatEuro(totalEquity);
 
       const tbody = document.getElementById("portfolio-objects-tbody");
       tbody.innerHTML = "";
@@ -991,6 +1154,151 @@
           <td>${formatArea(obj.totalArea)}</td>
         `;
         tbody.appendChild(tr);
+      });
+
+      initPortfolioCharts(objects, totalCFYear, totalArea, totalVacancyArea);
+    }
+
+    // ===== Portfolio-Charts =====
+    function initPortfolioCharts(objects, totalCFYear, totalArea, totalVacancyArea) {
+      const ctxCF = document.getElementById("chart-cashflow").getContext("2d");
+      const ctxRent = document.getElementById("chart-rent-per-object").getContext("2d");
+      const ctxROI = document.getElementById("chart-roi-per-object").getContext("2d");
+      const ctxVacancy = document.getElementById("chart-vacancy").getContext("2d");
+
+      // Dummy-Cashflow Verlauf über 12 Monate
+      const months = ["Jan","Feb","Mrz","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+      const avgMonthlyCF = totalCFYear / 12;
+      const cfData = months.map((_, idx) => {
+        const factor = 1 + (Math.sin(idx / 2) * 0.15); // leichte Welle
+        return Math.round(avgMonthlyCF * factor);
+      });
+
+      cashflowChart = new Chart(ctxCF, {
+        type: "line",
+        data: {
+          labels: months,
+          datasets: [{
+            label: "Netto-Cashflow",
+            data: cfData,
+            tension: 0.35,
+            borderWidth: 2,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: "#a3a6b7", font: { size: 10 } },
+              grid: { color: "rgba(255,255,255,0.05)" }
+            },
+            y: {
+              ticks: {
+                color: "#a3a6b7",
+                font: { size: 10 },
+                callback: (v) => v.toLocaleString("de-DE")
+              },
+              grid: { color: "rgba(255,255,255,0.05)" }
+            }
+          }
+        }
+      });
+
+      // Miete je Objekt
+      const labelsObjects = objects.map(o => o.name);
+      const rentData = objects.map(o => o.monthlyRentActual);
+
+      rentPerObjectChart = new Chart(ctxRent, {
+        type: "bar",
+        data: {
+          labels: labelsObjects,
+          datasets: [{
+            label: "Miete (p.m.)",
+            data: rentData,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: "#a3a6b7", font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: {
+                color: "#a3a6b7",
+                font: { size: 10 },
+                callback: (v) => v.toLocaleString("de-DE")
+              },
+              grid: { color: "rgba(255,255,255,0.05)" }
+            }
+          }
+        }
+      });
+
+      // ROI je Objekt
+      const roiData = objects.map(o => o.roi);
+
+      roiPerObjectChart = new Chart(ctxROI, {
+        type: "bar",
+        data: {
+          labels: labelsObjects,
+          datasets: [{
+            label: "ROI",
+            data: roiData,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: "#a3a6b7", font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: {
+                color: "#a3a6b7",
+                font: { size: 10 },
+                callback: (v) => v + " %"
+              },
+              grid: { color: "rgba(255,255,255,0.05)" }
+            }
+          }
+        }
+      });
+
+      // Belegung vs Leerstand
+      const occupancyArea = Math.max(totalArea - totalVacancyArea, 0);
+
+      vacancyChart = new Chart(ctxVacancy, {
+        type: "doughnut",
+        data: {
+          labels: ["Belegt", "Leerstand"],
+          datasets: [{
+            data: [occupancyArea, totalVacancyArea],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: "#a3a6b7", font: { size: 10 } }
+            }
+          },
+          cutout: "60%"
+        }
       });
     }
 
@@ -1025,7 +1333,8 @@
       const summary = document.getElementById("object-summary");
       const unitsTbody = document.getElementById("units-tbody");
 
-      metaPill.textContent = `${obj.city} • ${formatArea(obj.totalArea)} • ROI ${formatPercent(obj.roi)}`;
+      metaPill.textContent =
+        `${obj.city} • ${formatArea(obj.totalArea)} • ROI ${formatPercent(obj.roi)}`;
 
       const vacancyText = obj.vacancyUnits > 0
         ? `${obj.vacancyUnits} Einheit(en) leer (${formatArea(obj.vacancyArea)})`
@@ -1038,7 +1347,7 @@
         Leerstand: <strong>${vacancyText}</strong><br>
         Jahres-Cashflow (Dummy): <strong>${formatEuro(obj.cashflowYear)}</strong> &nbsp;•&nbsp;
         EK-Einsatz (Dummy): <strong>${formatEuro(obj.equity)}</strong>
-      `;
+      ";
 
       unitsTbody.innerHTML = "";
       obj.units.forEach(unit => {
@@ -1053,8 +1362,6 @@
           paymentBadge = `<span class="badge-status ok">pünktlich</span>`;
         } else if (unit.paymentStatus === "Rückstand") {
           paymentBadge = `<span class="badge-status risky">Rückstand</span>`;
-        } else {
-          paymentBadge = "";
         }
 
         tr.innerHTML = `
@@ -1070,6 +1377,72 @@
           <td>${paymentBadge || "–"}</td>
         `;
         unitsTbody.appendChild(tr);
+      });
+
+      updateObjectCharts(obj);
+    }
+
+    function updateObjectCharts(obj) {
+      const ctxRent = document.getElementById("chart-object-rent").getContext("2d");
+      const ctxOcc = document.getElementById("chart-object-occupancy").getContext("2d");
+
+      const ist = obj.monthlyRentActual;
+      const soll = obj.monthlyRentPotential;
+
+      if (objectRentChart) objectRentChart.destroy();
+      objectRentChart = new Chart(ctxRent, {
+        type: "bar",
+        data: {
+          labels: ["Ist", "Potenzial"],
+          datasets: [{
+            data: [ist, soll],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: "#a3a6b7", font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: {
+                color: "#a3a6b7",
+                font: { size: 10 },
+                callback: v => v.toLocaleString("de-DE")
+              },
+              grid: { color: "rgba(255,255,255,0.05)" }
+            }
+          }
+        }
+      });
+
+      const occArea = Math.max(obj.totalArea - obj.vacancyArea, 0);
+
+      if (objectOccupancyChart) objectOccupancyChart.destroy();
+      objectOccupancyChart = new Chart(ctxOcc, {
+        type: "doughnut",
+        data: {
+          labels: ["vermietet", "leer"],
+          datasets: [{
+            data: [occArea, obj.vacancyArea],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: "#a3a6b7", font: { size: 10 } }
+            }
+          },
+          cutout: "60%"
+        }
       });
     }
 
