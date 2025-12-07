@@ -541,7 +541,7 @@
 
       <div class="login-error" id="login-error"></div>
       <div class="login-meta">
-        <span>Dashboard v0.6 (Home-View erweitert)</span>
+        <span>Dashboard v0.7 (Home vollflächig)</span>
         <span id="login-date"></span>
       </div>
     </div>
@@ -786,7 +786,7 @@
         const range=document.createRange();
         const frag=range.createContextualFragment(html);
 
-        // Styles in den Head ziehen
+        // Styles der View in den Head ziehen
         frag.querySelectorAll("style").forEach(styleTag=>{
           document.head.appendChild(styleTag.cloneNode(true));
           styleTag.remove();
@@ -806,7 +806,7 @@
       if(viewKey==="objects") initObjectsView();
       if(viewKey==="projects") initProjectsView();
       if(viewKey==="finance") initFinanceView();
-      if(viewKey==="reports") {/* aktuell nichts */}
+      if(viewKey==="reports") {/* Platzhalter */}
       if(viewKey==="settings") initSettingsView();
 
       updateChartTheme(localStorage.getItem("bi_dashboard_theme")||"dark");
@@ -819,6 +819,7 @@
     // Chart-Referenzen
     let cashflowChart, rentPerObjectChart, roiPerObjectChart, vacancyChart;
     let objectRentChart, objectOccupancyChart;
+    let homeCfChart, homeCfYearChart, homeRentChart, homeVacancyChart, homeRoiChart;
 
     // Portfolio-Init
     function initPortfolioView(){
@@ -852,7 +853,7 @@
         document.getElementById("kpi-equity-total").textContent="EK gesamt: "+formatEuro(totalEquity);
       }
 
-      // Home-KPIs (Top 5)
+      // Home-KPIs (Top 5 + Charts)
       const homeCf=document.getElementById("home-kpi-cf");
       if(homeCf){
         homeCf.textContent=formatEuro(Math.round(totalMonthlyCF));
@@ -869,10 +870,19 @@
         }
 
         const roiPortfolioEl=document.getElementById("home-kpi-roi");
-        if(roiPortfolioEl){
-          const roiPortfolio=(totalCFYear/totalEquity)*100;
-          roiPortfolioEl.textContent=formatPercent(roiPortfolio);
-        }
+        const roiPortfolio=(totalCFYear/totalEquity)*100;
+        if(roiPortfolioEl) roiPortfolioEl.textContent=formatPercent(roiPortfolio);
+
+        // KPI-Charts
+        initHomeKpiCharts({
+          totalMonthlyCF,
+          totalCFYear,
+          totalMonthlyRent,
+          totalVacancyArea,
+          totalArea,
+          totalEquity,
+          roiPortfolio
+        });
       }
 
       // Tabelle in Portfolio-View
@@ -899,7 +909,7 @@
         });
       }
 
-      // Charts nur erzeugen, wenn Canvas existiert (also im Portfolio-View)
+      // Portfolio-Charts
       const chartCfCanvas=document.getElementById("chart-cashflow");
       const chartRentCanvas=document.getElementById("chart-rent-per-object");
       const chartRoiCanvas=document.getElementById("chart-roi-per-object");
@@ -1131,13 +1141,12 @@
         • Portfolio-ROI (Cash-on-Cash, Dummy): <strong>${formatPercent(roiPortfolio)}</strong>`;
     }
 
-    // ===== HOME VIEW: Wetter, Kalender, News =====
+    // ===== HOME VIEW: Wetter, Kalender, News, KPI-Charts =====
     function initHomeView(){
       loadWeather();
       buildCalendar();
       loadNews();
-      // Aggregierte KPIs (nutzt die Schutz-Logik in initPortfolioView)
-      initPortfolioView();
+      initPortfolioView(); // speist die KPIs + Charts
     }
 
     function weatherCodeToIcon(code){
@@ -1152,12 +1161,12 @@
       return "ℹ️";
     }
 
-    function loadWeather(){
+    function fetchWeatherForCoords(lat,lon){
       const tag=document.getElementById("weather-location-tag");
       const cont=document.getElementById("weather-content");
       if(!tag || !cont) return;
 
-      const url="https://api.open-meteo.com/v1/forecast?latitude=53.03&longitude=8.54&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&forecast_days=7&timezone=auto";
+      const url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&forecast_days=7&timezone=auto";
 
       fetch(url)
         .then(r=>r.json())
@@ -1166,13 +1175,13 @@
           const daily=data.daily;
           if(!cw || !daily) throw new Error("keine Wetterdaten");
 
-          tag.textContent=`Region Ganderkesee (${cw.temperature.toFixed(1)}°C)`;
+          // Standort-Anzeige
+          tag.textContent=`Dein Standort (${cw.temperature.toFixed(1)}°C)`;
 
           const mainIcon=weatherCodeToIcon(cw.weathercode);
           const now=new Date(cw.time);
           const timeStr=now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
 
-          // 7-Tage-Grid
           const daysHtml=daily.time.map((iso,idx)=>{
             const d=new Date(iso);
             const dayName=d.toLocaleDateString("de-DE",{weekday:"short"});
@@ -1224,7 +1233,7 @@
           }
         })
         .catch(()=>{
-          tag.textContent="Region Ganderkesee";
+          tag.textContent="Wetter (Fallback)";
           cont.innerHTML=`
             <div class="weather-hero">
               <div>
@@ -1235,15 +1244,33 @@
         });
     }
 
+    function loadWeather(){
+      if(!navigator.geolocation){
+        // Fallback: Ganderkesee
+        fetchWeatherForCoords(53.03,8.54);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos=>{
+          const {latitude,longitude}=pos.coords;
+          fetchWeatherForCoords(latitude,longitude);
+        },
+        ()=>{
+          // User verweigert / Fehler: Ganderkesee
+          fetchWeatherForCoords(53.03,8.54);
+        },
+        {enableHighAccuracy:false,timeout:5000,maximumAge:300000}
+      );
+    }
+
     function isGermanHolidayNI(year,month,day){
-      // month: 0=bzw Jan
       const fixed=[
         {m:0,d:1},   // Neujahr
         {m:4,d:1},   // 1. Mai
         {m:9,d:3},   // Tag der Einheit
+        {m:9,d:31},  // Reformationstag (NI)
         {m:11,d:25}, // 1. Weihnachtstag
-        {m:11,d:26}, // 2. Weihnachtstag
-        {m:9,d:31}   // Reformationstag (NI)
+        {m:11,d:26}  // 2. Weihnachtstag
       ];
       return fixed.some(h=>h.m===month && h.d===day);
     }
@@ -1309,9 +1336,7 @@
         if(holiday) cell.classList.add("holiday");
 
         if(d===1){
-          const dot=document.createElement("div");
-          dot.className="calendar-event-dot";
-          cell.appendChild(dot);
+          cell.classList.add("rent-day");
         }
 
         grid.appendChild(cell);
@@ -1382,13 +1407,188 @@
         });
     }
 
+    // KPI-Charts auf der Home-View
+    function initHomeKpiCharts({totalMonthlyCF,totalCFYear,totalMonthlyRent,totalVacancyArea,totalArea,totalEquity,roiPortfolio}){
+      const cfCanvas=document.getElementById("chart-home-cf");
+      const cfYearCanvas=document.getElementById("chart-home-cf-year");
+      const rentCanvas=document.getElementById("chart-home-rent");
+      const vacCanvas=document.getElementById("chart-home-vacancy");
+      const roiCanvas=document.getElementById("chart-home-roi");
+
+      const now=new Date();
+      const monthLabels=[];
+      for(let i=5;i>=0;i--){
+        const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+        monthLabels.push(d.toLocaleString("de-DE",{month:"short"}));
+      }
+      const futureLabels=["+1","+2","+3"];
+
+      // Monats-CF: 6M History + 3M Forecast
+      if(cfCanvas){
+        const hist=monthLabels.map((_,idx)=>{
+          const factor=1+Math.sin(idx/2)*0.1;
+          return Math.round((totalMonthlyCF||1)*factor);
+        });
+        const last=hist[hist.length-1]||totalMonthlyCF;
+        const forecast=futureLabels.map((_,i)=>Math.round(last*(1+0.01*(i+1))));
+        if(homeCfChart) homeCfChart.destroy();
+        homeCfChart=new Chart(cfCanvas.getContext("2d"),{
+          type:"line",
+          data:{
+            labels:[...monthLabels,...futureLabels],
+            datasets:[
+              {label:"Historie",data:[...hist,...Array(futureLabels.length).fill(null)],tension:0.35,borderWidth:1.8,fill:true,borderColor:"#0ea568",backgroundColor:"rgba(14,165,104,0.15)"},
+              {label:"Forecast",data:[...Array(monthLabels.length).fill(null),...forecast],tension:0.35,borderWidth:1.5,borderDash:[4,3],fill:false,borderColor:"#f97316"}
+            ]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+            scales:{
+              x:{ticks:{font:{size:9}},grid:{display:false}},
+              y:{ticks:{font:{size:9},callback:v=>v.toLocaleString("de-DE")},grid:{color:"rgba(148,163,184,0.25)"}}
+            }
+          }
+        });
+      }
+
+      // Jahres-CF: 4 Jahre Historie + 2 Jahre Forecast
+      if(cfYearCanvas){
+        const years=[];
+        const cfHist=[];
+        const baseYear=now.getFullYear()-3;
+        for(let i=0;i<4;i++){
+          years.push((baseYear+i).toString().slice(-2));
+          const factor=0.85+0.07*i;
+          cfHist.push(Math.round(totalCFYear*factor));
+        }
+        const lastYearVal=cfHist[cfHist.length-1]||totalCFYear;
+        const cfForecast=[Math.round(lastYearVal*1.03),Math.round(lastYearVal*1.06)];
+        const yearLabels=[...years,"+1","+2"];
+        if(homeCfYearChart) homeCfYearChart.destroy();
+        homeCfYearChart=new Chart(cfYearCanvas.getContext("2d"),{
+          type:"bar",
+          data:{
+            labels:yearLabels,
+            datasets:[
+              {data:[...cfHist,...cfForecast],backgroundColor:(ctx)=>{
+                const idx=ctx.dataIndex;
+                return idx<cfHist.length ? "#2563eb" : "#f97316";
+              },borderWidth:0}
+            ]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+            scales:{
+              x:{ticks:{font:{size:9}},grid:{display:false}},
+              y:{ticks:{font:{size:9},callback:v=>v.toLocaleString("de-DE")},grid:{color:"rgba(148,163,184,0.25)"}}
+            }
+          }
+        });
+      }
+
+      // Miete (p.m.): 6M History + 3M Forecast
+      if(rentCanvas){
+        const hist=monthLabels.map((_,idx)=>{
+          const factor=1+0.005*idx;
+          return Math.round(totalMonthlyRent*factor);
+        });
+        const last=hist[hist.length-1]||totalMonthlyRent;
+        const forecast=futureLabels.map((_,i)=>Math.round(last*(1+0.003*(i+1))));
+        if(homeRentChart) homeRentChart.destroy();
+        homeRentChart=new Chart(rentCanvas.getContext("2d"),{
+          type:"line",
+          data:{
+            labels:[...monthLabels,...futureLabels],
+            datasets:[
+              {label:"Historie",data:[...hist,...Array(futureLabels.length).fill(null)],tension:0.3,borderWidth:1.8,fill:false,borderColor:"#22c55e"},
+              {label:"Forecast",data:[...Array(monthLabels.length).fill(null),...forecast],tension:0.3,borderWidth:1.5,borderDash:[4,3],borderColor:"#0ea5e9"}
+            ]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+            scales:{
+              x:{ticks:{font:{size:9}},grid:{display:false}},
+              y:{ticks:{font:{size:9},callback:v=>v.toLocaleString("de-DE")},grid:{color:"rgba(148,163,184,0.25)"}}
+            }
+          }
+        });
+      }
+
+      // Leerstandsquote
+      if(vacCanvas){
+        const baseRate=totalArea>0?(totalVacancyArea/totalArea)*100:0;
+        const hist=monthLabels.map((_,idx)=>{
+          const jitter=(idx-2)*0.3;
+          return Math.max(0,baseRate + jitter);
+        });
+        const last=hist[hist.length-1]||baseRate;
+        const forecast=futureLabels.map((_,i)=>Math.max(0,last-0.2*(i+1)));
+        if(homeVacancyChart) homeVacancyChart.destroy();
+        homeVacancyChart=new Chart(vacCanvas.getContext("2d"),{
+          type:"line",
+          data:{
+            labels:[...monthLabels,...futureLabels],
+            datasets:[
+              {label:"Leerstand",data:[...hist,...forecast],tension:0.35,borderWidth:1.8,fill:true,borderColor:"#f97316",backgroundColor:"rgba(249,115,22,0.12)"}
+            ]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+            scales:{
+              x:{ticks:{font:{size:9}},grid:{display:false}},
+              y:{ticks:{font:{size:9},callback:v=>v.toFixed(1)+"%"},grid:{color:"rgba(148,163,184,0.25)"}}
+            }
+          }
+        });
+      }
+
+      // ROI
+      if(roiCanvas){
+        const hist=[];
+        const years=[];
+        const baseYear=now.getFullYear()-3;
+        for(let i=0;i<4;i++){
+          years.push((baseYear+i).toString().slice(-2));
+          const factor=0.9+0.03*i;
+          hist.push(roiPortfolio*factor);
+        }
+        const last=hist[hist.length-1]||roiPortfolio;
+        const forecast=[last*1.02,last*1.04];
+        const labels=[...years,"+1","+2"];
+        if(homeRoiChart) homeRoiChart.destroy();
+        homeRoiChart=new Chart(roiCanvas.getContext("2d"),{
+          type:"bar",
+          data:{
+            labels,
+            datasets:[
+              {data:[...hist,...forecast],backgroundColor:(ctx)=>{
+                const idx=ctx.dataIndex;
+                return idx<hist.length ? "#a855f7" : "#22c55e";
+              },borderWidth:0}
+            ]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+            scales:{
+              x:{ticks:{font:{size:9}},grid:{display:false}},
+              y:{ticks:{font:{size:9},callback:v=>v.toFixed(1)+"%"},grid:{color:"rgba(148,163,184,0.25)"}}
+            }
+          }
+        });
+      }
+    }
+
     // Chart-Theme
     function updateChartTheme(theme){
       const isDark=theme!=="light";
       const axis=isDark?"#a3a6b7":"#4b5563";
       const grid=isDark?"rgba(148,163,184,0.3)":"rgba(209,213,219,0.7)";
       const legend=axis;
-      const charts=[cashflowChart,rentPerObjectChart,roiPerObjectChart,vacancyChart,objectRentChart,objectOccupancyChart];
+      const charts=[
+        cashflowChart,rentPerObjectChart,roiPerObjectChart,vacancyChart,
+        objectRentChart,objectOccupancyChart,
+        homeCfChart,homeCfYearChart,homeRentChart,homeVacancyChart,homeRoiChart
+      ];
       charts.forEach(ch=>{
         if(!ch) return;
         if(ch.options.scales){
