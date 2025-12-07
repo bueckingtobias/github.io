@@ -1,0 +1,51 @@
+<div class="view-root">
+  <div class="card" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Objekte & Mieter</div>
+        <div class="card-sub">Objektebene mit KPIs, Charts & Einheitenliste.</div>
+      </div>
+    </div>
+
+    <div class="object-select-row" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:4px;">
+      <label for="object-select" style="font-size:12px;">Objekt:</label>
+      <select id="object-select"></select>
+      <span class="pill" id="object-meta-pill"></span>
+    </div>
+
+    <div class="summary-block" id="object-summary"></div>
+
+    <div style="display:flex;gap:8px;flex:0 0 190px;min-height:0;margin-top:4px;">
+      <div class="card" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <div class="chart-title">Miete Ist vs. Potenzial (+ Prognose)</div>
+        <div class="chart-container" style="flex:1;min-height:0;">
+          <canvas id="chart-object-rent"></canvas>
+        </div>
+      </div>
+      <div class="card" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <div class="chart-title">Belegung (vermietet vs. leer)</div>
+        <div class="chart-container" style="flex:1;min-height:0;">
+          <canvas id="chart-object-occupancy"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper" style="margin-top:6px;flex:1;min-height:0;">
+      <table>
+        <thead>
+          <tr>
+            <th>Einheit</th>
+            <th>Etage</th>
+            <th>Fläche</th>
+            <th>Status</th>
+            <th>Mieter</th>
+            <th>Kaltmiete</th>
+            <th>NK</th>
+            <th>Zahlung</th>
+          </tr>
+        </thead>
+        <tbody id="units-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
