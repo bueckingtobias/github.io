@@ -1,74 +1,398 @@
 <div class="view-root">
-  <div class="home-grid" style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr;gap:8px;flex:1;min-height:0;">
-    <!-- Wetter -->
+  <!-- Lokales Styling nur für Home-View -->
+  <style>
+    .home-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
+      gap: 8px;
+      height: 100%;
+      min-height: 0;
+    }
+    @media (max-width: 900px) {
+      .home-grid {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+      }
+    }
+
+    .home-card-body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    /* Wetter-Bereich */
+    .weather-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .weather-main-temp {
+      font-size: 32px;
+      font-weight: 600;
+    }
+    .weather-main-meta {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+    .weather-icon-big {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.2), rgba(0,0,0,0.6));
+    }
+    .weather-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+    .weather-row span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .wind-compass {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--text-soft);
+    }
+    .wind-compass::before {
+      content: "N";
+      position: absolute;
+      top: 3px;
+    }
+    .wind-compass-arrow {
+      width: 2px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--accent-2);
+      transform-origin: bottom center;
+    }
+
+    .weather-forecast-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+      margin-top: 6px;
+      font-size: 11px;
+    }
+    .weather-day-card {
+      border-radius: 10px;
+      padding: 4px 4px 6px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.18);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    :root[data-theme="light"] .weather-day-card {
+      background: #f9fafb;
+      border-color: #e5e7eb;
+    }
+    .weather-day-name {
+      font-weight: 500;
+    }
+    .weather-day-icon {
+      font-size: 16px;
+    }
+    .weather-day-temp {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    /* Kalender-Bereich */
+    .calendar-header-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .calendar-meta {
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .calendar-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 11px;
+      color: var(--text-soft);
+      white-space: nowrap;
+      background: rgba(0,0,0,0.12);
+    }
+    :root[data-theme="light"] .calendar-pill {
+      background: #ffffff;
+      border-color: #e5e7eb;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+    .calendar-cell {
+      padding: 4px 0;
+      text-align: center;
+      border-radius: 6px;
+      color: var(--text-soft);
+      position: relative;
+    }
+    .calendar-cell.head {
+      font-weight: 600;
+    }
+    .calendar-cell.today {
+      background: var(--accent-soft);
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .calendar-cell.weekend {
+      background: rgba(148,163,184,0.15);
+    }
+    .calendar-cell.holiday {
+      background: rgba(239,68,68,0.18);
+      color: #fecaca;
+      font-weight: 500;
+    }
+    .calendar-event-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent-3);
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .calendar-event-label {
+      font-size: 9px;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    /* News-Bereich */
+    .news-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .news-item {
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.14);
+    }
+    :root[data-theme="light"] .news-item {
+      background: #f9fafb;
+      border-color: #e5e7eb;
+    }
+    .news-headline {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    .news-headline a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    .news-headline a:hover {
+      text-decoration: underline;
+    }
+    .news-snippet {
+      font-size: 11px;
+      color: var(--text-soft);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Quick-KPIs */
+    .kpi-home-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+    @media (max-width: 1100px) {
+      .kpi-home-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 700px) {
+      .kpi-home-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .kpi-home-card {
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(0,0,0,0.9));
+    }
+    :root[data-theme="light"] .kpi-home-card {
+      background: linear-gradient(135deg, #ffffff, #f9fafb);
+      border-color: #e5e7eb;
+    }
+    .kpi-home-label {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-bottom: 2px;
+    }
+    .kpi-home-value {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .kpi-home-sub {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+  </style>
+
+  <div class="home-grid">
+    <!-- Wetter & Forecast -->
     <div class="card" style="display:flex;flex-direction:column;min-height:0;">
       <div class="card-header">
         <div>
-          <div class="card-title">Wetter & Tagesüberblick</div>
-          <div class="card-sub">Region Ganderkesee / Bremen – live.</div>
+          <div class="card-title">Wetter & Forecast</div>
+          <div class="card-sub">Region Ganderkesee / Bremen – live mit 7-Tage-Ausblick.</div>
         </div>
         <span class="tag" id="weather-location-tag">lädt …</span>
       </div>
-      <div id="weather-content" style="flex:1;min-height:0;overflow:auto;"></div>
+
+      <div class="home-card-body" id="weather-content">
+        <!-- Wird durch JS gefüllt: 
+             - aktuelles Wetter (Temp, Icon, Wind, Kompass)
+             - 7-Tage-Grid -->
+      </div>
     </div>
 
-    <!-- Kalender -->
+    <!-- Kalender & Mieteinnahmen-Counter -->
     <div class="card" style="display:flex;flex-direction:column;min-height:0;">
       <div class="card-header">
         <div>
-          <div class="card-title">Kalender</div>
-          <div class="card-sub">Aktueller Monat, Fokus heute.</div>
+          <div class="card-title">Kalender & Mieteinnahmen</div>
+          <div class="card-sub">Monatsübersicht mit Wochenenden, Feiertagen & Mietevent.</div>
         </div>
       </div>
-      <div style="flex:1;min-height:0;overflow:auto;">
-        <div class="summary-block" id="calendar-header"></div>
-        <div id="calendar-grid" class="calendar-grid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;font-size:11px;margin-top:6px;"></div>
+
+      <div class="home-card-body">
+        <div class="calendar-header-row">
+          <div class="summary-block" id="calendar-header"></div>
+          <div class="calendar-meta">
+            <span class="calendar-pill" id="rent-counter">
+              Nächste Mieteinnahmen: – Tage
+            </span>
+          </div>
+        </div>
+
+        <div class="calendar-grid" id="calendar-grid">
+          <!-- wird per JS befüllt -->
+        </div>
+
+        <div class="calendar-event-label">
+          <strong>Legende:</strong> Wochenenden leicht hinterlegt, Feiertage rot, am <strong>01.</strong> Mieteinnahmen (markiert mit Punkt).
+        </div>
       </div>
     </div>
 
-    <!-- News -->
+    <!-- Branchen-News -->
     <div class="card" style="display:flex;flex-direction:column;min-height:0;">
       <div class="card-header">
         <div>
           <div class="card-title">News – Immobilien & Bau</div>
-          <div class="card-sub">RSS, falls erreichbar, sonst Fallback.</div>
+          <div class="card-sub">Headline + kurze Vorschau, bei Klick im neuen Tab.</div>
         </div>
         <span class="tag" id="news-status">lädt …</span>
       </div>
-      <div style="flex:1;min-height:0;overflow:auto;">
-        <ul class="news-list" id="news-list" style="list-style:none;margin:0;padding:0;font-size:12px;display:grid;gap:4px;"></ul>
+
+      <div class="home-card-body">
+        <ul class="news-list" id="news-list">
+          <!-- JS erzeugt:
+               <li class="news-item">
+                 <div class="news-headline"><a ...>Titel</a></div>
+                 <div class="news-snippet">Teaser / Beschreibung</div>
+               </li>
+          -->
+        </ul>
       </div>
     </div>
 
-    <!-- Quick-KPIs -->
-    <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+    <!-- Top 5 KPIs zur Unternehmenssteuerung -->
+    <div class="card" style="grid-column:1 / -1;display:flex;flex-direction:column;min-height:0;">
       <div class="card-header">
         <div>
-          <div class="card-title">Schnell-Überblick</div>
-          <div class="card-sub">Kerneckdaten aus dem Portfolio.</div>
+          <div class="card-title">Schnell-Überblick – Steuerungs-KPIs</div>
+          <div class="card-sub">
+            Top 5 Kennzahlen für die Steuerung: Cashflow, Miete, Leerstand, Rendite.
+          </div>
         </div>
       </div>
-      <div style="flex:1;min-height:0;overflow:auto;">
-        <div class="kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
-          <div class="kpi-card" style="border-top:3px solid var(--accent);">
-            <div class="kpi-label">Monats-CF (netto)</div>
-            <div class="kpi-value" id="home-kpi-cf"></div>
-            <div class="kpi-subline">Tendenz 12M (Dummy)</div>
+
+      <div class="home-card-body">
+        <div class="kpi-home-grid">
+          <!-- 1: Monats-Cashflow -->
+          <div class="kpi-home-card" style="border-top:3px solid var(--accent);">
+            <div class="kpi-home-label">Monats-Cashflow (netto)</div>
+            <div class="kpi-home-value" id="home-kpi-cf"></div>
+            <div class="kpi-home-sub">laufender Überschuss aller Objekte</div>
           </div>
-          <div class="kpi-card" style="border-top:3px solid var(--accent-2);">
-            <div class="kpi-label">Miete (p.m.)</div>
-            <div class="kpi-value" id="home-kpi-rent"></div>
-            <div class="kpi-subline">Ist gesamt</div>
+
+          <!-- 2: Jahres-Cashflow -->
+          <div class="kpi-home-card" style="border-top:3px solid var(--accent-2);">
+            <div class="kpi-home-label">Jahres-Cashflow (netto)</div>
+            <div class="kpi-home-value" id="home-kpi-cf-year"></div>
+            <div class="kpi-home-sub">Cashflow p.a. (Dummy)</div>
           </div>
-          <div class="kpi-card" style="border-top:3px solid var(--accent-3);">
-            <div class="kpi-label">Leerstand</div>
-            <div class="kpi-value" id="home-kpi-vacancy"></div>
-            <div class="kpi-subline">Flächenanteil</div>
+
+          <!-- 3: Miete Ist pro Monat -->
+          <div class="kpi-home-card" style="border-top:3px solid var(--accent-3);">
+            <div class="kpi-home-label">Miete (Ist, p.m.)</div>
+            <div class="kpi-home-value" id="home-kpi-rent"></div>
+            <div class="kpi-home-sub">aktuelle Gesamtmiete im Portfolio</div>
           </div>
-          <div class="kpi-card" style="border-top:3px solid var(--accent-4);">
-            <div class="kpi-label">Portfolio-ROI</div>
-            <div class="kpi-value" id="home-kpi-roi"></div>
-            <div class="kpi-subline">Cash-on-Cash (Dummy)</div>
+
+          <!-- 4: Leerstandsquote -->
+          <div class="kpi-home-card" style="border-top:3px solid var(--accent-4);">
+            <div class="kpi-home-label">Leerstandsquote</div>
+            <div class="kpi-home-value" id="home-kpi-vacancy-rate"></div>
+            <div class="kpi-home-sub">Anteil leerstehender Fläche</div>
+          </div>
+
+          <!-- 5: Portfolio-ROI -->
+          <div class="kpi-home-card" style="border-top:3px solid var(--accent);">
+            <div class="kpi-home-label">Portfolio-ROI (Cash-on-Cash)</div>
+            <div class="kpi-home-value" id="home-kpi-roi"></div>
+            <div class="kpi-home-sub">Jahres-CF / eingesetztes EK (Dummy)</div>
           </div>
         </div>
       </div>
