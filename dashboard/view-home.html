@@ -13,15 +13,14 @@
       display: grid;
       grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
       /* 3 Zeilen:
-         1: Wetter links, Kalender rechts (oberer Teil)
-         2: News links, Kalender rechts (unterer Teil)
-         3: KPIs über gesamte Breite
-         -> Kalender ist so hoch wie Wetter + News
+         1: Wetter links, Kalender rechts (gleiche Höhe)
+         2: KPIs über gesamte Breite (kompakter)
+         3: News über gesamte Breite (füllt Rest)
       */
       grid-template-rows:
-        minmax(0, 0.7fr)
-        minmax(0, 0.7fr)
-        minmax(0, 1.4fr);
+        minmax(0, 0.9fr)   /* Wetter + Kalender */
+        minmax(0, 0.8fr)   /* KPIs kompakter */
+        minmax(0, 1.3fr);  /* News, dynamisch */
       gap: 8px;
       height: 100%;
       min-height: 0;
@@ -30,9 +29,9 @@
     @media (max-height: 800px) {
       .home-grid {
         grid-template-rows:
-          minmax(0, 0.65fr)
-          minmax(0, 0.65fr)
-          minmax(0, 1.5fr);
+          minmax(0, 0.8fr)
+          minmax(0, 0.8fr)
+          minmax(0, 1.2fr);
       }
     }
 
@@ -43,9 +42,9 @@
       }
 
       .home-weather-card,
-      .home-news-card,
       .home-calendar-card,
-      .home-kpi-card-wrapper {
+      .home-kpi-card-wrapper,
+      .home-news-card {
         grid-column: 1 / -1;
         grid-row: auto; /* untereinander auf Mobile */
       }
@@ -66,23 +65,23 @@
       min-height: 0;
     }
 
-    .home-news-card {
-      grid-column: 1 / 2;
-      grid-row: 2 / 3;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
     .home-calendar-card {
       grid-column: 2 / 3;
-      grid-row: 1 / 3; /* so hoch wie Wetter + News zusammen */
+      grid-row: 1 / 2;
       display: flex;
       flex-direction: column;
       min-height: 0;
     }
 
     .home-kpi-card-wrapper {
+      grid-column: 1 / -1;
+      grid-row: 2 / 3;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .home-news-card {
       grid-column: 1 / -1;
       grid-row: 3 / 4;
       display: flex;
@@ -91,7 +90,7 @@
     }
 
     .home-news-card .home-card-body {
-      max-height: 100%;     /* News passt sich an, scrollt intern */
+      max-height: 100%;     /* News darf den restlichen Platz füllen und intern scrollen */
     }
 
     /* ===== Wetter-Bereich ===== */
@@ -385,8 +384,8 @@
     }
     .kpi-home-chart {
       flex: 1;
-      min-height: 80px;     /* mehr Höhe -> bessere Nutzung unten */
-      /* kein max-height, Karte füllt die verfügbare Row-Höhe */
+      min-height: 70px;     /* kompakter -> eher „quadratisch“ */
+      max-height: 110px;    /* verhindert, dass KPIs zu hoch werden */
     }
     .kpi-home-chart canvas {
       width: 100%;
@@ -395,7 +394,8 @@
 
     @media (max-height: 800px) {
       .kpi-home-chart {
-        min-height: 70px;
+        min-height: 60px;
+        max-height: 95px;
       }
     }
   </style>
@@ -418,7 +418,7 @@
       </div>
     </div>
 
-    <!-- Kalender rechts, Höhe = Wetter + News -->
+    <!-- Kalender rechts, gleiche Höhe wie Wetter -->
     <div class="card home-calendar-card">
       <div class="card-header">
         <div>
@@ -447,29 +447,7 @@
       </div>
     </div>
 
-    <!-- News unter Wetter, links -->
-    <div class="card home-news-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">News – Immobilien & Bau</div>
-          <div class="card-sub">Headline + 3-Zeilen-Vorschau, bei Klick im neuen Tab.</div>
-        </div>
-        <span class="tag" id="news-status">lädt …</span>
-      </div>
-
-      <div class="home-card-body">
-        <ul class="news-list" id="news-list">
-          <!-- JS erzeugt:
-               <li class="news-item">
-                 <div class="news-headline"><a ...>Titel</a></div>
-                 <div class="news-snippet">Teaser / Beschreibung</div>
-               </li>
-          -->
-        </ul>
-      </div>
-    </div>
-
-    <!-- Top 5 KPIs inkl. Entwicklung (Charts) – komplette Breite unten -->
+    <!-- KPIs mittig über die gesamte Breite -->
     <div class="card home-kpi-card-wrapper">
       <div class="card-header">
         <div>
@@ -557,6 +535,28 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- News ganz unten über die gesamte Breite -->
+    <div class="card home-news-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">News – Immobilien & Bau</div>
+          <div class="card-sub">Headline + 3-Zeilen-Vorschau, bei Klick im neuen Tab.</div>
+        </div>
+        <span class="tag" id="news-status">lädt …</span>
+      </div>
+
+      <div class="home-card-body">
+        <ul class="news-list" id="news-list">
+          <!-- JS erzeugt:
+               <li class="news-item">
+                 <div class="news-headline"><a ...>Titel</a></div>
+                 <div class="news-snippet">Teaser / Beschreibung</div>
+               </li>
+          -->
+        </ul>
       </div>
     </div>
   </div>
