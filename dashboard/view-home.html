@@ -4,7 +4,7 @@
     .home-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-      grid-template-rows: auto auto auto;
+      grid-template-rows: minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 1.2fr);
       gap: 8px;
       height: 100%;
       min-height: 0;
@@ -145,6 +145,14 @@
       white-space: nowrap;
       background: rgba(0,0,0,0.12);
     }
+    #rent-counter {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-color: rgba(245,158,11,0.7);
+      background: rgba(245,158,11,0.15);
+      color: #fed7aa;
+    }
     :root[data-theme="light"] .calendar-pill {
       background: #ffffff;
       border-color: #e5e7eb;
@@ -163,6 +171,7 @@
       border-radius: 6px;
       color: var(--text-soft);
       position: relative;
+      border: 1px solid transparent;
     }
     .calendar-cell.head {
       font-weight: 600;
@@ -180,16 +189,14 @@
       color: #fecaca;
       font-weight: 500;
     }
-    .calendar-event-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: var(--accent-3);
-      position: absolute;
-      bottom: 2px;
-      left: 50%;
-      transform: translateX(-50%);
+    .calendar-cell.rent-day {
+      border-color: var(--accent-3);
+      box-shadow: 0 0 0 1px rgba(245,158,11,0.6);
+      background: rgba(245,158,11,0.08);
+      color: #fed7aa;
+      font-weight: 600;
     }
+
     .calendar-event-label {
       font-size: 9px;
       color: var(--text-soft);
@@ -235,11 +242,13 @@
       overflow: hidden;
     }
 
-    /* Quick-KPIs */
+    /* Quick-KPIs + Charts */
     .kpi-home-grid {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 8px;
+      height: 100%;
+      min-height: 0;
     }
     @media (max-width: 1100px) {
       .kpi-home-grid {
@@ -257,10 +266,16 @@
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.08);
       background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(0,0,0,0.9));
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
     :root[data-theme="light"] .kpi-home-card {
       background: linear-gradient(135deg, #ffffff, #f9fafb);
       border-color: #e5e7eb;
+    }
+    .kpi-home-top {
+      margin-bottom: 4px;
     }
     .kpi-home-label {
       font-size: 11px;
@@ -276,6 +291,15 @@
       font-size: 11px;
       color: var(--text-soft);
     }
+    .kpi-home-chart {
+      flex: 1;
+      min-height: 60px;
+      max-height: 120px;
+    }
+    .kpi-home-chart canvas {
+      width: 100%;
+      height: 100%;
+    }
   </style>
 
   <div class="home-grid">
@@ -284,13 +308,13 @@
       <div class="card-header">
         <div>
           <div class="card-title">Wetter & Forecast</div>
-          <div class="card-sub">Region Ganderkesee / Bremen – live mit 7-Tage-Ausblick.</div>
+          <div class="card-sub">Aktueller Standort – live mit 7-Tage-Ausblick.</div>
         </div>
-        <span class="tag" id="weather-location-tag">lädt …</span>
+        <span class="tag" id="weather-location-tag">Standort wird ermittelt …</span>
       </div>
 
       <div class="home-card-body" id="weather-content">
-        <!-- Wird durch JS gefüllt: 
+        <!-- JS baut hier:
              - aktuelles Wetter (Temp, Icon, Wind, Kompass)
              - 7-Tage-Grid -->
       </div>
@@ -301,7 +325,7 @@
       <div class="card-header">
         <div>
           <div class="card-title">Kalender & Mieteinnahmen</div>
-          <div class="card-sub">Monatsübersicht mit Wochenenden, Feiertagen & Mietevent.</div>
+          <div class="card-sub">Monatsübersicht mit Wochenenden, Feiertagen & Mietereignis.</div>
         </div>
       </div>
 
@@ -320,7 +344,7 @@
         </div>
 
         <div class="calendar-event-label">
-          <strong>Legende:</strong> Wochenenden leicht hinterlegt, Feiertage rot, am <strong>01.</strong> Mieteinnahmen (markiert mit Punkt).
+          <strong>Legende:</strong> Wochenenden leicht hinterlegt, Feiertage rot, am <strong>01.</strong> ist der gesamte Tag eingerahmt (Mieteinnahmen).
         </div>
       </div>
     </div>
@@ -330,7 +354,7 @@
       <div class="card-header">
         <div>
           <div class="card-title">News – Immobilien & Bau</div>
-          <div class="card-sub">Headline + kurze Vorschau, bei Klick im neuen Tab.</div>
+          <div class="card-sub">Headline + 3-Zeilen-Vorschau, bei Klick im neuen Tab.</div>
         </div>
         <span class="tag" id="news-status">lädt …</span>
       </div>
@@ -347,13 +371,13 @@
       </div>
     </div>
 
-    <!-- Top 5 KPIs zur Unternehmenssteuerung -->
+    <!-- Top 5 KPIs inkl. Entwicklung (Charts) -->
     <div class="card" style="grid-column:1 / -1;display:flex;flex-direction:column;min-height:0;">
       <div class="card-header">
         <div>
           <div class="card-title">Schnell-Überblick – Steuerungs-KPIs</div>
           <div class="card-sub">
-            Top 5 Kennzahlen für die Steuerung: Cashflow, Miete, Leerstand, Rendite.
+            Top 5 Kennzahlen inkl. Verlauf & Forecast.
           </div>
         </div>
       </div>
@@ -362,37 +386,62 @@
         <div class="kpi-home-grid">
           <!-- 1: Monats-Cashflow -->
           <div class="kpi-home-card" style="border-top:3px solid var(--accent);">
-            <div class="kpi-home-label">Monats-Cashflow (netto)</div>
-            <div class="kpi-home-value" id="home-kpi-cf"></div>
-            <div class="kpi-home-sub">laufender Überschuss aller Objekte</div>
+            <div class="kpi-home-top">
+              <div class="kpi-home-label">Monats-Cashflow (netto)</div>
+              <div class="kpi-home-value" id="home-kpi-cf"></div>
+              <div class="kpi-home-sub">laufender Überschuss aller Objekte</div>
+            </div>
+            <div class="kpi-home-chart">
+              <canvas id="chart-home-cf"></canvas>
+            </div>
           </div>
 
           <!-- 2: Jahres-Cashflow -->
           <div class="kpi-home-card" style="border-top:3px solid var(--accent-2);">
-            <div class="kpi-home-label">Jahres-Cashflow (netto)</div>
-            <div class="kpi-home-value" id="home-kpi-cf-year"></div>
-            <div class="kpi-home-sub">Cashflow p.a. (Dummy)</div>
+            <div class="kpi-home-top">
+              <div class="kpi-home-label">Jahres-Cashflow (netto)</div>
+              <div class="kpi-home-value" id="home-kpi-cf-year"></div>
+              <div class="kpi-home-sub">Entwicklung p.a. (Dummy)</div>
+            </div>
+            <div class="kpi-home-chart">
+              <canvas id="chart-home-cf-year"></canvas>
+            </div>
           </div>
 
           <!-- 3: Miete Ist pro Monat -->
           <div class="kpi-home-card" style="border-top:3px solid var(--accent-3);">
-            <div class="kpi-home-label">Miete (Ist, p.m.)</div>
-            <div class="kpi-home-value" id="home-kpi-rent"></div>
-            <div class="kpi-home-sub">aktuelle Gesamtmiete im Portfolio</div>
+            <div class="kpi-home-top">
+              <div class="kpi-home-label">Miete (Ist, p.m.)</div>
+              <div class="kpi-home-value" id="home-kpi-rent"></div>
+              <div class="kpi-home-sub">Entwicklung + Forecast (Dummy)</div>
+            </div>
+            <div class="kpi-home-chart">
+              <canvas id="chart-home-rent"></canvas>
+            </div>
           </div>
 
           <!-- 4: Leerstandsquote -->
           <div class="kpi-home-card" style="border-top:3px solid var(--accent-4);">
-            <div class="kpi-home-label">Leerstandsquote</div>
-            <div class="kpi-home-value" id="home-kpi-vacancy-rate"></div>
-            <div class="kpi-home-sub">Anteil leerstehender Fläche</div>
+            <div class="kpi-home-top">
+              <div class="kpi-home-label">Leerstandsquote</div>
+              <div class="kpi-home-value" id="home-kpi-vacancy-rate"></div>
+              <div class="kpi-home-sub">Verlauf nach Fläche (Dummy)</div>
+            </div>
+            <div class="kpi-home-chart">
+              <canvas id="chart-home-vacancy"></canvas>
+            </div>
           </div>
 
           <!-- 5: Portfolio-ROI -->
           <div class="kpi-home-card" style="border-top:3px solid var(--accent);">
-            <div class="kpi-home-label">Portfolio-ROI (Cash-on-Cash)</div>
-            <div class="kpi-home-value" id="home-kpi-roi"></div>
-            <div class="kpi-home-sub">Jahres-CF / eingesetztes EK (Dummy)</div>
+            <div class="kpi-home-top">
+              <div class="kpi-home-label">Portfolio-ROI (Cash-on-Cash)</div>
+              <div class="kpi-home-value" id="home-kpi-roi"></div>
+              <div class="kpi-home-sub">Jahres-CF / EK inkl. Forecast (Dummy)</div>
+            </div>
+            <div class="kpi-home-chart">
+              <canvas id="chart-home-roi"></canvas>
+            </div>
           </div>
         </div>
       </div>
