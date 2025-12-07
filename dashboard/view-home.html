@@ -12,23 +12,26 @@
     .home-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-      /* Obere beiden Reihen etwas kompakter, KPIs bekommen mehr Höhe */
+      /* 3 Zeilen:
+         1: Wetter über komplette Breite
+         2: Kalender + News nebeneinander
+         3: KPIs über komplette Breite
+      */
       grid-template-rows:
-        minmax(0, 0.9fr)    /* Wetter */
-        minmax(0, 0.7fr)    /* Kalender */
-        minmax(0, 1.2fr);   /* KPIs, bevorzugt Höhe */
+        minmax(0, 0.8fr)    /* Wetter */
+        minmax(0, 0.8fr)    /* Kalender + News */
+        minmax(0, 1.4fr);   /* KPIs */
       gap: 8px;
       height: 100%;
       min-height: 0;
     }
 
-    /* Bei kleiner Höhe (z.B. iPad mit Favoritenleiste) News/Top-Bereich kompakter */
     @media (max-height: 800px) {
       .home-grid {
         grid-template-rows:
-          minmax(0, 0.8fr)
-          minmax(0, 0.6fr)
-          minmax(0, 1.3fr);
+          minmax(0, 0.7fr)
+          minmax(0, 0.7fr)
+          minmax(0, 1.4fr);
       }
     }
 
@@ -36,6 +39,16 @@
       .home-grid {
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto;
+      }
+
+      /* Mobile: Reihenfolge bleibt, alle untereinander */
+      .home-weather-card {
+        grid-column: 1 / -1;
+      }
+      .home-calendar-card,
+      .home-news-card,
+      .home-kpi-card-wrapper {
+        grid-column: 1 / -1;
       }
     }
 
@@ -45,14 +58,39 @@
       overflow: auto;       /* jeder Bereich scrollt in sich */
     }
 
-    /* News-Karte: darf gerne „schrumpfen“ und intern scrollen */
-    .card.home-news-card {
+    /* Wetter oben volle Breite */
+    .home-weather-card {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    /* 2. Zeile: Kalender links, News rechts */
+    .home-calendar-card {
+      grid-column: 1 / 2;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .home-news-card {
+      grid-column: 2 / 3;
       min-height: 0;
       display: flex;
       flex-direction: column;
     }
-    .card.home-news-card .home-card-body {
-      max-height: 100%;     /* News passt sich stärker an */
+
+    .home-news-card .home-card-body {
+      max-height: 100%;     /* News passt sich stärker an, scrollt intern */
+    }
+
+    /* KPIs unten über gesamte Breite */
+    .home-kpi-card-wrapper {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
     /* ===== Wetter-Bereich ===== */
@@ -71,16 +109,6 @@
       font-size: 12px;
       color: var(--text-soft);
       margin-top: 2px;
-    }
-    .weather-icon-big {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.2), rgba(0,0,0,0.6));
     }
     .weather-row {
       display: flex;
@@ -129,7 +157,7 @@
       font-size: 11px;
     }
 
-    /* Bei geringer Höhe: Forecast in 4 Spalten umbrechbar, damit Block nicht zu hoch wird */
+    /* Bei geringer Höhe: Forecast bricht auf 4 Spalten um */
     @media (max-height: 800px) and (min-width: 700px) {
       .weather-forecast-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -323,11 +351,32 @@
       color: var(--text-soft);
       margin-bottom: 2px;
     }
+
+    /* Value + Trendpfeil nebeneinander */
+    .kpi-home-value-row {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 2px;
+    }
     .kpi-home-value {
       font-size: 18px;
       font-weight: 600;
-      margin-bottom: 2px;
     }
+    .kpi-trend {
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .kpi-trend-up {
+      color: #22c55e;
+    }
+    .kpi-trend-down {
+      color: #f97316;
+    }
+    .kpi-trend-flat {
+      color: var(--text-soft);
+    }
+
     .kpi-home-sub {
       font-size: 11px;
       color: var(--text-soft);
@@ -335,24 +384,24 @@
     .kpi-home-chart {
       flex: 1;
       min-height: 60px;
-      max-height: 120px;
+      max-height: 130px;  /* etwas größer, nutzt Platz besser */
     }
     .kpi-home-chart canvas {
       width: 100%;
       height: 100%;
     }
 
-    /* Bei niedriger Höhe: Charts etwas flacher, damit alles ins Raster passt */
+    /* Bei niedriger Höhe: Charts wieder minimal flacher */
     @media (max-height: 800px) {
       .kpi-home-chart {
-        max-height: 100px;
+        max-height: 105px;
       }
     }
   </style>
 
   <div class="home-grid">
-    <!-- Wetter & Forecast -->
-    <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+    <!-- Wetter & Forecast: volle Breite -->
+    <div class="card home-weather-card">
       <div class="card-header">
         <div>
           <div class="card-title">Wetter & Forecast</div>
@@ -368,8 +417,8 @@
       </div>
     </div>
 
-    <!-- Kalender & Mieteinnahmen-Counter -->
-    <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+    <!-- Kalender links in der zweiten Zeile -->
+    <div class="card home-calendar-card">
       <div class="card-header">
         <div>
           <div class="card-title">Kalender & Mieteinnahmen</div>
@@ -397,7 +446,7 @@
       </div>
     </div>
 
-    <!-- Branchen-News -->
+    <!-- News rechts daneben -->
     <div class="card home-news-card">
       <div class="card-header">
         <div>
@@ -419,8 +468,8 @@
       </div>
     </div>
 
-    <!-- Top 5 KPIs inkl. Entwicklung (Charts) -->
-    <div class="card" style="grid-column:1 / -1;display:flex;flex-direction:column;min-height:0;">
+    <!-- Top 5 KPIs inkl. Entwicklung (Charts) – komplette Breite -->
+    <div class="card home-kpi-card-wrapper">
       <div class="card-header">
         <div>
           <div class="card-title">Schnell-Überblick – Steuerungs-KPIs</div>
@@ -436,7 +485,10 @@
           <div class="kpi-home-card" style="border-top:3px solid var(--accent);">
             <div class="kpi-home-top">
               <div class="kpi-home-label">Monats-Cashflow (netto)</div>
-              <div class="kpi-home-value" id="home-kpi-cf"></div>
+              <div class="kpi-home-value-row">
+                <span class="kpi-home-value" id="home-kpi-cf"></span>
+                <span class="kpi-trend kpi-trend-up">▲</span>
+              </div>
               <div class="kpi-home-sub">laufender Überschuss aller Objekte</div>
             </div>
             <div class="kpi-home-chart">
@@ -448,7 +500,10 @@
           <div class="kpi-home-card" style="border-top:3px solid var(--accent-2);">
             <div class="kpi-home-top">
               <div class="kpi-home-label">Jahres-Cashflow (netto)</div>
-              <div class="kpi-home-value" id="home-kpi-cf-year"></div>
+              <div class="kpi-home-value-row">
+                <span class="kpi-home-value" id="home-kpi-cf-year"></span>
+                <span class="kpi-trend kpi-trend-up">▲</span>
+              </div>
               <div class="kpi-home-sub">Entwicklung p.a. (Dummy)</div>
             </div>
             <div class="kpi-home-chart">
@@ -460,7 +515,10 @@
           <div class="kpi-home-card" style="border-top:3px solid var(--accent-3);">
             <div class="kpi-home-top">
               <div class="kpi-home-label">Miete (Ist, p.m.)</div>
-              <div class="kpi-home-value" id="home-kpi-rent"></div>
+              <div class="kpi-home-value-row">
+                <span class="kpi-home-value" id="home-kpi-rent"></span>
+                <span class="kpi-trend kpi-trend-up">▲</span>
+              </div>
               <div class="kpi-home-sub">Entwicklung + Forecast (Dummy)</div>
             </div>
             <div class="kpi-home-chart">
@@ -472,7 +530,10 @@
           <div class="kpi-home-card" style="border-top:3px solid var(--accent-4);">
             <div class="kpi-home-top">
               <div class="kpi-home-label">Leerstandsquote</div>
-              <div class="kpi-home-value" id="home-kpi-vacancy-rate"></div>
+              <div class="kpi-home-value-row">
+                <span class="kpi-home-value" id="home-kpi-vacancy-rate"></span>
+                <span class="kpi-trend kpi-trend-down">▼</span>
+              </div>
               <div class="kpi-home-sub">Verlauf nach Fläche (Dummy)</div>
             </div>
             <div class="kpi-home-chart">
@@ -484,7 +545,10 @@
           <div class="kpi-home-card" style="border-top:3px solid var(--accent);">
             <div class="kpi-home-top">
               <div class="kpi-home-label">Portfolio-ROI (Cash-on-Cash)</div>
-              <div class="kpi-home-value" id="home-kpi-roi"></div>
+              <div class="kpi-home-value-row">
+                <span class="kpi-home-value" id="home-kpi-roi"></span>
+                <span class="kpi-trend kpi-trend-up">▲</span>
+              </div>
               <div class="kpi-home-sub">Jahres-CF / EK inkl. Forecast (Dummy)</div>
             </div>
             <div class="kpi-home-chart">
