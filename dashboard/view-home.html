@@ -3,9 +3,9 @@
   <style>
     /* Home-spezifische Anpassung: unten immer sichtbarer Rand */
     .home-view {
-      padding-bottom: 6px;          /* schmaler unterer Rand */
+      padding-bottom: 8px;                 /* sichtbarer unterer Rand */
       box-sizing: border-box;
-      height: 100%;
+      height: calc(100% - 8px);            /* etwas kleiner als Container -> verhindert „rauslaufen“ */
       min-height: 0;
     }
 
@@ -14,13 +14,13 @@
       grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
       /* 3 Zeilen:
          1: Wetter links, Kalender rechts (gleiche Höhe)
-         2: KPIs über gesamte Breite (kompakter)
+         2: KPIs über gesamte Breite (10% mehr Höhe)
          3: News über gesamte Breite (füllt Rest)
       */
       grid-template-rows:
         minmax(0, 0.9fr)   /* Wetter + Kalender */
-        minmax(0, 0.8fr)   /* KPIs kompakter */
-        minmax(0, 1.3fr);  /* News, dynamisch */
+        minmax(0, 0.9fr)   /* KPIs etwas höher */
+        minmax(0, 1.2fr);  /* News, dynamisch */
       gap: 8px;
       height: 100%;
       min-height: 0;
@@ -30,8 +30,8 @@
       .home-grid {
         grid-template-rows:
           minmax(0, 0.8fr)
-          minmax(0, 0.8fr)
-          minmax(0, 1.2fr);
+          minmax(0, 0.85fr)
+          minmax(0, 1.15fr);
       }
     }
 
@@ -90,7 +90,7 @@
     }
 
     .home-news-card .home-card-body {
-      max-height: 100%;     /* News darf den restlichen Platz füllen und intern scrollen */
+      max-height: 100%;     /* News füllt restlichen Platz und scrollt intern */
     }
 
     /* ===== Wetter-Bereich ===== */
@@ -384,8 +384,8 @@
     }
     .kpi-home-chart {
       flex: 1;
-      min-height: 70px;     /* kompakter -> eher „quadratisch“ */
-      max-height: 110px;    /* verhindert, dass KPIs zu hoch werden */
+      min-height: 80px;     /* 10% mehr als vorher (~70px) */
+      max-height: 120px;    /* etwas höher, bleibt aber kompakt */
     }
     .kpi-home-chart canvas {
       width: 100%;
@@ -394,8 +394,8 @@
 
     @media (max-height: 800px) {
       .kpi-home-chart {
-        min-height: 60px;
-        max-height: 95px;
+        min-height: 70px;
+        max-height: 105px;
       }
     }
   </style>
