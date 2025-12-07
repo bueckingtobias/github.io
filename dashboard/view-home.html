@@ -1,11 +1,13 @@
 <div class="view-root home-view">
   <!-- Lokales Styling nur für Home-View -->
   <style>
-    /* Home-spezifische Anpassung: unten immer sichtbarer Rand */
+    /* Home-spezifische Anpassung:
+       - unten sichtbarer Rand
+       - Höhe etwas kleiner als der Container, damit News nie rausläuft */
     .home-view {
-      padding-bottom: 8px;                 /* sichtbarer unterer Rand */
+      padding-bottom: 12px;              /* sichtbarer unterer Rand */
       box-sizing: border-box;
-      height: calc(100% - 8px);            /* etwas kleiner als Container -> verhindert „rauslaufen“ */
+      height: calc(100% - 16px);         /* bewusst kleiner als 100% */
       min-height: 0;
     }
 
@@ -14,13 +16,13 @@
       grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
       /* 3 Zeilen:
          1: Wetter links, Kalender rechts (gleiche Höhe)
-         2: KPIs über gesamte Breite (10% mehr Höhe)
+         2: KPIs über gesamte Breite
          3: News über gesamte Breite (füllt Rest)
       */
       grid-template-rows:
         minmax(0, 0.9fr)   /* Wetter + Kalender */
-        minmax(0, 0.9fr)   /* KPIs etwas höher */
-        minmax(0, 1.2fr);  /* News, dynamisch */
+        minmax(0, 0.9fr)   /* KPIs */
+        minmax(0, 1.1fr);  /* News etwas kompakter, damit alles sicher reinpasst */
       gap: 8px;
       height: 100%;
       min-height: 0;
@@ -31,7 +33,7 @@
         grid-template-rows:
           minmax(0, 0.8fr)
           minmax(0, 0.85fr)
-          minmax(0, 1.15fr);
+          minmax(0, 1.05fr);
       }
     }
 
@@ -384,8 +386,8 @@
     }
     .kpi-home-chart {
       flex: 1;
-      min-height: 80px;     /* 10% mehr als vorher (~70px) */
-      max-height: 120px;    /* etwas höher, bleibt aber kompakt */
+      min-height: 78px;     /* etwas höher als die „flache“ Version, aber noch kompakt */
+      max-height: 115px;
     }
     .kpi-home-chart canvas {
       width: 100%;
