@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bücking Immobilien – Dashboard</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    :root {
+      --bg-page: radial-gradient(circle at top left, #181b29 0, #05060a 60%);
+      --bg: #05060a;
+      --bg-elevated: #11131c;
+      --accent: #0ea568;
+      --accent-2: #1d8bff;
+      --accent-3: #ffb020;
+      --accent-4: #b15cff;
+      --accent-soft: rgba(14,165,104,0.16);
+      --text: #f5f5f7;
+      --text-soft: #a3a6b7;
+      --border: #262938;
+      --radius: 14px;
+    }
+
+    :root[data-theme="light"] {
+      --bg-page: #f4f5f7;
+      --bg: #f4f5f7;
+      --bg-elevated: #ffffff;
+      --accent: #0ea568;
+      --accent-2: #2563eb;
+      --accent-3: #f59e0b;
+      --accent-4: #8b5cf6;
+      --accent-soft: rgba(14,165,104,0.12);
+      --text: #111827;
+      --text-soft: #6b7280;
+      --border: #d1d5db;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      min-height: 100dvh;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      background: var(--bg-page);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+      overflow: hidden; /* nur internes Scrollen */
+    }
+
+    /* LOGIN */
+
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #151724 0, #02030a 60%);
+      z-index: 20;
+    }
+    :root[data-theme="light"] #login-overlay {
+      background: rgba(15,23,42,0.12);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      background: linear-gradient(145deg, #10121c, #171927);
+      padding: 26px 24px 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+    }
+    :root[data-theme="light"] .login-card {
+      background: #ffffff;
+      border-color: #e5e7eb;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.15);
+      color: #111827;
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .logo-mark {
+      width: 26px;
+      height: 26px;
+      border-radius: 9px;
+      background: radial-gradient(circle at 30% 0, #2ad18b, #004225);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .login-title { font-size: 17px; font-weight: 600; }
+    .login-subtitle { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+
+    .login-label {
+      font-size: 13px;
+      margin-bottom: 6px;
+      margin-top: 10px;
+      display: block;
+    }
+    .login-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(4,4,10,0.9);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    :root[data-theme="light"] .login-input {
+      background: #f9fafb;
+    }
+    .login-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(14,165,104,0.5);
+    }
+
+    .login-actions { margin-top: 16px; }
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, #1f7f4b, #004225);
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.5);
+    }
+    :root[data-theme="light"] .btn-primary {
+      background: linear-gradient(135deg, #0ea568, #15803d);
+      box-shadow: 0 8px 16px rgba(15,118,110,0.35);
+    }
+    .btn-primary:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .login-error {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #ff4b5c;
+      min-height: 18px;
+    }
+    .login-meta {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      opacity: 0.75;
+    }
+
+    /* SHELL */
+
+    #app {
+      display: none;
+      width: 100%;
+      min-height: 100dvh;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      height: 100dvh;
+      max-height: 100dvh;
+    }
+
+    aside {
+      background: radial-gradient(circle at top, #181a27 0, #05060b 60%);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    :root[data-theme="light"] aside {
+      background: #111827;
+      border-right-color: #1f2937;
+      color: #f9fafb;
+    }
+
+    .sidebar-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+    .nav-section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      margin: 4px 3px;
+    }
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 10px;
+      background: transparent;
+      color: var(--text-soft);
+      font-size: 13px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background .15s ease, transform .1s ease;
+    }
+    .nav-item span.icon { width: 18px; text-align: center; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--text-soft);
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .logout-btn {
+      align-self: flex-start;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(248,113,113,0.7);
+      background: rgba(248,113,113,0.08);
+      color: #fecaca;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    :root[data-theme="light"] .logout-btn {
+      color: #b91c1c;
+      background: #fee2e2;
+      border-color: #fecaca;
+    }
+
+    .main {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .topbar-title { font-size: 18px; font-weight: 600; }
+    .topbar-sub { font-size: 12px; color: var(--text-soft); }
+
+    .pill-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 11px;
+      color: var(--text-soft);
+      white-space: nowrap;
+      background: rgba(0,0,0,0.08);
+    }
+    :root[data-theme="light"] .pill {
+      background: #ffffff;
+      border-color: #e5e7eb;
+    }
+    .pill-accent {
+      border-color: rgba(14,165,104,0.7);
+      background: var(--accent-soft);
+      color: #eafff6;
+    }
+    :root[data-theme="light"] .pill-accent { color: #065f46; }
+    .pill-theme { cursor: pointer; }
+
+    /* Container für Views */
+    #view-container {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden; /* jede View scrollt in sich */
+    }
+
+    .view-root {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .card {
+      background: linear-gradient(145deg, var(--bg-elevated), #090a12);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 10px 12px 10px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
+    }
+    :root[data-theme="light"] .card {
+      background: #ffffff;
+      border-color: #e5e7eb;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .card-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+    .card-sub { font-size: 12px; color: var(--text-soft); }
+
+    .tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      font-size: 11px;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+    :root[data-theme="light"] .tag {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .summary-block {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        grid-template-columns: 70px 1fr;
+      }
+      .sidebar-title,
+      .nav-section-label,
+      .sidebar-footer {
+        display: none;
+      }
+      .nav-item span.label { display: none; }
+      .nav-item {
+        justify-content: center;
+        padding-inline: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login-overlay">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-mark">BI</div>
+        <div>
+          <div class="login-title">Bücking Immobilien Dashboard</div>
+          <div class="login-subtitle">Geschützter Zugang – interne Übersicht.</div>
+        </div>
+      </div>
+
+      <label class="login-label" for="login-password">Passwort</label>
+      <input type="password" id="login-password" class="login-input" autocomplete="current-password" />
+
+      <div class="login-actions">
+        <button class="btn btn-primary" id="login-button">Login</button>
+      </div>
+
+      <div class="login-error" id="login-error"></div>
+      <div class="login-meta">
+        <span>Dashboard v0.5 (modular)</span>
+        <span id="login-date"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app">
+    <div class="shell">
+      <aside>
+        <div class="sidebar-title">Dashboard</div>
+
+        <div class="nav-section-label">Start</div>
+        <div class="nav-list">
+          <button class="nav-item active" data-view="home">
+            <span class="icon">🏠</span><span class="label">Dashboard</span>
+          </button>
+        </div>
+
+        <div class="nav-section-label">Übersicht</div>
+        <div class="nav-list">
+          <button class="nav-item" data-view="portfolio">
+            <span class="icon">📊</span><span class="label">Portfolio</span>
+          </button>
+          <button class="nav-item" data-view="objects">
+            <span class="icon">🏢</span><span class="label">Objekte</span>
+          </button>
+          <button class="nav-item" data-view="projects">
+            <span class="icon">🛠️</span><span class="label">Projekte/Bau</span>
+          </button>
+        </div>
+
+        <div class="nav-section-label">Finanzen</div>
+        <div class="nav-list">
+          <button class="nav-item" data-view="finance">
+            <span class="icon">💶</span><span class="label">Finanzen</span>
+          </button>
+          <button class="nav-item" data-view="reports">
+            <span class="icon">📑</span><span class="label">Reports</span>
+          </button>
+        </div>
+
+        <div class="nav-section-label">System</div>
+        <div class="nav-list">
+          <button class="nav-item" data-view="settings">
+            <span class="icon">⚙️</span><span class="label">Einstellungen</span>
+          </button>
+        </div>
+
+        <div class="sidebar-footer">
+          <button class="logout-btn" id="logout-btn">Logout</button>
+          <div>Angemeldet als: Geschäftsführung</div>
+          <div style="font-size:10px;">Daten & Prognosen: Dummy-Basis.</div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <div class="topbar-title" id="topbar-title">Dashboard</div>
+            <div class="topbar-sub" id="topbar-sub">Übersicht: Wetter, Kalender & Branchen-News.</div>
+          </div>
+          <div class="pill-row">
+            <span class="pill" id="topbar-date"></span>
+            <span class="pill pill-accent">Bücking Immobilien</span>
+            <span class="pill pill-theme" id="theme-pill">Modus: Dunkel</span>
+          </div>
+        </div>
+
+        <div id="view-container">
+          <!-- hier werden die Views geladen -->
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const PASSWORD = "BI_Dashboard_2025";
+
+    // Dummy Portfolio Daten (zentral, damit alle Views zugreifen können)
+    const DATA = {
+      objects: [
+        {
+          id: "hof-ganderkesee",
+          name: "Hof Ganderkesee",
+          city: "Ganderkesee",
+          totalArea: 1150,
+          monthlyRentActual: 32400,
+          monthlyRentPotential: 33800,
+          vacancyUnits: 1,
+          vacancyArea: 65,
+          roi: 8.4,
+          equity: 1250000,
+          cashflowYear: 105000,
+          units: [
+            { name: "Whg 1 | EG links", floor: "EG", area: 78, status: "vermietet", tenant: "M. Beispiel", rent: 980, nk: 240, paymentStatus: "pünktlich" },
+            { name: "Whg 2 | EG rechts", floor: "EG", area: 82, status: "leer", tenant: "", rent: 1050, nk: 260, paymentStatus: "" },
+            { name: "Whg 3 | OG links", floor: "OG", area: 94, status: "vermietet", tenant: "F. Mieter", rent: 1280, nk: 290, paymentStatus: "Rückstand" }
+          ],
+          projects: [
+            { id: "p-ausbau-scheune", name: "Ausbau Scheune", status: "laufend", budget: 1100000, spent: 630000, deviationPercent: 2 }
+          ]
+        },
+        {
+          id: "neubau-syke",
+          name: "Neubau Syke",
+          city: "Syke",
+          totalArea: 840,
+          monthlyRentActual: 18200,
+          monthlyRentPotential: 20500,
+          vacancyUnits: 2,
+          vacancyArea: 90,
+          roi: 7.1,
+          equity: 950000,
+          cashflowYear: 68000,
+          units: [
+            { name: "Whg 1 | Haus A", floor: "EG", area: 70, status: "vermietet", tenant: "A. Mustermann", rent: 1100, nk: 230, paymentStatus: "pünktlich" },
+            { name: "Whg 2 | Haus A", floor: "OG", area: 75, status: "leer", tenant: "", rent: 1200, nk: 240, paymentStatus: "" }
+          ],
+          projects: [
+            { id: "p-neubau-haus-b", name: "Neubau Haus B", status: "kritisch", budget: 2400000, spent: 1280000, deviationPercent: 8 }
+          ]
+        },
+        {
+          id: "stadtvilla-bremen",
+          name: "Stadtvilla Bremen",
+          city: "Bremen",
+          totalArea: 520,
+          monthlyRentActual: 11600,
+          monthlyRentPotential: 11600,
+          vacancyUnits: 0,
+          vacancyArea: 0,
+          roi: 6.3,
+          equity: 600000,
+          cashflowYear: 38000,
+          units: [
+            { name: "Whg 1 | 1. OG", floor: "1. OG", area: 120, status: "vermietet", tenant: "Familie Hanse", rent: 1950, nk: 320, paymentStatus: "pünktlich" }
+          ],
+          projects: [
+            { id: "p-fassade-dach", name: "Fassade & Dach", status: "abgeschlossen", budget: 280000, spent: 280000, deviationPercent: 0 }
+          ]
+        }
+      ]
+    };
+
+    function formatEuro(v){ return v.toLocaleString("de-DE",{minimumFractionDigits:0})+" €"; }
+    function formatPercent(v){ return v.toLocaleString("de-DE",{maximumFractionDigits:1})+" %"; }
+    function formatArea(v){ return v.toLocaleString("de-DE",{maximumFractionDigits:0})+" m²"; }
+    function formatDeviation(p){ const s=p>0?"+":""; return s+p.toLocaleString("de-DE",{maximumFractionDigits:1})+" %"; }
+
+    // Theme
+    function applyTheme(theme){
+      const root=document.documentElement;
+      if(theme!=="light" && theme!=="dark") theme="dark";
+      root.setAttribute("data-theme",theme);
+      localStorage.setItem("bi_dashboard_theme",theme);
+      const pill=document.getElementById("theme-pill");
+      if(pill) pill.textContent="Modus: "+(theme==="dark"?"Dunkel":"Hell");
+      updateChartTheme(theme);
+    }
+    function initTheme(){
+      const stored=localStorage.getItem("bi_dashboard_theme")||"dark";
+      applyTheme(stored);
+    }
+
+    // Login
+    const loginOverlay=document.getElementById("login-overlay");
+    const loginInput=document.getElementById("login-password");
+    const loginButton=document.getElementById("login-button");
+    const loginError=document.getElementById("login-error");
+    const loginDate=document.getElementById("login-date");
+    const app=document.getElementById("app");
+    const logoutBtn=document.getElementById("logout-btn");
+
+    function formatDate(d){
+      return d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"});
+    }
+    loginDate.textContent=formatDate(new Date());
+    const topbarDate=document.getElementById("topbar-date");
+    topbarDate.textContent=formatDate(new Date());
+
+    function openApp(){
+      loginOverlay.style.display="none";
+      app.style.display="block";
+      localStorage.setItem("bi_dashboard_logged_in","1");
+    }
+    function handleLogin(){
+      const value=(loginInput.value||"").trim();
+      if(!value){ loginError.textContent="Bitte Passwort eingeben."; return; }
+      if(value===PASSWORD){ loginError.textContent=""; openApp(); loadView("home"); }
+      else loginError.textContent="Falsches Passwort.";
+    }
+    loginButton.addEventListener("click",handleLogin);
+    loginInput.addEventListener("keydown",e=>{ if(e.key==="Enter") handleLogin(); });
+
+    if(logoutBtn){
+      logoutBtn.addEventListener("click",()=>{
+        localStorage.removeItem("bi_dashboard_logged_in");
+        location.reload();
+      });
+    }
+
+    if(localStorage.getItem("bi_dashboard_logged_in")==="1"){
+      openApp();
+    }
+
+    // Navigation & Views
+    const navItems=document.querySelectorAll(".nav-item");
+    const viewContainer=document.getElementById("view-container");
+    const topbarTitle=document.getElementById("topbar-title");
+    const topbarSub=document.getElementById("topbar-sub");
+    const VIEW_TEXT={
+      home:{title:"Dashboard",sub:"Übersicht: Wetter, Kalender & Branchen-News."},
+      portfolio:{title:"Portfolio-Cockpit",sub:"Überblick über alle Objekte & Kennzahlen (Dummy-Daten)."},
+      objects:{title:"Objekte & Mieter",sub:"Objektebene mit Einheiten- & Mieterübersicht."},
+      projects:{title:"Projekte / Bau",sub:"Bauprojekte und Gewerke im Überblick."},
+      finance:{title:"Finanzen",sub:"Aggregierte Finanzkennzahlen aus den Objekt-Daten."},
+      reports:{title:"Reports",sub:"Platzhalter für Reporting & Exporte."},
+      settings:{title:"Einstellungen",sub:"Theme & System (weitere Funktionen folgen)."}
+    };
+
+    let currentView=null;
+
+    async function loadView(viewKey){
+      if(currentView===viewKey) return;
+      currentView=viewKey;
+
+      navItems.forEach(n=>{
+        if(n.getAttribute("data-view")===viewKey) n.classList.add("active");
+        else n.classList.remove("active");
+      });
+
+      const cfg=VIEW_TEXT[viewKey];
+      if(cfg){ topbarTitle.textContent=cfg.title; topbarSub.textContent=cfg.sub; }
+
+      viewContainer.innerHTML=""; // reset
+      try{
+        const res=await fetch(`view-${viewKey}.html`,{cache:"no-store"});
+        if(!res.ok) throw new Error("HTTP "+res.status);
+        const html=await res.text();
+        viewContainer.innerHTML=html;
+      }catch(e){
+        viewContainer.innerHTML=`<div class="view-root"><div class="card"><div class="card-header"><div><div class="card-title">Fehler</div><div class="card-sub">View konnte nicht geladen werden.</div></div></div><div class="summary-block">${e.message}</div></div></div>`;
+        return;
+      }
+
+      if(viewKey==="home") initHomeView();
+      if(viewKey==="portfolio") initPortfolioView();
+      if(viewKey==="objects") initObjectsView();
+      if(viewKey==="projects") initProjectsView();
+      if(viewKey==="finance") initFinanceView();
+      if(viewKey==="reports") {/* aktuell nichts */}
+      if(viewKey==="settings") initSettingsView();
+
+      updateChartTheme(localStorage.getItem("bi_dashboard_theme")||"dark");
+    }
+
+    navItems.forEach(item=>{
+      item.addEventListener("click",()=>loadView(item.getAttribute("data-view")));
+    });
+
+    // Charts Referenzen
+    let cashflowChart, rentPerObjectChart, roiPerObjectChart, vacancyChart;
+    let objectRentChart, objectOccupancyChart;
+
+    // Portfolio-Init (KPIs & Charts)
+    function initPortfolioView(){
+      const objects=DATA.objects;
+      const objectCount=objects.length;
+      const totalMonthlyCF=objects.reduce((s,o)=>s+o.cashflowYear/12,0);
+      const totalMonthlyRent=objects.reduce((s,o)=>s+o.monthlyRentActual,0);
+      const totalMonthlyRentPotential=objects.reduce((s,o)=>s+o.monthlyRentPotential,0);
+      const totalVacancyArea=objects.reduce((s,o)=>s+o.vacancyArea,0);
+      const totalArea=objects.reduce((s,o)=>s+o.totalArea,0);
+      const avgRoi=objects.reduce((s,o)=>s+o.roi,0)/objectCount;
+      const totalEquity=objects.reduce((s,o)=>s+o.equity,0);
+      const totalCFYear=objects.reduce((s,o)=>s+o.cashflowYear,0);
+      const totalRentYear=objects.reduce((s,o)=>s+o.monthlyRentActual*12,0);
+
+      document.getElementById("portfolio-object-count-tag").textContent=objectCount+" Objekte im Portfolio";
+      document.getElementById("kpi-monthly-cf").textContent=formatEuro(Math.round(totalMonthlyCF));
+      document.getElementById("kpi-monthly-cf-sub").textContent="Jahres-CF: "+formatEuro(totalCFYear);
+      document.getElementById("kpi-rent-total").textContent=formatEuro(totalMonthlyRent);
+      document.getElementById("kpi-rent-total-sub").textContent="Potenzial: "+formatEuro(totalMonthlyRentPotential);
+      document.getElementById("kpi-vacancy").textContent=formatArea(totalVacancyArea);
+      const occArea=Math.max(totalArea-totalVacancyArea,0);
+      const occPct=totalArea>0?(occArea/totalArea)*100:0;
+      document.getElementById("kpi-vacancy-sub").textContent="Belegung: "+formatPercent(occPct);
+      document.getElementById("kpi-avg-roi").textContent=formatPercent(avgRoi);
+      document.getElementById("kpi-equity-total").textContent="EK gesamt: "+formatEuro(totalEquity);
+
+      // Home-KPIs
+      const hcf=document.getElementById("home-kpi-cf");
+      if(hcf){
+        hcf.textContent=formatEuro(Math.round(totalMonthlyCF));
+        document.getElementById("home-kpi-rent").textContent=formatEuro(totalMonthlyRent);
+        document.getElementById("home-kpi-vacancy").textContent=formatArea(totalVacancyArea);
+        document.getElementById("home-kpi-roi").textContent=formatPercent((totalCFYear/totalEquity)*100);
+      }
+
+      const tbody=document.getElementById("portfolio-objects-tbody");
+      tbody.innerHTML="";
+      objects.forEach(obj=>{
+        const tr=document.createElement("tr");
+        tr.style.cursor="pointer";
+        tr.innerHTML=`
+          <td>${obj.name}</td>
+          <td>${obj.city}</td>
+          <td>${formatEuro(obj.monthlyRentActual)}</td>
+          <td>${obj.vacancyUnits} Einh. / ${formatArea(obj.vacancyArea)}</td>
+          <td>${formatPercent(obj.roi)}</td>
+          <td>${formatArea(obj.totalArea)}</td>`;
+        tr.addEventListener("click",()=>{
+          loadView("objects").then(()=>{
+            const sel=document.getElementById("object-select");
+            if(sel){ sel.value=obj.id; updateObjectDetail(obj.id); }
+          });
+        });
+        tbody.appendChild(tr);
+      });
+
+      initPortfolioCharts(objects,totalCFYear,totalArea,totalVacancyArea);
+    }
+
+    function initPortfolioCharts(objects,totalCFYear,totalArea,totalVacancyArea){
+      const ctxCF=document.getElementById("chart-cashflow").getContext("2d");
+      const ctxRent=document.getElementById("chart-rent-per-object").getContext("2d");
+      const ctxROI=document.getElementById("chart-roi-per-object").getContext("2d");
+      const ctxVac=document.getElementById("chart-vacancy").getContext("2d");
+
+      const monthsHist=["Jan","Feb","Mrz","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+      const monthsForecast=["+1","+2","+3","+4","+5","+6"];
+      const avgMonthlyCF=totalCFYear/12;
+
+      const cfHist=monthsHist.map((_,i)=>{
+        const f=1+Math.sin(i/2)*0.15;
+        return Math.round(avgMonthlyCF*f);
+      });
+      const last=cfHist[cfHist.length-1];
+      const cfFc=monthsForecast.map((_,i)=>Math.round(last*(1+0.01*(i+1))));
+
+      cashflowChart=new Chart(ctxCF,{
+        type:"line",
+        data:{
+          labels:[...monthsHist,...monthsForecast],
+          datasets:[
+            {label:"Historie",data:[...cfHist,...Array(monthsForecast.length).fill(null)],tension:0.35,borderWidth:2,fill:true,borderColor:"#0ea568",backgroundColor:"rgba(14,165,104,0.15)"},
+            {label:"Prognose",data:[...Array(monthsHist.length).fill(null),...cfFc],tension:0.35,borderWidth:2,borderDash:[5,4],fill:false,borderColor:"#f97316"}
+          ]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{
+            x:{ticks:{color:"#a3a6b7",font:{size:10}},grid:{color:"rgba(255,255,255,0.05)"}},
+            y:{ticks:{color:"#a3a6b7",font:{size:10},callback:v=>v.toLocaleString("de-DE")},grid:{color:"rgba(255,255,255,0.05)"}}
+          }
+        }
+      });
+
+      const labels=objects.map(o=>o.name);
+      const rentData=objects.map(o=>o.monthlyRentActual);
+      rentPerObjectChart=new Chart(ctxRent,{
+        type:"bar",
+        data:{labels,datasets:[{data:rentData,backgroundColor:["#0ea568","#1d8bff","#ffb020"],borderWidth:1}]},
+        options:{
+          responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{
+            x:{ticks:{color:"#a3a6b7",font:{size:10}},grid:{display:false}},
+            y:{ticks:{color:"#a3a6b7",font:{size:10},callback:v=>v.toLocaleString("de-DE")},grid:{color:"rgba(255,255,255,0.05)"}}
+          }
+        }
+      });
+
+      const roiData=objects.map(o=>o.roi);
+      roiPerObjectChart=new Chart(ctxROI,{
+        type:"bar",
+        data:{labels,datasets:[{data:roiData,backgroundColor:["#22c55e","#3b82f6","#a855f7"],borderWidth:1}]},
+        options:{
+          responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{
+            x:{ticks:{color:"#a3a6b7",font:{size:10}},grid:{display:false}},
+            y:{ticks:{color:"#a3a6b7",font:{size:10},callback:v=>v+" %"},grid:{color:"rgba(255,255,255,0.05)"}}
+          }
+        }
+      });
+
+      const occArea=Math.max(totalArea-totalVacancyArea,0);
+      vacancyChart=new Chart(ctxVac,{
+        type:"doughnut",
+        data:{labels:["Belegt","Leerstand"],datasets:[{data:[occArea,totalVacancyArea],backgroundColor:["#22c55e","#94a3b8"],borderWidth:1}]},
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:"bottom",labels:{color:"#a3a6b7",font:{size:10}}}},
+          cutout:"60%"
+        }
+      });
+    }
+
+    // Objekte & Mieter
+    function initObjectsView(){
+      const select=document.getElementById("object-select");
+      const objects=DATA.objects;
+      select.innerHTML="";
+      objects.forEach(o=>{
+        const opt=document.createElement("option");
+        opt.value=o.id; opt.textContent=o.name;
+        select.appendChild(opt);
+      });
+      select.addEventListener("change",()=>updateObjectDetail(select.value));
+      if(objects.length){ select.value=objects[0].id; updateObjectDetail(objects[0].id); }
+    }
+
+    function updateObjectDetail(id){
+      const obj=DATA.objects.find(o=>o.id===id);
+      if(!obj) return;
+      const meta=document.getElementById("object-meta-pill");
+      const summary=document.getElementById("object-summary");
+      const tbody=document.getElementById("units-tbody");
+      meta.textContent=`${obj.city} • ${formatArea(obj.totalArea)} • ROI ${formatPercent(obj.roi)}`;
+
+      const vacText=obj.vacancyUnits>0
+        ?`${obj.vacancyUnits} Einheit(en) leer (${formatArea(obj.vacancyArea)})`
+        :"voll vermietet";
+
+      summary.innerHTML=`
+        <strong>${obj.name}</strong> in ${obj.city}<br>
+        Miete (Ist): <strong>${formatEuro(obj.monthlyRentActual)} p.m.</strong> &nbsp;•&nbsp;
+        Potenzial: <strong>${formatEuro(obj.monthlyRentPotential)} p.m.</strong><br>
+        Leerstand: <strong>${vacText}</strong><br>
+        Jahres-Cashflow (Dummy): <strong>${formatEuro(obj.cashflowYear)}</strong> &nbsp;•&nbsp;
+        EK-Einsatz (Dummy): <strong>${formatEuro(obj.equity)}</strong>
+      `;
+
+      tbody.innerHTML="";
+      obj.units.forEach(u=>{
+        const tr=document.createElement("tr");
+        const statusClass=u.status==="vermietet"?"ok":u.status==="leer"?"leer":"";
+        let payBadge="";
+        if(u.paymentStatus==="pünktlich") payBadge=`<span class="badge-status ok">pünktlich</span>`;
+        else if(u.paymentStatus==="Rückstand") payBadge=`<span class="badge-status risky">Rückstand</span>`;
+
+        tr.innerHTML=`
+          <td>${u.name}</td>
+          <td>${u.floor}</td>
+          <td>${formatArea(u.area)}</td>
+          <td>${u.status?`<span class="badge-status ${statusClass}">${u.status}</span>`:""}</td>
+          <td>${u.tenant||"–"}</td>
+          <td>${formatEuro(u.rent)}</td>
+          <td>${formatEuro(u.nk)}</td>
+          <td>${payBadge||"–"}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      updateObjectCharts(obj);
+    }
+
+    function updateObjectCharts(obj){
+      const ctxR=document.getElementById("chart-object-rent").getContext("2d");
+      const ctxO=document.getElementById("chart-object-occupancy").getContext("2d");
+      const ist=obj.monthlyRentActual;
+      const soll=obj.monthlyRentPotential;
+      const forecast=Math.round(soll*1.03);
+
+      if(objectRentChart) objectRentChart.destroy();
+      objectRentChart=new Chart(ctxR,{
+        type:"bar",
+        data:{labels:["Ist","Potenzial","Prognose"],datasets:[{data:[ist,soll,forecast],backgroundColor:["#0ea568","#1d8bff","#f97316"],borderWidth:1}]},
+        options:{
+          responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{
+            x:{ticks:{color:"#a3a6b7",font:{size:10}},grid:{display:false}},
+            y:{ticks:{color:"#a3a6b7",font:{size:10},callback:v=>v.toLocaleString("de-DE")},grid:{color:"rgba(255,255,255,0.05)"}}
+          }
+        }
+      });
+
+      const occArea=Math.max(obj.totalArea-obj.vacancyArea,0);
+      if(objectOccupancyChart) objectOccupancyChart.destroy();
+      objectOccupancyChart=new Chart(ctxO,{
+        type:"doughnut",
+        data:{labels:["vermietet","leer"],datasets:[{data:[occArea,obj.vacancyArea],backgroundColor:["#22c55e","#94a3b8"],borderWidth:1}]},
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:"bottom",labels:{color:"#a3a6b7",font:{size:10}}}},
+          cutout:"60%"
+        }
+      });
+    }
+
+    // Projekte
+    function initProjectsView(){
+      const tbody=document.getElementById("projects-tbody");
+      tbody.innerHTML="";
+      DATA.objects.forEach(obj=>{
+        (obj.projects||[]).forEach(p=>{
+          let cls="ok";
+          if(p.status==="kritisch") cls="risky";
+          if(p.status==="abgeschlossen") cls="ok";
+          const tr=document.createElement("tr");
+          tr.innerHTML=`
+            <td>${p.name}</td>
+            <td>${obj.name}</td>
+            <td><span class="badge-status ${cls}">${p.status}</span></td>
+            <td>${formatEuro(p.budget)}</td>
+            <td>${formatEuro(p.spent)}</td>
+            <td>${formatDeviation(p.deviationPercent)}</td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    // Finanzen
+    function initFinanceView(){
+      const el=document.getElementById("finance-summary");
+      const objs=DATA.objects;
+      const totalCFYear=objs.reduce((s,o)=>s+o.cashflowYear,0);
+      const totalEquity=objs.reduce((s,o)=>s+o.equity,0);
+      const totalRentYear=objs.reduce((s,o)=>s+o.monthlyRentActual*12,0);
+      const roiPortfolio=(totalCFYear/totalEquity)*100;
+      el.innerHTML=`
+        Basierend auf den Dummy-Daten:<br>
+        • Jahres-Mieteinnahmen (Ist): <strong>${formatEuro(totalRentYear)}</strong><br>
+        • Jahres-Cashflow (netto, Dummy): <strong>${formatEuro(totalCFYear)}</strong><br>
+        • Eingesetztes Eigenkapital: <strong>${formatEuro(totalEquity)}</strong><br>
+        • Portfolio-ROI (Cash-on-Cash, Dummy): <strong>${formatPercent(roiPortfolio)}</strong>`;
+    }
+
+    // Home (Wetter, Kalender, News)
+    function initHomeView(){
+      loadWeather();
+      buildCalendar();
+      loadNews();
+      // KPIs vom Portfolio, falls Portfolio noch nicht init war:
+      initPortfolioView();
+    }
+
+    function loadWeather(){
+      const tag=document.getElementById("weather-location-tag");
+      const cont=document.getElementById("weather-content");
+      if(!tag||!cont) return;
+      const url="https://api.open-meteo.com/v1/forecast?latitude=53.03&longitude=8.54&current_weather=true&timezone=auto";
+      fetch(url).then(r=>r.json()).then(data=>{
+        const cw=data.current_weather;
+        if(!cw) throw new Error("no current weather");
+        tag.textContent=`Region Ganderkesee (${cw.temperature.toFixed(1)}°C)`;
+        cont.innerHTML=`
+          <div class="weather-main">${cw.temperature.toFixed(1)}°C</div>
+          <div class="weather-sub">Wind: ${cw.windspeed.toFixed(0)} km/h • Richtung: ${cw.winddirection}°</div>
+          <div class="summary-block" style="margin-top:8px;">
+            Code: ${cw.weathercode} • Zeit: ${new Date(cw.time).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}
+          </div>`;
+      }).catch(()=>{
+        tag.textContent="Region Ganderkesee";
+        cont.innerHTML=`
+          <div class="weather-main">–°C</div>
+          <div class="weather-sub">Wetterdaten aktuell nicht abrufbar.</div>`;
+      });
+    }
+
+    function buildCalendar(){
+      const header=document.getElementById("calendar-header");
+      const grid=document.getElementById("calendar-grid");
+      if(!header||!grid) return;
+      const today=new Date();
+      const year=today.getFullYear();
+      const month=today.getMonth();
+      const monthName=today.toLocaleString("de-DE",{month:"long"});
+      header.textContent=`${monthName} ${year}`;
+      grid.innerHTML="";
+      const weekdays=["Mo","Di","Mi","Do","Fr","Sa","So"];
+      weekdays.forEach(d=>{
+        const cell=document.createElement("div");
+        cell.className="calendar-cell head";
+        cell.textContent=d;
+        grid.appendChild(cell);
+      });
+      const first=new Date(year,month,1);
+      const start=(first.getDay()+6)%7;
+      for(let i=0;i<start;i++){
+        const empty=document.createElement("div");
+        empty.className="calendar-cell";
+        grid.appendChild(empty);
+      }
+      const days=new Date(year,month+1,0).getDate();
+      for(let d=1;d<=days;d++){
+        const cell=document.createElement("div");
+        cell.className="calendar-cell";
+        cell.textContent=d;
+        if(d===today.getDate()) cell.classList.add("today");
+        grid.appendChild(cell);
+      }
+    }
+
+    function loadNews(){
+      const statusEl=document.getElementById("news-status");
+      const listEl=document.getElementById("news-list");
+      if(!statusEl||!listEl) return;
+      const fallback=[
+        {title:"Dummy: Mietpreisentwicklungen im Nordwesten",link:"https://www.immobilien-zeitung.de/"},
+        {title:"Dummy: Förderprogramme für energetische Sanierungen",link:"https://www.kfw.de/"},
+        {title:"Dummy: Entwicklung Baukostenindex Deutschland",link:"https://www.destatis.de/"}
+      ];
+      function render(items){
+        listEl.innerHTML="";
+        items.forEach(n=>{
+          const li=document.createElement("li");
+          li.innerHTML=`<a href="${n.link}" target="_blank" rel="noopener">${n.title}</a>`;
+          listEl.appendChild(li);
+        });
+      }
+      const rssProxy="https://api.allorigins.win/get?url="+encodeURIComponent("https://www.immobilien-zeitung.de/rss");
+      fetch(rssProxy).then(r=>r.json()).then(data=>{
+        if(!data||!data.contents) throw new Error("no rss");
+        const parser=new DOMParser();
+        const xml=parser.parseFromString(data.contents,"text/xml");
+        const items=Array.from(xml.querySelectorAll("item")).slice(0,5);
+        const news=items.map(it=>({
+          title:it.querySelector("title")?.textContent||"News",
+          link:it.querySelector("link")?.textContent||"#"
+        }));
+        if(!news.length) throw new Error("no items");
+        statusEl.textContent="Live";
+        render(news);
+      }).catch(()=>{
+        statusEl.textContent="Fallback";
+        render(fallback);
+      });
+    }
+
+    // Chart-Theme
+    function updateChartTheme(theme){
+      const isDark=theme!=="light";
+      const axis=isDark?"#a3a6b7":"#4b5563";
+      const grid=isDark?"rgba(148,163,184,0.3)":"rgba(209,213,219,0.7)";
+      const legend=axis;
+      const charts=[cashflowChart,rentPerObjectChart,roiPerObjectChart,vacancyChart,objectRentChart,objectOccupancyChart];
+      charts.forEach(ch=>{
+        if(!ch) return;
+        if(ch.options.scales){
+          if(ch.options.scales.x){
+            ch.options.scales.x.ticks.color=axis;
+            if(ch.options.scales.x.grid) ch.options.scales.x.grid.color=grid;
+          }
+          if(ch.options.scales.y){
+            ch.options.scales.y.ticks.color=axis;
+            if(ch.options.scales.y.grid) ch.options.scales.y.grid.color=grid;
+          }
+        }
+        if(ch.options.plugins&&ch.options.plugins.legend&&ch.options.plugins.legend.labels){
+          ch.options.plugins.legend.labels.color=legend;
+        }
+        ch.update();
+      });
+    }
+
+    // Settings
+    function initSettingsView(){
+      const btnDark=document.getElementById("btn-theme-dark");
+      const btnLight=document.getElementById("btn-theme-light");
+      if(btnDark) btnDark.onclick=()=>applyTheme("dark");
+      if(btnLight) btnLight.onclick=()=>applyTheme("light");
+    }
+
+    // Theme-Toggle im Topbar
+    const themePill=document.getElementById("theme-pill");
+    if(themePill){
+      themePill.addEventListener("click",()=>{
+        const cur=document.documentElement.getAttribute("data-theme")||"dark";
+        applyTheme(cur==="dark"?"light":"dark");
+      });
+    }
+
+    // Start
+    window.addEventListener("load",()=>{
+      initTheme();
+      if(localStorage.getItem("bi_dashboard_logged_in")==="1"){
+        loadView("home");
+      }
+    });
+  </script>
+</body>
+</html>
