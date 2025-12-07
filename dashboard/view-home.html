@@ -1,13 +1,11 @@
 <div class="view-root home-view">
   <!-- Lokales Styling nur für Home-View -->
   <style>
-    /* Home-spezifische Anpassung:
-       - unten sichtbarer Rand
-       - Höhe etwas kleiner als der Container, damit News nie rausläuft */
+    /* Home-spezifische Anpassung: sichtbarer unterer Rand,
+       keine wilde height-Berechnung mehr */
     .home-view {
-      padding-bottom: 12px;              /* sichtbarer unterer Rand */
+      padding-bottom: 12px;         /* Abstand nach unten */
       box-sizing: border-box;
-      height: calc(100% - 16px);         /* bewusst kleiner als 100% */
       min-height: 0;
     }
 
@@ -17,12 +15,12 @@
       /* 3 Zeilen:
          1: Wetter links, Kalender rechts (gleiche Höhe)
          2: KPIs über gesamte Breite
-         3: News über gesamte Breite (füllt Rest)
+         3: News über gesamte Breite, flacher (schmaler)
       */
       grid-template-rows:
-        minmax(0, 0.9fr)   /* Wetter + Kalender */
-        minmax(0, 0.9fr)   /* KPIs */
-        minmax(0, 1.1fr);  /* News etwas kompakter, damit alles sicher reinpasst */
+        minmax(0, 1fr)   /* Wetter + Kalender */
+        minmax(0, 0.95fr)/* KPIs */
+        minmax(0, 0.55fr);/* News bewusst kleiner */
       gap: 8px;
       height: 100%;
       min-height: 0;
@@ -31,9 +29,9 @@
     @media (max-height: 800px) {
       .home-grid {
         grid-template-rows:
-          minmax(0, 0.8fr)
-          minmax(0, 0.85fr)
-          minmax(0, 1.05fr);
+          minmax(0, 0.9fr)
+          minmax(0, 0.9fr)
+          minmax(0, 0.5fr);
       }
     }
 
@@ -89,10 +87,11 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
+      margin-bottom: 8px;   /* zusätzlicher fixer Abstand nach unten */
     }
 
     .home-news-card .home-card-body {
-      max-height: 100%;     /* News füllt restlichen Platz und scrollt intern */
+      max-height: 100%;     /* News füllt den zugewiesenen Platz und scrollt intern */
     }
 
     /* ===== Wetter-Bereich ===== */
@@ -386,7 +385,7 @@
     }
     .kpi-home-chart {
       flex: 1;
-      min-height: 78px;     /* etwas höher als die „flache“ Version, aber noch kompakt */
+      min-height: 80px;
       max-height: 115px;
     }
     .kpi-home-chart canvas {
