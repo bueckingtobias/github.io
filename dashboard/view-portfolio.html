@@ -1,0 +1,107 @@
+<div class="view-root">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Portfolio-KPIs</div>
+        <div class="card-sub">Verdichtete Kennzahlen aus allen Objekten.</div>
+      </div>
+      <span class="tag" id="portfolio-object-count-tag"></span>
+    </div>
+    <div class="kpi-grid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;">
+      <div class="kpi-card" style="border-left:3px solid var(--accent);">
+        <div class="kpi-label">Monats-Cashflow</div>
+        <div class="kpi-value" id="kpi-monthly-cf"></div>
+        <div class="kpi-subline" id="kpi-monthly-cf-sub"></div>
+      </div>
+      <div class="kpi-card" style="border-left:3px solid var(--accent-2);">
+        <div class="kpi-label">Miete gesamt (p.m.)</div>
+        <div class="kpi-value" id="kpi-rent-total"></div>
+        <div class="kpi-subline" id="kpi-rent-total-sub"></div>
+      </div>
+      <div class="kpi-card" style="border-left:3px solid var(--accent-3);">
+        <div class="kpi-label">Leerstand Fläche</div>
+        <div class="kpi-value" id="kpi-vacancy"></div>
+        <div class="kpi-subline" id="kpi-vacancy-sub"></div>
+      </div>
+      <div class="kpi-card" style="border-left:3px solid var(--accent-4);">
+        <div class="kpi-label">Portfolio-ROI</div>
+        <div class="kpi-value" id="kpi-avg-roi"></div>
+        <div class="kpi-subline" id="kpi-equity-total"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex:1;min-height:0;">
+    <div class="card" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Cashflow-Verlauf & Prognose</div>
+          <div class="card-sub">12M Historie + 6M Forecast (Dummy).</div>
+        </div>
+      </div>
+      <div class="chart-container" style="flex:1;min-height:0;">
+        <canvas id="chart-cashflow"></canvas>
+      </div>
+    </div>
+    <div class="card" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Miete je Objekt</div>
+          <div class="card-sub">Aktuelle Monatsmiete pro Objekt.</div>
+        </div>
+      </div>
+      <div class="chart-container" style="flex:1;min-height:0;">
+        <canvas id="chart-rent-per-object"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex:1;min-height:0;">
+    <div class="card" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">ROI je Objekt</div>
+          <div class="card-sub">Cash-on-Cash-Rendite.</div>
+        </div>
+      </div>
+      <div class="chart-container" style="flex:1;min-height:0;">
+        <canvas id="chart-roi-per-object"></canvas>
+      </div>
+    </div>
+    <div class="card" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Belegung vs. Leerstand</div>
+          <div class="card-sub">Flächengewichtete Verteilung.</div>
+        </div>
+      </div>
+      <div class="chart-container" style="flex:1;min-height:0;">
+        <canvas id="chart-vacancy"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="min-height:0;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Objektübersicht</div>
+        <div class="card-sub">Klick auf Objekt → Detailansicht.</div>
+      </div>
+    </div>
+    <div class="table-wrapper" style="max-height:180px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Objekt</th>
+            <th>Ort</th>
+            <th>Miete (p.m.)</th>
+            <th>Leerstand</th>
+            <th>ROI</th>
+            <th>Fläche</th>
+          </tr>
+        </thead>
+        <tbody id="portfolio-objects-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
