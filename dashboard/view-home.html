@@ -1,0 +1,77 @@
+<div class="view-root">
+  <div class="home-grid" style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr;gap:8px;flex:1;min-height:0;">
+    <!-- Wetter -->
+    <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Wetter & Tagesüberblick</div>
+          <div class="card-sub">Region Ganderkesee / Bremen – live.</div>
+        </div>
+        <span class="tag" id="weather-location-tag">lädt …</span>
+      </div>
+      <div id="weather-content" style="flex:1;min-height:0;overflow:auto;"></div>
+    </div>
+
+    <!-- Kalender -->
+    <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Kalender</div>
+          <div class="card-sub">Aktueller Monat, Fokus heute.</div>
+        </div>
+      </div>
+      <div style="flex:1;min-height:0;overflow:auto;">
+        <div class="summary-block" id="calendar-header"></div>
+        <div id="calendar-grid" class="calendar-grid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;font-size:11px;margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <!-- News -->
+    <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">News – Immobilien & Bau</div>
+          <div class="card-sub">RSS, falls erreichbar, sonst Fallback.</div>
+        </div>
+        <span class="tag" id="news-status">lädt …</span>
+      </div>
+      <div style="flex:1;min-height:0;overflow:auto;">
+        <ul class="news-list" id="news-list" style="list-style:none;margin:0;padding:0;font-size:12px;display:grid;gap:4px;"></ul>
+      </div>
+    </div>
+
+    <!-- Quick-KPIs -->
+    <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Schnell-Überblick</div>
+          <div class="card-sub">Kerneckdaten aus dem Portfolio.</div>
+        </div>
+      </div>
+      <div style="flex:1;min-height:0;overflow:auto;">
+        <div class="kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+          <div class="kpi-card" style="border-top:3px solid var(--accent);">
+            <div class="kpi-label">Monats-CF (netto)</div>
+            <div class="kpi-value" id="home-kpi-cf"></div>
+            <div class="kpi-subline">Tendenz 12M (Dummy)</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid var(--accent-2);">
+            <div class="kpi-label">Miete (p.m.)</div>
+            <div class="kpi-value" id="home-kpi-rent"></div>
+            <div class="kpi-subline">Ist gesamt</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid var(--accent-3);">
+            <div class="kpi-label">Leerstand</div>
+            <div class="kpi-value" id="home-kpi-vacancy"></div>
+            <div class="kpi-subline">Flächenanteil</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid var(--accent-4);">
+            <div class="kpi-label">Portfolio-ROI</div>
+            <div class="kpi-value" id="home-kpi-roi"></div>
+            <div class="kpi-subline">Cash-on-Cash (Dummy)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
