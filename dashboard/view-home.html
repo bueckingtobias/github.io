@@ -1,12 +1,12 @@
 <div class="view-root home-view">
   <!-- Lokales Styling nur für Home-View -->
   <style>
-    /* Home-spezifische Anpassung: sichtbarer unterer Rand,
-       keine wilde height-Berechnung mehr */
+    /* ===== Basis: Desktop / Tablet ===== */
     .home-view {
       padding-bottom: 12px;         /* Abstand nach unten */
       box-sizing: border-box;
       min-height: 0;
+      height: 100%;
     }
 
     .home-grid {
@@ -15,45 +15,21 @@
       /* 3 Zeilen:
          1: Wetter links, Kalender rechts (gleiche Höhe)
          2: KPIs über gesamte Breite
-         3: News über gesamte Breite, flacher (schmaler)
+         3: News über gesamte Breite, flacher
       */
       grid-template-rows:
-        minmax(0, 1fr)   /* Wetter + Kalender */
-        minmax(0, 0.95fr)/* KPIs */
-        minmax(0, 0.55fr);/* News bewusst kleiner */
+        minmax(0, 1fr)    /* Wetter + Kalender */
+        minmax(0, 0.95fr) /* KPIs */
+        minmax(0, 0.55fr);/* News bewusst schmaler */
       gap: 8px;
       height: 100%;
       min-height: 0;
     }
 
-    @media (max-height: 800px) {
-      .home-grid {
-        grid-template-rows:
-          minmax(0, 0.9fr)
-          minmax(0, 0.9fr)
-          minmax(0, 0.5fr);
-      }
-    }
-
-    @media (max-width: 900px) {
-      .home-grid {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto;
-      }
-
-      .home-weather-card,
-      .home-calendar-card,
-      .home-kpi-card-wrapper,
-      .home-news-card {
-        grid-column: 1 / -1;
-        grid-row: auto; /* untereinander auf Mobile */
-      }
-    }
-
     .home-card-body {
       flex: 1;
       min-height: 0;
-      overflow: auto;       /* jeder Bereich scrollt in sich */
+      overflow: auto;       /* auf größeren Screens: interner Scroll in der Karte */
     }
 
     /* Positionen im Grid */
@@ -87,11 +63,11 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      margin-bottom: 8px;   /* zusätzlicher fixer Abstand nach unten */
+      margin-bottom: 8px;   /* fixer Abstand nach unten */
     }
 
     .home-news-card .home-card-body {
-      max-height: 100%;     /* News füllt den zugewiesenen Platz und scrollt intern */
+      max-height: 100%;     /* News füllt den Row-Platz und scrollt intern */
     }
 
     /* ===== Wetter-Bereich ===== */
@@ -397,6 +373,44 @@
       .kpi-home-chart {
         min-height: 70px;
         max-height: 105px;
+      }
+    }
+
+    /* ===== Mobile-Optimierung (Handy) ===== */
+    @media (max-width: 900px) {
+      .home-view {
+        height: auto;          /* Seite darf normal scrollen */
+        min-height: 100%;      /* füllt Bildschirm, plus Scroll */
+      }
+
+      .home-grid {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;   /* keine fixen Zeilenhöhen mehr */
+        height: auto;
+      }
+
+      .home-weather-card,
+      .home-calendar-card,
+      .home-kpi-card-wrapper,
+      .home-news-card {
+        grid-column: 1 / -1;
+        grid-row: auto;        /* einfach untereinander */
+      }
+
+      .home-card-body {
+        overflow: visible;     /* kein interner Scroll, nur Seiten-Scroll */
+        max-height: none;
+      }
+
+      .home-news-card {
+        margin-bottom: 12px;   /* auch auf Handy sauberer Abstand */
+      }
+    }
+
+    @media (max-width: 900px) and (max-height: 700px) {
+      .kpi-home-chart {
+        min-height: 60px;
+        max-height: 90px;
       }
     }
   </style>
