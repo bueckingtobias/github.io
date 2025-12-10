@@ -17,17 +17,30 @@
     .bau-card-body {
       flex: 1;
       min-height: 0;
-      padding: 8px 14px 12px;
+      padding: 10px 16px 12px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
 
-    /* Top Summary */
+    /* ===== Top Summary – größer & abgegrenzt ===== */
+    .bau-summary-wrapper {
+      padding: 10px 12px;
+      border-radius: 14px;
+      margin-bottom: 6px;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: radial-gradient(circle at top, rgba(148,163,184,0.25), rgba(15,23,42,0.95));
+    }
+    :root[data-theme="light"] .bau-summary-wrapper {
+      background: linear-gradient(135deg,#f3f4f6,#ffffff);
+      border-color:#cbd5f5;
+    }
+
     .bau-summary {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 10px;
+      gap: 14px;
+      align-items: stretch;
     }
 
     @media (max-width: 800px) {
@@ -37,26 +50,31 @@
     }
 
     .bau-summary-item {
-      padding: 8px 10px;
+      padding: 10px 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(0,0,0,0.85));
+      border: 1px solid rgba(255,255,255,0.12);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.35), rgba(15,23,42,0.95));
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
     :root[data-theme="light"] .bau-summary-item {
-      background: linear-gradient(135deg,#ffffff,#f9fafb);
+      background: #ffffff;
       border-color:#e5e7eb;
     }
 
     .bau-summary-label {
       font-size: 12px;
       color: var(--text-soft);
-      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
     }
 
     .bau-summary-title {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 4px;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 2px;
     }
 
     .bau-bar-row {
@@ -76,8 +94,8 @@
     .bau-bar-track {
       position: relative;
       border-radius: 999px;
-      height: 14px;
-      background: rgba(15,23,42,0.6);
+      height: 16px;
+      background: rgba(15,23,42,0.7);
       overflow: hidden;
     }
     :root[data-theme="light"] .bau-bar-track {
@@ -105,12 +123,12 @@
     }
 
     .bau-bar-meta {
-      margin-top: 3px;
+      margin-top: 4px;
       font-size: 11px;
       color: var(--text-soft);
     }
 
-    /* Contractor grid */
+    /* ===== Contractor grid ===== */
     .bau-contractors-grid {
       flex: 1;
       min-height: 0;
@@ -132,7 +150,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      background: rgba(15,23,42,0.85);
+      background: rgba(15,23,42,0.9);
     }
     :root[data-theme="light"] .contractor-card {
       background:#ffffff;
@@ -176,7 +194,7 @@
     .contractor-bars {
       display:flex;
       flex-direction:column;
-      gap:4px;
+      gap:5px;
       margin-top:2px;
     }
 
@@ -211,38 +229,40 @@
     </div>
 
     <div class="bau-card-body">
-      <!-- Top Summary -->
-      <div class="bau-summary">
-        <!-- Zahlungen vs Angebot -->
-        <div class="bau-summary-item">
-          <div class="bau-summary-label">Gesamtbudget & Zahlungen</div>
-          <div class="bau-summary-title" id="bau-total-budget-title">–</div>
-          <div class="bau-bar-row">
-            <span class="bau-bar-min">0 €</span>
-            <div class="bau-bar-track">
-              <div class="bau-bar-fill bar-payments" id="bau-total-payments-bar">
-                <span id="bau-total-payments-label"></span>
+      <!-- Top Summary (größer) -->
+      <div class="bau-summary-wrapper">
+        <div class="bau-summary">
+          <!-- Zahlungen vs Angebot -->
+          <div class="bau-summary-item">
+            <div class="bau-summary-label">Gesamtbudget & Zahlungen</div>
+            <div class="bau-summary-title" id="bau-total-budget-title">–</div>
+            <div class="bau-bar-row">
+              <span class="bau-bar-min">0 €</span>
+              <div class="bau-bar-track">
+                <div class="bau-bar-fill bar-payments" id="bau-total-payments-bar">
+                  <span id="bau-total-payments-label"></span>
+                </div>
               </div>
+              <span class="bau-bar-max" id="bau-total-offer-label">– €</span>
             </div>
-            <span class="bau-bar-max" id="bau-total-offer-label">– €</span>
+            <div class="bau-bar-meta" id="bau-total-payments-meta"></div>
           </div>
-          <div class="bau-bar-meta" id="bau-total-payments-meta"></div>
-        </div>
 
-        <!-- Baufortschritt vs 100 % -->
-        <div class="bau-summary-item">
-          <div class="bau-summary-label">Gesamtfortschritt Bau</div>
-          <div class="bau-summary-title" id="bau-total-progress-title">–</div>
-          <div class="bau-bar-row">
-            <span class="bau-bar-min">0 %</span>
-            <div class="bau-bar-track">
-              <div class="bau-bar-fill bar-progress" id="bau-total-progress-bar">
-                <span id="bau-total-progress-label"></span>
+          <!-- Baufortschritt vs 100 % -->
+          <div class="bau-summary-item">
+            <div class="bau-summary-label">Gesamtfortschritt Bau</div>
+            <div class="bau-summary-title" id="bau-total-progress-title">–</div>
+            <div class="bau-bar-row">
+              <span class="bau-bar-min">0 %</span>
+              <div class="bau-bar-track">
+                <div class="bau-bar-fill bar-progress" id="bau-total-progress-bar">
+                  <span id="bau-total-progress-label"></span>
+                </div>
               </div>
+              <span class="bau-bar-max">100 %</span>
             </div>
-            <span class="bau-bar-max">100 %</span>
+            <div class="bau-bar-meta" id="bau-total-progress-meta"></div>
           </div>
-          <div class="bau-bar-meta" id="bau-total-progress-meta"></div>
         </div>
       </div>
 
@@ -270,9 +290,8 @@
         return value.toFixed(1).replace(".",",") + " %";
       }
 
-      // Datenquelle: aus Excel (Sheet Bau_Handwerker) in IMMO_DATA.bauHandwerker
-      // Falls noch nicht vorhanden: Dummy-Daten, damit du das Layout siehst
-      const src = (window.IMMO_DATA && window.IMMO_DATA.bauHandwerker) || [
+      // Dummy-Daten für 10 Handwerker (werden später durch Excel ersetzt)
+      const src = [
         {
           Projekt:"Hof Ganderkesee Umbau",
           Objekt:"Hof Ganderkesee",
@@ -305,11 +324,92 @@
           Baufortschritt_prozent:40,
           Aktiv:"Ja",
           Sortierung:3
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Fenster/Türen",
+          Handwerker:"Tischlerei Becker",
+          Angebotssumme:78000,
+          Zahlungen_bisher:52000,
+          Baufortschritt_prozent:85,
+          Aktiv:"Ja",
+          Sortierung:4
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Dach",
+          Handwerker:"Dachdecker Hofmann",
+          Angebotssumme:112000,
+          Zahlungen_bisher:90000,
+          Baufortschritt_prozent:90,
+          Aktiv:"Ja",
+          Sortierung:5
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Innenputz",
+          Handwerker:"Malerbetrieb König",
+          Angebotssumme:54000,
+          Zahlungen_bisher:15000,
+          Baufortschritt_prozent:25,
+          Aktiv:"Ja",
+          Sortierung:6
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Bodenbeläge",
+          Handwerker:"Bodenstudio Nord",
+          Angebotssumme:68000,
+          Zahlungen_bisher:10000,
+          Baufortschritt_prozent:15,
+          Aktiv:"Ja",
+          Sortierung:7
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Fliesenarbeiten",
+          Handwerker:"Fliesen Schulte",
+          Angebotssumme:42000,
+          Zahlungen_bisher:21000,
+          Baufortschritt_prozent:50,
+          Aktiv:"Ja",
+          Sortierung:8
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Außenanlagen",
+          Handwerker:"Gartenbau Grünwerk",
+          Angebotssumme:60000,
+          Zahlungen_bisher:12000,
+          Baufortschritt_prozent:20,
+          Aktiv:"Ja",
+          Sortierung:9
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Photovoltaik",
+          Handwerker:"Solartechnik Bremen",
+          Angebotssumme:98000,
+          Zahlungen_bisher:49000,
+          Baufortschritt_prozent:45,
+          Aktiv:"Ja",
+          Sortierung:10
         }
       ];
 
+      // Sobald später echte Excel-Daten kommen:
+      const excelData = (window.IMMO_DATA && window.IMMO_DATA.bauHandwerker);
+      const dataSource = excelData && excelData.length ? excelData : src;
+
       // Filter auf aktive Handwerker, max. 10
-      let rows = src.filter(r => (""+(r.Aktiv||"")).toLowerCase().startsWith("j"));
+      let rows = dataSource.filter(r => (""+(r.Aktiv||"")).toLowerCase().startsWith("j"));
       rows.sort((a,b)=>{
         const sa = a.Sortierung ?? 9999;
         const sb = b.Sortierung ?? 9999;
