@@ -21,6 +21,7 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      overflow: auto; /* falls es höher als der Screen ist */
     }
 
     /* ===== Top Summary – größer & abgegrenzt ===== */
@@ -283,7 +284,11 @@
       // Hilfsfunktionen
       function formatEuro(value) {
         if (value == null || isNaN(value)) return "0 €";
-        return new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(value);
+        return new Intl.NumberFormat("de-DE",{
+          style:"currency",
+          currency:"EUR",
+          maximumFractionDigits:0
+        }).format(value);
       }
       function formatPercent(value) {
         if (value == null || isNaN(value)) return "0 %";
@@ -291,7 +296,7 @@
       }
 
       // Dummy-Daten für 10 Handwerker (werden später durch Excel ersetzt)
-      const src = [
+      const dummy = [
         {
           Projekt:"Hof Ganderkesee Umbau",
           Objekt:"Hof Ganderkesee",
@@ -404,9 +409,9 @@
         }
       ];
 
-      // Sobald später echte Excel-Daten kommen:
+      // Später: Excel-Daten statt Dummy
       const excelData = (window.IMMO_DATA && window.IMMO_DATA.bauHandwerker);
-      const dataSource = excelData && excelData.length ? excelData : src;
+      const dataSource = (excelData && excelData.length) ? excelData : dummy;
 
       // Filter auf aktive Handwerker, max. 10
       let rows = dataSource.filter(r => (""+(r.Aktiv||"")).toLowerCase().startsWith("j"));
@@ -433,7 +438,7 @@
       rows.forEach(r=>{
         const offer = Number(r.Angebotssumme)||0;
         const paid  = Number(r.Zahlungen_bisher)||0;
-        const prog  = Number(r.Baufortschritt_prozent||r.Baufortschritt_%||0);
+        const prog  = Number(r.Baufortschritt_prozent || r["Baufortschritt_%"] || 0);
         totalOffer += offer;
         totalPaid  += paid;
         weightedProgress += prog * offer;
@@ -484,7 +489,7 @@
       rows.forEach(r=>{
         const offer = Number(r.Angebotssumme)||0;
         const paid  = Number(r.Zahlungen_bisher)||0;
-        const prog  = Number(r.Baufortschritt_prozent||r.Baufortschritt_%||0);
+        const prog  = Number(r.Baufortschritt_prozent || r["Baufortschritt_%"] || 0);
 
         const payPct = offer > 0 ? (paid / offer * 100) : 0;
         const payPctClamp = Math.max(0, Math.min(100, payPct));
