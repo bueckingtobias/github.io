@@ -1,25 +1,443 @@
-<div class="view-root">
-  <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+<div class="view-root bau-view">
+  <style>
+    .bau-view {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .bau-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .bau-card-body {
+      flex: 1;
+      min-height: 0;
+      padding: 8px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Top Summary */
+    .bau-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 800px) {
+      .bau-summary {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .bau-summary-item {
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: radial-gradient(circle at top, rgba(255,255,255,0.06), rgba(0,0,0,0.85));
+    }
+    :root[data-theme="light"] .bau-summary-item {
+      background: linear-gradient(135deg,#ffffff,#f9fafb);
+      border-color:#e5e7eb;
+    }
+
+    .bau-summary-label {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .bau-summary-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .bau-bar-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 6px;
+      align-items: center;
+      font-size: 11px;
+    }
+
+    .bau-bar-min,
+    .bau-bar-max {
+      white-space: nowrap;
+      color: var(--text-soft);
+    }
+
+    .bau-bar-track {
+      position: relative;
+      border-radius: 999px;
+      height: 14px;
+      background: rgba(15,23,42,0.6);
+      overflow: hidden;
+    }
+    :root[data-theme="light"] .bau-bar-track {
+      background:#e5e7eb;
+    }
+
+    .bau-bar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      color:#ffffff;
+    }
+
+    .bau-bar-fill span {
+      mix-blend-mode: screen;
+    }
+
+    .bau-bar-meta {
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    /* Contractor grid */
+    .bau-contractors-grid {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    @media (max-width: 1100px) {
+      .bau-contractors-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .contractor-card {
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(15,23,42,0.85);
+    }
+    :root[data-theme="light"] .contractor-card {
+      background:#ffffff;
+      border-color:#e5e7eb;
+    }
+
+    .contractor-card.ok {
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.8);
+      border-color:rgba(34,197,94,0.8);
+    }
+    .contractor-card.warn {
+      box-shadow: 0 0 0 1px rgba(248,113,113,0.9);
+      border-color:rgba(248,113,113,0.9);
+    }
+
+    .contractor-header {
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:flex-start;
+    }
+
+    .contractor-title {
+      font-size:13px;
+      font-weight:600;
+    }
+    .contractor-sub {
+      font-size:11px;
+      color:var(--text-soft);
+    }
+
+    .contractor-tag {
+      font-size:10px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      color:var(--text-soft);
+      white-space:nowrap;
+    }
+
+    .contractor-bars {
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      margin-top:2px;
+    }
+
+    .bau-bar-label {
+      font-size:10px;
+      color:var(--text-soft);
+      margin-bottom:2px;
+      display:flex;
+      justify-content:space-between;
+      gap:4px;
+    }
+
+    /* Farben für Balken */
+    .bar-payments { background: linear-gradient(90deg,#f97316,#fb923c); }
+    .bar-progress { background: linear-gradient(90deg,#22c55e,#4ade80); }
+
+    .bau-empty-hint {
+      font-size:12px;
+      color:var(--text-soft);
+      margin-top:4px;
+    }
+  </style>
+
+  <div class="card bau-card">
     <div class="card-header">
       <div>
         <div class="card-title">Projekte / Bau</div>
-        <div class="card-sub">Bau- und Projektcontrolling mit Budget, Kosten & Abweichung.</div>
+        <div class="card-sub">
+          Bau- und Projektcontrolling: Angebotssummen, Zahlungen & Baufortschritt je Handwerker.
+        </div>
       </div>
     </div>
-    <div class="table-wrapper" style="flex:1;min-height:0;">
-      <table>
-        <thead>
-          <tr>
-            <th>Projekt</th>
-            <th>Objekt</th>
-            <th>Status</th>
-            <th>Budget</th>
-            <th>Kosten bisher</th>
-            <th>Abweichung</th>
-          </tr>
-        </thead>
-        <tbody id="projects-tbody"></tbody>
-      </table>
+
+    <div class="bau-card-body">
+      <!-- Top Summary -->
+      <div class="bau-summary">
+        <!-- Zahlungen vs Angebot -->
+        <div class="bau-summary-item">
+          <div class="bau-summary-label">Gesamtbudget & Zahlungen</div>
+          <div class="bau-summary-title" id="bau-total-budget-title">–</div>
+          <div class="bau-bar-row">
+            <span class="bau-bar-min">0 €</span>
+            <div class="bau-bar-track">
+              <div class="bau-bar-fill bar-payments" id="bau-total-payments-bar">
+                <span id="bau-total-payments-label"></span>
+              </div>
+            </div>
+            <span class="bau-bar-max" id="bau-total-offer-label">– €</span>
+          </div>
+          <div class="bau-bar-meta" id="bau-total-payments-meta"></div>
+        </div>
+
+        <!-- Baufortschritt vs 100 % -->
+        <div class="bau-summary-item">
+          <div class="bau-summary-label">Gesamtfortschritt Bau</div>
+          <div class="bau-summary-title" id="bau-total-progress-title">–</div>
+          <div class="bau-bar-row">
+            <span class="bau-bar-min">0 %</span>
+            <div class="bau-bar-track">
+              <div class="bau-bar-fill bar-progress" id="bau-total-progress-bar">
+                <span id="bau-total-progress-label"></span>
+              </div>
+            </div>
+            <span class="bau-bar-max">100 %</span>
+          </div>
+          <div class="bau-bar-meta" id="bau-total-progress-meta"></div>
+        </div>
+      </div>
+
+      <!-- Contractor Cards -->
+      <div class="bau-contractors-grid" id="bau-contractors-grid">
+        <!-- Wird per JS befüllt -->
+      </div>
+
+      <div class="bau-empty-hint" id="bau-empty-hint" style="display:none;">
+        Keine aktiven Handwerker gefunden. Bitte Sheet <strong>Bau_Handwerker</strong> in deiner Excel füllen
+        und in GitHub aktualisieren.
+      </div>
     </div>
   </div>
+
+  <script>
+    (function(){
+      // Hilfsfunktionen
+      function formatEuro(value) {
+        if (value == null || isNaN(value)) return "0 €";
+        return new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(value);
+      }
+      function formatPercent(value) {
+        if (value == null || isNaN(value)) return "0 %";
+        return value.toFixed(1).replace(".",",") + " %";
+      }
+
+      // Datenquelle: aus Excel (Sheet Bau_Handwerker) in IMMO_DATA.bauHandwerker
+      // Falls noch nicht vorhanden: Dummy-Daten, damit du das Layout siehst
+      const src = (window.IMMO_DATA && window.IMMO_DATA.bauHandwerker) || [
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Rohbau",
+          Handwerker:"Bauunternehmen Meyer",
+          Angebotssumme:320000,
+          Zahlungen_bisher:210000,
+          Baufortschritt_prozent:70,
+          Aktiv:"Ja",
+          Sortierung:1
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Elektro",
+          Handwerker:"Elektro Schröder",
+          Angebotssumme:95000,
+          Zahlungen_bisher:25000,
+          Baufortschritt_prozent:30,
+          Aktiv:"Ja",
+          Sortierung:2
+        },
+        {
+          Projekt:"Hof Ganderkesee Umbau",
+          Objekt:"Hof Ganderkesee",
+          Gewerk:"Heizung/Sanitär",
+          Handwerker:"Haustechnik Müller",
+          Angebotssumme:145000,
+          Zahlungen_bisher:60000,
+          Baufortschritt_prozent:40,
+          Aktiv:"Ja",
+          Sortierung:3
+        }
+      ];
+
+      // Filter auf aktive Handwerker, max. 10
+      let rows = src.filter(r => (""+(r.Aktiv||"")).toLowerCase().startsWith("j"));
+      rows.sort((a,b)=>{
+        const sa = a.Sortierung ?? 9999;
+        const sb = b.Sortierung ?? 9999;
+        return sa - sb;
+      });
+      rows = rows.slice(0,10);
+
+      const grid = document.getElementById("bau-contractors-grid");
+      const emptyHint = document.getElementById("bau-empty-hint");
+
+      if (!rows.length) {
+        emptyHint.style.display = "block";
+        return;
+      }
+
+      // Gesamtwerte berechnen
+      let totalOffer = 0;
+      let totalPaid  = 0;
+      let weightedProgress = 0;
+
+      rows.forEach(r=>{
+        const offer = Number(r.Angebotssumme)||0;
+        const paid  = Number(r.Zahlungen_bisher)||0;
+        const prog  = Number(r.Baufortschritt_prozent||r.Baufortschritt_%||0);
+        totalOffer += offer;
+        totalPaid  += paid;
+        weightedProgress += prog * offer;
+      });
+      const overallProgress = totalOffer > 0 ? (weightedProgress / totalOffer) : 0;
+      const overallPaymentQuote = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
+
+      // Gesamt-Balken setzen
+      const totalBudgetTitle = document.getElementById("bau-total-budget-title");
+      const totalOfferLabel  = document.getElementById("bau-total-offer-label");
+      const totalPayBar      = document.getElementById("bau-total-payments-bar");
+      const totalPayLabel    = document.getElementById("bau-total-payments-label");
+      const totalPayMeta     = document.getElementById("bau-total-payments-meta");
+
+      totalBudgetTitle.textContent = "Gesamtbudget " + formatEuro(totalOffer);
+      totalOfferLabel.textContent  = formatEuro(totalOffer);
+      totalPayLabel.textContent    = formatPercent(overallPaymentQuote) + " · " + formatEuro(totalPaid);
+
+      const overallPayPctClamped = Math.max(0, Math.min(100, overallPaymentQuote || 0));
+      totalPayBar.style.width = overallPayPctClamped + "%";
+
+      const deltaPay = totalPaid - totalOffer;
+      if (totalOffer > 0) {
+        totalPayMeta.textContent =
+          "Zahlungsquote: " + formatPercent(overallPaymentQuote) +
+          (deltaPay >= 0
+            ? " · +" + formatEuro(deltaPay) + " vs. Budget"
+            : " · " + formatEuro(deltaPay) + " vs. Budget"
+          );
+      } else {
+        totalPayMeta.textContent = "Kein Budget hinterlegt.";
+      }
+
+      const totalProgTitle = document.getElementById("bau-total-progress-title");
+      const totalProgBar   = document.getElementById("bau-total-progress-bar");
+      const totalProgLabel = document.getElementById("bau-total-progress-label");
+      const totalProgMeta  = document.getElementById("bau-total-progress-meta");
+
+      const progClamped = Math.max(0, Math.min(100, overallProgress || 0));
+      totalProgTitle.textContent = "Fortschritt gesamt";
+      totalProgLabel.textContent = formatPercent(progClamped);
+      totalProgBar.style.width   = progClamped + "%";
+      totalProgMeta.textContent  = "Gewichteter Fortschritt über alle Gewerke (nach Angebotssummen).";
+
+      // Handwerker-Karten rendern
+      grid.innerHTML = "";
+
+      rows.forEach(r=>{
+        const offer = Number(r.Angebotssumme)||0;
+        const paid  = Number(r.Zahlungen_bisher)||0;
+        const prog  = Number(r.Baufortschritt_prozent||r.Baufortschritt_%||0);
+
+        const payPct = offer > 0 ? (paid / offer * 100) : 0;
+        const payPctClamp = Math.max(0, Math.min(100, payPct));
+        const progClamp   = Math.max(0, Math.min(100, prog));
+
+        const isWarn = payPct > prog;   // mehr Geld als Fortschritt => rot
+        const card = document.createElement("div");
+        card.className = "contractor-card " + (isWarn ? "warn" : "ok");
+
+        card.innerHTML = `
+          <div class="contractor-header">
+            <div>
+              <div class="contractor-title">${r.Handwerker || "Unbekannter Handwerker"}</div>
+              <div class="contractor-sub">
+                ${r.Gewerk ? (r.Gewerk + " · ") : ""}${r.Projekt || ""}${r.Objekt ? (" – " + r.Objekt) : ""}
+              </div>
+            </div>
+            <div class="contractor-tag">
+              ${isWarn ? "Kosten > Fortschritt" : "OK"}
+            </div>
+          </div>
+          <div class="contractor-bars">
+            <div>
+              <div class="bau-bar-label">
+                <span>Zahlungen vs. Angebot</span>
+                <span>${formatEuro(paid)} / ${formatEuro(offer)}</span>
+              </div>
+              <div class="bau-bar-row">
+                <span class="bau-bar-min">0 €</span>
+                <div class="bau-bar-track">
+                  <div class="bau-bar-fill bar-payments" style="width:${payPctClamp}%;"><span>${formatPercent(payPct)}</span></div>
+                </div>
+                <span class="bau-bar-max">${formatEuro(offer)}</span>
+              </div>
+            </div>
+            <div>
+              <div class="bau-bar-label">
+                <span>Baufortschritt</span>
+                <span>${formatPercent(prog)}</span>
+              </div>
+              <div class="bau-bar-row">
+                <span class="bau-bar-min">0 %</span>
+                <div class="bau-bar-track">
+                  <div class="bau-bar-fill bar-progress" style="width:${progClamp}%;"><span>${formatPercent(prog)}</span></div>
+                </div>
+                <span class="bau-bar-max">100 %</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    })();
+  </script>
 </div>
