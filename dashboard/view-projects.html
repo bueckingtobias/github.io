@@ -129,6 +129,10 @@
       color: var(--text-soft);
     }
 
+    /* ===== Farben NUR für Gesamtbereich ===== */
+    .bar-payments { background: linear-gradient(90deg,#f97316,#fb923c); }
+    .bar-progress { background: linear-gradient(90deg,#22c55e,#4ade80); }
+
     /* ===== Contractor grid ===== */
     .bau-contractors-grid {
       flex: 1;
@@ -208,9 +212,21 @@
       gap:4px;
     }
 
-    /* Farben für Balken */
-    .bar-payments { background: linear-gradient(90deg,#f97316,#fb923c); }
-    .bar-progress { background: linear-gradient(90deg,#22c55e,#4ade80); }
+    /* NEUTRALE Balkenfarbe für Handwerker */
+    .contractor-bars .bau-bar-track {
+      background: rgba(30,41,59,0.8);
+    }
+    :root[data-theme="light"] .contractor-bars .bau-bar-track {
+      background:#e5e7eb;
+    }
+    .contractor-bars .bau-bar-fill {
+      background: rgba(148,163,184,0.95);
+      color:#0f172a;
+    }
+    :root[data-theme="light"] .contractor-bars .bau-bar-fill {
+      background:#9ca3af;
+      color:#ffffff;
+    }
 
     .bau-empty-hint {
       font-size:12px;
@@ -499,6 +515,9 @@
         const card = document.createElement("div");
         card.className = "contractor-card " + (isWarn ? "warn" : "ok");
 
+        const paymentLabelInBar = `${formatPercent(payPct)} · ${formatEuro(paid)}`;
+        const progressLabelInBar = formatPercent(prog);
+
         card.innerHTML = `
           <div class="contractor-header">
             <div>
@@ -520,7 +539,7 @@
               <div class="bau-bar-row">
                 <span class="bau-bar-min">0 €</span>
                 <div class="bau-bar-track">
-                  <div class="bau-bar-fill bar-payments" style="width:${payPctClamp}%;"><span>${formatPercent(payPct)}</span></div>
+                  <div class="bau-bar-fill" style="width:${payPctClamp}%;"><span>${paymentLabelInBar}</span></div>
                 </div>
                 <span class="bau-bar-max">${formatEuro(offer)}</span>
               </div>
@@ -533,7 +552,7 @@
               <div class="bau-bar-row">
                 <span class="bau-bar-min">0 %</span>
                 <div class="bau-bar-track">
-                  <div class="bau-bar-fill bar-progress" style="width:${progClamp}%;"><span>${formatPercent(prog)}</span></div>
+                  <div class="bau-bar-fill" style="width:${progClamp}%;"><span>${progressLabelInBar}</span></div>
                 </div>
                 <span class="bau-bar-max">100 %</span>
               </div>
