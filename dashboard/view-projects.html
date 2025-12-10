@@ -111,16 +111,19 @@
       border-radius: 999px;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      padding-right: 6px;
+      justify-content: center;
+      padding: 0 6px;
       font-size: 10px;
       font-weight: 600;
       white-space: nowrap;
       color:#ffffff;
+      width: 0; /* Start für Animation */
+      transition: width .9s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .bau-bar-fill span {
       mix-blend-mode: screen;
+      text-shadow: 0 1px 2px rgba(0,0,0,.5);
     }
 
     .bau-bar-meta {
@@ -162,13 +165,26 @@
       border-color:#e5e7eb;
     }
 
+    /* Pulsierender Rahmen für Warnkarten */
+    @keyframes warnPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(248,113,113,0.9);
+      }
+      60% {
+        box-shadow: 0 0 0 8px rgba(248,113,113,0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(248,113,113,0);
+      }
+    }
+
     .contractor-card.ok {
       box-shadow: 0 0 0 1px rgba(34,197,94,0.8);
       border-color:rgba(34,197,94,0.8);
     }
     .contractor-card.warn {
-      box-shadow: 0 0 0 1px rgba(248,113,113,0.9);
       border-color:rgba(248,113,113,0.9);
+      animation: warnPulse 1.6s ease-out infinite;
     }
 
     .contractor-header {
@@ -212,20 +228,20 @@
       gap:4px;
     }
 
-    /* NEUTRALE Balkenfarbe für Handwerker */
+    /* BLAUE Handwerker-Balken mit Text IM Balken */
     .contractor-bars .bau-bar-track {
-      background: rgba(30,41,59,0.8);
+      background: rgba(15, 23, 42, 0.85);
     }
     :root[data-theme="light"] .contractor-bars .bau-bar-track {
       background:#e5e7eb;
     }
     .contractor-bars .bau-bar-fill {
-      background: rgba(148,163,184,0.95);
-      color:#0f172a;
-    }
-    :root[data-theme="light"] .contractor-bars .bau-bar-fill {
-      background:#9ca3af;
+      background: linear-gradient(90deg,#2563eb,#3b82f6);
       color:#ffffff;
+      font-weight:600;
+      justify-content: center;
+      padding: 0 6px;
+      text-shadow: 0 1px 2px rgba(0,0,0,.5);
     }
 
     .bau-empty-hint {
@@ -462,7 +478,7 @@
       const overallProgress = totalOffer > 0 ? (weightedProgress / totalOffer) : 0;
       const overallPaymentQuote = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
 
-      // Gesamt-Balken setzen
+      // Gesamt-Balken setzen (mit Animation)
       const totalBudgetTitle = document.getElementById("bau-total-budget-title");
       const totalOfferLabel  = document.getElementById("bau-total-offer-label");
       const totalPayBar      = document.getElementById("bau-total-payments-bar");
@@ -474,7 +490,7 @@
       totalPayLabel.textContent    = formatPercent(overallPaymentQuote) + " · " + formatEuro(totalPaid);
 
       const overallPayPctClamped = Math.max(0, Math.min(100, overallPaymentQuote || 0));
-      totalPayBar.style.width = overallPayPctClamped + "%";
+      totalPayBar.dataset.width = overallPayPctClamped + "%";
 
       const deltaPay = totalPaid - totalOffer;
       if (totalOffer > 0) {
@@ -496,7 +512,7 @@
       const progClamped = Math.max(0, Math.min(100, overallProgress || 0));
       totalProgTitle.textContent = "Fortschritt gesamt";
       totalProgLabel.textContent = formatPercent(progClamped);
-      totalProgBar.style.width   = progClamped + "%";
+      totalProgBar.dataset.width = progClamped + "%";
       totalProgMeta.textContent  = "Gewichteter Fortschritt über alle Gewerke (nach Angebotssummen).";
 
       // Handwerker-Karten rendern
@@ -511,11 +527,15 @@
         const payPctClamp = Math.max(0, Math.min(100, payPct));
         const progClamp   = Math.max(0, Math.min(100, prog));
 
+        // minimal sichtbare Breite, damit Text nicht rausfällt
+        const payWidth   = Math.max(payPctClamp, 12);
+        const progWidth  = Math.max(progClamp, 12);
+
         const isWarn = payPct > prog;   // mehr Geld als Fortschritt => rot
         const card = document.createElement("div");
         card.className = "contractor-card " + (isWarn ? "warn" : "ok");
 
-        const paymentLabelInBar = `${formatPercent(payPct)} · ${formatEuro(paid)}`;
+        const paymentLabelInBar  = `${formatPercent(payPct)} · ${formatEuro(paid)}`;
         const progressLabelInBar = formatPercent(prog);
 
         card.innerHTML = `
@@ -539,7 +559,9 @@
               <div class="bau-bar-row">
                 <span class="bau-bar-min">0 €</span>
                 <div class="bau-bar-track">
-                  <div class="bau-bar-fill" style="width:${payPctClamp}%;"><span>${paymentLabelInBar}</span></div>
+                  <div class="bau-bar-fill" data-width="${payWidth}%">
+                    <span>${paymentLabelInBar}</span>
+                  </div>
                 </div>
                 <span class="bau-bar-max">${formatEuro(offer)}</span>
               </div>
@@ -552,7 +574,9 @@
               <div class="bau-bar-row">
                 <span class="bau-bar-min">0 %</span>
                 <div class="bau-bar-track">
-                  <div class="bau-bar-fill" style="width:${progClamp}%;"><span>${progressLabelInBar}</span></div>
+                  <div class="bau-bar-fill" data-width="${progWidth}%">
+                    <span>${progressLabelInBar}</span>
+                  </div>
                 </div>
                 <span class="bau-bar-max">100 %</span>
               </div>
@@ -562,6 +586,26 @@
 
         grid.appendChild(card);
       });
+
+      // Animiertes Füllen aller Balken nach Render
+      function animateBars() {
+        const fills = document.querySelectorAll(".bau-view .bau-bar-fill");
+        fills.forEach(el => {
+          const target = el.dataset.width;
+          if (!target) return;
+          // Startbreite muss 0 sein (ist per CSS gesetzt), dann animiert auf Ziel
+          requestAnimationFrame(() => {
+            el.style.width = target;
+          });
+        });
+      }
+
+      // Gesamtbalken haben auch dataset.width, brauchen nur noch Starttrigger
+      totalPayBar.style.width = "0%";
+      totalProgBar.style.width = "0%";
+
+      // Animation leicht verzögert starten, damit der DOM steht
+      setTimeout(animateBars, 60);
     })();
   </script>
 </div>
