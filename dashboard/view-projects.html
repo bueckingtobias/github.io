@@ -5,285 +5,50 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Projekte / Bau</title>
 
-  <style>
-    :root{
-      --pad: 14px;
-      --gap: 12px;
-      --maxw: 1200px;
-      --bg:#0b1220;
-      --soft: rgba(226,232,240,.70);
-      --stroke: rgba(148,163,184,.18);
-      --r: 18px;
-    }
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 35%),
-        radial-gradient(circle at 80% 0%, rgba(34,197,94,.12), transparent 35%),
-        var(--bg);
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      color:#e2e8f0;
-      overflow:hidden;
-    }
+  <!-- Page CSS (extern, CSP-safe) -->
+  <link rel="stylesheet" href="./view-projects.css"/>
 
-    .view-root{height:100%;display:flex;flex-direction:column;min-height:0;}
-    .header{
-      padding: 14px var(--pad) 10px;
-      border-bottom:1px solid var(--stroke);
-      background: rgba(2,6,23,.25);
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-    }
-    .title{margin:0;font-size:16px;font-weight:900}
-    .sub{margin-top:4px;font-size:12px;color:var(--soft)}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
-
-    .tabs{
-      display:flex; gap:8px; flex-wrap:wrap;
-      padding: 6px;
-      border:1px solid var(--stroke);
-      border-radius: 999px;
-      background: rgba(15,23,42,.35);
-    }
-    .tab{
-      cursor:pointer;
-      font-size:11px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid transparent;
-      color: rgba(226,232,240,.75);
-      user-select:none;
-      white-space:nowrap;
-    }
-    .tab.active{
-      border-color: rgba(148,163,184,.35);
-      background: rgba(2,6,23,.35);
-      color:#e2e8f0;
-      font-weight:800;
-    }
-
-    .body{
-      flex:1; min-height:0;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-      padding: var(--pad);
-      display:flex;
-      justify-content:center;
-    }
-    .content{
-      width:100%;
-      max-width: var(--maxw);
-      display:flex;
-      flex-direction:column;
-      gap: var(--gap);
-      min-height:0;
-    }
-
-    /* Sticky Gesamtmodul */
-    .sticky-wrap{
-      position: sticky;
-      top: 10px;
-      z-index: 5;
-    }
-
-    .modules-grid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: var(--gap);
-      align-items:start;
-    }
-    .span-2{ grid-column: 1 / -1; }
-
-    @media (max-width: 900px){
-      :root{ --pad: 12px; }
-      .modules-grid{ grid-template-columns: 1fr; }
-      .span-2{ grid-column: auto; }
-      .sticky-wrap{ top: 8px; }
-    }
-
-    .hint{
-      font-size:12px;color:var(--soft);
-      padding: 0 2px;
-    }
-    .error{
-      border-radius: 14px;
-      border: 1px solid rgba(248,113,113,.35);
-      background: rgba(2,6,23,.35);
-      padding: 12px;
-      color: rgba(254,202,202,.95);
-      font-size: 12px;
-      white-space: pre-wrap;
-      display:none;
-    }
-  </style>
+  <!-- Page JS (extern, CSP-safe) -->
+  <script src="./view-projects.js" defer></script>
 </head>
 
 <body>
-  <div class="view-root">
-    <div class="header">
-      <div>
-        <h1 class="title">Projekte / Bau</h1>
-        <div class="sub">Gesamtübersicht (sticky) + Gewerke (responsive).</div>
+  <div class="vp-root">
+    <header class="vp-header">
+      <div class="vp-head-left">
+        <h1 class="vp-title">Projekte / Bau</h1>
+        <div class="vp-sub">Gesamtübersicht + Gewerke (Excel-basiert).</div>
       </div>
 
-      <div class="controls">
-        <div class="tabs" id="projectTabs"></div>
+      <!-- Projektwechsel (Tabs) -->
+      <div class="vp-head-right">
+        <div class="vp-tabs" id="vpTabs" aria-label="Projekte"></div>
       </div>
-    </div>
+    </header>
 
-    <div class="body">
-      <div class="content">
+    <main class="vp-body" id="vpBody">
+      <div class="vp-content">
 
-        <div class="sticky-wrap">
-          <div id="gesamt-slot"></div>
-        </div>
+        <!-- Sticky Gesamtmodul -->
+        <section class="vp-sticky">
+          <div id="vpGesamtSlot" class="vp-span-2">
+            <!-- hier wird gewerk-gesamt-modul.html per JS geladen -->
+          </div>
+        </section>
 
-        <div class="modules-grid" id="gewerke-grid"></div>
+        <!-- Grid für 10 Gewerk-Module -->
+        <section class="vp-grid" id="vpGewerkeGrid">
+          <!-- hier werden 10x gewerk-modul.html Slots per JS erzeugt -->
+        </section>
 
-        <div class="hint" id="hint"></div>
-        <div class="error" id="errorBox"></div>
+        <!-- Debug / Fehlerausgabe (wird per JS gefüllt) -->
+        <section class="vp-footer">
+          <div class="vp-hint" id="vpHint"></div>
+          <pre class="vp-error" id="vpError" style="display:none;"></pre>
+        </section>
+
       </div>
-    </div>
+    </main>
   </div>
-
-<script>
-/* =============================
-   HARD DEBUG LOADER (zeigt Fehler im UI)
-   ============================= */
-
-const CANDIDATE_BASES = ["./", "./Dashboard/", "./dashboard/"]; // probiert alle
-const FILE_GESAMT_NAME = "gewerk-gesamt-modul.html";
-const FILE_GEWERK_NAME = "gewerk-modul.html";
-
-function uiError(msg){
-  const box = document.getElementById("errorBox") || (() => {
-    const b = document.createElement("div");
-    b.id = "errorBox";
-    b.style.cssText = "white-space:pre-wrap;border:1px solid rgba(248,113,113,.5);background:rgba(2,6,23,.45);color:rgba(254,202,202,.95);padding:12px;border-radius:14px;font-size:12px;max-width:1200px;margin:12px auto;";
-    document.body.prepend(b);
-    return b;
-  })();
-  box.style.display = "block";
-  box.textContent = msg;
-}
-
-async function fetchFirst(urls){
-  const tries = [];
-  for (const url of urls){
-    try{
-      const res = await fetch(url, { cache: "no-store" });
-      tries.push(`${url} -> HTTP ${res.status}`);
-      if (res.ok) return { url, text: await res.text(), tries };
-    }catch(e){
-      tries.push(`${url} -> FETCH ERROR (${e?.message || e})`);
-    }
-  }
-  throw new Error("Keiner der Pfade funktioniert:\n" + tries.join("\n"));
-}
-
-function reinjectScripts(container){
-  // innerHTML führt scripts nicht aus → ersetzen durch neue <script>-Nodes
-  const scripts = Array.from(container.querySelectorAll("script"));
-  scripts.forEach(old=>{
-    const s = document.createElement("script");
-    for (const a of Array.from(old.attributes)) s.setAttribute(a.name, a.value);
-    s.textContent = old.textContent;
-    old.replaceWith(s);
-  });
-}
-
-async function loadModuleInto(el, candidates){
-  const { url, text, tries } = await fetchFirst(candidates);
-  el.innerHTML = text;
-  reinjectScripts(el);
-  return { url, tries };
-}
-
-/* =============================
-   Dummy Daten (Excel-Format) – nur zum Test
-   ============================= */
-const excelRows = [
-  {"Sortierung":1,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Rohbau","Handwerker":"Meyer","Angebotssumme (€)":320000,"Zahlungen bisher (€)":210000,"Offene Rechnungen (€)":18000,"Baufortschritt (%)":70},
-  {"Sortierung":2,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Elektro","Handwerker":"Schröder","Angebotssumme (€)":95000,"Zahlungen bisher (€)":65000,"Offene Rechnungen (€)":9000,"Baufortschritt (%)":30},
-  {"Sortierung":3,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Heizung/Sanitär","Handwerker":"Müller","Angebotssumme (€)":145000,"Zahlungen bisher (€)":60000,"Offene Rechnungen (€)":12000,"Baufortschritt (%)":40},
-  {"Sortierung":4,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Fenster/Türen","Handwerker":"Becker","Angebotssumme (€)":78000,"Zahlungen bisher (€)":52000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":85},
-  {"Sortierung":5,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Dach","Handwerker":"Hofmann","Angebotssumme (€)":112000,"Zahlungen bisher (€)":90000,"Offene Rechnungen (€)":6000,"Baufortschritt (%)":90},
-  {"Sortierung":6,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Innenputz","Handwerker":"König","Angebotssumme (€)":54000,"Zahlungen bisher (€)":15000,"Offene Rechnungen (€)":11000,"Baufortschritt (%)":25},
-  {"Sortierung":7,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Bodenbeläge","Handwerker":"Nord","Angebotssumme (€)":68000,"Zahlungen bisher (€)":10000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":15},
-  {"Sortierung":8,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Fliesen","Handwerker":"Schulte","Angebotssumme (€)":42000,"Zahlungen bisher (€)":21000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":50},
-  {"Sortierung":9,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Außenanlagen","Handwerker":"Grünwerk","Angebotssumme (€)":60000,"Zahlungen bisher (€)":12000,"Offene Rechnungen (€)":8000,"Baufortschritt (%)":20},
-  {"Sortierung":10,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Photovoltaik","Handwerker":"Solar Bremen","Angebotssumme (€)":98000,"Zahlungen bisher (€)":49000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":45}
-];
-
-window.__PROJECT_ROWS__ = excelRows; // für Gesamtmodul
-
-/* =============================
-   BOOT
-   ============================= */
-window.addEventListener("DOMContentLoaded", async () => {
-  try{
-    const gesamtSlot = document.getElementById("gesamt-slot") || document.getElementById("portfolioHeader");
-    const grid = document.getElementById("gewerke-grid") || document.getElementById("bau-contractors-grid");
-
-    if(!gesamtSlot) throw new Error("Container fehlt: #gesamt-slot oder #portfolioHeader");
-    if(!grid) throw new Error("Container fehlt: #gewerke-grid (Grid für 10 Module)");
-
-    // 1) Gesamtmodul laden (auto-path)
-    const gesamtCandidates = CANDIDATE_BASES.map(b => b + FILE_GESAMT_NAME);
-    const g = await loadModuleInto(gesamtSlot, gesamtCandidates);
-
-    // 2) Gewerk-Modul Template laden (auto-path)
-    const gewerkCandidates = CANDIDATE_BASES.map(b => b + FILE_GEWERK_NAME);
-    const t = await fetchFirst(gewerkCandidates);
-    const tplHTML = t.text;
-
-    // 3) 10x rendern
-    grid.innerHTML = "";
-    excelRows
-      .filter(r => (""+(r["Aktiv (Ja/Nein)"]||"")).toLowerCase().startsWith("j"))
-      .sort((a,b)=>(a.Sortierung||9999)-(b.Sortierung||9999))
-      .slice(0,10)
-      .forEach(row=>{
-        const slot = document.createElement("div");
-        slot.innerHTML = tplHTML;
-
-        const payload = {
-          projekt: "Baumstraße 35",
-          gewerk: (row["Gewerk"]||"") + (row["Handwerker"] ? (" – " + row["Handwerker"]) : ""),
-          angebot: row["Angebotssumme (€)"] || 0,
-          zahlungen: row["Zahlungen bisher (€)"] || 0,
-          offeneRechnungen: row["Offene Rechnungen (€)"] || 0,
-          fortschritt: row["Baufortschritt (%)"] || 0,
-          owner: "Tobi",
-          lastUpdate: ""
-        };
-
-        const root = slot.querySelector(".gewerk-modul-root");
-        if(root) root.dataset.payload = JSON.stringify(payload);
-
-        reinjectScripts(slot);
-        grid.appendChild(slot);
-      });
-
-    // Debug Info in UI (optional)
-    uiError(
-      "✅ Module geladen.\n\n" +
-      "Gesamtmodul von: " + g.url + "\n" +
-      "Gewerkmodul von: " + t.url + "\n\n" +
-      "Tries Gesamt:\n" + g.tries.join("\n") + "\n\n" +
-      "Tries Gewerk:\n" + t.tries.join("\n")
-    );
-
-  } catch(err){
-    uiError("❌ Fehler beim Laden/Rendern:\n\n" + (err?.message || err) + "\n\n" +
-      "Typische Ursachen:\n" +
-      "• Falscher Pfad/Ordnername (Dashboard vs dashboard)\n" +
-      "• Lokal per file:// getestet (fetch blockiert)\n" +
-      "• Module enthalten doch <html>/<head>/<body> (bitte nur Root+Style+Script)\n");
-    console.error(err);
-  }
-});
-</script>
+</body>
+</html>
