@@ -1,47 +1,369 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Projekte / Bau</title>
 
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
+
+  <!-- Dein bestehendes Projects-Layout/JS -->
   <link rel="stylesheet" href="./view-projects.css">
   <script src="./view-projects.js" defer></script>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel: rgba(15,23,42,.70);
+      --panel2: rgba(2,6,23,.55);
+      --stroke: rgba(148,163,184,.18);
+      --text:#e2e8f0;
+      --soft: rgba(226,232,240,.72);
+
+      --r: 18px;
+      --gap: 12px;
+      --pad: 14px;
+
+      --sidebarW: 290px;
+      --sidebarWm: 88px;
+
+      --topH: 56px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(34,197,94,.12), transparent 35%),
+        var(--bg);
+      overflow:hidden; /* Scroll passiert im Main */
+    }
+
+    /* ===== Shell ===== */
+    .app{
+      height: 100dvh;
+      display:grid;
+      grid-template-columns: var(--sidebarW) 1fr;
+      min-height:0;
+    }
+
+    /* ===== Sidebar (always visible) ===== */
+    .sidebar{
+      height: 100dvh;
+      position: sticky;
+      top: 0;
+      align-self: start;
+      border-right:1px solid var(--stroke);
+      background: rgba(2,6,23,.55);
+      backdrop-filter: blur(10px);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .brand{
+      padding: 16px var(--pad) 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border-bottom:1px solid var(--stroke);
+      flex:0 0 auto;
+    }
+    .brand-dot{
+      width:12px;height:12px;border-radius:999px;
+      background: linear-gradient(180deg, rgba(59,130,246,1), rgba(37,99,235,1));
+      box-shadow: 0 0 0 4px rgba(59,130,246,.12);
+      flex:0 0 auto;
+    }
+    .brand-title{ font-weight:950; font-size:14px; margin:0; }
+    .brand-sub{ margin-top:2px; font-size:11px; color:var(--soft); }
+
+    .nav{
+      padding: 10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      min-height:0;
+      flex:1 1 auto;
+    }
+
+    .nav-label{
+      font-size:10px;
+      color: rgba(226,232,240,.55);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      padding: 10px 8px 6px;
+      border-top: 1px solid rgba(148,163,184,.12);
+      margin-top: 6px;
+    }
+
+    .nav a{
+      text-decoration:none;
+      color: rgba(226,232,240,.86);
+      border: 1px solid transparent;
+      border-radius: 14px;
+      padding: 10px 10px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      background: rgba(15,23,42,.32);
+    }
+    .nav a:hover{
+      border-color: rgba(148,163,184,.22);
+      background: rgba(15,23,42,.55);
+    }
+    .nav a.active{
+      border-color: rgba(59,130,246,.35);
+      box-shadow: 0 0 0 4px rgba(59,130,246,.10);
+      background: rgba(2,6,23,.45);
+    }
+
+    .nav-ic{
+      width:32px;height:32px;border-radius:12px;
+      display:grid;place-items:center;
+      background: rgba(59,130,246,.12);
+      border: 1px solid rgba(59,130,246,.18);
+      flex:0 0 auto;
+      font-weight:950;
+      color: rgba(191,219,254,.95);
+      font-size:12px;
+    }
+    .nav-txt{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .nav-title{ font-size:12px; font-weight:950; line-height:1.1; }
+    .nav-sub{ font-size:11px; color: rgba(226,232,240,.62); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .sidebar-footer{
+      padding: 10px var(--pad) 14px;
+      border-top:1px solid var(--stroke);
+      color: rgba(226,232,240,.60);
+      font-size:11px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex:0 0 auto;
+    }
+
+    .chip{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(15,23,42,.45);
+      white-space:nowrap;
+    }
+
+    /* ===== Main ===== */
+    .main{
+      min-width:0;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .topbar{
+      flex:0 0 auto;
+      height: var(--topH);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px var(--pad);
+      border-bottom:1px solid var(--stroke);
+      background: rgba(2,6,23,.45);
+      backdrop-filter: blur(10px);
+    }
+
+    .page-title{ display:flex; flex-direction:column; min-width:0; }
+    .page-title h1{
+      margin:0;
+      font-size:14px;
+      font-weight:950;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .page-title div{
+      margin-top:2px;
+      font-size:11px;
+      color: var(--soft);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    .top-right{ display:flex; align-items:center; gap:10px; color: var(--soft); font-size:11px; }
+
+    .content{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0; /* wichtig: view-projects.css macht innen padding */
+    }
+
+    /* view-projects Root soll im Main sauber greifen */
+    .vp-host{
+      min-height: 100%;
+    }
+
+    /* Mobile: Sidebar bleibt als Icon-Bar */
+    @media (max-width: 900px){
+      .app{ grid-template-columns: var(--sidebarWm) 1fr; }
+      .brand{ padding: 14px 10px 10px; }
+      .brand-title, .brand-sub{ display:none; }
+
+      .nav a{ padding: 10px; justify-content:center; }
+      .nav-txt{ display:none; }
+      .nav-ic{ width:40px; height:40px; border-radius:14px; font-size:14px; }
+
+      .sidebar-footer{ padding: 10px 10px 12px; justify-content:center; }
+      .sidebar-footer .chip{ display:none; }
+    }
+  </style>
 </head>
 
 <body>
-  <div class="vp-root">
-    <!-- Header -->
-    <header class="vp-header">
-      <div>
-        <h1 class="vp-title">Projekte / Bau</h1>
-        <div class="vp-sub">Gesamtübersicht & Gewerke (Excel-basiert)</div>
+  <div class="app">
+    <!-- Sidebar always visible -->
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div style="min-width:0">
+          <div class="brand-title">Bücking Dashboard</div>
+          <div class="brand-sub">Immobilien · Projekte · KPIs</div>
+        </div>
       </div>
 
-      <!-- Projekt Tabs -->
-      <div class="vp-tabs" id="vpTabs"></div>
-    </header>
+      <nav class="nav" id="nav">
+        <a href="./index.html" data-title="Übersicht" data-sub="Startseite / Quick KPIs">
+          <div class="nav-ic">⌂</div>
+          <div class="nav-txt">
+            <div class="nav-title">Übersicht</div>
+            <div class="nav-sub">Startseite / Quick KPIs</div>
+          </div>
+        </a>
 
-    <!-- Scroll Body -->
-    <main class="vp-body" id="vpBody">
-      <div class="vp-content">
+        <div class="nav-label">Projekte</div>
 
-        <!-- Gesamtmodul (sticky auf iPad/Desktop) -->
-        <section class="vp-sticky">
-          <div id="vpGesamtSlot" class="vp-span-2"></div>
-        </section>
+        <a href="./view-projects.html" data-title="Projekte / Bau" data-sub="Module: Gesamt + Gewerke" class="active">
+          <div class="nav-ic">🏗</div>
+          <div class="nav-txt">
+            <div class="nav-title">Projekte / Bau</div>
+            <div class="nav-sub">Module: Gesamt + Gewerke</div>
+          </div>
+        </a>
 
-        <!-- Grid für Gewerk-Module -->
-        <section class="vp-grid" id="vpGewerkeGrid"></section>
+        <a href="./view-finance.html" data-title="Finanzen" data-sub="Budget, Cashflow, Forecast">
+          <div class="nav-ic">€</div>
+          <div class="nav-txt">
+            <div class="nav-title">Finanzen</div>
+            <div class="nav-sub">Budget, Cashflow, Forecast</div>
+          </div>
+        </a>
 
-        <!-- Debug / Hinweise -->
-        <section class="vp-footer">
-          <div class="vp-hint" id="vpHint"></div>
-          <pre class="vp-error" id="vpError" style="display:none;"></pre>
-        </section>
+        <a href="./view-vermietung.html" data-title="Vermietung" data-sub="Leerstand, Mieten, Anfragen">
+          <div class="nav-ic">🏠</div>
+          <div class="nav-txt">
+            <div class="nav-title">Vermietung</div>
+            <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
+          </div>
+        </a>
 
+        <div class="nav-label">Tools</div>
+
+        <a href="./admin.html" data-title="Admin" data-sub="Uploads, Settings, Debug">
+          <div class="nav-ic">⚙</div>
+          <div class="nav-txt">
+            <div class="nav-title">Admin</div>
+            <div class="nav-sub">Uploads, Settings, Debug</div>
+          </div>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="chip" id="clockSide">—</span>
+        <span class="chip">online</span>
       </div>
-    </main>
+    </aside>
+
+    <!-- Main -->
+    <section class="main">
+      <header class="topbar">
+        <div class="page-title">
+          <h1 id="pageTitle">Projekte / Bau</h1>
+          <div id="pageSub">Gesamtübersicht + Gewerke (Module)</div>
+        </div>
+        <div class="top-right">
+          <span class="chip" id="clockTop">—</span>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- Deine bestehende view-projects UI wird hier gerendert -->
+        <div class="vp-host">
+          <div class="vp-root">
+            <!-- Header -->
+            <header class="vp-header">
+              <div>
+                <h1 class="vp-title">Projekte / Bau</h1>
+                <div class="vp-sub">Gesamtübersicht & Gewerke (Excel-basiert)</div>
+              </div>
+
+              <!-- Projekt Tabs -->
+              <div class="vp-tabs" id="vpTabs"></div>
+            </header>
+
+            <!-- Scroll Body -->
+            <main class="vp-body" id="vpBody">
+              <div class="vp-content">
+
+                <!-- Gesamtmodul (sticky auf Desktop – iPad safe, weil main scrollt) -->
+                <section class="vp-sticky">
+                  <div id="vpGesamtSlot" class="vp-span-2"></div>
+                </section>
+
+                <!-- Grid für Gewerk-Module -->
+                <section class="vp-grid" id="vpGewerkeGrid"></section>
+
+                <!-- Debug / Hinweise -->
+                <section class="vp-footer">
+                  <div class="vp-hint" id="vpHint"></div>
+                  <pre class="vp-error" id="vpError" style="display:none;"></pre>
+                </section>
+
+              </div>
+            </main>
+          </div>
+        </div>
+      </main>
+    </section>
   </div>
+
+  <script>
+    (function(){
+      // Clock
+      const clockTop = document.getElementById("clockTop");
+      const clockSide = document.getElementById("clockSide");
+      function tick(){
+        const d = new Date();
+        const t = d.toLocaleString("de-DE", { weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+        if(clockTop) clockTop.textContent = t;
+        if(clockSide) clockSide.textContent = t;
+      }
+      tick(); setInterval(tick, 15000);
+
+      // Active nav highlight (safety)
+      const path = (location.pathname || "").toLowerCase();
+      document.querySelectorAll("#nav a").forEach(a=>{
+        const href = (a.getAttribute("href")||"").toLowerCase();
+        const normalized = href.replace("./","/").replace("//","/");
+        a.classList.toggle("active", path.endsWith(normalized));
+      });
+    })();
+  </script>
 </body>
 </html>
