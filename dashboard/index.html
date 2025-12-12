@@ -2,9 +2,8 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Dashboard</title>
-
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
@@ -15,15 +14,16 @@
       --panel2: rgba(2,6,23,.55);
       --stroke: rgba(148,163,184,.18);
       --text:#e2e8f0;
-      --soft: rgba(226,232,240,.70);
+      --soft: rgba(226,232,240,.72);
       --brand: rgba(59,130,246,.95);
 
       --r: 18px;
       --gap: 12px;
       --pad: 14px;
-
-      --sidebarW: 280px;
+      --sidebarW: 290px;
       --topH: 56px;
+
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
     }
 
     *{ box-sizing:border-box; }
@@ -36,22 +36,27 @@
         radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 35%),
         radial-gradient(circle at 80% 0%, rgba(34,197,94,.12), transparent 35%),
         var(--bg);
-      overflow:hidden;
+      overflow:auto; /* wichtig: kein overflow:hidden -> keine iPad Overlap-Bugs */
     }
 
-    /* Layout */
-    .shell{
-      height:100%;
+    /* ===== App Layout: Desktop = 2 Spalten, Mobile = 1 Spalte ===== */
+    .app{
+      min-height: 100dvh;
       display:grid;
       grid-template-columns: var(--sidebarW) 1fr;
       grid-template-rows: 1fr;
-      min-height:0;
+      align-items:stretch;
     }
 
-    /* Sidebar */
+    /* ===== Sidebar (Desktop) ===== */
     .sidebar{
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      align-self: start;
       border-right:1px solid var(--stroke);
       background: rgba(2,6,23,.35);
+      backdrop-filter: blur(10px);
       display:flex;
       flex-direction:column;
       min-height:0;
@@ -70,17 +75,8 @@
       box-shadow: 0 0 0 4px rgba(59,130,246,.12);
       flex:0 0 auto;
     }
-    .brand-title{
-      font-weight:900;
-      letter-spacing:.01em;
-      font-size:14px;
-      margin:0;
-    }
-    .brand-sub{
-      margin-top:2px;
-      font-size:11px;
-      color:var(--soft);
-    }
+    .brand-title{ font-weight:950; font-size:14px; margin:0; }
+    .brand-sub{ margin-top:2px; font-size:11px; color:var(--soft); }
 
     .nav{
       padding: 10px;
@@ -92,29 +88,26 @@
       min-height:0;
     }
 
-    .nav-group{
-      margin-top:6px;
-      padding-top:10px;
-      border-top:1px solid rgba(148,163,184,.12);
-    }
     .nav-label{
       font-size:10px;
       color: rgba(226,232,240,.55);
       text-transform:uppercase;
       letter-spacing:.08em;
-      padding: 0 8px 8px;
+      padding: 10px 8px 6px;
+      border-top: 1px solid rgba(148,163,184,.12);
+      margin-top: 6px;
     }
 
     .nav a{
       text-decoration:none;
-      color: rgba(226,232,240,.82);
+      color: rgba(226,232,240,.86);
       border: 1px solid transparent;
       border-radius: 14px;
       padding: 10px 10px;
       display:flex;
       gap:10px;
       align-items:center;
-      background: rgba(15,23,42,.35);
+      background: rgba(15,23,42,.32);
     }
     .nav a:hover{
       border-color: rgba(148,163,184,.22);
@@ -126,35 +119,49 @@
       background: rgba(2,6,23,.45);
     }
     .nav-ic{
-      width:28px;height:28px;border-radius:10px;
+      width:30px;height:30px;border-radius:11px;
       display:grid;place-items:center;
       background: rgba(59,130,246,.12);
       border: 1px solid rgba(59,130,246,.18);
       flex:0 0 auto;
-      font-weight:900;
+      font-weight:950;
       color: rgba(191,219,254,.95);
       font-size:12px;
     }
-    .nav-txt{ display:flex;flex-direction:column;gap:2px;min-width:0; }
-    .nav-title{ font-size:12px;font-weight:900;line-height:1.1; }
-    .nav-sub{ font-size:11px;color: rgba(226,232,240,.62); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .nav-txt{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .nav-title{ font-size:12px; font-weight:950; line-height:1.1; }
+    .nav-sub{ font-size:11px; color: rgba(226,232,240,.62); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
     .sidebar-footer{
       padding: 10px var(--pad) 14px;
       border-top:1px solid var(--stroke);
       color: rgba(226,232,240,.60);
       font-size:11px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
     }
 
-    /* Main */
+    .chip{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(15,23,42,.45);
+      white-space:nowrap;
+    }
+
+    /* ===== Main ===== */
     .main{
       min-width:0;
-      min-height:0;
       display:flex;
       flex-direction:column;
     }
 
     .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 20;
       height: var(--topH);
       display:flex;
       align-items:center;
@@ -162,68 +169,71 @@
       gap: 10px;
       padding: 10px var(--pad);
       border-bottom:1px solid var(--stroke);
-      background: rgba(2,6,23,.25);
+      background: rgba(2,6,23,.55);
+      backdrop-filter: blur(12px);
     }
 
-    .top-left{
-      display:flex;align-items:center;gap:10px;
-      min-width:0;
-    }
-
-    .burger{
-      display:none;
-      width:40px;height:40px;border-radius:12px;
-      border:1px solid rgba(148,163,184,.18);
-      background: rgba(15,23,42,.55);
-      color: var(--text);
-      font-size:18px;
-      line-height:0;
-      cursor:pointer;
-    }
-
-    .page-title{
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-    }
+    .top-left{ display:flex; align-items:center; gap:10px; min-width:0; }
+    .page-title{ display:flex; flex-direction:column; min-width:0; }
     .page-title h1{
       margin:0;
       font-size:14px;
       font-weight:950;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
     .page-title div{
       margin-top:2px;
       font-size:11px;
       color: var(--soft);
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
 
-    .top-right{
-      display:flex;align-items:center;gap:10px;
-      color: var(--soft);
-      font-size:11px;
-      white-space:nowrap;
-    }
-    .chip{
-      padding:6px 10px;
-      border-radius:999px;
+    .top-right{ display:flex; align-items:center; gap:10px; color: var(--soft); font-size:11px; }
+
+    .btn{
+      cursor:pointer;
+      border-radius: 12px;
       border:1px solid rgba(148,163,184,.18);
       background: rgba(15,23,42,.45);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size:12px;
+      font-weight:950;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .btn:hover{
+      border-color: rgba(59,130,246,.28);
+      box-shadow: 0 0 0 4px rgba(59,130,246,.08);
+    }
+    .btn-primary{
+      border-color: rgba(59,130,246,.30);
+      background: rgba(59,130,246,.10);
     }
 
     .content{
-      flex:1;
-      min-height:0;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
       padding: var(--pad);
+      display:flex;
+      justify-content:center;
+    }
+
+    .container{
+      width: 100%;
+      max-width: 1200px;
+      display:flex;
+      flex-direction:column;
+      gap: var(--gap);
+      min-width:0;
     }
 
     .grid{
       display:grid;
       grid-template-columns: repeat(12, minmax(0,1fr));
       gap: var(--gap);
+      align-items:stretch;
     }
 
     .card{
@@ -231,65 +241,33 @@
       border:1px solid rgba(148,163,184,.18);
       background: rgba(15,23,42,.55);
       overflow:hidden;
+      box-shadow: var(--shadow);
     }
+
     .card-header{
       padding: 12px 14px 10px;
       border-bottom:1px solid rgba(148,163,184,.14);
       display:flex;
       justify-content:space-between;
-      align-items:flex-end;
+      align-items:flex-start;
       gap:10px;
     }
-    .card-title{
-      font-size:13px;
-      font-weight:950;
-      margin:0;
-    }
-    .card-sub{
-      font-size:11px;
-      color: var(--soft);
-      margin-top:3px;
-    }
-    .card-body{
-      padding: 12px 14px 14px;
-    }
+    .card-title{ font-size:13px; font-weight:950; margin:0; }
+    .card-sub{ font-size:11px; color: var(--soft); margin-top:3px; line-height:1.25; }
 
-    .btn{
-      cursor:pointer;
-      border-radius: 12px;
-      border:1px solid rgba(148,163,184,.18);
-      background: rgba(2,6,23,.35);
-      color: var(--text);
-      padding: 10px 12px;
-      font-size:12px;
-      font-weight:900;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-    }
-    .btn:hover{
-      border-color: rgba(59,130,246,.28);
-      box-shadow: 0 0 0 4px rgba(59,130,246,.08);
-    }
-    .btn-primary{
-      border-color: rgba(59,130,246,.28);
-      background: rgba(59,130,246,.10);
-    }
+    .card-body{ padding: 12px 14px 14px; }
 
-    /* Quick tiles */
-    .tile{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
     .tiles{
       display:grid;
       grid-template-columns: repeat(3, minmax(0,1fr));
       gap: 10px;
     }
-    @media (max-width: 1100px){
-      .tiles{ grid-template-columns: 1fr; }
+    .tile{
+      border-radius: 14px;
+      border:1px solid rgba(148,163,184,.14);
+      background: rgba(2,6,23,.35);
+      padding: 12px;
+      min-height: 92px;
     }
     .tile .k{
       font-size:10px;
@@ -297,68 +275,84 @@
       letter-spacing:.08em;
       color: rgba(226,232,240,.58);
     }
-    .tile .v{
-      font-size:16px;
-      font-weight:950;
-    }
-    .tile .h{
-      font-size:11px;
-      color: rgba(226,232,240,.65);
-      line-height:1.3;
+    .tile .v{ margin-top:6px; font-size:16px; font-weight:950; }
+    .tile .h{ margin-top:6px; font-size:11px; color: rgba(226,232,240,.70); line-height:1.25; }
+
+    .links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
     }
 
-    /* Iframe view */
-    .frame-wrap{
-      height: calc(100vh - var(--topH) - (var(--pad) * 2));
-      min-height: 520px;
-      border-radius: var(--r);
+    /* ===== Mobile Drawer ===== */
+    .burger{
+      display:none;
+      width:40px;height:40px;border-radius:12px;
       border:1px solid rgba(148,163,184,.18);
-      background: rgba(2,6,23,.25);
-      overflow:hidden;
-    }
-    iframe{
-      width:100%;
-      height:100%;
-      border:0;
-      background: transparent;
+      background: rgba(15,23,42,.55);
+      color: var(--text);
+      font-size:18px;
+      cursor:pointer;
     }
 
-    /* Mobile */
-    @media (max-width: 900px){
-      body{ overflow:auto; } /* iOS friendlier */
-      .shell{
-        grid-template-columns: 1fr;
-      }
-      .sidebar{
+    .drawer{
+      display:none;
+    }
+
+    @media (max-width: 980px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{ display:none; }
+
+      .burger{ display:inline-grid; place-items:center; }
+
+      .drawer{
+        display:block;
         position: fixed;
+        inset: 0;
+        z-index: 60;
+        pointer-events:none;
+      }
+
+      .drawer .backdrop{
+        position:absolute; inset:0;
+        background: rgba(0,0,0,.45);
+        opacity:0;
+        transition: opacity .22s ease;
+      }
+
+      .drawer .panel{
+        position:absolute;
         inset: 0 auto 0 0;
         width: min(var(--sidebarW), 86vw);
+        height: 100%;
+        background: rgba(2,6,23,.92);
+        border-right:1px solid rgba(148,163,184,.18);
         transform: translateX(-102%);
-        transition: transform .25s ease;
-        z-index: 40;
-        box-shadow: 20px 0 60px rgba(0,0,0,.45);
-        background: rgba(2,6,23,.90);
+        transition: transform .22s ease;
+        box-shadow: var(--shadow);
+        display:flex;
+        flex-direction:column;
+        min-height:0;
       }
-      .sidebar.open{ transform: translateX(0); }
-      .burger{ display:inline-grid; place-items:center; }
-      .content{ padding: 12px; }
-      .frame-wrap{ height: 70vh; min-height: 460px; }
-      .overlay{
-        display:none;
-        position:fixed; inset:0;
-        background: rgba(0,0,0,.45);
-        z-index: 35;
-      }
-      .overlay.show{ display:block; }
+
+      .drawer.open{ pointer-events:auto; }
+      .drawer.open .backdrop{ opacity:1; }
+      .drawer.open .panel{ transform: translateX(0); }
+
+      .tiles{ grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 1100px){
+      .tiles{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="shell">
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
+  <!-- Mobile drawer (separate from desktop sidebar, no overlap mess) -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="backdrop" id="drawerBackdrop"></div>
+    <aside class="panel" role="dialog" aria-modal="true" aria-label="Menü">
       <div class="brand">
         <div class="brand-dot"></div>
         <div style="min-width:0">
@@ -367,8 +361,8 @@
         </div>
       </div>
 
-      <nav class="nav" id="nav">
-        <a href="./index.html" data-view="home" class="active">
+      <nav class="nav" id="navMobile">
+        <a href="./index.html" data-title="Übersicht" data-sub="Startseite / Quick KPIs" class="active">
           <div class="nav-ic">⌂</div>
           <div class="nav-txt">
             <div class="nav-title">Übersicht</div>
@@ -376,59 +370,116 @@
           </div>
         </a>
 
-        <div class="nav-group">
-          <div class="nav-label">Projekte</div>
+        <div class="nav-label">Projekte</div>
 
-          <a href="./view-projects.html" data-view="projects">
-            <div class="nav-ic">🏗</div>
-            <div class="nav-txt">
-              <div class="nav-title">Projekte / Bau</div>
-              <div class="nav-sub">Module: Gesamt + Gewerke</div>
-            </div>
-          </a>
+        <a href="./view-projects.html" data-title="Projekte / Bau" data-sub="Module: Gesamt + Gewerke">
+          <div class="nav-ic">🏗</div>
+          <div class="nav-txt">
+            <div class="nav-title">Projekte / Bau</div>
+            <div class="nav-sub">Module: Gesamt + Gewerke</div>
+          </div>
+        </a>
 
-          <!-- Platzhalter für weitere Views -->
-          <a href="./view-finance.html" data-view="finance">
-            <div class="nav-ic">€</div>
-            <div class="nav-txt">
-              <div class="nav-title">Finanzen</div>
-              <div class="nav-sub">Budget, Cashflow, Forecast</div>
-            </div>
-          </a>
+        <a href="./view-finance.html" data-title="Finanzen" data-sub="Budget, Cashflow, Forecast">
+          <div class="nav-ic">€</div>
+          <div class="nav-txt">
+            <div class="nav-title">Finanzen</div>
+            <div class="nav-sub">Budget, Cashflow, Forecast</div>
+          </div>
+        </a>
 
-          <a href="./view-vermietung.html" data-view="rent">
-            <div class="nav-ic">🏠</div>
-            <div class="nav-txt">
-              <div class="nav-title">Vermietung</div>
-              <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
-            </div>
-          </a>
-        </div>
+        <a href="./view-vermietung.html" data-title="Vermietung" data-sub="Leerstand, Mieten, Anfragen">
+          <div class="nav-ic">🏠</div>
+          <div class="nav-txt">
+            <div class="nav-title">Vermietung</div>
+            <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
+          </div>
+        </a>
 
-        <div class="nav-group">
-          <div class="nav-label">Tools</div>
+        <div class="nav-label">Tools</div>
 
-          <a href="./admin.html" data-view="admin">
-            <div class="nav-ic">⚙</div>
-            <div class="nav-txt">
-              <div class="nav-title">Admin</div>
-              <div class="nav-sub">Uploads, Settings, Debug</div>
-            </div>
-          </a>
-        </div>
+        <a href="./admin.html" data-title="Admin" data-sub="Uploads, Settings, Debug">
+          <div class="nav-ic">⚙</div>
+          <div class="nav-txt">
+            <div class="nav-title">Admin</div>
+            <div class="nav-sub">Uploads, Settings, Debug</div>
+          </div>
+        </a>
       </nav>
 
-      <div class="sidebar-footer" id="footerMeta">
+      <div class="sidebar-footer">
         <span class="chip">Status: Online</span>
+        <button class="btn" id="drawerClose">Schließen</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="app">
+    <!-- Desktop sidebar -->
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div style="min-width:0">
+          <div class="brand-title">Bücking Dashboard</div>
+          <div class="brand-sub">Immobilien · Projekte · KPIs</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="navDesktop">
+        <a href="./index.html" data-title="Übersicht" data-sub="Startseite / Quick KPIs" class="active">
+          <div class="nav-ic">⌂</div>
+          <div class="nav-txt">
+            <div class="nav-title">Übersicht</div>
+            <div class="nav-sub">Startseite / Quick KPIs</div>
+          </div>
+        </a>
+
+        <div class="nav-label">Projekte</div>
+
+        <a href="./view-projects.html" data-title="Projekte / Bau" data-sub="Module: Gesamt + Gewerke">
+          <div class="nav-ic">🏗</div>
+          <div class="nav-txt">
+            <div class="nav-title">Projekte / Bau</div>
+            <div class="nav-sub">Module: Gesamt + Gewerke</div>
+          </div>
+        </a>
+
+        <a href="./view-finance.html" data-title="Finanzen" data-sub="Budget, Cashflow, Forecast">
+          <div class="nav-ic">€</div>
+          <div class="nav-txt">
+            <div class="nav-title">Finanzen</div>
+            <div class="nav-sub">Budget, Cashflow, Forecast</div>
+          </div>
+        </a>
+
+        <a href="./view-vermietung.html" data-title="Vermietung" data-sub="Leerstand, Mieten, Anfragen">
+          <div class="nav-ic">🏠</div>
+          <div class="nav-txt">
+            <div class="nav-title">Vermietung</div>
+            <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
+          </div>
+        </a>
+
+        <div class="nav-label">Tools</div>
+
+        <a href="./admin.html" data-title="Admin" data-sub="Uploads, Settings, Debug">
+          <div class="nav-ic">⚙</div>
+          <div class="nav-txt">
+            <div class="nav-title">Admin</div>
+            <div class="nav-sub">Uploads, Settings, Debug</div>
+          </div>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="chip">Status: Online</span>
+        <span class="chip" id="clockSide">—</span>
       </div>
     </aside>
 
-    <!-- Mobile overlay -->
-    <div class="overlay" id="overlay"></div>
-
     <!-- Main -->
     <section class="main">
-      <div class="topbar">
+      <header class="topbar">
         <div class="top-left">
           <button class="burger" id="burger" aria-label="Menü öffnen">≡</button>
           <div class="page-title">
@@ -437,126 +488,150 @@
           </div>
         </div>
         <div class="top-right">
-          <span class="chip" id="clock">—</span>
-          <span class="chip">dashboard/</span>
+          <span class="chip" id="clockTop">—</span>
+          <a class="btn btn-primary" href="./view-projects.html">🏗 Projekte öffnen</a>
         </div>
-      </div>
+      </header>
 
-      <div class="content">
-        <!-- HOME -->
-        <div class="grid" id="homeView">
-          <div class="card" style="grid-column: span 12;">
+      <main class="content">
+        <div class="container">
+          <!-- Hero / Quick actions -->
+          <section class="card">
             <div class="card-header">
               <div>
                 <div class="card-title">Start</div>
-                <div class="card-sub">Schnellzugriffe & Überblick</div>
+                <div class="card-sub">Schnellzugriffe, Status und nächste Schritte.</div>
               </div>
-              <a class="btn btn-primary" href="./view-projects.html">🏗 Projekte öffnen</a>
+              <div class="links">
+                <a class="btn" href="./view-projects.html">🏗 Projekte / Bau</a>
+                <a class="btn" href="./admin.html">⚙ Admin</a>
+              </div>
             </div>
             <div class="card-body">
               <div class="tiles">
                 <div class="tile">
                   <div class="k">Heute</div>
                   <div class="v" id="todayTxt">—</div>
-                  <div class="h">Kurzer Status-Header für deine Admin-Area.</div>
+                  <div class="h">Sauberes iPad-Layout ohne überlappende Fenster.</div>
                 </div>
                 <div class="tile">
                   <div class="k">Projekte</div>
                   <div class="v">Baumstraße 35</div>
-                  <div class="h">Standard-Projekt (Demo/Excel folgt). Tabs in der Projekt-View.</div>
+                  <div class="h">Projekt-View mit Gesamtmodul + 10 Gewerke.</div>
                 </div>
                 <div class="tile">
-                  <div class="k">Nächster Schritt</div>
+                  <div class="k">Nächster Ausbau</div>
                   <div class="v">Excel Hook</div>
-                  <div class="h">`projects.xlsx` einlesen → Tabs automatisch aus Sheet-Namen.</div>
+                  <div class="h">`projects.xlsx` einlesen → Tabs aus Sheet-Namen.</div>
                 </div>
               </div>
-
-              <div style="height:12px"></div>
-
-              <div style="display:flex;gap:10px;flex-wrap:wrap">
-                <a class="btn" href="./view-projects.html">🏗 Projekte / Bau</a>
-                <a class="btn" href="./view-finance.html">€ Finanzen</a>
-                <a class="btn" href="./view-vermietung.html">🏠 Vermietung</a>
-                <a class="btn" href="./admin.html">⚙ Admin</a>
-              </div>
             </div>
-          </div>
+          </section>
 
-          <div class="card" style="grid-column: span 12;">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Embedded Preview</div>
-                <div class="card-sub">Projektseite im Dashboard-Frame</div>
+          <!-- System / Status -->
+          <section class="grid">
+            <section class="card" style="grid-column: span 12;">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Status</div>
+                  <div class="card-sub">Kurzer Systemcheck für typische Ursachen von „leer“ / Cache.</div>
+                </div>
               </div>
-              <button class="btn" id="openProjects">In neuem Tab öffnen</button>
-            </div>
-            <div class="card-body">
-              <div class="frame-wrap">
-                <iframe id="frame" src="./view-projects.html" loading="lazy"></iframe>
+              <div class="card-body">
+                <div class="tiles">
+                  <div class="tile">
+                    <div class="k">Cache-Hinweis</div>
+                    <div class="v">Safari</div>
+                    <div class="h">Wenn irgendwas „nicht aktualisiert“: URL mit <strong>?v=1</strong> laden.</div>
+                  </div>
+                  <div class="tile">
+                    <div class="k">Ordner</div>
+                    <div class="v">dashboard/</div>
+                    <div class="h">Achte auf Kleinschreibung: <strong>dashboard</strong> ≠ Dashboard.</div>
+                  </div>
+                  <div class="tile">
+                    <div class="k">Views</div>
+                    <div class="v">Modular</div>
+                    <div class="h">`view-projects.html` ist eigenständig & responsiv (iPad + Mobile).</div>
+                  </div>
+                </div>
               </div>
-              <div style="margin-top:8px;color:var(--soft);font-size:11px">
-                Hinweis: Wenn eine View „leer“ wirkt, URL mit <strong>?v=1</strong> laden (Safari Cache).
-              </div>
-            </div>
-          </div>
+            </section>
+          </section>
+
         </div>
-
-        <!-- (Optional) weitere Views als iframe-Host könntest du hier später hinzufügen -->
-      </div>
+      </main>
     </section>
   </div>
 
   <script>
     (function(){
-      const sidebar = document.getElementById("sidebar");
-      const overlay = document.getElementById("overlay");
+      const drawer = document.getElementById("drawer");
       const burger = document.getElementById("burger");
+      const backdrop = document.getElementById("drawerBackdrop");
+      const closeBtn = document.getElementById("drawerClose");
 
-      function openNav(){
-        sidebar.classList.add("open");
-        overlay.classList.add("show");
+      function openDrawer(){
+        drawer.classList.add("open");
+        drawer.setAttribute("aria-hidden","false");
       }
-      function closeNav(){
-        sidebar.classList.remove("open");
-        overlay.classList.remove("show");
+      function closeDrawer(){
+        drawer.classList.remove("open");
+        drawer.setAttribute("aria-hidden","true");
       }
 
-      burger?.addEventListener("click", ()=>{
-        if(sidebar.classList.contains("open")) closeNav();
-        else openNav();
+      burger && burger.addEventListener("click", openDrawer);
+      backdrop && backdrop.addEventListener("click", closeDrawer);
+      closeBtn && closeBtn.addEventListener("click", closeDrawer);
+
+      // Close drawer when a link is clicked (mobile)
+      document.getElementById("navMobile")?.addEventListener("click", (e)=>{
+        const a = e.target.closest("a");
+        if(a) closeDrawer();
       });
-      overlay?.addEventListener("click", closeNav);
 
       // Clock
-      const clock = document.getElementById("clock");
+      const clockTop = document.getElementById("clockTop");
+      const clockSide = document.getElementById("clockSide");
       const todayTxt = document.getElementById("todayTxt");
+
       function tick(){
         const d = new Date();
         const t = d.toLocaleString("de-DE", { weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-        if(clock) clock.textContent = t;
-        if(todayTxt) todayTxt.textContent = d.toLocaleDateString("de-DE", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
+        const today = d.toLocaleDateString("de-DE", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
+        if(clockTop) clockTop.textContent = t;
+        if(clockSide) clockSide.textContent = t;
+        if(todayTxt) todayTxt.textContent = today;
       }
       tick(); setInterval(tick, 15000);
 
-      // Active nav (simple)
+      // Active nav highlight
       const path = (location.pathname || "").toLowerCase();
-      document.querySelectorAll(".nav a").forEach(a=>{
-        const href = (a.getAttribute("href")||"").toLowerCase();
-        if(href && path.endsWith(href.replace("./","/"))){
-          document.querySelectorAll(".nav a").forEach(x=>x.classList.remove("active"));
-          a.classList.add("active");
-          const title = a.querySelector(".nav-title")?.textContent || "Dashboard";
-          const sub = a.querySelector(".nav-sub")?.textContent || "";
-          document.getElementById("pageTitle").textContent = title;
-          document.getElementById("pageSub").textContent = sub;
-        }
-      });
+      function setActive(navId){
+        const nav = document.getElementById(navId);
+        if(!nav) return;
+        const links = Array.from(nav.querySelectorAll("a[href]"));
+        links.forEach(a => a.classList.remove("active"));
 
-      // Button
-      document.getElementById("openProjects")?.addEventListener("click", ()=>{
-        window.open("./view-projects.html", "_blank", "noopener,noreferrer");
-      });
+        const match = links.find(a=>{
+          const href = (a.getAttribute("href")||"").toLowerCase();
+          if(!href) return false;
+          const normalized = href.replace("./","/").replace("//","/");
+          return path.endsWith(normalized);
+        }) || links[0];
+
+        if(match){
+          match.classList.add("active");
+          const title = match.getAttribute("data-title") || "Dashboard";
+          const sub = match.getAttribute("data-sub") || "";
+          const pt = document.getElementById("pageTitle");
+          const ps = document.getElementById("pageSub");
+          if(pt) pt.textContent = title;
+          if(ps) ps.textContent = sub;
+        }
+      }
+      setActive("navDesktop");
+      setActive("navMobile");
     })();
   </script>
 </body>
