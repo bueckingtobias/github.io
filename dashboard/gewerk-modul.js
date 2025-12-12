@@ -1,92 +1,84 @@
 (function(){
+  window.GewerkModul = window.GewerkModul || {};
+  window.GewerkModul.render = render;
+
   function euro(n){ return (Number(n)||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}); }
   function p1(n){ return (Number(n)||0).toFixed(1).replace(".",",") + " %"; }
-
-  function compute(row){
-    const angebot = Number(row["Angebotssumme (€)"] || 0);
-    const zahlungen = Number(row["Zahlungen bisher (€)"] || 0);
-    const offen = Number(row["Offene Rechnungen (€)"] || 0);
-    const fortschritt = Number(row["Baufortschritt (%)"] || 0);
-
-    const kostenQuote = angebot > 0 ? (zahlungen/angebot*100) : 0;
-    const rest = angebot - zahlungen;
-
-    const warn = angebot > 0 && kostenQuote > (fortschritt + 8);
-
-    return { angebot, zahlungen, offen, fortschritt, kostenQuote, rest, warn };
-  }
+  function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
 
   function render(rootEl, row, opts){
+    opts = opts || {};
     if(!rootEl) return;
 
-    const o = opts || {};
-    const s = compute(row || {});
-    rootEl.classList.toggle("warn", s.warn);
+    const gewerk = row["Gewerk"] || "Gewerk";
+    const hw = row["Handwerker"] || "Handwerker";
+    const offer = Number(row["Angebotssumme (€)"]||0);
+    const paid  = Number(row["Zahlungen bisher (€)"]||0);
+    const open  = Number(row["Offene Rechnungen (€)"]||0);
+    const prog  = Number(row["Baufortschritt (%)"]||0);
 
-    const gewerk = (row?.["Gewerk"] || "Gewerk");
-    const handwerker = (row?.["Handwerker"] || "");
-    const title = handwerker ? `${gewerk} – ${handwerker}` : gewerk;
+    const payQuote = offer>0 ? (paid/offer*100) : 0;
+    const delta = payQuote - prog;
+    const isWarn = offer>0 && delta > 8;
 
-    const projekt = o.projektName || "";
+    const payW = clamp(payQuote,0,100);
+    const progW = clamp(prog,0,100);
+
+    const tagClass = isWarn ? "warn" : "ok";
+    const tagText = isWarn ? "Kosten > Fortschritt" : "OK";
+
+    const subtitle = `${hw}${opts.projektName ? " · " + opts.projektName : ""}`;
 
     rootEl.innerHTML = `
-      <div class="gm-head">
-        <div>
-          <h3 class="gm-title">${title}</h3>
-          <div class="gm-sub">${projekt}${o.isDemo ? " (Demo)" : ""}</div>
+      <div class="gm-card">
+        <div class="gm-head">
+          <div style="min-width:0">
+            <div class="gm-title">${gewerk}</div>
+            <div class="gm-sub">${subtitle}</div>
+          </div>
+          <div class="gm-tag ${tagClass}">${tagText}</div>
         </div>
-        <div class="gm-status ${s.warn ? "warn":"ok"}">
-          ${s.warn ? "Kosten > Fortschritt" : "OK"}
-        </div>
-      </div>
 
-      <div class="gm-body">
         <div class="gm-kpis">
           <div class="gm-kpi">
             <div class="l">Angebot</div>
-            <div class="v">${euro(s.angebot)}</div>
+            <div class="v">${euro(offer)}</div>
+            <div class="h">Budget für dieses Gewerk</div>
           </div>
           <div class="gm-kpi">
             <div class="l">Zahlungen</div>
-            <div class="v">${euro(s.zahlungen)}</div>
-          </div>
-          <div class="gm-kpi">
-            <div class="l">Rest</div>
-            <div class="v">${euro(s.rest)}</div>
+            <div class="v">${euro(paid)}</div>
+            <div class="h">${p1(payQuote)} Kostenquote</div>
           </div>
         </div>
 
-        <div>
-          <div class="gm-rowtitle">
-            <span>Zahlungen / Budget</span>
-            <span>${p1(s.kostenQuote)}</span>
-          </div>
-          <div class="gm-barrow">
-            <span>0%</span>
-            <div class="gm-track">
-              <div class="gm-fill blue" data-w="${Math.min(s.kostenQuote,100)}%">${p1(s.kostenQuote)}</div>
+        <div class="gm-bars">
+          <div>
+            <div class="gm-rowtitle"><span>Zahlungen vs. Angebot</span><span>${euro(paid)} / ${euro(offer)}</span></div>
+            <div class="gm-barrow">
+              <span>0%</span>
+              <div class="gm-track">
+                <div class="gm-fill blue" data-w="${payW}%">${p1(payQuote)} · ${euro(paid)}</div>
+              </div>
+              <span>100%</span>
             </div>
-            <span>100%</span>
           </div>
-        </div>
 
-        <div>
-          <div class="gm-rowtitle">
-            <span>Baufortschritt</span>
-            <span>${p1(s.fortschritt)}</span>
-          </div>
-          <div class="gm-barrow">
-            <span>0%</span>
-            <div class="gm-track">
-              <div class="gm-fill green" data-w="${Math.min(s.fortschritt,100)}%">${p1(s.fortschritt)}</div>
+          <div>
+            <div class="gm-rowtitle"><span>Baufortschritt</span><span>${p1(prog)}</span></div>
+            <div class="gm-barrow">
+              <span>0%</span>
+              <div class="gm-track">
+                <div class="gm-fill green" data-w="${progW}%">${p1(prog)}</div>
+              </div>
+              <span>100%</span>
             </div>
-            <span>100%</span>
           </div>
         </div>
 
         <div class="gm-meta">
-          Offene Rechnungen: <strong>${euro(s.offen)}</strong>
-          ${o.owner ? " · Owner: " + o.owner : ""}
+          Offene Rechnungen: <strong>${euro(open)}</strong> ·
+          Δ (Kostenquote − Fortschritt): <strong>${p1(delta)}</strong>
         </div>
       </div>
     `;
@@ -100,23 +92,26 @@
     });
   }
 
-  // Export
-  window.GewerkModul = { render };
-
-  // Standalone Demo, falls direkt geöffnet
+  // Standalone Demo (wenn direkt geöffnet)
   window.addEventListener("DOMContentLoaded", ()=>{
     const root = document.querySelector(".gewerk-modul-root");
     if(!root) return;
 
+    // Wenn view-projects rendert, überschreibt er ohnehin. Demo läuft nur beim Direktaufruf sinnvoll.
     const demoRow = {
       "Aktiv (Ja/Nein)":"Ja",
       "Gewerk":"Elektro",
-      "Handwerker":"Schröder",
+      "Handwerker":"Elektro Schröder",
       "Angebotssumme (€)":95000,
       "Zahlungen bisher (€)":65000,
       "Offene Rechnungen (€)":9000,
       "Baufortschritt (%)":30
     };
-    render(root, demoRow, { projektName:"Standalone", isDemo:true, owner:"Tobi" });
+
+    // Nur rendern, wenn leer (nicht doppelt)
+    if(root.innerHTML.trim().length === 0){
+      render(root, demoRow, { projektName:"Standalone" });
+    }
   });
+
 })();
