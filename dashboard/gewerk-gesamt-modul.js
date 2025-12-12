@@ -2,31 +2,35 @@
   const root = document.querySelector(".gewerk-gesamt-root");
   if(!root) return;
 
-  const rows = (window.__PROJECT_ROWS__ || []).filter(r => (""+(r["Aktiv (Ja/Nein)"]||"")).toLowerCase().startsWith("j"));
-
-  // Fallback demo, damit beim Einzel-Öffnen nie leer
+  // Demo, damit standalone nie leer ist
   const demo = [
     {"Aktiv (Ja/Nein)":"Ja","Gewerk":"Rohbau","Angebotssumme (€)":320000,"Zahlungen bisher (€)":210000,"Offene Rechnungen (€)":18000,"Baufortschritt (%)":70},
     {"Aktiv (Ja/Nein)":"Ja","Gewerk":"Elektro","Angebotssumme (€)":95000,"Zahlungen bisher (€)":65000,"Offene Rechnungen (€)":9000,"Baufortschritt (%)":30}
   ];
-  const data = rows.length ? rows : demo;
+
+  const rowsRaw = Array.isArray(window.__PROJECT_ROWS__) ? window.__PROJECT_ROWS__ : demo;
+  const rows = rowsRaw.filter(r => (""+(r["Aktiv (Ja/Nein)"]||"")).toLowerCase().startsWith("j"));
 
   let offer=0, paid=0, open=0, weightedProg=0;
-  data.forEach(r=>{
+  rows.forEach(r=>{
     const o = Number(r["Angebotssumme (€)"]||0);
     const p = Number(r["Zahlungen bisher (€)"]||0);
     const pr = Number(r["Baufortschritt (%)"]||0);
-    offer += o; paid += p; open += Number(r["Offene Rechnungen (€)"]||0);
+
+    offer += o;
+    paid  += p;
+    open  += Number(r["Offene Rechnungen (€)"]||0);
     weightedProg += pr * o;
   });
 
-  const wProg = offer>0 ? weightedProg/offer : 0;
-  const payQuote = offer>0 ? paid/offer*100 : 0;
-  const rest = offer-paid;
-  const eac = wProg>0 ? paid/(wProg/100) : 0;
-  const eacDelta = eac-offer;
+  const wProg = offer>0 ? (weightedProg/offer) : 0;
+  const payQuote = offer>0 ? (paid/offer*100) : 0;
+  const rest = offer - paid;
 
-  const warn = offer>0 && payQuote > (wProg+8);
+  const eac = wProg>0 ? (paid/(wProg/100)) : 0;
+  const eacDelta = eac - offer;
+
+  const warn = offer>0 && payQuote > (wProg + 8);
   root.classList.toggle("warn", warn);
 
   const euro = n => (Number(n)||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
@@ -35,9 +39,9 @@
   root.innerHTML = `
     <div class="gg-head">
       <div>
-        <h2 class="gg-title">${root.dataset.title || "Gesamtübersicht"}</h2>
+        <h2 class="gg-title">${root.dataset.title || "Gesamtübersicht"}${Array.isArray(window.__PROJECT_ROWS__) ? "" : " (Demo)"}</h2>
         <div class="gg-sub">
-          <span class="gg-pill">Aktive Gewerke: ${rows.length || demo.length}${rows.length ? "" : " (Demo)"}</span>
+          <span class="gg-pill">Aktive Gewerke: ${rows.length}</span>
           <span class="gg-pill">Offen: ${euro(open)}</span>
         </div>
       </div>
@@ -56,7 +60,7 @@
         <div class="gg-rowtitle"><span>Kostenquote</span><span>${euro(paid)} / ${euro(offer)}</span></div>
         <div class="gg-barrow">
           <span>0%</span>
-          <div class="gg-track"><div class="gg-fill orange" style="width:${Math.min(payQuote,100)}%">${p1(payQuote)}</div></div>
+          <div class="gg-track"><div class="gg-fill orange" data-w="${Math.min(payQuote,100)}%">${p1(payQuote)}</div></div>
           <span>100%</span>
         </div>
 
@@ -65,7 +69,7 @@
         <div class="gg-rowtitle"><span>Fortschritt</span><span>Soll 100%</span></div>
         <div class="gg-barrow">
           <span>0%</span>
-          <div class="gg-track"><div class="gg-fill green" style="width:${Math.min(wProg,100)}%">${p1(wProg)}</div></div>
+          <div class="gg-track"><div class="gg-fill green" data-w="${Math.min(wProg,100)}%">${p1(wProg)}</div></div>
           <span>100%</span>
         </div>
 
@@ -76,11 +80,12 @@
     </div>
   `;
 
+  // Animate bars
   requestAnimationFrame(()=>{
     root.querySelectorAll(".gg-fill").forEach(el=>{
-      const w = el.style.width;
+      const w = el.getAttribute("data-w") || "0%";
       el.style.width = "0%";
-      requestAnimationFrame(()=> el.style.width = w);
+      requestAnimationFrame(()=> { el.style.width = w; });
     });
   });
 })();
