@@ -15,14 +15,16 @@
       --stroke: rgba(148,163,184,.18);
       --text:#e2e8f0;
       --soft: rgba(226,232,240,.72);
-      --brand: rgba(59,130,246,.95);
 
       --r: 18px;
       --gap: 12px;
       --pad: 14px;
-      --sidebarW: 290px;
-      --topH: 56px;
 
+      /* Always-on sidebar: desktop 290, mobile 88 */
+      --sidebarW: 290px;
+      --sidebarWm: 88px;
+
+      --topH: 56px;
       --shadow: 0 20px 60px rgba(0,0,0,.35);
     }
 
@@ -36,30 +38,30 @@
         radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 35%),
         radial-gradient(circle at 80% 0%, rgba(34,197,94,.12), transparent 35%),
         var(--bg);
-      overflow:auto; /* wichtig: kein overflow:hidden -> keine iPad Overlap-Bugs */
+      overflow:hidden; /* scroll happens in main */
     }
 
-    /* ===== App Layout: Desktop = 2 Spalten, Mobile = 1 Spalte ===== */
+    /* ===== Shell ===== */
     .app{
-      min-height: 100dvh;
+      height: 100dvh;
       display:grid;
       grid-template-columns: var(--sidebarW) 1fr;
-      grid-template-rows: 1fr;
-      align-items:stretch;
+      min-height:0;
     }
 
-    /* ===== Sidebar (Desktop) ===== */
+    /* ===== Sidebar (always visible) ===== */
     .sidebar{
+      height: 100dvh;
       position: sticky;
       top: 0;
-      height: 100dvh;
       align-self: start;
       border-right:1px solid var(--stroke);
-      background: rgba(2,6,23,.35);
+      background: rgba(2,6,23,.55);
       backdrop-filter: blur(10px);
       display:flex;
       flex-direction:column;
       min-height:0;
+      overflow:hidden;
     }
 
     .brand{
@@ -68,6 +70,7 @@
       align-items:center;
       gap:10px;
       border-bottom:1px solid var(--stroke);
+      flex:0 0 auto;
     }
     .brand-dot{
       width:12px;height:12px;border-radius:999px;
@@ -86,6 +89,7 @@
       overflow:auto;
       -webkit-overflow-scrolling: touch;
       min-height:0;
+      flex:1 1 auto;
     }
 
     .nav-label{
@@ -118,8 +122,9 @@
       box-shadow: 0 0 0 4px rgba(59,130,246,.10);
       background: rgba(2,6,23,.45);
     }
+
     .nav-ic{
-      width:30px;height:30px;border-radius:11px;
+      width:32px;height:32px;border-radius:12px;
       display:grid;place-items:center;
       background: rgba(59,130,246,.12);
       border: 1px solid rgba(59,130,246,.18);
@@ -141,6 +146,7 @@
       justify-content:space-between;
       gap:10px;
       align-items:center;
+      flex:0 0 auto;
     }
 
     .chip{
@@ -154,14 +160,13 @@
     /* ===== Main ===== */
     .main{
       min-width:0;
+      min-height:0;
       display:flex;
       flex-direction:column;
     }
 
     .topbar{
-      position: sticky;
-      top: 0;
-      z-index: 20;
+      flex:0 0 auto;
       height: var(--topH);
       display:flex;
       align-items:center;
@@ -169,11 +174,10 @@
       gap: 10px;
       padding: 10px var(--pad);
       border-bottom:1px solid var(--stroke);
-      background: rgba(2,6,23,.55);
-      backdrop-filter: blur(12px);
+      background: rgba(2,6,23,.45);
+      backdrop-filter: blur(10px);
     }
 
-    .top-left{ display:flex; align-items:center; gap:10px; min-width:0; }
     .page-title{ display:flex; flex-direction:column; min-width:0; }
     .page-title h1{
       margin:0;
@@ -215,6 +219,10 @@
     }
 
     .content{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
       padding: var(--pad);
       display:flex;
       justify-content:center;
@@ -254,7 +262,6 @@
     }
     .card-title{ font-size:13px; font-weight:950; margin:0; }
     .card-sub{ font-size:11px; color: var(--soft); margin-top:3px; line-height:1.25; }
-
     .card-body{ padding: 12px 14px 14px; }
 
     .tiles{
@@ -265,7 +272,7 @@
     .tile{
       border-radius: 14px;
       border:1px solid rgba(148,163,184,.14);
-      background: rgba(2,6,23,.35);
+      background: rgba(2,6,23,.30);
       padding: 12px;
       min-height: 92px;
     }
@@ -278,144 +285,28 @@
     .tile .v{ margin-top:6px; font-size:16px; font-weight:950; }
     .tile .h{ margin-top:6px; font-size:11px; color: rgba(226,232,240,.70); line-height:1.25; }
 
-    .links{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
+    /* Mobile: Sidebar stays, but collapses to icon bar */
+    @media (max-width: 900px){
+      .app{ grid-template-columns: var(--sidebarWm) 1fr; }
+      .brand{ padding: 14px 10px 10px; }
+      .brand-title, .brand-sub{ display:none; }
 
-    /* ===== Mobile Drawer ===== */
-    .burger{
-      display:none;
-      width:40px;height:40px;border-radius:12px;
-      border:1px solid rgba(148,163,184,.18);
-      background: rgba(15,23,42,.55);
-      color: var(--text);
-      font-size:18px;
-      cursor:pointer;
-    }
+      .nav a{ padding: 10px; justify-content:center; }
+      .nav-txt{ display:none; }
+      .nav-ic{ width:40px; height:40px; border-radius:14px; font-size:14px; }
 
-    .drawer{
-      display:none;
-    }
-
-    @media (max-width: 980px){
-      .app{ grid-template-columns: 1fr; }
-      .sidebar{ display:none; }
-
-      .burger{ display:inline-grid; place-items:center; }
-
-      .drawer{
-        display:block;
-        position: fixed;
-        inset: 0;
-        z-index: 60;
-        pointer-events:none;
-      }
-
-      .drawer .backdrop{
-        position:absolute; inset:0;
-        background: rgba(0,0,0,.45);
-        opacity:0;
-        transition: opacity .22s ease;
-      }
-
-      .drawer .panel{
-        position:absolute;
-        inset: 0 auto 0 0;
-        width: min(var(--sidebarW), 86vw);
-        height: 100%;
-        background: rgba(2,6,23,.92);
-        border-right:1px solid rgba(148,163,184,.18);
-        transform: translateX(-102%);
-        transition: transform .22s ease;
-        box-shadow: var(--shadow);
-        display:flex;
-        flex-direction:column;
-        min-height:0;
-      }
-
-      .drawer.open{ pointer-events:auto; }
-      .drawer.open .backdrop{ opacity:1; }
-      .drawer.open .panel{ transform: translateX(0); }
+      .sidebar-footer{ padding: 10px 10px 12px; justify-content:center; }
+      .sidebar-footer .chip{ display:none; }
 
       .tiles{ grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 1100px){
-      .tiles{ grid-template-columns: 1fr; }
+      .top-right a.btn-primary{ display:none; } /* Platz sparen */
     }
   </style>
 </head>
 
 <body>
-  <!-- Mobile drawer (separate from desktop sidebar, no overlap mess) -->
-  <div class="drawer" id="drawer" aria-hidden="true">
-    <div class="backdrop" id="drawerBackdrop"></div>
-    <aside class="panel" role="dialog" aria-modal="true" aria-label="Menü">
-      <div class="brand">
-        <div class="brand-dot"></div>
-        <div style="min-width:0">
-          <div class="brand-title">Bücking Dashboard</div>
-          <div class="brand-sub">Immobilien · Projekte · KPIs</div>
-        </div>
-      </div>
-
-      <nav class="nav" id="navMobile">
-        <a href="./index.html" data-title="Übersicht" data-sub="Startseite / Quick KPIs" class="active">
-          <div class="nav-ic">⌂</div>
-          <div class="nav-txt">
-            <div class="nav-title">Übersicht</div>
-            <div class="nav-sub">Startseite / Quick KPIs</div>
-          </div>
-        </a>
-
-        <div class="nav-label">Projekte</div>
-
-        <a href="./view-projects.html" data-title="Projekte / Bau" data-sub="Module: Gesamt + Gewerke">
-          <div class="nav-ic">🏗</div>
-          <div class="nav-txt">
-            <div class="nav-title">Projekte / Bau</div>
-            <div class="nav-sub">Module: Gesamt + Gewerke</div>
-          </div>
-        </a>
-
-        <a href="./view-finance.html" data-title="Finanzen" data-sub="Budget, Cashflow, Forecast">
-          <div class="nav-ic">€</div>
-          <div class="nav-txt">
-            <div class="nav-title">Finanzen</div>
-            <div class="nav-sub">Budget, Cashflow, Forecast</div>
-          </div>
-        </a>
-
-        <a href="./view-vermietung.html" data-title="Vermietung" data-sub="Leerstand, Mieten, Anfragen">
-          <div class="nav-ic">🏠</div>
-          <div class="nav-txt">
-            <div class="nav-title">Vermietung</div>
-            <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
-          </div>
-        </a>
-
-        <div class="nav-label">Tools</div>
-
-        <a href="./admin.html" data-title="Admin" data-sub="Uploads, Settings, Debug">
-          <div class="nav-ic">⚙</div>
-          <div class="nav-txt">
-            <div class="nav-title">Admin</div>
-            <div class="nav-sub">Uploads, Settings, Debug</div>
-          </div>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <span class="chip">Status: Online</span>
-        <button class="btn" id="drawerClose">Schließen</button>
-      </div>
-    </aside>
-  </div>
-
   <div class="app">
-    <!-- Desktop sidebar -->
+    <!-- Sidebar always visible -->
     <aside class="sidebar" aria-label="Navigation">
       <div class="brand">
         <div class="brand-dot"></div>
@@ -425,7 +316,7 @@
         </div>
       </div>
 
-      <nav class="nav" id="navDesktop">
+      <nav class="nav" id="nav">
         <a href="./index.html" data-title="Übersicht" data-sub="Startseite / Quick KPIs" class="active">
           <div class="nav-ic">⌂</div>
           <div class="nav-txt">
@@ -472,37 +363,33 @@
       </nav>
 
       <div class="sidebar-footer">
-        <span class="chip">Status: Online</span>
         <span class="chip" id="clockSide">—</span>
+        <span class="chip">online</span>
       </div>
     </aside>
 
     <!-- Main -->
     <section class="main">
       <header class="topbar">
-        <div class="top-left">
-          <button class="burger" id="burger" aria-label="Menü öffnen">≡</button>
-          <div class="page-title">
-            <h1 id="pageTitle">Übersicht</h1>
-            <div id="pageSub">Startseite / Quick KPIs</div>
-          </div>
+        <div class="page-title">
+          <h1 id="pageTitle">Übersicht</h1>
+          <div id="pageSub">Startseite / Quick KPIs</div>
         </div>
         <div class="top-right">
           <span class="chip" id="clockTop">—</span>
-          <a class="btn btn-primary" href="./view-projects.html">🏗 Projekte öffnen</a>
+          <a class="btn btn-primary" href="./view-projects.html">🏗 Projekte</a>
         </div>
       </header>
 
       <main class="content">
         <div class="container">
-          <!-- Hero / Quick actions -->
           <section class="card">
             <div class="card-header">
               <div>
                 <div class="card-title">Start</div>
-                <div class="card-sub">Schnellzugriffe, Status und nächste Schritte.</div>
+                <div class="card-sub">Always-On Sidebar: Navigation bleibt links, Main scrollt stabil (iPad-safe).</div>
               </div>
-              <div class="links">
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
                 <a class="btn" href="./view-projects.html">🏗 Projekte / Bau</a>
                 <a class="btn" href="./admin.html">⚙ Admin</a>
               </div>
@@ -512,12 +399,12 @@
                 <div class="tile">
                   <div class="k">Heute</div>
                   <div class="v" id="todayTxt">—</div>
-                  <div class="h">Sauberes iPad-Layout ohne überlappende Fenster.</div>
+                  <div class="h">Keine überlappenden Layer mehr: nur Sidebar + Main.</div>
                 </div>
                 <div class="tile">
                   <div class="k">Projekte</div>
                   <div class="v">Baumstraße 35</div>
-                  <div class="h">Projekt-View mit Gesamtmodul + 10 Gewerke.</div>
+                  <div class="h">Projekt-View: Gesamtmodul + 10 Gewerke.</div>
                 </div>
                 <div class="tile">
                   <div class="k">Nächster Ausbau</div>
@@ -528,33 +415,19 @@
             </div>
           </section>
 
-          <!-- System / Status -->
           <section class="grid">
             <section class="card" style="grid-column: span 12;">
               <div class="card-header">
                 <div>
-                  <div class="card-title">Status</div>
-                  <div class="card-sub">Kurzer Systemcheck für typische Ursachen von „leer“ / Cache.</div>
+                  <div class="card-title">Schnellzugriff</div>
+                  <div class="card-sub">Direkt in die wichtigsten Views.</div>
                 </div>
               </div>
-              <div class="card-body">
-                <div class="tiles">
-                  <div class="tile">
-                    <div class="k">Cache-Hinweis</div>
-                    <div class="v">Safari</div>
-                    <div class="h">Wenn irgendwas „nicht aktualisiert“: URL mit <strong>?v=1</strong> laden.</div>
-                  </div>
-                  <div class="tile">
-                    <div class="k">Ordner</div>
-                    <div class="v">dashboard/</div>
-                    <div class="h">Achte auf Kleinschreibung: <strong>dashboard</strong> ≠ Dashboard.</div>
-                  </div>
-                  <div class="tile">
-                    <div class="k">Views</div>
-                    <div class="v">Modular</div>
-                    <div class="h">`view-projects.html` ist eigenständig & responsiv (iPad + Mobile).</div>
-                  </div>
-                </div>
+              <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
+                <a class="btn btn-primary" href="./view-projects.html">🏗 Projekte / Bau</a>
+                <a class="btn" href="./view-finance.html">€ Finanzen</a>
+                <a class="btn" href="./view-vermietung.html">🏠 Vermietung</a>
+                <a class="btn" href="./admin.html">⚙ Admin</a>
               </div>
             </section>
           </section>
@@ -566,30 +439,6 @@
 
   <script>
     (function(){
-      const drawer = document.getElementById("drawer");
-      const burger = document.getElementById("burger");
-      const backdrop = document.getElementById("drawerBackdrop");
-      const closeBtn = document.getElementById("drawerClose");
-
-      function openDrawer(){
-        drawer.classList.add("open");
-        drawer.setAttribute("aria-hidden","false");
-      }
-      function closeDrawer(){
-        drawer.classList.remove("open");
-        drawer.setAttribute("aria-hidden","true");
-      }
-
-      burger && burger.addEventListener("click", openDrawer);
-      backdrop && backdrop.addEventListener("click", closeDrawer);
-      closeBtn && closeBtn.addEventListener("click", closeDrawer);
-
-      // Close drawer when a link is clicked (mobile)
-      document.getElementById("navMobile")?.addEventListener("click", (e)=>{
-        const a = e.target.closest("a");
-        if(a) closeDrawer();
-      });
-
       // Clock
       const clockTop = document.getElementById("clockTop");
       const clockSide = document.getElementById("clockSide");
@@ -605,33 +454,23 @@
       }
       tick(); setInterval(tick, 15000);
 
-      // Active nav highlight
+      // Active nav highlight + header title/sub
       const path = (location.pathname || "").toLowerCase();
-      function setActive(navId){
-        const nav = document.getElementById(navId);
-        if(!nav) return;
-        const links = Array.from(nav.querySelectorAll("a[href]"));
-        links.forEach(a => a.classList.remove("active"));
+      const nav = document.getElementById("nav");
+      const links = Array.from(nav.querySelectorAll("a[href]"));
+      links.forEach(a => a.classList.remove("active"));
 
-        const match = links.find(a=>{
-          const href = (a.getAttribute("href")||"").toLowerCase();
-          if(!href) return false;
-          const normalized = href.replace("./","/").replace("//","/");
-          return path.endsWith(normalized);
-        }) || links[0];
+      const match = links.find(a=>{
+        const href = (a.getAttribute("href")||"").toLowerCase();
+        const normalized = href.replace("./","/").replace("//","/");
+        return path.endsWith(normalized);
+      }) || links[0];
 
-        if(match){
-          match.classList.add("active");
-          const title = match.getAttribute("data-title") || "Dashboard";
-          const sub = match.getAttribute("data-sub") || "";
-          const pt = document.getElementById("pageTitle");
-          const ps = document.getElementById("pageSub");
-          if(pt) pt.textContent = title;
-          if(ps) ps.textContent = sub;
-        }
+      if(match){
+        match.classList.add("active");
+        document.getElementById("pageTitle").textContent = match.getAttribute("data-title") || "Dashboard";
+        document.getElementById("pageSub").textContent = match.getAttribute("data-sub") || "";
       }
-      setActive("navDesktop");
-      setActive("navMobile");
     })();
   </script>
 </body>
