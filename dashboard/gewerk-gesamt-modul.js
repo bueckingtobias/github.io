@@ -4,7 +4,6 @@
 
   function euro(n){ return (Number(n)||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}); }
   function p1(n){ return (Number(n)||0).toFixed(1).replace(".",",") + " %"; }
-
   function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
 
   function compute(allRows){
@@ -20,7 +19,7 @@
       const pr = Number(r["Baufortschritt (%)"]||0);
 
       const payQuote = o>0 ? (p/o*100) : 0;
-      const delta = payQuote - pr;              // positive = Geld voraus
+      const delta = payQuote - pr;
       const warn = o>0 && delta > 8;
 
       offer += o; paid += p; open += op; weightedProg += pr * o;
@@ -36,19 +35,9 @@
     const eac = wProg>0 ? (paid/(wProg/100)) : 0;
     const eacDelta = eac - offer;
 
-    // Top risks: highest delta
-    const topRisks = enriched
-      .slice()
-      .sort((a,b)=> (b.delta - a.delta))
-      .slice(0,3);
+    const topRisks = enriched.slice().sort((a,b)=> (b.delta - a.delta)).slice(0,3);
+    const topBudget = enriched.slice().sort((a,b)=> (b.o - a.o)).slice(0,3);
 
-    // Top budget: highest offer
-    const topBudget = enriched
-      .slice()
-      .sort((a,b)=> (b.o - a.o))
-      .slice(0,3);
-
-    // Budget mix (top 6 by offer + rest as "Andere")
     const mixSorted = enriched.slice().sort((a,b)=>b.o-a.o);
     const topMix = mixSorted.slice(0,6);
     const otherSum = mixSorted.slice(6).reduce((s,x)=>s+x.o,0);
@@ -58,29 +47,37 @@
       ...(otherSum>0 ? [{ label:"Andere", value:otherSum }] : [])
     ];
 
+    const timeline = {
+      progress: wProg,
+      label:
+        wProg < 20 ? "Projektstart / Vorbereitung" :
+        wProg < 45 ? "Rohbau & Gewerke anlaufen" :
+        wProg < 70 ? "Innenausbau / Ausbauphase" :
+        wProg < 92 ? "Fertigstellung / Abnahmen" :
+                     "Abschluss / Übergabe"
+    };
+
     return {
-      rows,
-      enriched,
+      rows, enriched,
       offer, paid, open, wProg, payQuoteTotal, rest, eac, eacDelta,
       warnCount,
       topRisks,
       topBudget,
-      mix
+      mix,
+      timeline
     };
   }
 
-  // Simple palette for segments (fixed set)
-  const SEG_COLORS = [
-    "#2563eb","#3b82f6","#22c55e","#f97316","#a855f7","#06b6d4","#64748b"
-  ];
+  const SEG_COLORS = ["#2563eb","#3b82f6","#22c55e","#f97316","#a855f7","#06b6d4","#64748b"];
 
   function render(rootEl, rowsRaw, title){
     if(!rootEl) return;
+
     const s = compute(rowsRaw);
     const isWarn = s.offer>0 && (s.payQuoteTotal > (s.wProg + 8));
 
-    // Mix segments
     const mixTotal = s.mix.reduce((a,b)=>a + (b.value||0), 0) || 1;
+
     const segHTML = s.mix.map((m,i)=>{
       const w = clamp((m.value/mixTotal*100), 0, 100);
       const c = SEG_COLORS[i % SEG_COLORS.length];
@@ -200,6 +197,22 @@
           <div class="gg-mixlegend">${legendHTML}</div>
         </div>
 
+        <div class="gg-timeline">
+          <div class="gg-timeline-head">
+            <div class="gg-timeline-title">Projekt-Timeline</div>
+            <div class="gg-timeline-sub">${s.timeline.label}</div>
+          </div>
+          <div class="gg-timeline-track">
+            <div class="gg-timeline-fill" data-w="${clamp(s.timeline.progress,0,100)}%"></div>
+          </div>
+          <div class="gg-timeline-steps">
+            <div>Start</div>
+            <div>Ausbau</div>
+            <div>Innen</div>
+            <div>Fertig</div>
+          </div>
+        </div>
+
         <div class="gg-insights">
           <div class="gg-box">
             <div class="gg-boxhead">
@@ -228,6 +241,12 @@
 
     requestAnimationFrame(()=>{
       rootEl.querySelectorAll(".gg-fill").forEach(el=>{
+        const w = el.getAttribute("data-w") || "0%";
+        el.style.width = "0%";
+        requestAnimationFrame(()=>{ el.style.width = w; });
+      });
+
+      rootEl.querySelectorAll(".gg-timeline-fill").forEach(el=>{
         const w = el.getAttribute("data-w") || "0%";
         el.style.width = "0%";
         requestAnimationFrame(()=>{ el.style.width = w; });
