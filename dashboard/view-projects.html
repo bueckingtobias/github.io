@@ -6,132 +6,318 @@
   <title>Projekte / Bau</title>
 
   <style>
+    :root{
+      --pad: 14px;
+      --gap: 12px;
+      --maxw: 1200px;
+      --bg:#0b1220;
+      --soft: rgba(226,232,240,.70);
+      --stroke: rgba(148,163,184,.18);
+      --r: 18px;
+    }
+    html,body{height:100%}
     body{
       margin:0;
-      background:#0b1220;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(34,197,94,.12), transparent 35%),
+        var(--bg);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
       color:#e2e8f0;
+      overflow:hidden;
     }
 
-    .view-root{
-      height:100vh;
+    .view-root{height:100%;display:flex;flex-direction:column;min-height:0;}
+    .header{
+      padding: 14px var(--pad) 10px;
+      border-bottom:1px solid var(--stroke);
+      background: rgba(2,6,23,.25);
       display:flex;
-      flex-direction:column;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .title{margin:0;font-size:16px;font-weight:900}
+    .sub{margin-top:4px;font-size:12px;color:var(--soft)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      padding: 6px;
+      border:1px solid var(--stroke);
+      border-radius: 999px;
+      background: rgba(15,23,42,.35);
+    }
+    .tab{
+      cursor:pointer;
+      font-size:11px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+      color: rgba(226,232,240,.75);
+      user-select:none;
+      white-space:nowrap;
+    }
+    .tab.active{
+      border-color: rgba(148,163,184,.35);
+      background: rgba(2,6,23,.35);
+      color:#e2e8f0;
+      font-weight:800;
     }
 
-    .page-body{
-      flex:1;
+    .body{
+      flex:1; min-height:0;
       overflow:auto;
-      padding:16px;
+      -webkit-overflow-scrolling: touch;
+      padding: var(--pad);
       display:flex;
       justify-content:center;
     }
-
     .content{
       width:100%;
-      max-width:1200px;
+      max-width: var(--maxw);
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap: var(--gap);
+      min-height:0;
+    }
+
+    /* Sticky Gesamtmodul */
+    .sticky-wrap{
+      position: sticky;
+      top: 10px;
+      z-index: 5;
     }
 
     .modules-grid{
       display:grid;
-      grid-template-columns:repeat(2, minmax(0,1fr));
-      gap:12px;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: var(--gap);
+      align-items:start;
+    }
+    .span-2{ grid-column: 1 / -1; }
+
+    @media (max-width: 900px){
+      :root{ --pad: 12px; }
+      .modules-grid{ grid-template-columns: 1fr; }
+      .span-2{ grid-column: auto; }
+      .sticky-wrap{ top: 8px; }
     }
 
-    .span-2{
-      grid-column:1 / -1;
+    .hint{
+      font-size:12px;color:var(--soft);
+      padding: 0 2px;
     }
-
-    @media (max-width:900px){
-      .modules-grid{
-        grid-template-columns:1fr;
-      }
-      .span-2{
-        grid-column:auto;
-      }
+    .error{
+      border-radius: 14px;
+      border: 1px solid rgba(248,113,113,.35);
+      background: rgba(2,6,23,.35);
+      padding: 12px;
+      color: rgba(254,202,202,.95);
+      font-size: 12px;
+      white-space: pre-wrap;
+      display:none;
     }
   </style>
 </head>
 
 <body>
-<div class="view-root">
-  <div class="page-body">
-    <div class="content">
+  <div class="view-root">
+    <div class="header">
+      <div>
+        <h1 class="title">Projekte / Bau</h1>
+        <div class="sub">Gesamtübersicht (sticky) + Gewerke (responsive).</div>
+      </div>
 
-      <div id="gesamt-slot" class="span-2"></div>
+      <div class="controls">
+        <div class="tabs" id="projectTabs"></div>
+      </div>
+    </div>
 
-      <div class="modules-grid" id="gewerke-grid"></div>
+    <div class="body">
+      <div class="content">
 
+        <div class="sticky-wrap">
+          <div id="gesamt-slot"></div>
+        </div>
+
+        <div class="modules-grid" id="gewerke-grid"></div>
+
+        <div class="hint" id="hint"></div>
+        <div class="error" id="errorBox"></div>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-/* =========================
-   1. Excel-ähnliche Daten
-   (später ersetzt durch projects.xlsx)
-========================= */
-const excelRows = [
-  {"Sortierung":1,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Rohbau","Handwerker":"Meyer","Angebotssumme (€)":320000,"Zahlungen bisher (€)":210000,"Offene Rechnungen (€)":18000,"Baufortschritt (%)":70},
-  {"Sortierung":2,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Elektro","Handwerker":"Schröder","Angebotssumme (€)":95000,"Zahlungen bisher (€)":65000,"Offene Rechnungen (€)":9000,"Baufortschritt (%)":30},
-  {"Sortierung":3,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Heizung/Sanitär","Handwerker":"Müller","Angebotssumme (€)":145000,"Zahlungen bisher (€)":60000,"Offene Rechnungen (€)":12000,"Baufortschritt (%)":40},
-  {"Sortierung":4,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Fenster/Türen","Handwerker":"Becker","Angebotssumme (€)":78000,"Zahlungen bisher (€)":52000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":85}
-];
+/* =============================
+   SETTINGS: PATHS
+   ============================= */
 
-/* global für Gesamtmodul */
-window.__PROJECT_ROWS__ = excelRows;
+// Wenn view-projects.html im gleichen /Dashboard Ordner liegt:
+const BASE_PATH = "./";
 
-/* =========================
-   2. Helper: HTML laden
-========================= */
-async function loadHTML(url){
-  const res = await fetch(url);
-  return await res.text();
+// Wenn view-projects.html NICHT im /Dashboard liegt, aber Module dort liegen, nimm:
+// const BASE_PATH = "./Dashboard/";
+
+/* Module files */
+const FILE_GESAMT = BASE_PATH + "gewerk-gesamt-modul.html";
+const FILE_GEWERK = BASE_PATH + "gewerk-modul.html";
+
+/* =============================
+   CORE: HTML loader + script reinject
+   ============================= */
+async function loadModuleInto(el, url){
+  const res = await fetch(url, { cache: "no-store" });
+  if(!res.ok) throw new Error(`Konnte ${url} nicht laden (HTTP ${res.status}). Pfad/Case prüfen!`);
+  const html = await res.text();
+  el.innerHTML = html;
+
+  // Re-inject scripts (innerHTML führt scripts NICHT aus)
+  const scripts = Array.from(el.querySelectorAll("script"));
+  scripts.forEach(old => {
+    const s = document.createElement("script");
+    // attributes übernehmen
+    Array.from(old.attributes).forEach(a => s.setAttribute(a.name, a.value));
+    s.textContent = old.textContent;
+    old.replaceWith(s);
+  });
 }
 
-/* =========================
-   3. Gesamtmodul laden
-========================= */
-(async ()=>{
-  const html = await loadHTML("./gewerk-gesamt-modul.html");
-  document.getElementById("gesamt-slot").innerHTML = html;
-})();
+/* =============================
+   DATA: Projekte (jetzt Dummy, später Excel)
+   ============================= */
 
-/* =========================
-   4. 10x Gewerkmodule laden
-========================= */
-(async ()=>{
-  const grid = document.getElementById("gewerke-grid");
-  const tpl = await loadHTML("./gewerk-modul.html");
+// Excel-ähnliche Rows pro Projekt (später aus projects.xlsx)
+const PROJECTS = [
+  {
+    key: "baum35",
+    name: "Baumstraße 35",
+    rows: [
+      {"Sortierung":1,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Rohbau","Handwerker":"Meyer","Angebotssumme (€)":320000,"Zahlungen bisher (€)":210000,"Offene Rechnungen (€)":18000,"Baufortschritt (%)":70},
+      {"Sortierung":2,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Elektro","Handwerker":"Schröder","Angebotssumme (€)":95000,"Zahlungen bisher (€)":65000,"Offene Rechnungen (€)":9000,"Baufortschritt (%)":30},
+      {"Sortierung":3,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Heizung/Sanitär","Handwerker":"Müller","Angebotssumme (€)":145000,"Zahlungen bisher (€)":60000,"Offene Rechnungen (€)":12000,"Baufortschritt (%)":40},
+      {"Sortierung":4,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Fenster/Türen","Handwerker":"Becker","Angebotssumme (€)":78000,"Zahlungen bisher (€)":52000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":85},
+      {"Sortierung":5,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Dach","Handwerker":"Hofmann","Angebotssumme (€)":112000,"Zahlungen bisher (€)":90000,"Offene Rechnungen (€)":6000,"Baufortschritt (%)":90},
+      {"Sortierung":6,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Innenputz","Handwerker":"König","Angebotssumme (€)":54000,"Zahlungen bisher (€)":15000,"Offene Rechnungen (€)":11000,"Baufortschritt (%)":25},
+      {"Sortierung":7,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Bodenbeläge","Handwerker":"Nord","Angebotssumme (€)":68000,"Zahlungen bisher (€)":10000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":15},
+      {"Sortierung":8,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Fliesen","Handwerker":"Schulte","Angebotssumme (€)":42000,"Zahlungen bisher (€)":21000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":50},
+      {"Sortierung":9,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Außenanlagen","Handwerker":"Grünwerk","Angebotssumme (€)":60000,"Zahlungen bisher (€)":12000,"Offene Rechnungen (€)":8000,"Baufortschritt (%)":20},
+      {"Sortierung":10,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Photovoltaik","Handwerker":"Solar Bremen","Angebotssumme (€)":98000,"Zahlungen bisher (€)":49000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":45}
+    ]
+  },
+  {
+    key: "hof",
+    name: "Hof Ganderkesee",
+    rows: [
+      {"Sortierung":1,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Rohbau","Handwerker":"Meyer","Angebotssumme (€)":410000,"Zahlungen bisher (€)":310000,"Offene Rechnungen (€)":22000,"Baufortschritt (%)":78},
+      {"Sortierung":2,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Elektro","Handwerker":"Schröder","Angebotssumme (€)":120000,"Zahlungen bisher (€)":45000,"Offene Rechnungen (€)":14000,"Baufortschritt (%)":35}
+    ]
+  }
+];
 
-  excelRows
-    .filter(r => r["Aktiv (Ja/Nein)"] === "Ja")
-    .sort((a,b)=>a.Sortierung-b.Sortierung)
-    .slice(0,10)
-    .forEach(row=>{
-      const slot = document.createElement("div");
-      slot.innerHTML = tpl;
+let activeProjectKey = PROJECTS[0].key;
 
-      const payload = {
-        projekt:"Baumstraße 35",
-        gewerk: row.Gewerk + " – " + row.Handwerker,
-        angebot: row["Angebotssumme (€)"],
-        zahlungen: row["Zahlungen bisher (€)"],
-        offeneRechnungen: row["Offene Rechnungen (€)"],
-        fortschritt: row["Baufortschritt (%)"],
-        owner:"Tobi"
-      };
+/* =============================
+   RENDER: Tabs
+   ============================= */
+function renderTabs(){
+  const tabs = document.getElementById("projectTabs");
+  tabs.innerHTML = "";
+  PROJECTS.forEach(p=>{
+    const t = document.createElement("div");
+    t.className = "tab " + (p.key === activeProjectKey ? "active" : "");
+    t.textContent = p.name;
+    t.onclick = () => {
+      activeProjectKey = p.key;
+      renderTabs();
+      renderAll();
+      // scroll top (nice on mobile)
+      document.querySelector(".body").scrollTo({ top: 0, behavior: "smooth" });
+    };
+    tabs.appendChild(t);
+  });
+}
 
-      slot.querySelector(".gewerk-modul-root")
-        .dataset.payload = JSON.stringify(payload);
+/* =============================
+   RENDER: All modules
+   ============================= */
+async function renderAll(){
+  const errorBox = document.getElementById("errorBox");
+  const hint = document.getElementById("hint");
+  errorBox.style.display = "none";
+  errorBox.textContent = "";
 
-      grid.appendChild(slot);
-    });
-})();
+  const p = PROJECTS.find(x => x.key === activeProjectKey);
+  if(!p) return;
+
+  // global für Gesamtmodul
+  window.__PROJECT_ROWS__ = p.rows;
+
+  hint.textContent = `Projekt: ${p.name} · Module: ${Math.min(10, p.rows.length)} · Dateien: ${FILE_GESAMT} & ${FILE_GEWERK}`;
+
+  try{
+    // 1) Gesamt
+    await loadModuleInto(document.getElementById("gesamt-slot"), FILE_GESAMT);
+
+    // 2) Gewerke grid
+    const grid = document.getElementById("gewerke-grid");
+    grid.innerHTML = "";
+
+    const tplRes = await fetch(FILE_GEWERK, { cache: "no-store" });
+    if(!tplRes.ok) throw new Error(`Konnte ${FILE_GEWERK} nicht laden (HTTP ${tplRes.status}).`);
+    const tplHTML = await tplRes.text();
+
+    p.rows
+      .filter(r => (""+(r["Aktiv (Ja/Nein)"]||"")).toLowerCase().startsWith("j"))
+      .sort((a,b)=>(a["Sortierung"]||9999)-(b["Sortierung"]||9999))
+      .slice(0,10)
+      .forEach(row=>{
+        const slot = document.createElement("div");
+        slot.innerHTML = tplHTML;
+
+        // payload wie unser gewerk-modul.html erwartet
+        const payload = {
+          projekt: p.name,
+          gewerk: (row["Gewerk"]||"") + (row["Handwerker"] ? (" – " + row["Handwerker"]) : ""),
+          angebot: row["Angebotssumme (€)"] || 0,
+          zahlungen: row["Zahlungen bisher (€)"] || 0,
+          offeneRechnungen: row["Offene Rechnungen (€)"] || 0,
+          fortschritt: row["Baufortschritt (%)"] || 0,
+          owner: "Tobi",
+          lastUpdate: ""
+        };
+
+        const root = slot.querySelector(".gewerk-modul-root");
+        if(root) root.dataset.payload = JSON.stringify(payload);
+
+        // scripts reinject, damit das Modul rendert
+        const scripts = Array.from(slot.querySelectorAll("script"));
+        scripts.forEach(old=>{
+          const s = document.createElement("script");
+          Array.from(old.attributes).forEach(a => s.setAttribute(a.name, a.value));
+          s.textContent = old.textContent;
+          old.replaceWith(s);
+        });
+
+        grid.appendChild(slot);
+      });
+
+  } catch(err){
+    errorBox.style.display = "block";
+    errorBox.textContent =
+      "Fehler: " + (err?.message || err) + "\n\n" +
+      "Check:\n" +
+      "1) Liegt view-projects.html im selben Ordner wie die Module?\n" +
+      "2) BASE_PATH korrekt? (./ oder ./Dashboard/)\n" +
+      "3) Ordner-/Dateinamen exakt (Case!)\n";
+    console.error(err);
+  }
+}
+
+/* boot */
+renderTabs();
+renderAll();
 </script>
-
 </body>
 </html>
