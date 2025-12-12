@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Gesamtmodul Test (Baumstraße 35)</title>
+</head>
+<body style="margin:0;background:#0b1220;padding:18px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#e2e8f0">
+
+  <!-- WICHTIG: Mount muss existieren -->
+  <div id="portfolioHeader" style="max-width:1100px;margin:0 auto;"></div>
+
+  <script>
+    // ===== Helpers =====
+    function euro(n){
+      n = Number(n)||0;
+      return new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
+    }
+    function pct(n){
+      n = Number(n)||0;
+      return (Math.round(n*10)/10).toFixed(1).replace(".",",") + " %";
+    }
+    function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+
+    // ===== Mapping: exakt nach deiner Excel-Spaltenlogik =====
+    // Excel-Vorlage hatte u.a.:
+    // "Aktiv (Ja/Nein)", "Gewerk", "Handwerker", "Angebotssumme (€)", "Zahlungen bisher (€)", "Offene Rechnungen (€)", "Baufortschritt (%)"
+    function mapFromExcelTemplateRow(r){
+      return {
+        aktiv: r["Aktiv (Ja/Nein)"] ?? r["Aktiv"] ?? "Ja",
+        gewerk: r["Gewerk"] ?? "",
+        handwerker: r["Handwerker"] ?? "",
+        angebot: r["Angebotssumme (€)"] ?? 0,
+        zahlungen: r["Zahlungen bisher (€)"] ?? 0,
+        offeneRechnungen: r["Offene Rechnungen (€)"] ?? 0,
+        fortschritt: r["Baufortschritt (%)"] ?? 0,
+        sortierung: r["Sortierung"] ?? 9999
+      };
+    }
+
+    // ===== Renderer Gesamtmodul =====
+    function renderGesamtUebersicht(mount, excelRows, opts={}){
+      const rows = (excelRows||[])
+        .map(mapFromExcelTemplateRow)
+        .filter(r => (""+(r.aktiv||"")).toLowerCase().startsWith("j"))
+        .sort((a,b)=>(a.sortierung??9999)-(b.sortierung??9999));
+
+      let totalOffer=0, totalPaid=0, totalOpen=0, weightedProg=0;
+      const risks = [];
+
+      rows.forEach(r=>{
+        const angebot = Number(r.angebot)||0;
+        const paid    = Number(r.zahlungen)||0;
+        const open    = Number(r.offeneRechnungen)||0;
+        const prog    = clamp(Number(r.fortschritt)||0, 0, 100);
+
+        totalOffer += angebot;
+        totalPaid  += paid;
+        totalOpen  += open;
+        weightedProg += prog * angebot;
+
+        const kostenQuote = angebot>0 ? (paid/angebot*100) : 0;
+        const deltaPP = kostenQuote - prog;
+
+        risks.push({ name: r.gewerk || r.handwerker || "Gewerk", deltaPP, angebot, paid, prog });
+      });
+
+      const wProg = totalOffer>0 ? (weightedProg/totalOffer) : 0;
+      const kostenQuoteTotal = totalOffer>0 ? (totalPaid/totalOffer*100) : 0;
+      const rest = totalOffer - totalPaid;
+
+      const eac = wProg>0 ? (totalPaid/(wProg/100)) : 0;
+      const eacDelta = eac - totalOffer;
+
+      const warnThresholdPP = opts.warnThresholdPP ?? 8;
+      const isWarn = (totalOffer>0) && (kostenQuoteTotal > (wProg + warnThresholdPP));
+
+      const topRisks = risks
+        .filter(x => x.deltaPP > 0.1)
+        .sort((a,b)=>b.deltaPP-a.deltaPP)
+        .slice(0,4);
+
+      mount.innerHTML = `
+        <style>
+          .portfolio-card{
+            border-radius:18px;
+            border:1px solid rgba(148,163,184,.35);
+            background: radial-gradient(circle at top, rgba(148,163,184,.18), rgba(15,23,42,.92));
+            overflow:hidden; position:relative;
+          }
+          .portfolio-card::before{
+            content:""; position:absolute; inset:0; pointer-events:none;
+            background:
+              radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 40%),
+              radial-gradient(circle at 70% 0%, rgba(34,197,94,.12), transparent 45%),
+              radial-gradient(circle at 90% 10%, rgba(249,115,22,.12), transparent 45%);
+          }
+          .head{position:relative;padding:16px 16px 12px;border-bottom:1px solid rgba(148,163,184,.18);display:flex;justify-content:space-between;gap:12px}
+          .title{margin:0;font-size:15px;font-weight:900}
+          .sub{margin-top:6px;font-size:12px;color:rgba(226,232,240,.70);display:flex;gap:8px;flex-wrap:wrap}
+          .pill{font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(148,163,184,.45);color:rgba(226,232,240,.72);background:rgba(2,6,23,.25);white-space:nowrap}
+          .status{font-size:10px;padding:2px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.45);background:rgba(2,6,23,.25);white-space:nowrap;height:fit-content}
+          .status.ok{border-color:rgba(34,197,94,.55);color:rgba(187,247,208,.95)}
+          .status.warn{border-color:rgba(248,113,113,.65);color:rgba(254,202,202,.95)}
+          .body{position:relative;padding:12px 16px 16px;display:grid;grid-template-columns:1.15fr .85fr;gap:12px}
+          @media (max-width:900px){.body{grid-template-columns:1fr}}
+          .panel{border-radius:16px;border:1px solid rgba(148,163,184,.20);background:rgba(15,23,42,.62);padding:12px}
+          .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+          @media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+          .kpi{border-radius:14px;border:1px solid rgba(148,163,184,.20);background:rgba(15,23,42,.70);padding:10px;min-height:68px}
+          .kpi .l{font-size:11px;color:rgba(226,232,240,.70);text-transform:uppercase;letter-spacing:.05em}
+          .kpi .v{margin-top:6px;font-size:16px;font-weight:950;color:rgba(226,232,240,.92)}
+          .kpi .h{margin-top:4px;font-size:11px;color:rgba(226,232,240,.65)}
+          .rowtitle{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+          .rowtitle .t{font-size:12px;font-weight:900}
+          .rowtitle .s{font-size:11px;color:rgba(226,232,240,.70);white-space:nowrap}
+          .barrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;font-size:11px;color:rgba(226,232,240,.70)}
+          .track{position:relative;height:16px;border-radius:999px;background:rgba(2,6,23,.55);overflow:hidden;border:1px solid rgba(148,163,184,.16)}
+          .fill{position:absolute;inset:0 auto 0 0;width:0%;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:10px;font-weight:900;color:#fff;white-space:nowrap;transition:width .9s cubic-bezier(.16,1,.3,1)}
+          .orange{background:linear-gradient(90deg,#f97316,#fb923c)}
+          .green{background:linear-gradient(90deg,#22c55e,#4ade80)}
+          .meta{margin-top:8px;font-size:11px;color:rgba(226,232,240,.70);line-height:1.25}
+          .risk{display:flex;flex-direction:column;gap:8px}
+          .riskItem{border-radius:14px;border:1px solid rgba(148,163,184,.18);background:rgba(2,6,23,.25);padding:10px}
+          .riskTop{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:6px}
+          .riskTop .n{font-size:12px;font-weight:900}
+          .riskTop .d{font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(248,113,113,.55);color:rgba(254,202,202,.95);white-space:nowrap}
+          .riskSub{font-size:11px;color:rgba(226,232,240,.70);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+          @keyframes warnPulse{0%{box-shadow:0 0 0 0 rgba(248,113,113,.65)}60%{box-shadow:0 0 0 12px rgba(248,113,113,0)}100%{box-shadow:0 0 0 0 rgba(248,113,113,0)}}
+          .portfolio-card.is-warn{border-color:rgba(248,113,113,.65);animation:warnPulse 1.6s ease-out infinite}
+          .portfolio-card.is-ok{border-color:rgba(34,197,94,.50);box-shadow:0 0 0 1px rgba(34,197,94,.22)}
+        </style>
+
+        <section class="portfolio-card ${isWarn ? "is-warn" : "is-ok"}">
+          <div class="head">
+            <div>
+              <h2 class="title">${opts.title || "Baumstraße 35 – Gesamtübersicht"}</h2>
+              <div class="sub">
+                <span class="pill">Aktive Gewerke: ${rows.length}</span>
+                <span class="pill">Offen: ${euro(totalOpen)}</span>
+                <span class="pill">Warnschwelle: ${warnThresholdPP} pp</span>
+              </div>
+            </div>
+            <div class="status ${isWarn ? "warn" : "ok"}">${isWarn ? "Risiko: Kosten > Fortschritt" : "Status: OK"}</div>
+          </div>
+
+          <div class="body">
+            <div class="panel">
+              <div class="kpis">
+                <div class="kpi"><div class="l">Gesamtbudget</div><div class="v">${euro(totalOffer)}</div><div class="h">Summe Angebote</div></div>
+                <div class="kpi"><div class="l">Zahlungen</div><div class="v">${euro(totalPaid)}</div><div class="h">${pct(kostenQuoteTotal)} vom Budget</div></div>
+                <div class="kpi"><div class="l">Restbudget</div><div class="v">${euro(rest)}</div><div class="h">${rest < 0 ? "Über Budget" : "Verfügbar"}</div></div>
+                <div class="kpi"><div class="l">Fortschritt</div><div class="v">${pct(wProg)}</div><div class="h">Budget-gewichtet</div></div>
+              </div>
+
+              <div class="rowtitle"><div class="t">Kostenquote</div><div class="s">${euro(totalPaid)} / ${euro(totalOffer)}</div></div>
+              <div class="barrow">
+                <span>0%</span>
+                <div class="track"><div class="fill orange" data-w="${clamp(kostenQuoteTotal,0,100)}%">${pct(clamp(kostenQuoteTotal,0,100))}</div></div>
+                <span>100%</span>
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div class="rowtitle"><div class="t">Fortschritt</div><div class="s">Soll: 100%</div></div>
+              <div class="barrow">
+                <span>0%</span>
+                <div class="track"><div class="fill green" data-w="${clamp(wProg,0,100)}%">${pct(clamp(wProg,0,100))}</div></div>
+                <span>100%</span>
+              </div>
+
+              <div class="meta">
+                Forecast (EAC): <strong>${euro(eac)}</strong> · Forecast Δ: <strong>${euro(eacDelta)}</strong>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="rowtitle"><div class="t">Top Risiken</div><div class="s">${topRisks.length ? "größte Abweichungen" : "keine Auffälligkeiten"}</div></div>
+              <div class="risk">
+                ${
+                  topRisks.length
+                    ? topRisks.map(x => `
+                      <div class="riskItem">
+                        <div class="riskTop"><div class="n">${x.name}</div><div class="d">Δ ${pct(x.deltaPP)} pp</div></div>
+                        <div class="riskSub">
+                          <span>Kostenquote: ${pct(x.angebot>0 ? (x.paid/x.angebot*100) : 0)}</span>
+                          <span>Fortschritt: ${pct(x.prog)}</span>
+                          <span>Budget: ${euro(x.angebot)}</span>
+                        </div>
+                      </div>
+                    `).join("")
+                    : `<div class="meta">Alles im grünen Bereich.</div>`
+                }
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+
+      // Animate bars
+      requestAnimationFrame(() => {
+        mount.querySelectorAll(".fill").forEach(el=>{
+          el.style.width = el.getAttribute("data-w") || "0%";
+        });
+      });
+    }
+
+    // ===== TESTDATEN im Excel-Template-Format (genau wie die Spalten heißen) =====
+    const excelLikeRows = [
+      {"Sortierung":1,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Rohbau","Handwerker":"Meyer","Angebotssumme (€)":320000,"Zahlungen bisher (€)":210000,"Offene Rechnungen (€)":18000,"Baufortschritt (%)":70},
+      {"Sortierung":2,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Elektro","Handwerker":"Schröder","Angebotssumme (€)":95000,"Zahlungen bisher (€)":65000,"Offene Rechnungen (€)":9000,"Baufortschritt (%)":30},
+      {"Sortierung":3,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Heizung/Sanitär","Handwerker":"Müller","Angebotssumme (€)":145000,"Zahlungen bisher (€)":60000,"Offene Rechnungen (€)":12000,"Baufortschritt (%)":40},
+      {"Sortierung":4,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Fenster/Türen","Handwerker":"Becker","Angebotssumme (€)":78000,"Zahlungen bisher (€)":52000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":85}
+    ];
+
+    // Render
+    const mount = document.getElementById("portfolioHeader");
+    renderGesamtUebersicht(mount, excelLikeRows, { title:"Baumstraße 35 – Gesamtübersicht", warnThresholdPP: 8 });
+  </script>
+
+</body>
+</html>
