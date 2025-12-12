@@ -1,611 +1,137 @@
-<div class="view-root bau-view">
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Projekte / Bau</title>
+
   <style>
-    .bau-view {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      min-height: 0;
+    body{
+      margin:0;
+      background:#0b1220;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto;
+      color:#e2e8f0;
     }
 
-    .bau-card {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    .bau-card-body {
-      flex: 1;
-      min-height: 0;
-      padding: 10px 16px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      overflow: auto; /* falls es höher als der Screen ist */
-    }
-
-    /* ===== Top Summary – größer & abgegrenzt ===== */
-    .bau-summary-wrapper {
-      padding: 10px 12px;
-      border-radius: 14px;
-      margin-bottom: 6px;
-      border: 1px solid rgba(148,163,184,0.5);
-      background: radial-gradient(circle at top, rgba(148,163,184,0.25), rgba(15,23,42,0.95));
-    }
-    :root[data-theme="light"] .bau-summary-wrapper {
-      background: linear-gradient(135deg,#f3f4f6,#ffffff);
-      border-color:#cbd5f5;
-    }
-
-    .bau-summary {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 14px;
-      align-items: stretch;
-    }
-
-    @media (max-width: 800px) {
-      .bau-summary {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .bau-summary-item {
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.35), rgba(15,23,42,0.95));
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    :root[data-theme="light"] .bau-summary-item {
-      background: #ffffff;
-      border-color:#e5e7eb;
-    }
-
-    .bau-summary-label {
-      font-size: 12px;
-      color: var(--text-soft);
-      text-transform: uppercase;
-      letter-spacing: .03em;
-    }
-
-    .bau-summary-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 2px;
-    }
-
-    .bau-bar-row {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: 6px;
-      align-items: center;
-      font-size: 11px;
-    }
-
-    .bau-bar-min,
-    .bau-bar-max {
-      white-space: nowrap;
-      color: var(--text-soft);
-    }
-
-    .bau-bar-track {
-      position: relative;
-      border-radius: 999px;
-      height: 16px;
-      background: rgba(15,23,42,0.7);
-      overflow: hidden;
-    }
-    :root[data-theme="light"] .bau-bar-track {
-      background:#e5e7eb;
-    }
-
-    .bau-bar-fill {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 6px;
-      font-size: 10px;
-      font-weight: 600;
-      white-space: nowrap;
-      color:#ffffff;
-      width: 0; /* Start für Animation */
-      transition: width .9s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .bau-bar-fill span {
-      mix-blend-mode: screen;
-      text-shadow: 0 1px 2px rgba(0,0,0,.5);
-    }
-
-    .bau-bar-meta {
-      margin-top: 4px;
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    /* ===== Farben NUR für Gesamtbereich ===== */
-    .bar-payments { background: linear-gradient(90deg,#f97316,#fb923c); }
-    .bar-progress { background: linear-gradient(90deg,#22c55e,#4ade80); }
-
-    /* ===== Contractor grid ===== */
-    .bau-contractors-grid {
-      flex: 1;
-      min-height: 0;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    @media (max-width: 1100px) {
-      .bau-contractors-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .contractor-card {
-      border-radius: 12px;
-      border: 1px solid rgba(148,163,184,0.4);
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      background: rgba(15,23,42,0.9);
-    }
-    :root[data-theme="light"] .contractor-card {
-      background:#ffffff;
-      border-color:#e5e7eb;
-    }
-
-    /* Pulsierender Rahmen für Warnkarten */
-    @keyframes warnPulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(248,113,113,0.9);
-      }
-      60% {
-        box-shadow: 0 0 0 8px rgba(248,113,113,0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(248,113,113,0);
-      }
-    }
-
-    .contractor-card.ok {
-      box-shadow: 0 0 0 1px rgba(34,197,94,0.8);
-      border-color:rgba(34,197,94,0.8);
-    }
-    .contractor-card.warn {
-      border-color:rgba(248,113,113,0.9);
-      animation: warnPulse 1.6s ease-out infinite;
-    }
-
-    .contractor-header {
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-      align-items:flex-start;
-    }
-
-    .contractor-title {
-      font-size:13px;
-      font-weight:600;
-    }
-    .contractor-sub {
-      font-size:11px;
-      color:var(--text-soft);
-    }
-
-    .contractor-tag {
-      font-size:10px;
-      padding:2px 8px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.6);
-      color:var(--text-soft);
-      white-space:nowrap;
-    }
-
-    .contractor-bars {
+    .view-root{
+      height:100vh;
       display:flex;
       flex-direction:column;
-      gap:5px;
-      margin-top:2px;
     }
 
-    .bau-bar-label {
-      font-size:10px;
-      color:var(--text-soft);
-      margin-bottom:2px;
+    .page-body{
+      flex:1;
+      overflow:auto;
+      padding:16px;
       display:flex;
-      justify-content:space-between;
-      gap:4px;
+      justify-content:center;
     }
 
-    /* BLAUE Handwerker-Balken mit Text IM Balken */
-    .contractor-bars .bau-bar-track {
-      background: rgba(15, 23, 42, 0.85);
-    }
-    :root[data-theme="light"] .contractor-bars .bau-bar-track {
-      background:#e5e7eb;
-    }
-    .contractor-bars .bau-bar-fill {
-      background: linear-gradient(90deg,#2563eb,#3b82f6);
-      color:#ffffff;
-      font-weight:600;
-      justify-content: center;
-      padding: 0 6px;
-      text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    .content{
+      width:100%;
+      max-width:1200px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
     }
 
-    .bau-empty-hint {
-      font-size:12px;
-      color:var(--text-soft);
-      margin-top:4px;
+    .modules-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:12px;
+    }
+
+    .span-2{
+      grid-column:1 / -1;
+    }
+
+    @media (max-width:900px){
+      .modules-grid{
+        grid-template-columns:1fr;
+      }
+      .span-2{
+        grid-column:auto;
+      }
     }
   </style>
+</head>
 
-  <div class="card bau-card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Projekte / Bau</div>
-        <div class="card-sub">
-          Bau- und Projektcontrolling: Angebotssummen, Zahlungen & Baufortschritt je Handwerker.
-        </div>
-      </div>
-    </div>
+<body>
+<div class="view-root">
+  <div class="page-body">
+    <div class="content">
 
-    <div class="bau-card-body">
-      <!-- Top Summary (größer) -->
-      <div class="bau-summary-wrapper">
-        <div class="bau-summary">
-          <!-- Zahlungen vs Angebot -->
-          <div class="bau-summary-item">
-            <div class="bau-summary-label">Gesamtbudget & Zahlungen</div>
-            <div class="bau-summary-title" id="bau-total-budget-title">–</div>
-            <div class="bau-bar-row">
-              <span class="bau-bar-min">0 €</span>
-              <div class="bau-bar-track">
-                <div class="bau-bar-fill bar-payments" id="bau-total-payments-bar">
-                  <span id="bau-total-payments-label"></span>
-                </div>
-              </div>
-              <span class="bau-bar-max" id="bau-total-offer-label">– €</span>
-            </div>
-            <div class="bau-bar-meta" id="bau-total-payments-meta"></div>
-          </div>
+      <div id="gesamt-slot" class="span-2"></div>
 
-          <!-- Baufortschritt vs 100 % -->
-          <div class="bau-summary-item">
-            <div class="bau-summary-label">Gesamtfortschritt Bau</div>
-            <div class="bau-summary-title" id="bau-total-progress-title">–</div>
-            <div class="bau-bar-row">
-              <span class="bau-bar-min">0 %</span>
-              <div class="bau-bar-track">
-                <div class="bau-bar-fill bar-progress" id="bau-total-progress-bar">
-                  <span id="bau-total-progress-label"></span>
-                </div>
-              </div>
-              <span class="bau-bar-max">100 %</span>
-            </div>
-            <div class="bau-bar-meta" id="bau-total-progress-meta"></div>
-          </div>
-        </div>
-      </div>
+      <div class="modules-grid" id="gewerke-grid"></div>
 
-      <!-- Contractor Cards -->
-      <div class="bau-contractors-grid" id="bau-contractors-grid">
-        <!-- Wird per JS befüllt -->
-      </div>
-
-      <div class="bau-empty-hint" id="bau-empty-hint" style="display:none;">
-        Keine aktiven Handwerker gefunden. Bitte Sheet <strong>Bau_Handwerker</strong> in deiner Excel füllen
-        und in GitHub aktualisieren.
-      </div>
     </div>
   </div>
-
-  <script>
-    (function(){
-      // Hilfsfunktionen
-      function formatEuro(value) {
-        if (value == null || isNaN(value)) return "0 €";
-        return new Intl.NumberFormat("de-DE",{
-          style:"currency",
-          currency:"EUR",
-          maximumFractionDigits:0
-        }).format(value);
-      }
-      function formatPercent(value) {
-        if (value == null || isNaN(value)) return "0 %";
-        return value.toFixed(1).replace(".",",") + " %";
-      }
-
-      // Dummy-Daten für 10 Handwerker (werden später durch Excel ersetzt)
-      const dummy = [
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Rohbau",
-          Handwerker:"Bauunternehmen Meyer",
-          Angebotssumme:320000,
-          Zahlungen_bisher:210000,
-          Baufortschritt_prozent:70,
-          Aktiv:"Ja",
-          Sortierung:1
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Elektro",
-          Handwerker:"Elektro Schröder",
-          Angebotssumme:95000,
-          Zahlungen_bisher:25000,
-          Baufortschritt_prozent:30,
-          Aktiv:"Ja",
-          Sortierung:2
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Heizung/Sanitär",
-          Handwerker:"Haustechnik Müller",
-          Angebotssumme:145000,
-          Zahlungen_bisher:60000,
-          Baufortschritt_prozent:40,
-          Aktiv:"Ja",
-          Sortierung:3
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Fenster/Türen",
-          Handwerker:"Tischlerei Becker",
-          Angebotssumme:78000,
-          Zahlungen_bisher:52000,
-          Baufortschritt_prozent:85,
-          Aktiv:"Ja",
-          Sortierung:4
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Dach",
-          Handwerker:"Dachdecker Hofmann",
-          Angebotssumme:112000,
-          Zahlungen_bisher:90000,
-          Baufortschritt_prozent:90,
-          Aktiv:"Ja",
-          Sortierung:5
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Innenputz",
-          Handwerker:"Malerbetrieb König",
-          Angebotssumme:54000,
-          Zahlungen_bisher:15000,
-          Baufortschritt_prozent:25,
-          Aktiv:"Ja",
-          Sortierung:6
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Bodenbeläge",
-          Handwerker:"Bodenstudio Nord",
-          Angebotssumme:68000,
-          Zahlungen_bisher:10000,
-          Baufortschritt_prozent:15,
-          Aktiv:"Ja",
-          Sortierung:7
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Fliesenarbeiten",
-          Handwerker:"Fliesen Schulte",
-          Angebotssumme:42000,
-          Zahlungen_bisher:21000,
-          Baufortschritt_prozent:50,
-          Aktiv:"Ja",
-          Sortierung:8
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Außenanlagen",
-          Handwerker:"Gartenbau Grünwerk",
-          Angebotssumme:60000,
-          Zahlungen_bisher:12000,
-          Baufortschritt_prozent:20,
-          Aktiv:"Ja",
-          Sortierung:9
-        },
-        {
-          Projekt:"Hof Ganderkesee Umbau",
-          Objekt:"Hof Ganderkesee",
-          Gewerk:"Photovoltaik",
-          Handwerker:"Solartechnik Bremen",
-          Angebotssumme:98000,
-          Zahlungen_bisher:49000,
-          Baufortschritt_prozent:45,
-          Aktiv:"Ja",
-          Sortierung:10
-        }
-      ];
-
-      // Später: Excel-Daten statt Dummy
-      const excelData = (window.IMMO_DATA && window.IMMO_DATA.bauHandwerker);
-      const dataSource = (excelData && excelData.length) ? excelData : dummy;
-
-      // Filter auf aktive Handwerker, max. 10
-      let rows = dataSource.filter(r => (""+(r.Aktiv||"")).toLowerCase().startsWith("j"));
-      rows.sort((a,b)=>{
-        const sa = a.Sortierung ?? 9999;
-        const sb = b.Sortierung ?? 9999;
-        return sa - sb;
-      });
-      rows = rows.slice(0,10);
-
-      const grid = document.getElementById("bau-contractors-grid");
-      const emptyHint = document.getElementById("bau-empty-hint");
-
-      if (!rows.length) {
-        emptyHint.style.display = "block";
-        return;
-      }
-
-      // Gesamtwerte berechnen
-      let totalOffer = 0;
-      let totalPaid  = 0;
-      let weightedProgress = 0;
-
-      rows.forEach(r=>{
-        const offer = Number(r.Angebotssumme)||0;
-        const paid  = Number(r.Zahlungen_bisher)||0;
-        const prog  = Number(r.Baufortschritt_prozent || r["Baufortschritt_%"] || 0);
-        totalOffer += offer;
-        totalPaid  += paid;
-        weightedProgress += prog * offer;
-      });
-      const overallProgress = totalOffer > 0 ? (weightedProgress / totalOffer) : 0;
-      const overallPaymentQuote = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
-
-      // Gesamt-Balken setzen (mit Animation)
-      const totalBudgetTitle = document.getElementById("bau-total-budget-title");
-      const totalOfferLabel  = document.getElementById("bau-total-offer-label");
-      const totalPayBar      = document.getElementById("bau-total-payments-bar");
-      const totalPayLabel    = document.getElementById("bau-total-payments-label");
-      const totalPayMeta     = document.getElementById("bau-total-payments-meta");
-
-      totalBudgetTitle.textContent = "Gesamtbudget " + formatEuro(totalOffer);
-      totalOfferLabel.textContent  = formatEuro(totalOffer);
-      totalPayLabel.textContent    = formatPercent(overallPaymentQuote) + " · " + formatEuro(totalPaid);
-
-      const overallPayPctClamped = Math.max(0, Math.min(100, overallPaymentQuote || 0));
-      totalPayBar.dataset.width = overallPayPctClamped + "%";
-
-      const deltaPay = totalPaid - totalOffer;
-      if (totalOffer > 0) {
-        totalPayMeta.textContent =
-          "Zahlungsquote: " + formatPercent(overallPaymentQuote) +
-          (deltaPay >= 0
-            ? " · +" + formatEuro(deltaPay) + " vs. Budget"
-            : " · " + formatEuro(deltaPay) + " vs. Budget"
-          );
-      } else {
-        totalPayMeta.textContent = "Kein Budget hinterlegt.";
-      }
-
-      const totalProgTitle = document.getElementById("bau-total-progress-title");
-      const totalProgBar   = document.getElementById("bau-total-progress-bar");
-      const totalProgLabel = document.getElementById("bau-total-progress-label");
-      const totalProgMeta  = document.getElementById("bau-total-progress-meta");
-
-      const progClamped = Math.max(0, Math.min(100, overallProgress || 0));
-      totalProgTitle.textContent = "Fortschritt gesamt";
-      totalProgLabel.textContent = formatPercent(progClamped);
-      totalProgBar.dataset.width = progClamped + "%";
-      totalProgMeta.textContent  = "Gewichteter Fortschritt über alle Gewerke (nach Angebotssummen).";
-
-      // Handwerker-Karten rendern
-      grid.innerHTML = "";
-
-      rows.forEach(r=>{
-        const offer = Number(r.Angebotssumme)||0;
-        const paid  = Number(r.Zahlungen_bisher)||0;
-        const prog  = Number(r.Baufortschritt_prozent || r["Baufortschritt_%"] || 0);
-
-        const payPct = offer > 0 ? (paid / offer * 100) : 0;
-        const payPctClamp = Math.max(0, Math.min(100, payPct));
-        const progClamp   = Math.max(0, Math.min(100, prog));
-
-        // minimal sichtbare Breite, damit Text nicht rausfällt
-        const payWidth   = Math.max(payPctClamp, 12);
-        const progWidth  = Math.max(progClamp, 12);
-
-        const isWarn = payPct > prog;   // mehr Geld als Fortschritt => rot
-        const card = document.createElement("div");
-        card.className = "contractor-card " + (isWarn ? "warn" : "ok");
-
-        const paymentLabelInBar  = `${formatPercent(payPct)} · ${formatEuro(paid)}`;
-        const progressLabelInBar = formatPercent(prog);
-
-        card.innerHTML = `
-          <div class="contractor-header">
-            <div>
-              <div class="contractor-title">${r.Handwerker || "Unbekannter Handwerker"}</div>
-              <div class="contractor-sub">
-                ${r.Gewerk ? (r.Gewerk + " · ") : ""}${r.Projekt || ""}${r.Objekt ? (" – " + r.Objekt) : ""}
-              </div>
-            </div>
-            <div class="contractor-tag">
-              ${isWarn ? "Kosten > Fortschritt" : "OK"}
-            </div>
-          </div>
-          <div class="contractor-bars">
-            <div>
-              <div class="bau-bar-label">
-                <span>Zahlungen vs. Angebot</span>
-                <span>${formatEuro(paid)} / ${formatEuro(offer)}</span>
-              </div>
-              <div class="bau-bar-row">
-                <span class="bau-bar-min">0 €</span>
-                <div class="bau-bar-track">
-                  <div class="bau-bar-fill" data-width="${payWidth}%">
-                    <span>${paymentLabelInBar}</span>
-                  </div>
-                </div>
-                <span class="bau-bar-max">${formatEuro(offer)}</span>
-              </div>
-            </div>
-            <div>
-              <div class="bau-bar-label">
-                <span>Baufortschritt</span>
-                <span>${formatPercent(prog)}</span>
-              </div>
-              <div class="bau-bar-row">
-                <span class="bau-bar-min">0 %</span>
-                <div class="bau-bar-track">
-                  <div class="bau-bar-fill" data-width="${progWidth}%">
-                    <span>${progressLabelInBar}</span>
-                  </div>
-                </div>
-                <span class="bau-bar-max">100 %</span>
-              </div>
-            </div>
-          </div>
-        `;
-
-        grid.appendChild(card);
-      });
-
-      // Animiertes Füllen aller Balken nach Render
-      function animateBars() {
-        const fills = document.querySelectorAll(".bau-view .bau-bar-fill");
-        fills.forEach(el => {
-          const target = el.dataset.width;
-          if (!target) return;
-          // Startbreite muss 0 sein (ist per CSS gesetzt), dann animiert auf Ziel
-          requestAnimationFrame(() => {
-            el.style.width = target;
-          });
-        });
-      }
-
-      // Gesamtbalken haben auch dataset.width, brauchen nur noch Starttrigger
-      totalPayBar.style.width = "0%";
-      totalProgBar.style.width = "0%";
-
-      // Animation leicht verzögert starten, damit der DOM steht
-      setTimeout(animateBars, 60);
-    })();
-  </script>
 </div>
+
+<script>
+/* =========================
+   1. Excel-ähnliche Daten
+   (später ersetzt durch projects.xlsx)
+========================= */
+const excelRows = [
+  {"Sortierung":1,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Rohbau","Handwerker":"Meyer","Angebotssumme (€)":320000,"Zahlungen bisher (€)":210000,"Offene Rechnungen (€)":18000,"Baufortschritt (%)":70},
+  {"Sortierung":2,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Elektro","Handwerker":"Schröder","Angebotssumme (€)":95000,"Zahlungen bisher (€)":65000,"Offene Rechnungen (€)":9000,"Baufortschritt (%)":30},
+  {"Sortierung":3,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Heizung/Sanitär","Handwerker":"Müller","Angebotssumme (€)":145000,"Zahlungen bisher (€)":60000,"Offene Rechnungen (€)":12000,"Baufortschritt (%)":40},
+  {"Sortierung":4,"Aktiv (Ja/Nein)":"Ja","Gewerk":"Fenster/Türen","Handwerker":"Becker","Angebotssumme (€)":78000,"Zahlungen bisher (€)":52000,"Offene Rechnungen (€)":0,"Baufortschritt (%)":85}
+];
+
+/* global für Gesamtmodul */
+window.__PROJECT_ROWS__ = excelRows;
+
+/* =========================
+   2. Helper: HTML laden
+========================= */
+async function loadHTML(url){
+  const res = await fetch(url);
+  return await res.text();
+}
+
+/* =========================
+   3. Gesamtmodul laden
+========================= */
+(async ()=>{
+  const html = await loadHTML("./gewerk-gesamt-modul.html");
+  document.getElementById("gesamt-slot").innerHTML = html;
+})();
+
+/* =========================
+   4. 10x Gewerkmodule laden
+========================= */
+(async ()=>{
+  const grid = document.getElementById("gewerke-grid");
+  const tpl = await loadHTML("./gewerk-modul.html");
+
+  excelRows
+    .filter(r => r["Aktiv (Ja/Nein)"] === "Ja")
+    .sort((a,b)=>a.Sortierung-b.Sortierung)
+    .slice(0,10)
+    .forEach(row=>{
+      const slot = document.createElement("div");
+      slot.innerHTML = tpl;
+
+      const payload = {
+        projekt:"Baumstraße 35",
+        gewerk: row.Gewerk + " – " + row.Handwerker,
+        angebot: row["Angebotssumme (€)"],
+        zahlungen: row["Zahlungen bisher (€)"],
+        offeneRechnungen: row["Offene Rechnungen (€)"],
+        fortschritt: row["Baufortschritt (%)"],
+        owner:"Tobi"
+      };
+
+      slot.querySelector(".gewerk-modul-root")
+        .dataset.payload = JSON.stringify(payload);
+
+      grid.appendChild(slot);
+    });
+})();
+</script>
+
+</body>
+</html>
