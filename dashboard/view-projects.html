@@ -1,47 +1,40 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Projekte / Bau</title>
 
-  <!-- Page CSS (extern, CSP-safe) -->
-  <link rel="stylesheet" href="./view-projects.css"/>
-
-  <!-- Page JS (extern, CSP-safe) -->
+  <link rel="stylesheet" href="./view-projects.css">
   <script src="./view-projects.js" defer></script>
 </head>
 
 <body>
   <div class="vp-root">
+    <!-- Header -->
     <header class="vp-header">
-      <div class="vp-head-left">
+      <div>
         <h1 class="vp-title">Projekte / Bau</h1>
-        <div class="vp-sub">Gesamtübersicht + Gewerke (Excel-basiert).</div>
+        <div class="vp-sub">Gesamtübersicht & Gewerke (Excel-basiert)</div>
       </div>
 
-      <!-- Projektwechsel (Tabs) -->
-      <div class="vp-head-right">
-        <div class="vp-tabs" id="vpTabs" aria-label="Projekte"></div>
-      </div>
+      <!-- Projekt Tabs -->
+      <div class="vp-tabs" id="vpTabs"></div>
     </header>
 
+    <!-- Scroll Body -->
     <main class="vp-body" id="vpBody">
       <div class="vp-content">
 
-        <!-- Sticky Gesamtmodul -->
+        <!-- Gesamtmodul (sticky auf iPad/Desktop) -->
         <section class="vp-sticky">
-          <div id="vpGesamtSlot" class="vp-span-2">
-            <!-- hier wird gewerk-gesamt-modul.html per JS geladen -->
-          </div>
+          <div id="vpGesamtSlot" class="vp-span-2"></div>
         </section>
 
-        <!-- Grid für 10 Gewerk-Module -->
-        <section class="vp-grid" id="vpGewerkeGrid">
-          <!-- hier werden 10x gewerk-modul.html Slots per JS erzeugt -->
-        </section>
+        <!-- Grid für Gewerk-Module -->
+        <section class="vp-grid" id="vpGewerkeGrid"></section>
 
-        <!-- Debug / Fehlerausgabe (wird per JS gefüllt) -->
+        <!-- Debug / Hinweise -->
         <section class="vp-footer">
           <div class="vp-hint" id="vpHint"></div>
           <pre class="vp-error" id="vpError" style="display:none;"></pre>
