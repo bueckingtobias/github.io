@@ -22,6 +22,18 @@
     .span6{ grid-column:span 6; min-width:0; }
     @media (max-width:900px){ .span6{ grid-column:span 12; } }
     .module-slot{ width:100%; min-width:0; }
+    .status{
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.25);
+      padding:10px 12px;
+      font-size:12px;
+      color: rgba(226,232,240,.85);
+      white-space: pre-wrap;
+      overflow-wrap:anywhere;
+    }
+    .ok{ color: rgba(34,197,94,.95); font-weight:900; }
+    .bad{ color: rgba(248,113,113,.95); font-weight:900; }
   </style>
 </head>
 
@@ -35,41 +47,28 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Gesamt</div>
-              <div class="card-sub">Übersicht</div>
+              <div class="card-title">Status</div>
+              <div class="card-sub">Excel / Module</div>
             </div>
           </div>
+          <div class="card-body">
+            <div class="status" id="statusBox">…</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="span12">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Gesamt</div><div class="card-sub">Übersicht</div></div></div>
           <div class="card-body"><div class="module-slot" id="slotGesamt"></div></div>
         </div>
       </section>
 
-      <section class="span6">
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">Cashflow</div><div class="card-sub">Verlauf</div></div></div>
-          <div class="card-body"><div class="module-slot" id="slotCashflow"></div></div>
-        </div>
-      </section>
+      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Cashflow</div><div class="card-sub">Verlauf</div></div></div><div class="card-body"><div class="module-slot" id="slotCashflow"></div></div></div></section>
+      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Mieten</div><div class="card-sub">Einnahmen</div></div></div><div class="card-body"><div class="module-slot" id="slotMieten"></div></div></div></section>
 
-      <section class="span6">
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">Mieten</div><div class="card-sub">Einnahmen</div></div></div>
-          <div class="card-body"><div class="module-slot" id="slotMieten"></div></div>
-        </div>
-      </section>
-
-      <section class="span6">
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">OP</div><div class="card-sub">Ausgaben</div></div></div>
-          <div class="card-body"><div class="module-slot" id="slotOp"></div></div>
-        </div>
-      </section>
-
-      <section class="span6">
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">Reserven</div><div class="card-sub">Rücklagen</div></div></div>
-          <div class="card-body"><div class="module-slot" id="slotReserven"></div></div>
-        </div>
-      </section>
+      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">OP</div><div class="card-sub">Ausgaben</div></div></div><div class="card-body"><div class="module-slot" id="slotOp"></div></div></div></section>
+      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Reserven</div><div class="card-sub">Rücklagen</div></div></div><div class="card-body"><div class="module-slot" id="slotReserven"></div></div></div></section>
 
       <section class="span12">
         <div class="card">
@@ -83,12 +82,27 @@
 
   <script>
     (async function(){
-      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Gesamt · Cashflow · Mieten · OP · Reserven · Budget" });
+      // Shell immer zuerst mounten
+      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Excel + Module" });
 
+      const statusBox = document.getElementById("statusBox");
+      function setStatus(lines){ statusBox.innerHTML = lines.join("\n"); }
+
+      // Excel laden (fällt bei Fehler automatisch auf Dummy zurück)
       await ExcelLoader.load("./Dashboard.xlsx");
+
+      const loaded = ExcelLoader.isLoaded();
+      const err = ExcelLoader.lastError();
       const financeData = window.IMMO_DATA?.finance || [];
 
-      // ---------- Loader helpers ----------
+      const statusLines = [];
+      statusLines.push(loaded ? "<span class='ok'>Excel geladen ✅</span> (./Dashboard.xlsx)" :
+                               "<span class='bad'>Excel NICHT geladen ❌</span> → Dummy/Fallback aktiv");
+      if(!loaded && err) statusLines.push("Fehler: " + err);
+      statusLines.push("Rows Finance: " + financeData.length);
+      setStatus(statusLines);
+
+      // Loader helpers (für Modul-Assets)
       function loadCssOnce(href){
         if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
         return new Promise((resolve,reject)=>{
@@ -113,35 +127,6 @@
         el.innerHTML = await r.text();
       }
 
-      // ---------- CRITICAL FIX: scoped selectors ----------
-      function scopedRender(scopeEl, fn){
-        const orig = {
-          getElementById: document.getElementById.bind(document),
-          querySelector: document.querySelector.bind(document),
-          querySelectorAll: document.querySelectorAll.bind(document)
-        };
-
-        document.getElementById = function(id){
-          const local = scopeEl.querySelector("#" + CSS.escape(id));
-          return local || orig.getElementById(id);
-        };
-        document.querySelector = function(sel){
-          const local = scopeEl.querySelector(sel);
-          return local || orig.querySelector(sel);
-        };
-        document.querySelectorAll = function(sel){
-          const local = scopeEl.querySelectorAll(sel);
-          return (local && local.length) ? local : orig.querySelectorAll(sel);
-        };
-
-        try { return fn(); }
-        finally {
-          document.getElementById = orig.getElementById;
-          document.querySelector = orig.querySelector;
-          document.querySelectorAll = orig.querySelectorAll;
-        }
-      }
-
       async function mountModule({slotId, html, css, js, globalName, data}){
         const slot = document.getElementById(slotId);
         try{
@@ -153,15 +138,13 @@
           if(!mod || typeof mod.render !== "function"){
             throw new Error("render() fehlt bei window."+globalName);
           }
-
-          // render inside scope (fixes duplicate IDs across modules)
-          scopedRender(slot, () => mod.render(slot, data));
+          mod.render(slot, data);
         }catch(e){
           slot.textContent = "Modulfehler ("+slotId+"): " + e.message;
         }
       }
 
-      // Module: Dateien existieren laut deinem Screenshot
+      // Deine existierenden Module (Dateinamen aus Screenshot)
       await mountModule({ slotId:"slotGesamt",   html:"./finance-gesamt-modul.html",   css:"./finance-gesamt-modul.css",   js:"./finance-gesamt-modul.js",   globalName:"FinanceGesamtModul",   data: financeData });
       await mountModule({ slotId:"slotCashflow", html:"./finance-cashflow-modul.html", css:"./finance-cashflow-modul.css", js:"./finance-cashflow-modul.js", globalName:"FinanceCashflowModul", data: financeData });
       await mountModule({ slotId:"slotMieten",   html:"./finance-mieten-modul.html",   css:"./finance-mieten-modul.css",   js:"./finance-mieten-modul.js",   globalName:"FinanceMietenModul",   data: financeData });
