@@ -4,10 +4,18 @@
   const chipBase    = document.getElementById("chipBase");
   const chipCSS     = document.getElementById("chipCSS");
   const chipModules = document.getElementById("chipModules");
-  const appRoot = document.getElementById("appRoot");
+  const appRoot     = document.getElementById("appRoot");
 
   const BASE = (window.__BASE_DASH__ || "./");
   if(chipBase) chipBase.textContent = "Base: " + BASE;
+
+  function markActive(href){
+    const p = (location.pathname || "").toLowerCase();
+    const file = p.split("/").pop() || "";
+    // normalize: if you're serving from /dashboard/ or root
+    const target = (href || "").toLowerCase().replace("./","").replace("dashboard/","");
+    return file === target;
+  }
 
   // ===== Inject external CSS with correct base path =====
   function loadViewCss(){
@@ -34,18 +42,18 @@
             </div>
           </div>
 
-          <nav class="nav">
-            <a href="${BASE}index.html">
+          <nav class="nav" id="nav">
+            <a href="${BASE}index.html" class="${markActive("index.html") ? "active" : ""}">
               <div class="nav-ic">⌂</div>
               <div class="nav-txt">
                 <div class="nav-title">Übersicht</div>
-                <div class="nav-sub">Startseite</div>
+                <div class="nav-sub">Startseite / Quick KPIs</div>
               </div>
             </a>
 
             <div class="nav-label">Views</div>
 
-            <a href="${BASE}view-projects.html">
+            <a href="${BASE}view-projects.html" class="${markActive("view-projects.html") ? "active" : ""}">
               <div class="nav-ic">🏗</div>
               <div class="nav-txt">
                 <div class="nav-title">Projekte / Bau</div>
@@ -53,11 +61,29 @@
               </div>
             </a>
 
-            <a class="active" href="${BASE}view-finance.html">
+            <a href="${BASE}view-finance.html" class="${markActive("view-finance.html") ? "active" : ""}">
               <div class="nav-ic">€</div>
               <div class="nav-txt">
                 <div class="nav-title">Finanzen</div>
-                <div class="nav-sub">Cashflow & Budget</div>
+                <div class="nav-sub">Cashflow, Budget, OPs</div>
+              </div>
+            </a>
+
+            <a href="${BASE}view-vermietung.html" class="${markActive("view-vermietung.html") ? "active" : ""}">
+              <div class="nav-ic">🏠</div>
+              <div class="nav-txt">
+                <div class="nav-title">Vermietung</div>
+                <div class="nav-sub">Mieten, Leerstand, Leads</div>
+              </div>
+            </a>
+
+            <div class="nav-label">Tools</div>
+
+            <a href="${BASE}admin.html" class="${markActive("admin.html") ? "active" : ""}">
+              <div class="nav-ic">⚙</div>
+              <div class="nav-txt">
+                <div class="nav-title">Admin</div>
+                <div class="nav-sub">Uploads, Debug, Settings</div>
               </div>
             </a>
           </nav>
@@ -103,9 +129,7 @@
   }
 
   // ===== Helpers =====
-  function errBox(){
-    return document.getElementById("fxErrBox");
-  }
+  function errBox(){ return document.getElementById("fxErrBox"); }
   function showErr(msg){
     const b = errBox();
     if(!b) return;
@@ -224,7 +248,6 @@
       }
     }
 
-    // Wenn du finance-gesamt-modul noch nicht hast: wird sauber als Fehler angezeigt.
     await tryMount(slotGesamt,   "finance-gesamt-modul.html",   "css-fin-gesamt", "finance-gesamt-modul.css",   "js-fin-gesamt", "finance-gesamt-modul.js",   "FinanceGesamtModul",   [data, cash, { horizon }]);
     await tryMount(slotCashflow, "finance-cashflow-modul.html", "css-fin-cash",   "finance-cashflow-modul.css", "js-fin-cash",   "finance-cashflow-modul.js", "FinanceCashflowModul", [data, cash, { horizon }]);
 
@@ -242,8 +265,8 @@
       showErr(
         "Module konnten nicht geladen werden:\n\n" +
         fails.join("\n") +
-        "\n\nCheck:\n- Liegen diese Dateien wirklich in: " + BASE +
-        "\n- Dateinamen exakt (klein/ groß)\n- Ordner heißt wirklich: dashboard\n"
+        "\n\nCheck:\n- Dateien liegen in: " + BASE +
+        "\n- Ordner heißt exakt: dashboard (klein)\n- Dateinamen exakt (case-sensitiv)\n"
       );
     }
   }
@@ -263,17 +286,15 @@
     // 3) modules laden
     await renderAll();
 
-    // refresh button
+    // refresh
     const btn = document.getElementById("btnRefresh");
     if(btn) btn.addEventListener("click", renderAll);
 
     // clocks
-    const clockTop = document.getElementById("clockTop");
     const clockSide = document.getElementById("clockSide");
     function tick(){
       const d = new Date();
       const t = d.toLocaleString("de-DE",{ weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-      if(clockTop) clockTop.textContent = t;
       if(clockSide) clockSide.textContent = t;
     }
     tick(); setInterval(tick, 15000);
