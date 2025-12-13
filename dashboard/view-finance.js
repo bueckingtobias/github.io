@@ -7,22 +7,14 @@
   const slotRes      = document.getElementById("slotReserven");
   const slotMieten   = document.getElementById("slotMieten");
 
-  const seg12 = document.getElementById("seg12");
-  const seg6  = document.getElementById("seg6");
-  const seg3  = document.getElementById("seg3");
   const btnRefresh = document.getElementById("btnRefresh");
-
   const fxErr = document.getElementById("fxError");
-  const fxSourceState = document.getElementById("fxSourceState");
-
-  let horizon = 12;
 
   function showError(msg){
     if(!fxErr) return;
     fxErr.style.display = "block";
     fxErr.textContent = msg;
   }
-
   function clearError(){
     if(!fxErr) return;
     fxErr.style.display = "none";
@@ -62,14 +54,33 @@
     });
   }
 
-  // ===== Data (Demo now, Excel later) =====
-  function getFinanceData(){
-    if(window.DASHBOARD_DATA && window.DASHBOARD_DATA.finance){
-      if(fxSourceState) fxSourceState.textContent = "Live: Dashboard.xlsx";
-      return window.DASHBOARD_DATA.finance;
+  async function mountModule(slotEl, htmlFile, cssId, cssFile, jsId, jsFile, globalName, renderArgs){
+    const html = await fetchText(htmlFile);
+    slotEl.innerHTML = html;
+
+    loadCssOnce(cssId, cssFile);
+    await loadScriptFresh(jsId, jsFile);
+
+    const api = window[globalName];
+    if(!api || typeof api.render !== "function"){
+      throw new Error(`${globalName}.render fehlt (globalName falsch oder JS nicht geladen)`);
     }
 
-    if(fxSourceState) fxSourceState.textContent = "Demo-Daten";
+    // Root finden
+    const root =
+      slotEl.querySelector(`.${api.rootClass || ""}`) ||
+      slotEl.querySelector("[data-module-root]") ||
+      slotEl.firstElementChild;
+
+    if(!root){
+      throw new Error(`Kein Root-Element im Modul HTML gefunden: ${htmlFile}`);
+    }
+
+    api.render(root, ...renderArgs);
+  }
+
+  // Demo Daten (Excel später)
+  function getFinanceData(){
     return {
       currency: "EUR",
       startCash: 185000,
@@ -86,76 +97,24 @@
         { month:"2025-10", inflow:69000, outflow:76000 },
         { month:"2025-11", inflow:72000, outflow:74000 },
         { month:"2025-12", inflow:76000, outflow:79000 }
-      ],
-      budget: [
-        { category:"Finanzierung / Zinsen", type:"fixed", plan:24000, actual:25800 },
-        { category:"Versicherungen", type:"fixed", plan:5200, actual:4800 },
-        { category:"Energie / Betrieb", type:"variable", plan:9800, actual:11300 },
-        { category:"Instandhaltung", type:"variable", plan:12000, actual:14600 },
-        { category:"Dienstleister / Tools", type:"fixed", plan:3600, actual:4200 },
-        { category:"Sonstiges", type:"variable", plan:2600, actual:3100 }
-      ],
-      ar: [
-        { title:"Miete – Einheit 2.1", object:"Baumstraße 35", due:"2025-12-05", amount:1450, status:"faellig" },
-        { title:"Miete – Einheit 1.2", object:"Baumstraße 35", due:"2025-11-25", amount:1320, status:"ueberfaellig" },
-        { title:"Nebenkosten-Nachzahlung", object:"Hof Ganderkesee", due:"2025-12-20", amount:860, status:"faellig" }
-      ],
-      ap: [
-        { title:"Abschlag", vendor:"Elektro Schröder", due:"2025-12-18", amount:9000, status:"faellig" },
-        { title:"Schlussrechnung", vendor:"Dachdecker Hofmann", due:"2025-12-07", amount:6200, status:"ueberfaellig" },
-        { title:"Hosting", vendor:"Software / Hosting", due:"2025-12-28", amount:180, status:"faellig" }
-      ],
-      reserves: [
-        { name:"Steuerrücklage", current:38000, target:60000, note:"Ziel: 3–4 Monate Steuerpuffer" },
-        { name:"Instandhaltungsrücklage", current:24000, target:50000, note:"Ziel: 1–2% vom Bestand/Jahr" },
-        { name:"Liquiditätspuffer", current:52000, target:80000, note:"Ziel: Sicherheit für Bau-/Timing-Risiken" }
-      ],
-      rents: [
-        { object:"Baumstraße 35", units:6, soll:8400, ist:7080, vacancy:1, arrears:1320 },
-        { object:"Hof Ganderkesee", units:5, soll:7200, ist:7200, vacancy:0, arrears:0 },
-        { object:"Syke (Planung)", units:4, soll:5600, ist:0, vacancy:4, arrears:0 }
       ]
     };
   }
 
-  function sliceHorizon(cashflow){
+  function sliceHorizon(cashflow, horizon){
     const arr = cashflow || [];
     return arr.slice(Math.max(0, arr.length - horizon));
   }
 
-  function setSeg(active){
-    [seg12,seg6,seg3].forEach(x=>x && x.classList.remove("is-active"));
-    if(active===12) seg12.classList.add("is-active");
-    if(active===6)  seg6.classList.add("is-active");
-    if(active===3)  seg3.classList.add("is-active");
-  }
-
-  async function mountModule(slotEl, htmlFile, cssId, cssFile, jsId, jsFile, globalName, renderArgs){
-    const html = await fetchText(htmlFile);
-    slotEl.innerHTML = html;
-
-    loadCssOnce(cssId, cssFile);
-    await loadScriptFresh(jsId, jsFile);
-
-    const api = window[globalName];
-    if(!api || typeof api.render !== "function"){
-      throw new Error(`${globalName}.render fehlt`);
-    }
-
-    const root =
-      slotEl.querySelector(`.${api.rootClass || ""}`) ||
-      slotEl.querySelector("[data-module-root]") ||
-      slotEl.firstElementChild;
-
-    api.render(root, ...renderArgs);
-  }
-
   async function renderAll(){
     clearError();
+
     const data = getFinanceData();
-    const cash = sliceHorizon(data.cashflow);
+    const horizon = 12;
+    const cash = sliceHorizon(data.cashflow, horizon);
 
     try{
+      // OPTIONAL: wenn du (noch) kein Gesamtmodul hast, kommentier diesen Block aus.
       await mountModule(
         slotGesamt,
         "./finance-gesamt-modul.html",
@@ -164,7 +123,13 @@
         "FinanceGesamtModul",
         [data, cash, { horizon }]
       );
+    }catch(e){
+      // Gesamtmodul soll nicht alles blockieren -> nur Hinweis, rest läuft weiter
+      showError("Hinweis (Gesamtmodul): " + (e?.message || e));
+      // trotzdem weiter
+    }
 
+    try{
       await mountModule(
         slotCashflow,
         "./finance-cashflow-modul.html",
@@ -173,61 +138,29 @@
         "FinanceCashflowModul",
         [data, cash, { horizon }]
       );
-
-      await mountModule(
-        slotBudget,
-        "./finance-budget-modul.html",
-        "css-fin-budget", "./finance-budget-modul.css",
-        "js-fin-budget",  "./finance-budget-modul.js",
-        "FinanceBudgetModul",
-        [data, { horizon }]
-      );
-
-      await mountModule(
-        slotOP,
-        "./finance-op-modul.html",
-        "css-fin-op", "./finance-op-modul.css",
-        "js-fin-op",  "./finance-op-modul.js",
-        "FinanceOPModul",
-        [data, { horizon }]
-      );
-
-      await mountModule(
-        slotRes,
-        "./finance-reserven-modul.html",
-        "css-fin-res", "./finance-reserven-modul.css",
-        "js-fin-res",  "./finance-reserven-modul.js",
-        "FinanceReservenModul",
-        [data, { horizon }]
-      );
-
-      await mountModule(
-        slotMieten,
-        "./finance-mieten-modul.html",
-        "css-fin-mieten", "./finance-mieten-modul.css",
-        "js-fin-mieten",  "./finance-mieten-modul.js",
-        "FinanceMietenModul",
-        [data, { horizon }]
-      );
-
     }catch(e){
-      showError(
-        "Finanzen Fehler:\n" + (e?.message || e) +
-        "\n\nCheck:\n- Alle Dateien liegen in /dashboard/\n- Dateinamen exakt (case-sensitiv)\n- dashboard Ordner kleingeschrieben\n"
-      );
+      showError((fxErr.textContent ? fxErr.textContent + "\n\n" : "") + "Cashflow Fehler:\n" + (e?.message || e));
     }
-  }
 
-  function attach(){
-    if(btnRefresh) btnRefresh.addEventListener("click", renderAll);
-    if(seg12) seg12.addEventListener("click", ()=>{ horizon=12; setSeg(12); renderAll(); });
-    if(seg6)  seg6.addEventListener("click", ()=>{ horizon=6;  setSeg(6);  renderAll(); });
-    if(seg3)  seg3.addEventListener("click", ()=>{ horizon=3;  setSeg(3);  renderAll(); });
+    // Die folgenden Module kannst du erstmal als Platzhalter lassen,
+    // oder du spielst deine echten Modul-Dateien ein.
+    async function tryMount(slot, html, cssId, css, jsId, js, globalName){
+      try{
+        await mountModule(slot, html, cssId, css, jsId, js, globalName, [data, { horizon }]);
+      }catch(e){
+        // Slot bleibt leer, aber Seite bleibt stabil
+        showError((fxErr.textContent ? fxErr.textContent + "\n\n" : "") + `${globalName}:\n${e?.message || e}`);
+      }
+    }
+
+    await tryMount(slotBudget, "./finance-budget-modul.html", "css-fin-budget","./finance-budget-modul.css","js-fin-budget","./finance-budget-modul.js","FinanceBudgetModul");
+    await tryMount(slotOP, "./finance-op-modul.html", "css-fin-op","./finance-op-modul.css","js-fin-op","./finance-op-modul.js","FinanceOPModul");
+    await tryMount(slotRes, "./finance-reserven-modul.html", "css-fin-res","./finance-reserven-modul.css","js-fin-res","./finance-reserven-modul.js","FinanceReservenModul");
+    await tryMount(slotMieten, "./finance-mieten-modul.html", "css-fin-mieten","./finance-mieten-modul.css","js-fin-mieten","./finance-mieten-modul.js","FinanceMietenModul");
   }
 
   window.addEventListener("DOMContentLoaded", ()=>{
-    attach();
-    setSeg(horizon);
+    if(btnRefresh) btnRefresh.addEventListener("click", renderAll);
     renderAll();
   });
 
