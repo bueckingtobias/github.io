@@ -3,34 +3,20 @@
   window.Shell.mount = mount;
 
   function esc(s){ return String(s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
+  function norm(p){ return String(p||"").toLowerCase().replace(/\/+$/,""); }
 
-  function normalizePath(p){
-    return String(p || "").toLowerCase().replace(/\/+$/, "");
-  }
+  function mount(opt){
+    const o = opt || {};
+    const active = norm(o.active || "");
+    const title = o.title || "";
+    const sub = o.sub || "";
 
-  function mount(options){
-    const opt = options || {};
-    const pageTitle = opt.title || "Dashboard";
-    const pageSub = opt.sub || "";
-    const activeHref = opt.active || "";
-
-    const target = document.getElementById(opt.targetId || "app");
+    const target = document.getElementById(o.targetId || "app");
     if(!target) throw new Error("Shell.mount: #app not found");
 
-    // pull content from template (preferred) or #pageContent
-    let contentNode = null;
-    const tpl = document.getElementById(opt.templateId || "pageTpl");
-    if(tpl && tpl.content){
-      contentNode = tpl.content.cloneNode(true);
-    }else{
-      const fallback = document.getElementById("pageContent");
-      if(fallback){
-        contentNode = document.createDocumentFragment();
-        contentNode.appendChild(fallback);
-      }else{
-        contentNode = document.createDocumentFragment();
-      }
-    }
+    // Pull content from <template id="pageTpl">
+    const tpl = document.getElementById(o.templateId || "pageTpl");
+    const frag = (tpl && tpl.content) ? tpl.content.cloneNode(true) : document.createDocumentFragment();
 
     target.innerHTML = `
       <div class="app">
@@ -91,15 +77,15 @@
 
           <div class="sidebar-footer">
             <span class="chip" id="clockSide">—</span>
-            <span class="chip" id="authState">online</span>
+            <span class="chip" id="authState">session</span>
           </div>
         </aside>
 
         <section class="main">
           <header class="topbar">
             <div class="page-title">
-              <h1 id="pageTitle">${esc(pageTitle)}</h1>
-              <div id="pageSub">${esc(pageSub)}</div>
+              <h1 id="pageTitle">${esc(title || "Dashboard")}</h1>
+              <div id="pageSub">${esc(sub || "")}</div>
             </div>
 
             <div class="top-right">
@@ -108,7 +94,7 @@
             </div>
           </header>
 
-          <main class="content" id="mainScroll">
+          <main class="content">
             <div class="container" id="shellSlot"></div>
           </main>
         </section>
@@ -116,60 +102,43 @@
     `;
 
     // inject content
-    const slot = document.getElementById("shellSlot");
-    slot.appendChild(contentNode);
-
-    // auth label
-    const authState = document.getElementById("authState");
-    try{
-      authState.textContent = (window.Auth && Auth.isAuthed()) ? "session" : "locked";
-    }catch(_){
-      authState.textContent = "session";
-    }
+    document.getElementById("shellSlot").appendChild(frag);
 
     // clock
     const clockTop = document.getElementById("clockTop");
     const clockSide = document.getElementById("clockSide");
     function tick(){
       const d = new Date();
-      const t = d.toLocaleString("de-DE", {
-        weekday:"short", year:"numeric", month:"2-digit", day:"2-digit",
-        hour:"2-digit", minute:"2-digit"
-      });
-      if(clockTop) clockTop.textContent = t;
-      if(clockSide) clockSide.textContent = t;
+      const t = d.toLocaleString("de-DE", { weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+      clockTop.textContent = t;
+      clockSide.textContent = t;
     }
     tick(); setInterval(tick, 15000);
 
-    // active nav highlight (robust)
+    // active link highlight
     const nav = document.getElementById("nav");
     const links = Array.from(nav.querySelectorAll("a[href]"));
-    links.forEach(a => a.classList.remove("active"));
+    links.forEach(a=>a.classList.remove("active"));
 
-    const cur = normalizePath(location.pathname.split("/").pop() || "");
-    const explicit = normalizePath(activeHref);
-
+    const cur = norm(location.pathname.split("/").pop() || "");
     let match =
-      (explicit ? links.find(a => normalizePath(a.getAttribute("href")) === explicit) : null) ||
-      links.find(a => normalizePath(a.getAttribute("href")).endsWith(cur)) ||
+      (active ? links.find(a=>norm(a.getAttribute("href")) === active) : null) ||
+      links.find(a=>norm(a.getAttribute("href")).endsWith(cur)) ||
       links[0];
 
     if(match){
       match.classList.add("active");
-      // if caller didn't force title/sub, use nav metadata
-      if(!opt.title) document.getElementById("pageTitle").textContent = match.getAttribute("data-title") || "Dashboard";
-      if(!opt.sub) document.getElementById("pageSub").textContent = match.getAttribute("data-sub") || "";
+      if(!o.title) document.getElementById("pageTitle").textContent = match.getAttribute("data-title") || "Dashboard";
+      if(!o.sub) document.getElementById("pageSub").textContent = match.getAttribute("data-sub") || "";
     }
 
     // logout
-    const btnLogout = document.getElementById("btnLogout");
-    btnLogout.addEventListener("click", ()=>{
+    document.getElementById("btnLogout").addEventListener("click", ()=>{
       try{ if(window.Auth) Auth.logout(); }catch(_){}
       location.href = "./login.html";
     });
 
-    // prevent sideways scroll due to accidental wide elements
-    // (hard stop)
+    // hard-stop horizontal scroll
     document.documentElement.style.overflowX = "hidden";
     document.body.style.overflowX = "hidden";
   }
