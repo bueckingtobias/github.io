@@ -1,15 +1,14 @@
+// dashboard/home-calendar-modul.js
 (function(){
   window.HomeCalendarModul = window.HomeCalendarModul || {};
   window.HomeCalendarModul.rootClass = "home-calendar-root";
   window.HomeCalendarModul.render = render;
 
-  // ===== Config (kannst du später aus Excel speisen) =====
-  const DEFAULT_RENT_DAY = 1; // 1..28 empfohlen
+  const DEFAULT_RENT_DAY = 1; // 1..28
   const STORAGE_KEY = "DASH_HOME_USER_EVENTS_V1";
   const STORAGE_CFG = "DASH_HOME_CAL_CFG_V1";
 
   function esc(s){ return String(s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
-
   function ymd(d){
     const x = new Date(d);
     const y = x.getFullYear();
@@ -17,29 +16,29 @@
     const da= String(x.getDate()).padStart(2,"0");
     return `${y}-${m}-${da}`;
   }
-
-  function addDays(date, n){
-    const d = new Date(date);
-    d.setDate(d.getDate()+n);
-    return d;
+  function addDays(date, n){ const d = new Date(date); d.setDate(d.getDate()+n); return d; }
+  function addMonths(date, n){ const d = new Date(date); d.setDate(1); d.setMonth(d.getMonth()+n); return d; }
+  function stripTime(d){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
+  function clampInt(v,a,b){ const n = Math.floor(Number(v)); if(!isFinite(n)) return a; return Math.max(a, Math.min(b, n)); }
+  function cryptoId(){ return "e_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+  function monthLabel(d){ return d.toLocaleDateString("de-DE",{ month:"long", year:"numeric" }); }
+  function dowLabels(){ return ["Mo","Di","Mi","Do","Fr","Sa","So"]; }
+  function daysBetween(a,b){
+    const A = stripTime(a).getTime();
+    const B = stripTime(b).getTime();
+    return Math.round((B - A) / (1000*60*60*24));
+  }
+  function nextRentDate(fromDate, rentDay){
+    const d = stripTime(fromDate);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const thisMonth = new Date(y, m, rentDay);
+    if(thisMonth >= d) return thisMonth;
+    return new Date(y, m+1, rentDay);
   }
 
-  function startOfMonth(y,m){ return new Date(y, m, 1); }
-  function endOfMonth(y,m){ return new Date(y, m+1, 0); }
-
-  function monthLabel(d){
-    return d.toLocaleDateString("de-DE",{ month:"long", year:"numeric" });
-  }
-
-  function dowLabels(){
-    // Monday-first
-    return ["Mo","Di","Mi","Do","Fr","Sa","So"];
-  }
-
-  // ===== Holidays (Germany national) =====
-  // We implement: fixed + Easter-based.
+  // Easter Sunday (Gregorian)
   function easterSunday(year){
-    // Anonymous Gregorian algorithm (Meeus/Jones/Butcher)
     const a = year % 19;
     const b = Math.floor(year / 100);
     const c = year % 100;
@@ -52,36 +51,26 @@
     const k = c % 4;
     const l = (32 + 2*e + 2*i - h - k) % 7;
     const m = Math.floor((a + 11*h + 22*l) / 451);
-    const month = Math.floor((h + l - 7*m + 114) / 31); // 3=March, 4=April
+    const month = Math.floor((h + l - 7*m + 114) / 31);
     const day = ((h + l - 7*m + 114) % 31) + 1;
     return new Date(year, month-1, day);
   }
 
   function holidayMapForYear(year){
     const map = new Map();
-
-    const fixed = [
+    [
       { mmdd:"01-01", name:"Neujahr" },
       { mmdd:"05-01", name:"Tag der Arbeit" },
-      { mmdd:"10-03", name:"Tag der Deutschen Einheit" },
-      { mmdd:"12-25", name:"1. Weihnachtstag" },
-      { mmdd:"12-26", name:"2. Weihnachtstag" }
-    ];
-    fixed.forEach(h=>{
-      map.set(`${year}-${h.mmdd}`, h.name);
-    });
+      { mmdd:"10-03", name:"Dt. Einheit" },
+      { mmdd:"12-25", name:"Weihnachten" },
+      { mmdd:"12-26", name:"Weihnachten" }
+    ].forEach(h=> map.set(`${year}-${h.mmdd}`, h.name));
 
     const easter = easterSunday(year);
-    const goodFriday = addDays(easter, -2);
-    const easterMonday = addDays(easter, 1);
-    const ascension = addDays(easter, 39);
-    const whitMonday = addDays(easter, 50);
-
-    map.set(ymd(goodFriday), "Karfreitag");
-    map.set(ymd(easterMonday), "Ostermontag");
-    map.set(ymd(ascension), "Christi Himmelfahrt");
-    map.set(ymd(whitMonday), "Pfingstmontag");
-
+    map.set(ymd(addDays(easter, -2)), "Karfreitag");
+    map.set(ymd(addDays(easter, 1)), "Ostermontag");
+    map.set(ymd(addDays(easter, 39)), "Himmelfahrt");
+    map.set(ymd(addDays(easter, 50)), "Pfingstmontag");
     return map;
   }
 
@@ -96,10 +85,7 @@
         .filter(e=>e.title && /^\d{4}-\d{2}-\d{2}$/.test(e.date));
     }catch(_){ return []; }
   }
-
-  function saveUserEvents(events){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
-  }
+  function saveUserEvents(events){ localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); }
 
   function loadCfg(){
     try{
@@ -107,59 +93,18 @@
       const cfg = raw ? JSON.parse(raw) : {};
       const rentDay = clampInt(cfg.rentDay ?? DEFAULT_RENT_DAY, 1, 28);
       return { rentDay };
-    }catch(_){
-      return { rentDay: DEFAULT_RENT_DAY };
-    }
+    }catch(_){ return { rentDay: DEFAULT_RENT_DAY }; }
   }
-
-  function saveCfg(cfg){
-    localStorage.setItem(STORAGE_CFG, JSON.stringify(cfg));
-  }
-
-  function clampInt(v, a, b){
-    const n = Math.floor(Number(v));
-    if(!isFinite(n)) return a;
-    return Math.max(a, Math.min(b, n));
-  }
-
-  function cryptoId(){
-    // simple id, no dependency
-    return "e_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
-  }
-
-  function nextRentDate(fromDate, rentDay){
-    const d = new Date(fromDate);
-    const y = d.getFullYear();
-    const m = d.getMonth();
-
-    const thisMonthRent = new Date(y, m, rentDay);
-    if(thisMonthRent >= stripTime(d)) return thisMonthRent;
-
-    // next month
-    return new Date(y, m+1, rentDay);
-  }
-
-  function stripTime(d){
-    const x = new Date(d);
-    x.setHours(0,0,0,0);
-    return x;
-  }
-
-  function daysBetween(a,b){
-    const A = stripTime(a).getTime();
-    const B = stripTime(b).getTime();
-    return Math.round((B - A) / (1000*60*60*24));
-  }
+  function saveCfg(cfg){ localStorage.setItem(STORAGE_CFG, JSON.stringify(cfg)); }
 
   function buildMonthGrid(viewDate){
-    // monday-first grid with leading/trailing days
     const y = viewDate.getFullYear();
     const m = viewDate.getMonth();
-    const first = startOfMonth(y,m);
-    const last  = endOfMonth(y,m);
+    const first = new Date(y, m, 1);
+    const last  = new Date(y, m+1, 0);
 
     const firstDowSunday0 = first.getDay(); // 0=Sun
-    const firstDowMon1 = (firstDowSunday0 === 0) ? 7 : firstDowSunday0; // 1..7, Mon=1
+    const firstDowMon1 = (firstDowSunday0 === 0) ? 7 : firstDowSunday0; // 1..7
     const leading = firstDowMon1 - 1;
 
     const daysInMonth = last.getDate();
@@ -178,8 +123,8 @@
   }
 
   function render(root, cfg){
-    const today = new Date();
-    let view = stripTime(today);
+    const today = stripTime(new Date());
+    let view = new Date(today.getFullYear(), today.getMonth(), 1);
 
     const state = {
       cfg: loadCfg(),
@@ -190,7 +135,7 @@
       <div class="hc-head">
         <div>
           <div class="hc-title">Kalender</div>
-          <div class="hc-sub">Feiertage · Wochenenden · Miet-Countdown · Quick-Events</div>
+          <div class="hc-sub">Compact · Feiertage · Miet-Countdown</div>
         </div>
         <div class="hc-actions">
           <span class="hc-pill" id="hcNow">—</span>
@@ -199,86 +144,82 @@
       </div>
 
       <div class="hc-body">
-        <div class="hc-topgrid">
-          <div class="hc-card">
-            <div class="hc-kpiRow">
-              <div class="hc-kpi">
-                <div class="hc-k">Nächste Mieteinnahme</div>
-                <div class="hc-v" id="rentNext">—</div>
-                <div class="hc-h" id="rentHint">—</div>
-              </div>
-              <div class="hc-kpi">
-                <div class="hc-k">Countdown</div>
-                <div class="hc-v" id="rentCountdown">—</div>
-                <div class="hc-h">Tage bis zur nächsten Miete</div>
-              </div>
-              <div class="hc-kpi">
-                <div class="hc-k">Einstellungen</div>
-                <div class="hc-v" id="rentDayTxt">—</div>
-                <div class="hc-h">
-                  Miettag (monatlich).<br>
-                  <span style="opacity:.85">Edit unten im Quick-Add.</span>
-                </div>
-              </div>
+        <div class="hc-card">
+          <div class="hc-kpiRow">
+            <div class="hc-kpi">
+              <div class="hc-k">Nächste Miete</div>
+              <div class="hc-v" id="rentNext">—</div>
+              <div class="hc-h" id="rentHint">—</div>
             </div>
+            <div class="hc-kpi">
+              <div class="hc-k">Countdown</div>
+              <div class="hc-v" id="rentCountdown">—</div>
+              <div class="hc-h">Tage bis zur nächsten Miete</div>
+            </div>
+            <div class="hc-kpi">
+              <div class="hc-k">Miettag</div>
+              <div class="hc-v" id="rentDayTxt">—</div>
+              <div class="hc-h">monatlich · im Kalender markiert</div>
+            </div>
+          </div>
+        </div>
 
-            <div style="margin-top:12px;">
-              <div class="hc-calHead">
-                <div class="hc-month" id="hcMonth">—</div>
-                <div class="hc-nav">
-                  <button id="hcPrev" aria-label="Vorheriger Monat">←</button>
-                  <button id="hcNext" aria-label="Nächster Monat">→</button>
-                </div>
-              </div>
-
-              <div class="hc-grid" id="hcDow"></div>
-              <div class="hc-grid" id="hcGrid"></div>
+        <div class="hc-card">
+          <div class="hc-calHead">
+            <div class="hc-month" id="hcMonth">—</div>
+            <div class="hc-nav">
+              <button id="hcPrev" aria-label="Vorheriger Monat">←</button>
+              <button id="hcNext" aria-label="Nächster Monat">→</button>
             </div>
           </div>
 
-          <div class="hc-card">
-            <div class="hc-sideTitle">Nächste Events</div>
-            <div class="hc-list" id="hcUpcoming"></div>
+          <div class="hc-grid" id="hcDow"></div>
+          <div class="hc-grid" id="hcGrid"></div>
+        </div>
 
-            <div class="hc-divider" style="height:1px;background:rgba(148,163,184,.14);margin:12px 0;"></div>
+        <div class="hc-card">
+          <div class="hc-sideTitle">Nächste Events</div>
+          <div class="hc-list" id="hcUpcoming"></div>
 
-            <div class="hc-sideTitle">Quick Add</div>
-            <div class="hc-form">
-              <input class="hc-input" id="evTitle" placeholder="Event Titel (z.B. Handwerker Termin, Abnahme, Call…)" />
-              <input class="hc-input" id="evDate" type="date" />
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-              <button class="hc-btn" id="evAdd">Event hinzufügen</button>
-              <button class="hc-btn" id="evClear">Alle eigenen Events löschen</button>
-              <button class="hc-btn" id="rentEdit">Miettag ändern</button>
-            </div>
-            <div class="hc-small">
-              Eigene Events werden lokal im Browser gespeichert (localStorage). Kein Sync – dafür 100% simpel.
-            </div>
+          <div style="height:1px;background:rgba(148,163,184,.14);margin:12px 0;"></div>
+
+          <div class="hc-sideTitle">Quick Add</div>
+          <div class="hc-form">
+            <input class="hc-input" id="evTitle" placeholder="Event Titel…" />
+            <input class="hc-input" id="evDate" type="date" />
           </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+            <button class="hc-btn" id="evAdd">Hinzufügen</button>
+            <button class="hc-btn" id="rentEdit">Miettag ändern</button>
+            <button class="hc-btn" id="evClear">Events löschen</button>
+          </div>
+          <div class="hc-small">Speicherung lokal im Browser (kein Sync).</div>
         </div>
       </div>
     `;
 
+    // clock
     const elNow = root.querySelector("#hcNow");
-
     function tick(){
       const d = new Date();
       elNow.textContent = d.toLocaleString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
     }
     tick(); setInterval(tick, 15000);
 
+    // init date input
+    root.querySelector("#evDate").value = ymd(new Date());
+
+    // handlers
     root.querySelector("#hcToday").addEventListener("click", ()=>{
-      view = stripTime(new Date());
+      view = new Date(today.getFullYear(), today.getMonth(), 1);
       renderAll();
     });
-
     root.querySelector("#hcPrev").addEventListener("click", ()=>{
-      view = new Date(view.getFullYear(), view.getMonth()-1, 1);
+      view = addMonths(view, -1);
       renderAll();
     });
     root.querySelector("#hcNext").addEventListener("click", ()=>{
-      view = new Date(view.getFullYear(), view.getMonth()+1, 1);
+      view = addMonths(view, +1);
       renderAll();
     });
 
@@ -301,77 +242,67 @@
 
     root.querySelector("#rentEdit").addEventListener("click", ()=>{
       const cur = state.cfg.rentDay;
-      const input = prompt("Miettag (monatlich) eingeben (1–28):", String(cur));
+      const input = prompt("Miettag (1–28):", String(cur));
       if(input == null) return;
-      const v = clampInt(input, 1, 28);
-      state.cfg.rentDay = v;
+      state.cfg.rentDay = clampInt(input, 1, 28);
       saveCfg(state.cfg);
       renderAll();
     });
 
-    // init date input default = today
-    root.querySelector("#evDate").value = ymd(new Date());
+    function holidayName(date){
+      const y = date.getFullYear();
+      const key = ymd(date);
+      const m1 = holidayMapForYear(y-1);
+      const m2 = holidayMapForYear(y);
+      const m3 = holidayMapForYear(y+1);
+      return m1.get(key) || m2.get(key) || m3.get(key) || "";
+    }
 
     function renderAll(){
       // KPIs
       const nextRent = nextRentDate(new Date(), state.cfg.rentDay);
       const dLeft = daysBetween(new Date(), nextRent);
+      root.querySelector("#rentNext").textContent = nextRent.toLocaleDateString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit" });
+      root.querySelector("#rentHint").textContent = (dLeft===0) ? "Heute" : `in ${dLeft} Tagen`;
+      root.querySelector("#rentCountdown").textContent = (dLeft===0) ? "Heute" : `${dLeft} Tage`;
+      root.querySelector("#rentDayTxt").textContent = `${state.cfg.rentDay}.`;
 
-      root.querySelector("#rentNext").textContent = nextRent.toLocaleDateString("de-DE", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
-      root.querySelector("#rentHint").textContent = "Monatlich am " + state.cfg.rentDay + ".";
-      root.querySelector("#rentCountdown").textContent = (dLeft === 0) ? "Heute" : (dLeft + " Tage");
-      root.querySelector("#rentDayTxt").textContent = "Miettag: " + state.cfg.rentDay + ".";
+      // Month
+      root.querySelector("#hcMonth").textContent = monthLabel(view);
 
-      // Month label
-      root.querySelector("#hcMonth").textContent = monthLabel(new Date(view));
+      // DOW
+      root.querySelector("#hcDow").innerHTML = dowLabels().map(x=>`<div class="hc-dow">${x}</div>`).join("");
 
-      // DOW labels
-      const dow = root.querySelector("#hcDow");
-      dow.innerHTML = dowLabels().map(x=>`<div class="hc-dow">${x}</div>`).join("");
-
-      // Holidays map for current year + adjacent year (for leading/trailing days)
-      const y = view.getFullYear();
-      const holA = holidayMapForYear(y-1);
-      const holB = holidayMapForYear(y);
-      const holC = holidayMapForYear(y+1);
-
-      function holidayName(date){
-        const key = ymd(date);
-        return holA.get(key) || holB.get(key) || holC.get(key) || "";
-      }
-
-      // Build month cells
-      const cells = buildMonthGrid(new Date(view));
-      const grid = root.querySelector("#hcGrid");
-
-      const todayKey = ymd(new Date());
-      const rentKeyThisMonth = ymd(new Date(view.getFullYear(), view.getMonth(), state.cfg.rentDay));
-
-      // Build event map (user)
+      // Event map
       const userByDate = new Map();
       for(const ev of state.events){
         if(!userByDate.has(ev.date)) userByDate.set(ev.date, []);
         userByDate.get(ev.date).push(ev);
       }
 
+      // Calendar grid
+      const cells = buildMonthGrid(view);
+      const grid = root.querySelector("#hcGrid");
+
+      const todayKey = ymd(new Date());
+      const rentKey = ymd(new Date(view.getFullYear(), view.getMonth(), state.cfg.rentDay));
+
       grid.innerHTML = cells.map(c=>{
         const key = ymd(c.date);
         const hol = holidayName(c.date);
         const isToday = key === todayKey;
-
-        // rent badge on rent day of THIS viewed month
-        const isRent = key === rentKeyThisMonth;
+        const isRent = key === rentKey;
 
         const badges = [];
+        if(isRent) badges.push(`<div class="hc-badge pay"><span>Miete</span></div>`);
         if(hol) badges.push(`<div class="hc-badge hol"><span>${esc(hol)}</span></div>`);
-        if(isRent) badges.push(`<div class="hc-badge pay"><span>Mieteinnahme</span></div>`);
 
         const userEvents = (userByDate.get(key) || []);
-        userEvents.slice(0,2).forEach(ev=>{
+        userEvents.slice(0,1).forEach(ev=>{
           badges.push(`<div class="hc-badge user"><span>${esc(ev.title)}</span></div>`);
         });
-        if(userEvents.length > 2){
-          badges.push(`<div class="hc-badge user"><span>+${userEvents.length-2} weitere</span></div>`);
+        if(userEvents.length > 1){
+          badges.push(`<div class="hc-badge user"><span>+${userEvents.length-1}</span></div>`);
         }
 
         const cls = [
@@ -390,60 +321,48 @@
         `;
       }).join("");
 
-      // Upcoming list (next 14 days)
+      // Upcoming (compact list)
       const now = stripTime(new Date());
-      const horizon = addDays(now, 60);
-
+      const horizon = addDays(now, 45);
       const upcoming = [];
 
-      // Rent events (next 3 occurrences)
-      let r1 = nextRentDate(now, state.cfg.rentDay);
-      upcoming.push({ date: r1, type:"pay", title:"Mieteinnahme", sub:"Monatlich am " + state.cfg.rentDay + "." });
-      let r2 = nextRentDate(addDays(r1, 1), state.cfg.rentDay);
-      upcoming.push({ date: r2, type:"pay", title:"Mieteinnahme", sub:"Monatlich am " + state.cfg.rentDay + "." });
-      let r3 = nextRentDate(addDays(r2, 1), state.cfg.rentDay);
-      upcoming.push({ date: r3, type:"pay", title:"Mieteinnahme", sub:"Monatlich am " + state.cfg.rentDay + "." });
+      // rent next two
+      const r1 = nextRentDate(now, state.cfg.rentDay);
+      const r2 = nextRentDate(addDays(r1, 1), state.cfg.rentDay);
+      upcoming.push({ date: r1, type:"pay", title:"Mieteinnahme", sub:`am ${state.cfg.rentDay}.` });
+      upcoming.push({ date: r2, type:"pay", title:"Mieteinnahme", sub:`am ${state.cfg.rentDay}.` });
 
-      // Holidays in range
+      // holidays + user events
       for(let d = new Date(now); d <= horizon; d = addDays(d, 1)){
         const hn = holidayName(d);
-        if(hn){
-          upcoming.push({ date: new Date(d), type:"hol", title: hn, sub:"Feiertag (bundesweit)" });
-        }
-      }
+        if(hn) upcoming.push({ date: new Date(d), type:"hol", title: hn, sub:"Feiertag" });
 
-      // User events
-      for(const ev of state.events){
-        const d = new Date(ev.date + "T00:00:00");
-        if(d >= now && d <= horizon){
-          upcoming.push({ date: d, type:"user", title: ev.title, sub:"Eigenes Event" });
-        }
+        const k = ymd(d);
+        const u = userByDate.get(k) || [];
+        u.forEach(ev=> upcoming.push({ date: new Date(ev.date+"T00:00:00"), type:"user", title: ev.title, sub:"Event" }));
       }
 
       upcoming.sort((a,b)=> a.date - b.date);
-
       const list = root.querySelector("#hcUpcoming");
-      const items = upcoming.slice(0,8);
+      const items = upcoming.slice(0,6);
 
-      if(!items.length){
-        list.innerHTML = `<div class="hc-item"><div class="hc-itemName">Keine Events</div><div class="hc-itemSub">Füge unten ein Event hinzu.</div></div>`;
-      }else{
-        list.innerHTML = items.map(x=>{
-          const tag =
-            x.type === "pay" ? "Miete" :
-            x.type === "hol" ? "Feiertag" : "Event";
-          const time = x.date.toLocaleDateString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit" });
-          return `
-            <div class="hc-item">
-              <div class="hc-itemTop">
-                <div class="hc-itemName">${esc(x.title)}</div>
-                <div class="hc-itemTime">${time}</div>
-              </div>
-              <div class="hc-itemSub">${esc(tag)} · ${esc(x.sub || "")}</div>
+      list.innerHTML = items.length ? items.map(x=>{
+        const time = x.date.toLocaleDateString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit" });
+        return `
+          <div class="hc-item">
+            <div class="hc-itemTop">
+              <div class="hc-itemName">${esc(x.title)}</div>
+              <div class="hc-itemTime">${time}</div>
             </div>
-          `;
-        }).join("");
-      }
+            <div class="hc-itemSub">${esc(x.sub||"")}</div>
+          </div>
+        `;
+      }).join("") : `
+        <div class="hc-item">
+          <div class="hc-itemName">Keine Events</div>
+          <div class="hc-itemSub">Quick Add nutzen.</div>
+        </div>
+      `;
     }
 
     renderAll();
