@@ -1,0 +1,100 @@
+.home-calendar-root{
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,.18);
+  background:
+    radial-gradient(circle at 85% 0%, rgba(34,197,94,.14), transparent 45%),
+    rgba(15,23,42,.55);
+  overflow:hidden;
+  color:#e2e8f0;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  min-width:0;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+.home-calendar-root *{ box-sizing:border-box; }
+
+.hc-head{
+  padding:12px 14px 10px;
+  border-bottom:1px solid rgba(148,163,184,.14);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+.hc-title{ font-size:13px; font-weight:950; }
+.hc-sub{ margin-top:3px; font-size:11px; color: rgba(226,232,240,.72); }
+
+.hc-body{
+  padding:12px 14px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-width:0;
+  flex:1 1 auto;
+}
+
+.hc-card{
+  padding:12px;
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,.16);
+  background: rgba(2,6,23,.22);
+}
+
+.hc-linkRow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.hc-btn{
+  cursor:pointer;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.45);
+  color:#e2e8f0;
+  padding:10px 12px;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.hc-btn:hover{
+  border-color: rgba(34,197,94,.28);
+  box-shadow: 0 0 0 4px rgba(34,197,94,.08);
+}
+.hc-a{
+  color: rgba(191,219,254,.95);
+  text-decoration:none;
+  font-weight:900;
+  font-size:12px;
+  word-break:break-all;
+}
+.hc-a:hover{ text-decoration:underline; }
+
+.hc-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.hc-item{
+  padding:10px;
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,.16);
+  background: rgba(2,6,23,.18);
+}
+.hc-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+.hc-name{ font-weight:950; font-size:12px; }
+.hc-time{ font-size:11px; color: rgba(226,232,240,.72); white-space:nowrap; }
+.hc-loc{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.68); }
+
+.hc-hint{
+  font-size:12px;
+  color: rgba(226,232,240,.72);
+  line-height:1.35;
+}
