@@ -22,18 +22,18 @@
     .span6{ grid-column:span 6; min-width:0; }
     @media (max-width:900px){ .span6{ grid-column:span 12; } }
     .module-slot{ width:100%; min-width:0; }
-    .status{
+    .alert{
       border-radius:14px;
-      border:1px solid rgba(148,163,184,.18);
-      background: rgba(2,6,23,.25);
-      padding:10px 12px;
+      border:1px solid rgba(248,113,113,.35);
+      background: rgba(248,113,113,.08);
+      padding:12px 14px;
+      color: rgba(226,232,240,.92);
       font-size:12px;
-      color: rgba(226,232,240,.85);
+      line-height:1.35;
       white-space: pre-wrap;
       overflow-wrap:anywhere;
     }
-    .ok{ color: rgba(34,197,94,.95); font-weight:900; }
-    .bad{ color: rgba(248,113,113,.95); font-weight:900; }
+    .alert strong{ font-weight:950; }
   </style>
 </head>
 
@@ -42,88 +42,65 @@
 
   <template id="pageTpl">
     <section class="fin-grid">
-
       <section class="span12">
         <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Status</div>
-              <div class="card-sub">Excel / Module</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="status" id="statusBox">…</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="span12">
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">Gesamt</div><div class="card-sub">Übersicht</div></div></div>
+          <div class="card-header"><div><div class="card-title">Finanzen</div><div class="card-sub">Module</div></div></div>
           <div class="card-body"><div class="module-slot" id="slotGesamt"></div></div>
         </div>
       </section>
 
-      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Cashflow</div><div class="card-sub">Verlauf</div></div></div><div class="card-body"><div class="module-slot" id="slotCashflow"></div></div></div></section>
-      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Mieten</div><div class="card-sub">Einnahmen</div></div></div><div class="card-body"><div class="module-slot" id="slotMieten"></div></div></div></section>
+      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Cashflow</div></div></div><div class="card-body"><div class="module-slot" id="slotCashflow"></div></div></div></section>
+      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Mieten</div></div></div><div class="card-body"><div class="module-slot" id="slotMieten"></div></div></div></section>
 
-      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">OP</div><div class="card-sub">Ausgaben</div></div></div><div class="card-body"><div class="module-slot" id="slotOp"></div></div></div></section>
-      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Reserven</div><div class="card-sub">Rücklagen</div></div></div><div class="card-body"><div class="module-slot" id="slotReserven"></div></div></div></section>
+      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">OP</div></div></div><div class="card-body"><div class="module-slot" id="slotOp"></div></div></div></section>
+      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Reserven</div></div></div><div class="card-body"><div class="module-slot" id="slotReserven"></div></div></div></section>
 
-      <section class="span12">
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">Budget</div><div class="card-sub">Soll / Ist</div></div></div>
-          <div class="card-body"><div class="module-slot" id="slotBudget"></div></div>
-        </div>
-      </section>
-
+      <section class="span12"><div class="card"><div class="card-header"><div><div class="card-title">Budget</div></div></div><div class="card-body"><div class="module-slot" id="slotBudget"></div></div></div></section>
     </section>
   </template>
 
   <script>
     (async function(){
-      // Shell immer zuerst mounten
-      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Excel + Module" });
+      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Gesamt + Module" });
 
-      const statusBox = document.getElementById("statusBox");
-      function setStatus(lines){ statusBox.innerHTML = lines.join("\n"); }
+      const V = new URLSearchParams(location.search).get("v") || String(Date.now());
+      const withV = (p)=> p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(V);
 
-      // Excel laden (fällt bei Fehler automatisch auf Dummy zurück)
-      await ExcelLoader.load("./Dashboard.xlsx");
+      function show(el, title, msg){
+        el.innerHTML = "";
+        const box = document.createElement("div");
+        box.className = "alert";
+        box.innerHTML = `<strong>${title}</strong>\n${msg}`;
+        el.appendChild(box);
+      }
 
-      const loaded = ExcelLoader.isLoaded();
-      const err = ExcelLoader.lastError();
-      const financeData = window.IMMO_DATA?.finance || [];
-
-      const statusLines = [];
-      statusLines.push(loaded ? "<span class='ok'>Excel geladen ✅</span> (./Dashboard.xlsx)" :
-                               "<span class='bad'>Excel NICHT geladen ❌</span> → Dummy/Fallback aktiv");
-      if(!loaded && err) statusLines.push("Fehler: " + err);
-      statusLines.push("Rows Finance: " + financeData.length);
-      setStatus(statusLines);
-
-      // Loader helpers (für Modul-Assets)
       function loadCssOnce(href){
+        const key = withV(href);
         if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
         return new Promise((resolve,reject)=>{
           const l=document.createElement("link");
-          l.rel="stylesheet"; l.href=href; l.dataset.href=href;
-          l.onload=resolve; l.onerror=()=>reject(new Error("CSS nicht geladen: "+href));
+          l.rel="stylesheet"; l.href=key; l.dataset.href=href;
+          l.onload=resolve;
+          l.onerror=()=>reject(new Error("CSS nicht geladen (404?): " + href));
           document.head.appendChild(l);
         });
       }
+
       function loadJsOnce(src){
+        const key = withV(src);
         if(document.querySelector('script[data-src="'+src+'"]')) return Promise.resolve();
         return new Promise((resolve,reject)=>{
           const s=document.createElement("script");
-          s.src=src; s.defer=true; s.dataset.src=src;
-          s.onload=resolve; s.onerror=()=>reject(new Error("JS nicht geladen: "+src));
+          s.src=key; s.defer=true; s.dataset.src=src;
+          s.onload=resolve;
+          s.onerror=()=>reject(new Error("JS nicht geladen (404?): " + src));
           document.head.appendChild(s);
         });
       }
+
       async function loadHtmlInto(url, el){
-        const r = await fetch(url, { cache:"no-store" });
-        if(!r.ok) throw new Error("HTML nicht geladen: "+url+" ("+r.status+")");
+        const r = await fetch(withV(url), { cache:"no-store" });
+        if(!r.ok) throw new Error("HTML nicht geladen (404?): " + url + " (HTTP " + r.status + ")");
         el.innerHTML = await r.text();
       }
 
@@ -135,16 +112,30 @@
           await loadJsOnce(js);
 
           const mod = window[globalName];
-          if(!mod || typeof mod.render !== "function"){
-            throw new Error("render() fehlt bei window."+globalName);
-          }
+          if(!mod) throw new Error("Global fehlt: window." + globalName);
+          if(typeof mod.render !== "function") throw new Error("render() fehlt: window." + globalName + ".render");
+
           mod.render(slot, data);
         }catch(e){
-          slot.textContent = "Modulfehler ("+slotId+"): " + e.message;
+          show(slot, "Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e));
         }
       }
 
-      // Deine existierenden Module (Dateinamen aus Screenshot)
+      // Excel
+      try{
+        await ExcelLoader.load(withV("./Dashboard.xlsx"));
+      }catch(e){
+        // wenn Excel fehlt, zeigen wir es in jedem Slot klar an
+        ["slotGesamt","slotCashflow","slotMieten","slotOp","slotReserven","slotBudget"].forEach(id=>{
+          const el = document.getElementById(id);
+          show(el, "Daten konnten nicht geladen werden.", (e && e.message) ? e.message : String(e));
+        });
+        return;
+      }
+
+      const financeData = Array.isArray(window.IMMO_DATA?.finance) ? window.IMMO_DATA.finance : [];
+
+      // Finance Modules (Dateinamen wie in deinem Ordner)
       await mountModule({ slotId:"slotGesamt",   html:"./finance-gesamt-modul.html",   css:"./finance-gesamt-modul.css",   js:"./finance-gesamt-modul.js",   globalName:"FinanceGesamtModul",   data: financeData });
       await mountModule({ slotId:"slotCashflow", html:"./finance-cashflow-modul.html", css:"./finance-cashflow-modul.css", js:"./finance-cashflow-modul.js", globalName:"FinanceCashflowModul", data: financeData });
       await mountModule({ slotId:"slotMieten",   html:"./finance-mieten-modul.html",   css:"./finance-mieten-modul.css",   js:"./finance-mieten-modul.js",   globalName:"FinanceMietenModul",   data: financeData });
