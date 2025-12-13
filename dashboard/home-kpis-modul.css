@@ -20,7 +20,24 @@
   gap:10px;
 }
 .hk-title{ font-size:13px; font-weight:950; }
-.hk-sub{ margin-top:3px; font-size:11px; color: rgba(226,232,240,.72); }
+.hk-sub{ margin-top:3px; font-size:11px; color: rgba(226,232,240,.72); line-height:1.25; }
+
+.hk-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:flex-end;
+}
+.hk-pill{
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.45);
+  font-size:11px;
+  color: rgba(226,232,240,.86);
+  white-space:nowrap;
+}
 .hk-btn{
   cursor:pointer;
   border-radius:12px;
@@ -46,20 +63,136 @@
   grid-template-columns: repeat(5, minmax(0,1fr));
   gap:10px;
 }
-@media (max-width: 1100px){
+
+@media (max-width: 1200px){
   .hk-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
 }
-@media (max-width: 720px){
+@media (max-width: 820px){
   .hk-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
+@media (max-width: 520px){
+  .hk-grid{ grid-template-columns: 1fr; }
+}
 
-.hk-kpi{
+.hk-card{
   padding:12px;
-  border-radius:14px;
+  border-radius:16px;
   border:1px solid rgba(148,163,184,.16);
   background: rgba(2,6,23,.22);
   min-width:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-height: 210px;
 }
-.hk-k{ font-size:10px; text-transform:uppercase; letter-spacing:.08em; color: rgba(226,232,240,.62); }
-.hk-v{ margin-top:7px; font-size:18px; font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.hk-h{ margin-top:5px; font-size:11px; color: rgba(226,232,240,.70); line-height:1.25; }
+
+.hk-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+.hk-k{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color: rgba(226,232,240,.62);
+}
+.hk-v{
+  margin-top:6px;
+  font-size:18px;
+  font-weight:950;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.hk-h{
+  margin-top:6px;
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+  line-height:1.25;
+}
+
+.hk-badge{
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.45);
+  font-size:11px;
+  color: rgba(226,232,240,.86);
+  white-space:nowrap;
+  flex:0 0 auto;
+}
+.hk-badge.good{
+  border-color: rgba(34,197,94,.26);
+  background: rgba(20,83,45,.16);
+  color: rgba(187,247,208,.95);
+}
+.hk-badge.warn{
+  border-color: rgba(248,113,113,.26);
+  background: rgba(127,29,29,.12);
+  color: rgba(254,202,202,.95);
+}
+
+.hk-chartWrap{
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  padding:10px;
+  min-width:0;
+}
+
+.hk-chart{
+  width:100%;
+  height:86px;
+  display:block;
+}
+
+.hk-foot{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-end;
+  margin-top:auto;
+}
+.hk-meta{
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+  line-height:1.25;
+}
+.hk-mini{
+  font-size:10px;
+  color: rgba(226,232,240,.62);
+}
+
+.hk-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.hk-legend{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  font-size:10px;
+  color: rgba(226,232,240,.62);
+}
+.hk-dot{
+  width:10px;height:10px;border-radius:999px;
+  border:1px solid rgba(148,163,184,.20);
+  background: rgba(148,163,184,.25);
+  display:inline-block;
+  margin-right:6px;
+}
+.hk-dot.fc{
+  background: rgba(59,130,246,.25);
+  border-color: rgba(59,130,246,.25);
+}
+.hk-dot.fcast{
+  background: rgba(148,163,184,.12);
+  border-color: rgba(148,163,184,.18);
+}
