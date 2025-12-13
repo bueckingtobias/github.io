@@ -2,90 +2,123 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Finanzen</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Finanzen – Dashboard</title>
 
-  <!-- App Shell Styles (Sidebar etc.) -->
-  <link rel="stylesheet" href="./app-shell.css">
+  <meta name="robots" content="noindex,nofollow" />
 
-  <!-- Finance View Styles -->
-  <link rel="stylesheet" href="./view-finance.css">
+  <!-- NUR diese eine CSS für die komplette View (Sidebar + Grid) -->
+  <link rel="stylesheet" href="./view-finance.css?v=1">
 
-  <!-- Module Scripts -->
-  <script src="./finance-cashflow-modul.js" defer></script>
-  <script src="./finance-budget-modul.js" defer></script>
-  <script src="./finance-op-modul.js" defer></script>
-  <script src="./finance-reserven-modul.js" defer></script>
+  <!-- View Loader -->
+  <script src="./view-finance.js?v=1" defer></script>
 </head>
 
 <body>
-  <div class="app-shell">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-title">Dashboard</div>
-      <nav class="sidebar-nav">
-        <a href="./index.html">Übersicht</a>
-        <a href="./view-projects.html">Projekte</a>
-        <a href="./view-finance.html" class="active">Finanzen</a>
+  <div class="app">
+    <!-- Sidebar (bleibt immer da) -->
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div class="brand-txt">
+          <div class="brand-title">Bücking Dashboard</div>
+          <div class="brand-sub">Immobilien · Projekte · KPIs</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <a href="./index.html">
+          <div class="nav-ic">⌂</div>
+          <div class="nav-txt">
+            <div class="nav-title">Übersicht</div>
+            <div class="nav-sub">Startseite</div>
+          </div>
+        </a>
+
+        <div class="nav-label">Views</div>
+
+        <a href="./view-projects.html">
+          <div class="nav-ic">🏗</div>
+          <div class="nav-txt">
+            <div class="nav-title">Projekte / Bau</div>
+            <div class="nav-sub">Gewerke & Handwerker</div>
+          </div>
+        </a>
+
+        <a href="./view-finance.html" class="active">
+          <div class="nav-ic">€</div>
+          <div class="nav-txt">
+            <div class="nav-title">Finanzen</div>
+            <div class="nav-sub">Cashflow & Budget</div>
+          </div>
+        </a>
       </nav>
+
+      <div class="sidebar-footer">
+        <span class="chip" id="clockSide">—</span>
+        <span class="chip">online</span>
+      </div>
     </aside>
 
     <!-- Main -->
-    <main class="main">
-      <header class="main-header">
-        <h1>Finanzen</h1>
-        <div class="sub">Cashflow, Budgets & Liquidität</div>
+    <section class="main">
+      <header class="topbar">
+        <div class="page-title">
+          <h1>Finanzen</h1>
+          <div>Modular · Datenquelle später: Dashboard.xlsx</div>
+        </div>
+
+        <div class="top-right">
+          <span class="chip" id="clockTop">—</span>
+          <button class="btn" id="btnRefresh">↻ Reload Module</button>
+        </div>
       </header>
 
-      <section class="finance-root">
-        <!-- Gesamt Cashflow (breit) -->
-        <div class="finance-span-2" id="financeCashflow"></div>
+      <main class="content">
+        <div class="fx-root">
+          <!-- Fehlerbox -->
+          <pre class="fx-error" id="fxError" style="display:none;"></pre>
 
-        <!-- Grid: exakt 2 Spalten -->
-        <div class="finance-grid">
-          <div class="finance-cell" id="financeBudget"></div>
-          <div class="finance-cell" id="financeOP"></div>
-          <div class="finance-cell" id="financeReserven"></div>
+          <!-- OBEN: Gesamtmodul volle Breite -->
+          <section class="fx-row">
+            <div id="slotGesamt"></div>
+          </section>
+
+          <!-- UNTEN: 2-Spalten Grid – klare Linie -->
+          <section class="fx-grid-2" id="fxGrid2">
+            <div class="fx-cell" id="slotCashflow"></div>
+            <div class="fx-cell" id="slotBudget"></div>
+            <div class="fx-cell" id="slotOP"></div>
+            <div class="fx-cell" id="slotReserven"></div>
+          </section>
+
+          <!-- Optional: volle Breite unten -->
+          <section class="fx-row">
+            <div id="slotMieten"></div>
+          </section>
+
+          <div class="fx-footer">
+            <div class="fx-hint">
+              Hinweis: Wenn wieder “weiß + nur Text” kommt, dann lädt die CSS nicht (Pfad/Name/Cache).
+            </div>
+          </div>
         </div>
-      </section>
-    </main>
+      </main>
+    </section>
   </div>
 
   <script>
-    /* Dummy-Daten – später aus Dashboard.xlsx */
-    const financeData = {
-      startCash: 185000
-    };
-
-    const cashflow = [
-      { month:"2025-01", inflow:52000, outflow:61000 },
-      { month:"2025-02", inflow:54000, outflow:58500 },
-      { month:"2025-03", inflow:61000, outflow:74000 },
-      { month:"2025-04", inflow:59000, outflow:62000 },
-      { month:"2025-05", inflow:63000, outflow:69000 },
-      { month:"2025-06", inflow:66000, outflow:72000 }
-    ];
-
-    window.addEventListener("DOMContentLoaded", ()=>{
-      FinanceCashflowModul.render(
-        document.getElementById("financeCashflow"),
-        financeData,
-        cashflow,
-        { horizon:6 }
-      );
-
-      FinanceBudgetModul.render(
-        document.getElementById("financeBudget")
-      );
-
-      FinanceOPModul.render(
-        document.getElementById("financeOP")
-      );
-
-      FinanceReservenModul.render(
-        document.getElementById("financeReserven")
-      );
-    });
+    (function(){
+      const clockTop = document.getElementById("clockTop");
+      const clockSide = document.getElementById("clockSide");
+      function tick(){
+        const d = new Date();
+        const t = d.toLocaleString("de-DE",{ weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+        if(clockTop) clockTop.textContent = t;
+        if(clockSide) clockSide.textContent = t;
+      }
+      tick(); setInterval(tick, 15000);
+    })();
   </script>
 </body>
 </html>
