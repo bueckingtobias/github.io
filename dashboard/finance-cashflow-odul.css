@@ -1,0 +1,55 @@
+.fin-cash-root{
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.55);
+  overflow:hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  color:#e2e8f0;
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+}
+.fin-cash-root *{ box-sizing:border-box; }
+
+.fc-head{
+  padding: 12px 14px 10px;
+  border-bottom:1px solid rgba(148,163,184,.14);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+
+.fc-title{ font-size:13px; font-weight:950; }
+.fc-sub{ margin-top:3px; font-size:11px; color: rgba(226,232,240,.72); line-height:1.25; }
+
+.fc-mini{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+}
+.fc-mini-row{ display:flex; justify-content:space-between; gap:10px; }
+.fc-mini-row strong{ color: rgba(226,232,240,.92); }
+
+.fc-body{ padding: 12px 14px 14px; }
+
+.fc-wrap{
+  width:100%;
+  border-radius: 14px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.25);
+  overflow:hidden;
+}
+
+.fc-legend{
+  margin-top: 10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+}
+.fc-li{ display:flex; align-items:center; gap:8px; }
+.fc-dot{ width:10px;height:10px;border-radius:999px; border:1px solid rgba(148,163,184,.20); }
+
+canvas{ display:block; width:100%; height:auto; }
