@@ -1,35 +1,35 @@
 (function(){
 
-  // ===== Health Chips =====
   const chipBase    = document.getElementById("chipBase");
   const chipCSS     = document.getElementById("chipCSS");
   const chipModules = document.getElementById("chipModules");
   const appRoot     = document.getElementById("appRoot");
 
   const BASE = (window.__BASE_DASH__ || "./");
+  const CB   = (window.__CB__ || Date.now().toString(36));
+
   if(chipBase) chipBase.textContent = "Base: " + BASE;
 
-  function markActive(href){
+  // --- Active tab ---
+  function isActive(fileName){
     const p = (location.pathname || "").toLowerCase();
-    const file = p.split("/").pop() || "";
-    // normalize: if you're serving from /dashboard/ or root
-    const target = (href || "").toLowerCase().replace("./","").replace("dashboard/","");
-    return file === target;
+    const current = (p.split("/").pop() || "");
+    return current === (fileName || "").toLowerCase();
   }
 
-  // ===== Inject external CSS with correct base path =====
+  // --- Load view CSS (cache-busted) ---
   function loadViewCss(){
     return new Promise((resolve)=>{
       const link = document.createElement("link");
       link.rel = "stylesheet";
-      link.href = BASE + "view-finance.css?v=" + Date.now();
+      link.href = BASE + "view-finance.css?cb=" + CB;
       link.onload = ()=> resolve(true);
       link.onerror = ()=> resolve(false);
       document.head.appendChild(link);
     });
   }
 
-  // ===== Minimal App Shell HTML (rendered by JS to avoid path mistakes) =====
+  // --- Render Shell (Sidebar with ALL tabs) ---
   function renderShell(){
     appRoot.innerHTML = `
       <div class="app">
@@ -43,7 +43,7 @@
           </div>
 
           <nav class="nav" id="nav">
-            <a href="${BASE}index.html" class="${markActive("index.html") ? "active" : ""}">
+            <a href="${BASE}index.html" class="${isActive("index.html") ? "active" : ""}">
               <div class="nav-ic">⌂</div>
               <div class="nav-txt">
                 <div class="nav-title">Übersicht</div>
@@ -53,7 +53,7 @@
 
             <div class="nav-label">Views</div>
 
-            <a href="${BASE}view-projects.html" class="${markActive("view-projects.html") ? "active" : ""}">
+            <a href="${BASE}view-projects.html" class="${isActive("view-projects.html") ? "active" : ""}">
               <div class="nav-ic">🏗</div>
               <div class="nav-txt">
                 <div class="nav-title">Projekte / Bau</div>
@@ -61,7 +61,7 @@
               </div>
             </a>
 
-            <a href="${BASE}view-finance.html" class="${markActive("view-finance.html") ? "active" : ""}">
+            <a href="${BASE}view-finance.html" class="${isActive("view-finance.html") ? "active" : ""}">
               <div class="nav-ic">€</div>
               <div class="nav-txt">
                 <div class="nav-title">Finanzen</div>
@@ -69,7 +69,7 @@
               </div>
             </a>
 
-            <a href="${BASE}view-vermietung.html" class="${markActive("view-vermietung.html") ? "active" : ""}">
+            <a href="${BASE}view-vermietung.html" class="${isActive("view-vermietung.html") ? "active" : ""}">
               <div class="nav-ic">🏠</div>
               <div class="nav-txt">
                 <div class="nav-title">Vermietung</div>
@@ -79,7 +79,7 @@
 
             <div class="nav-label">Tools</div>
 
-            <a href="${BASE}admin.html" class="${markActive("admin.html") ? "active" : ""}">
+            <a href="${BASE}admin.html" class="${isActive("admin.html") ? "active" : ""}">
               <div class="nav-ic">⚙</div>
               <div class="nav-txt">
                 <div class="nav-title">Admin</div>
@@ -128,7 +128,7 @@
     `;
   }
 
-  // ===== Helpers =====
+  // --- Error box helpers ---
   function errBox(){ return document.getElementById("fxErrBox"); }
   function showErr(msg){
     const b = errBox();
@@ -143,6 +143,7 @@
     b.textContent = "";
   }
 
+  // --- Module loader (like projects) ---
   async function fetchText(url){
     const r = await fetch(url, { cache:"no-store" });
     if(!r.ok) throw new Error(`${url} → HTTP ${r.status}`);
@@ -157,7 +158,7 @@
       l.rel = "stylesheet";
       document.head.appendChild(l);
     }
-    l.href = href + (href.includes("?") ? "&" : "?") + "v=" + Date.now();
+    l.href = href + (href.includes("?") ? "&" : "?") + "cb=" + CB;
   }
 
   async function loadScriptFresh(id, src){
@@ -167,7 +168,7 @@
     await new Promise((res, rej)=>{
       const s = document.createElement("script");
       s.id = id;
-      s.src = src + (src.includes("?") ? "&" : "?") + "v=" + Date.now();
+      s.src = src + (src.includes("?") ? "&" : "?") + "cb=" + CB;
       s.onload = res;
       s.onerror = () => rej(new Error("Script konnte nicht geladen werden: " + s.src));
       document.head.appendChild(s);
@@ -196,7 +197,7 @@
     api.render(root, ...renderArgs);
   }
 
-  // ===== Demo Finance Data =====
+  // Demo Data
   function getFinanceData(){
     return {
       startCash: 185000,
@@ -273,24 +274,24 @@
 
   // ===== Start =====
   window.addEventListener("DOMContentLoaded", async ()=>{
-    // 1) shell rendern
+    // 1) shell rendern (damit Sidebar sicher neu ist)
     renderShell();
 
-    // 2) externe CSS laden
+    // 2) CSS laden
     const cssOk = await loadViewCss();
     if(chipCSS){
       chipCSS.textContent = "CSS: " + (cssOk ? "ok" : "FAIL");
       chipCSS.className = "chip " + (cssOk ? "ok" : "warn");
     }
 
-    // 3) modules laden
+    // 3) modules
     await renderAll();
 
     // refresh
     const btn = document.getElementById("btnRefresh");
     if(btn) btn.addEventListener("click", renderAll);
 
-    // clocks
+    // clock
     const clockSide = document.getElementById("clockSide");
     function tick(){
       const d = new Date();
