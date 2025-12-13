@@ -1,3 +1,4 @@
+/* dashboard/home-calendar-modul.css */
 .home-calendar-root{
   border-radius:18px;
   border:1px solid rgba(148,163,184,.18);
@@ -14,8 +15,26 @@
 }
 .home-calendar-root *{ box-sizing:border-box; }
 
+/* ===== Compact Layout (right-side module on iPad) ===== */
+.hc-compact .hc-body{
+  padding:10px 12px 12px;
+  gap:10px;
+}
+.hc-compact .hc-topgrid{
+  grid-template-columns: 1fr; /* remove 2-col inside */
+  gap:10px;
+}
+.hc-compact .hc-kpiRow{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:8px;
+}
+@media (max-width: 980px){
+  .hc-compact .hc-kpiRow{ grid-template-columns: 1fr; }
+}
+
 .hc-head{
-  padding:12px 14px 10px;
+  padding:10px 12px 8px;
   border-bottom:1px solid rgba(148,163,184,.14);
   display:flex;
   justify-content:space-between;
@@ -47,7 +66,7 @@
   border:1px solid rgba(148,163,184,.18);
   background: rgba(15,23,42,.45);
   color:#e2e8f0;
-  padding:10px 12px;
+  padding:9px 10px;
   font-size:12px;
   font-weight:900;
   white-space:nowrap;
@@ -57,41 +76,15 @@
   box-shadow: 0 0 0 4px rgba(34,197,94,.08);
 }
 
-.hc-body{
-  padding:12px 14px 14px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  min-width:0;
-  flex:1 1 auto;
-}
-
-.hc-topgrid{
-  display:grid;
-  grid-template-columns: 1.1fr .9fr;
-  gap:12px;
-  min-width:0;
-}
-@media (max-width: 980px){
-  .hc-topgrid{ grid-template-columns: 1fr; }
-}
-
 .hc-card{
-  padding:12px;
+  padding:10px;
   border-radius:14px;
   border:1px solid rgba(148,163,184,.16);
   background: rgba(2,6,23,.22);
   min-width:0;
 }
 
-.hc-kpiRow{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:stretch;
-}
 .hc-kpi{
-  flex:1 1 160px;
   padding:10px;
   border-radius:14px;
   border:1px solid rgba(148,163,184,.14);
@@ -99,18 +92,18 @@
   min-width:0;
 }
 .hc-k{ font-size:10px; text-transform:uppercase; letter-spacing:.08em; color: rgba(226,232,240,.60); }
-.hc-v{ margin-top:6px; font-size:16px; font-weight:950; }
-.hc-h{ margin-top:6px; font-size:11px; color: rgba(226,232,240,.70); line-height:1.25; }
+.hc-v{ margin-top:6px; font-size:14px; font-weight:950; }
+.hc-h{ margin-top:6px; font-size:10.5px; color: rgba(226,232,240,.70); line-height:1.25; }
 
 .hc-calHead{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 .hc-month{
-  font-size:13px;
+  font-size:12px;
   font-weight:950;
   white-space:nowrap;
 }
@@ -124,7 +117,7 @@
   border:1px solid rgba(148,163,184,.18);
   background: rgba(15,23,42,.45);
   color:#e2e8f0;
-  padding:8px 10px;
+  padding:7px 9px;
   font-size:12px;
   font-weight:950;
 }
@@ -133,33 +126,30 @@
   box-shadow: 0 0 0 4px rgba(59,130,246,.08);
 }
 
+/* smaller grid cells */
 .hc-grid{
   display:grid;
   grid-template-columns: repeat(7, minmax(0,1fr));
   gap:6px;
   min-width:0;
 }
-
 .hc-dow{
-  font-size:10px;
+  font-size:9.5px;
   text-transform:uppercase;
   letter-spacing:.08em;
   color: rgba(226,232,240,.55);
   padding: 0 2px;
 }
-
 .hc-day{
-  border-radius:14px;
+  border-radius:12px;
   border:1px solid rgba(148,163,184,.14);
   background: rgba(2,6,23,.18);
-  padding:8px 8px 10px;
-  min-height: 78px;
+  padding:7px 7px 8px;
+  min-height: 54px; /* was 78 */
   position:relative;
   overflow:hidden;
 }
-.hc-day.out{
-  opacity:.45;
-}
+.hc-day.out{ opacity:.45; }
 .hc-day.today{
   border-color: rgba(59,130,246,.35);
   box-shadow: 0 0 0 4px rgba(59,130,246,.10);
@@ -174,23 +164,25 @@
 }
 .hc-day .n{
   font-weight:950;
-  font-size:12px;
+  font-size:11px;
 }
+
+/* badges compact */
 .hc-badges{
-  margin-top:6px;
+  margin-top:5px;
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:5px;
 }
 .hc-badge{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  padding:6px 8px;
+  padding:5px 7px;
   border-radius:999px;
   border:1px solid rgba(148,163,184,.16);
   background: rgba(15,23,42,.45);
-  font-size:11px;
+  font-size:10px;
   color: rgba(226,232,240,.86);
   width: fit-content;
   max-width: 100%;
@@ -199,7 +191,7 @@
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  max-width: 220px;
+  max-width: 160px;
 }
 .hc-badge.pay{
   border-color: rgba(34,197,94,.26);
@@ -217,6 +209,7 @@
   color: rgba(191,219,254,.95);
 }
 
+/* Right side list + form: make it compact and optional on large screens */
 .hc-sideTitle{
   font-size:12px;
   font-weight:950;
@@ -228,16 +221,10 @@
   gap:8px;
 }
 .hc-item{
-  padding:10px;
+  padding:9px;
   border-radius:14px;
   border:1px solid rgba(148,163,184,.16);
   background: rgba(2,6,23,.18);
-}
-.hc-itemTop{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  align-items:flex-start;
 }
 .hc-itemName{ font-weight:950; font-size:12px; }
 .hc-itemTime{ font-size:11px; color: rgba(226,232,240,.72); white-space:nowrap; }
@@ -245,7 +232,7 @@
 
 .hc-form{
   display:grid;
-  grid-template-columns: 1fr 140px;
+  grid-template-columns: 1fr 130px;
   gap:10px;
   margin-top:10px;
 }
@@ -258,7 +245,7 @@
   border:1px solid rgba(148,163,184,.18);
   background: rgba(2,6,23,.25);
   color:#e2e8f0;
-  padding:10px 10px;
+  padding:9px 10px;
   font-size:12px;
   outline:none;
 }
@@ -267,8 +254,13 @@
   box-shadow: 0 0 0 4px rgba(59,130,246,.10);
 }
 .hc-small{
-  font-size:11px;
+  font-size:10.5px;
   color: rgba(226,232,240,.70);
   line-height:1.25;
   margin-top:8px;
+}
+
+/* Force no horizontal scroll inside module */
+.home-calendar-root, .hc-body, .hc-card, .hc-grid, .hc-day{
+  min-width:0;
 }
