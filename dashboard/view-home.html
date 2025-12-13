@@ -1,107 +1,77 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Home · Dashboard</title>
-  <meta name="robots" content="noindex,nofollow" />
-  <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./shell.css" />
+  <link rel="stylesheet" href="./shell.css">
 
   <script src="./auth.js"></script>
-  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
+  <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
 
   <script src="./shell.js"></script>
-
-  <!-- Home-Module -->
-  <link rel="stylesheet" href="./home-weather-modul.css" />
-  <script src="./home-weather-modul.js"></script>
-
-  <link rel="stylesheet" href="./home-calendar-modul.css" />
-  <script src="./home-calendar-modul.js"></script>
-
-  <link rel="stylesheet" href="./home-kpis-modul.css" />
-  <script src="./home-kpis-modul.js"></script>
-
-  <style>
-    .home-grid{
-      display:grid;
-      grid-template-columns: repeat(12, minmax(0,1fr));
-      gap: var(--gap);
-      align-items:stretch;
-      min-width:0;
-    }
-    .span6{ grid-column: span 6; }
-    .span12{ grid-column: span 12; }
-    @media (max-width: 900px){
-      .span6{ grid-column: span 12; }
-    }
-  </style>
+  <script src="./excel-loader.js"></script>
 </head>
 
 <body>
-  <div id="app"></div>
+<div id="app"></div>
 
-  <template id="pageTpl">
-    <section class="home-grid">
-      <section class="span6">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Wetter</div>
-              <div class="card-sub">Kompakt · iPad-friendly.</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="home-weather-root"></div>
-          </div>
+<template id="pageTpl">
+  <section class="grid">
+    <section class="card" style="grid-column:span 6;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Wetter</div>
+          <div class="card-sub">Kompakt</div>
         </div>
-      </section>
-
-      <section class="span6">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Kalender</div>
-              <div class="card-sub">Feiertage im Kalender · Countdown bis 01.</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="home-calendar-root"></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="span12">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">KPIs</div>
-              <div class="card-sub">6 Monate Rückblick + 3 Monate Forecast.</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="home-kpis-root"></div>
-          </div>
-        </div>
-      </section>
+      </div>
+      <div class="card-body" id="home-weather">Wetter-Modul</div>
     </section>
-  </template>
 
-  <script>
-    (function(){
-      Shell.mount({ active:"./view-home.html", title:"Home", sub:"Wetter · Kalender · KPIs" });
+    <section class="card" style="grid-column:span 6;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Kalender</div>
+          <div class="card-sub">Feiertage & Countdown</div>
+        </div>
+      </div>
+      <div class="card-body" id="home-calendar">Kalender-Modul</div>
+    </section>
 
-      const w = document.querySelector(".home-weather-root");
-      if(w && window.HomeWeatherModul && typeof HomeWeatherModul.render === "function") HomeWeatherModul.render(w, {});
+    <section class="card" style="grid-column:span 12;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">KPIs</div>
+          <div class="card-sub">aus Excel</div>
+        </div>
+      </div>
+      <div class="card-body" id="home-kpis"></div>
+    </section>
+  </section>
+</template>
 
-      const c = document.querySelector(".home-calendar-root");
-      if(c && window.HomeCalendarModul && typeof HomeCalendarModul.render === "function") HomeCalendarModul.render(c);
+<script>
+(async function(){
+  Shell.mount({ active:"./view-home.html", title:"Home", sub:"Übersicht" });
 
-      const k = document.querySelector(".home-kpis-root");
-      if(k && window.HomeKpisModul && typeof HomeKpisModul.render === "function") HomeKpisModul.render(k, {});
-    })();
-  </script>
+  await ExcelLoader.load("./Dashboard.xlsx");
+
+  const kpis = window.IMMO_DATA.home;
+  const el = document.getElementById("home-kpis");
+
+  el.innerHTML = `
+    <div class="tiles">
+      ${kpis.map(k=>`
+        <div class="tile">
+          <div class="k">${k.KPI}</div>
+          <div class="v">${k.Wert} ${k.Einheit}</div>
+          <div class="h">${k.Kommentar||""}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+})();
+</script>
 </body>
 </html>
