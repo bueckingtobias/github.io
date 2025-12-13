@@ -7,43 +7,32 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./dashboard/shell.css" />
-  <script src="./dashboard/auth.js"></script>
+  <link rel="stylesheet" href="./shell.css" />
+
+  <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
 
-  <script src="./dashboard/shell.js"></script>
+  <script src="./shell.js"></script>
 
-  <!-- Vermietung modules (falls vorhanden) -->
-  <link rel="stylesheet" href="./dashboard/vermietung-modul.css" />
-  <script src="./dashboard/vermietung-modul.js"></script>
-
-  <style>
-    .ver-grid{
-      display:grid;
-      grid-template-columns: repeat(12, minmax(0,1fr));
-      gap: var(--gap);
-      min-width:0;
-    }
-    .span12{ grid-column: span 12; }
-  </style>
+  <!-- Vermietung-Module -->
+  <link rel="stylesheet" href="./vermietung-modul.css" />
+  <script src="./vermietung-modul.js"></script>
 </head>
 
 <body>
   <div id="app"></div>
 
   <template id="pageTpl">
-    <section class="ver-grid">
-      <section class="span12">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Vermietung</div>
-              <div class="card-sub">Auslastung · Mieten · Pipeline (später aus Dashboard.xlsx).</div>
-            </div>
+    <section class="grid">
+      <section class="card" style="grid-column: span 12;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Vermietung</div>
+            <div class="card-sub">Auslastung · Mieten · Pipeline.</div>
           </div>
-          <div class="card-body">
-            <div class="vermietung-root"></div>
-          </div>
+        </div>
+        <div class="card-body">
+          <div class="vermietung-root"></div>
         </div>
       </section>
     </section>
@@ -56,6 +45,8 @@
       const v = document.querySelector(".vermietung-root");
       if(v && window.VermietungModul && typeof VermietungModul.render === "function"){
         VermietungModul.render(v, {});
+      } else if(v){
+        v.textContent = "VermietungModul fehlt (JS nicht gefunden).";
       }
     })();
   </script>
