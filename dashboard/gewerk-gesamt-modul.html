@@ -1,1 +1,104 @@
-<div class="gewerk-gesamt-root" data-title="Gesamtübersicht"></div>
+<div class="ggm-root" data-ggm-root>
+  <div class="ggm-top">
+    <div class="ggm-title-wrap">
+      <div class="ggm-title" data-ggm-title>Gesamtübersicht</div>
+      <div class="ggm-sub" data-ggm-sub>—</div>
+    </div>
+
+    <div class="ggm-chips">
+      <div class="ggm-chip" title="Anzahl Gewerke" data-ggm-chip-count>—</div>
+      <div class="ggm-chip" title="Aktive Gewerke" data-ggm-chip-active>—</div>
+      <div class="ggm-chip ggm-chip-warn" title="Warnungen" data-ggm-chip-warn style="display:none;">—</div>
+    </div>
+  </div>
+
+  <div class="ggm-grid">
+    <!-- Budget / Zahlungen -->
+    <div class="ggm-panel">
+      <div class="ggm-panel-head">
+        <div class="ggm-panel-title">Budget & Zahlungen</div>
+        <div class="ggm-panel-meta" data-ggm-budget-meta>—</div>
+      </div>
+
+      <div class="ggm-kpi-row">
+        <div class="ggm-kpi">
+          <div class="ggm-k">Gesamtbudget</div>
+          <div class="ggm-v" data-ggm-budget>—</div>
+        </div>
+        <div class="ggm-kpi">
+          <div class="ggm-k">Gezahlt</div>
+          <div class="ggm-v" data-ggm-paid>—</div>
+        </div>
+        <div class="ggm-kpi">
+          <div class="ggm-k">Offen</div>
+          <div class="ggm-v" data-ggm-open>—</div>
+        </div>
+      </div>
+
+      <div class="ggm-bar">
+        <div class="ggm-bar-label">
+          <span>Zahlungsquote</span>
+          <span data-ggm-payquote>—</span>
+        </div>
+        <div class="ggm-track">
+          <div class="ggm-fill ggm-fill-blue" data-ggm-paybar style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="ggm-mini" data-ggm-paynote>—</div>
+    </div>
+
+    <!-- Fortschritt -->
+    <div class="ggm-panel">
+      <div class="ggm-panel-head">
+        <div class="ggm-panel-title">Baufortschritt</div>
+        <div class="ggm-panel-meta" data-ggm-progress-meta>—</div>
+      </div>
+
+      <div class="ggm-kpi-row">
+        <div class="ggm-kpi">
+          <div class="ggm-k">Ø Fortschritt (gewichtet)</div>
+          <div class="ggm-v" data-ggm-progress>—</div>
+        </div>
+        <div class="ggm-kpi">
+          <div class="ggm-k">Überzahlung vs. Fortschritt</div>
+          <div class="ggm-v" data-ggm-risk>—</div>
+        </div>
+      </div>
+
+      <div class="ggm-bar">
+        <div class="ggm-bar-label">
+          <span>Fortschritt gesamt</span>
+          <span data-ggm-proglabel>—</span>
+        </div>
+        <div class="ggm-track">
+          <div class="ggm-fill ggm-fill-green" data-ggm-progbar style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="ggm-mini" data-ggm-prognote>—</div>
+    </div>
+
+    <!-- Top-Listen -->
+    <div class="ggm-panel ggm-panel-wide">
+      <div class="ggm-panel-head">
+        <div class="ggm-panel-title">Highlights</div>
+        <div class="ggm-panel-meta">Top 3 nach Budget & Top 3 nach Risiko</div>
+      </div>
+
+      <div class="ggm-lists">
+        <div class="ggm-list">
+          <div class="ggm-list-head">Größte Budgets</div>
+          <div class="ggm-list-body" data-ggm-top-budget></div>
+        </div>
+
+        <div class="ggm-list">
+          <div class="ggm-list-head">Höchstes Risiko</div>
+          <div class="ggm-list-body" data-ggm-top-risk></div>
+        </div>
+      </div>
+
+      <div class="ggm-footer-hint" data-ggm-hint>—</div>
+    </div>
+  </div>
+</div>
