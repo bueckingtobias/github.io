@@ -1,50 +1,43 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
-  const STATE = {
-    loaded: false,
-    data: {}
-  };
+  let DATA = {};
+  let LOADED = false;
 
   window.ExcelLoader = {
     load,
-    get
+    getSheet,
+    isLoaded: () => LOADED
   };
 
-  async function load(url){
-    const res = await fetch(url);
-    if(!res.ok) throw new Error("Excel nicht ladbar: " + url);
+  async function load(path){
+    const res = await fetch(path, { cache:"no-store" });
+    if(!res.ok) throw new Error("Excel nicht gefunden: " + path);
+
     const buf = await res.arrayBuffer();
-
     const wb = XLSX.read(buf, { type:"array" });
-    const out = {};
 
+    DATA = {};
     wb.SheetNames.forEach(name=>{
-      out[name] = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:null });
+      DATA[name] = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:null });
     });
 
-    STATE.loaded = true;
-    STATE.data = out;
-
-    // Legacy-Kompatibilität für bestehende Module
-    window.IMMO_DATA = mapToLegacy(out);
-
-    return out;
-  }
-
-  function get(sheet){
-    return STATE.data[sheet] || [];
-  }
-
-  function mapToLegacy(all){
-    return {
-      home: all.Home_KPIs || [],
-      finance: all.Finance || [],
+    // 🔁 Legacy-Kompatibilität für bestehende Module
+    window.IMMO_DATA = {
+      home: DATA.Home_KPIs || [],
+      finance: DATA.Finance || [],
       projects: {
-        gesamt: (all.Projects_Gesamt || [])[0] || {},
-        gewerke: all.Projects_Gewerke || []
+        gesamt: (DATA.Projects_Gesamt || [])[0] || {},
+        gewerke: DATA.Projects_Gewerke || []
       }
     };
+
+    LOADED = true;
+    return DATA;
+  }
+
+  function getSheet(name){
+    return DATA[name] || [];
   }
 })();
 </script>
