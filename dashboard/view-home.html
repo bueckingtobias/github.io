@@ -1,77 +1,84 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Home · Dashboard</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./shell.css">
+  <link rel="stylesheet" href="./shell.css" />
 
   <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
 
   <script src="./shell.js"></script>
   <script src="./excel-loader.js"></script>
+
+  <style>
+    html,body{ overflow-x:hidden !important; }
+    .home-grid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); min-width:0; }
+    .span6{ grid-column:span 6; min-width:0; }
+    .span12{ grid-column:span 12; min-width:0; }
+    @media (max-width:900px){ .span6{ grid-column:span 12; } }
+    .module-slot{ width:100%; min-width:0; }
+  </style>
 </head>
 
 <body>
-<div id="app"></div>
+  <div id="app"></div>
 
-<template id="pageTpl">
-  <section class="grid">
-    <section class="card" style="grid-column:span 6;">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Wetter</div>
-          <div class="card-sub">Kompakt</div>
+  <template id="pageTpl">
+    <section class="home-grid">
+      <section class="span6">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Wetter</div></div></div>
+          <div class="card-body"><div class="module-slot" id="slotHomeWeather"></div></div>
         </div>
-      </div>
-      <div class="card-body" id="home-weather">Wetter-Modul</div>
+      </section>
+
+      <section class="span6">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Kalender</div></div></div>
+          <div class="card-body"><div class="module-slot" id="slotHomeCalendar"></div></div>
+        </div>
+      </section>
+
+      <section class="span12">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">KPIs</div><div class="card-sub">aus Excel</div></div></div>
+          <div class="card-body" id="slotHomeKPIs"></div>
+        </div>
+      </section>
     </section>
+  </template>
 
-    <section class="card" style="grid-column:span 6;">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Kalender</div>
-          <div class="card-sub">Feiertage & Countdown</div>
+  <script>
+    (async function(){
+      Shell.mount({ active:"./view-home.html", title:"Home", sub:"Wetter · Kalender · KPIs" });
+
+      await ExcelLoader.load("./Dashboard.xlsx");
+
+      // KPIs simple aus Excel (falls du dafür ein eigenes Modul hast: sag Dateinamen, dann binde ich es wie Finance/Projects ein)
+      const kpis = window.IMMO_DATA?.home || [];
+      const kpiEl = document.getElementById("slotHomeKPIs");
+      kpiEl.innerHTML = `
+        <div class="tiles">
+          ${kpis.map(k=>`
+            <div class="tile">
+              <div class="k">${k.KPI || ""}</div>
+              <div class="v">${(k.Wert ?? "")} ${(k.Einheit ?? "")}</div>
+              <div class="h">${k.Kommentar || ""}</div>
+            </div>
+          `).join("")}
         </div>
-      </div>
-      <div class="card-body" id="home-calendar">Kalender-Modul</div>
-    </section>
+      `;
 
-    <section class="card" style="grid-column:span 12;">
-      <div class="card-header">
-        <div>
-          <div class="card-title">KPIs</div>
-          <div class="card-sub">aus Excel</div>
-        </div>
-      </div>
-      <div class="card-body" id="home-kpis"></div>
-    </section>
-  </section>
-</template>
-
-<script>
-(async function(){
-  Shell.mount({ active:"./view-home.html", title:"Home", sub:"Übersicht" });
-
-  await ExcelLoader.load("./Dashboard.xlsx");
-
-  const kpis = window.IMMO_DATA.home;
-  const el = document.getElementById("home-kpis");
-
-  el.innerHTML = `
-    <div class="tiles">
-      ${kpis.map(k=>`
-        <div class="tile">
-          <div class="k">${k.KPI}</div>
-          <div class="v">${k.Wert} ${k.Einheit}</div>
-          <div class="h">${k.Kommentar||""}</div>
-        </div>
-      `).join("")}
-    </div>
-  `;
-})();
-</script>
+      // Wetter/Kalender: falls du dafür schon Module hast, sag die Dateinamen,
+      // dann binde ich sie genauso wie Finance/Projects ein (html/css/js + render()).
+      document.getElementById("slotHomeWeather").textContent = "Wetter-Modul: Dateinamen bitte nennen (html/css/js), dann binde ich es 1:1 ein.";
+      document.getElementById("slotHomeCalendar").textContent = "Kalender-Modul: Dateinamen bitte nennen (html/css/js), dann binde ich es 1:1 ein.";
+    })();
+  </script>
 </body>
 </html>
