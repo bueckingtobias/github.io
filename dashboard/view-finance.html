@@ -8,8 +8,8 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./view-finance.css?v=1">
-  <script src="./view-finance.js?v=1" defer></script>
+  <link rel="stylesheet" href="./view-finance.css?v=2">
+  <script src="./view-finance.js?v=2" defer></script>
 </head>
 
 <body>
@@ -47,7 +47,7 @@
           <div class="nav-ic">€</div>
           <div class="nav-txt">
             <div class="nav-title">Finanzen</div>
-            <div class="nav-sub">Budget, Cashflow, Forecast</div>
+            <div class="nav-sub">Budget, Cashflow, OPs</div>
           </div>
         </a>
 
@@ -102,7 +102,7 @@
           <header class="fx-header">
             <div class="fx-head-left">
               <div class="fx-h1">Finanz-Dashboard</div>
-              <div class="fx-h2">Modular aufgebaut · später live aus <strong>Dashboard.xlsx</strong></div>
+              <div class="fx-h2">Modular · Datenquelle: <strong>Dashboard.xlsx</strong></div>
             </div>
 
             <div class="fx-actions">
@@ -111,27 +111,31 @@
             </div>
           </header>
 
-          <!-- Gesamt (breit) -->
-          <section class="fx-span-2">
+          <!-- 1) Gesamt immer volle Breite -->
+          <section class="fx-row">
             <div id="slotGesamt"></div>
           </section>
 
-          <!-- Grid 2: Cashflow + Budget -->
+          <!-- 2) Reihe 1: Cashflow + Budget (iPad 2-col, Mobile 1-col) -->
           <section class="fx-grid-2">
             <div id="slotCashflow"></div>
             <div id="slotBudget"></div>
           </section>
 
-          <!-- Grid 3: OP + Reserven -->
-          <section class="fx-grid-3">
+          <!-- 3) Reihe 2: OP + Reserven -->
+          <section class="fx-grid-2">
             <div id="slotOP"></div>
             <div id="slotReserven"></div>
+          </section>
+
+          <!-- 4) Mieten volle Breite -->
+          <section class="fx-row">
             <div id="slotMieten"></div>
           </section>
 
           <section class="fx-footer">
             <div class="fx-hint" id="fxHint">
-              Excel Hook folgt als nächster Schritt: wir lesen <strong>/dashboard/Dashboard.xlsx</strong> und füllen <code>window.DASHBOARD_DATA</code>.
+              Horizontales Scrollen ist deaktiviert. Nur vertikal.
             </div>
             <pre class="fx-error" id="fxError" style="display:none;"></pre>
           </section>
