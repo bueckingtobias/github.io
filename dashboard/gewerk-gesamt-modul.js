@@ -1,256 +1,258 @@
-(function () {
-  window.GewerkGesamtModul = window.GewerkGesamtModul || {};
-  window.GewerkGesamtModul.render = render;
+.ggm-root{
+  --bg: rgba(15,23,42,.55);
+  --bg2: rgba(2,6,23,.35);
+  --stroke: rgba(148,163,184,.18);
+  --text: rgba(226,232,240,.92);
+  --soft: rgba(226,232,240,.70);
 
-  function euro(n){ return (Number(n)||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}); }
-  function p1(n){ return (Number(n)||0).toFixed(1).replace(".",",") + " %"; }
-  function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+  --r: 18px;
+  --r2: 14px;
+  --gap: 12px;
 
-  function compute(allRows){
-    const rows = (allRows||[]).filter(r => (""+(r["Aktiv (Ja/Nein)"]||"")).toLowerCase().startsWith("j"));
+  color: var(--text);
+  min-width: 0;
+}
 
-    let offer=0, paid=0, open=0, weightedProg=0;
-    let warnCount=0;
+.ggm-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding: 6px 2px 10px;
+}
 
-    const enriched = rows.map(r=>{
-      const o = Number(r["Angebotssumme (€)"]||0);
-      const p = Number(r["Zahlungen bisher (€)"]||0);
-      const op = Number(r["Offene Rechnungen (€)"]||0);
-      const pr = Number(r["Baufortschritt (%)"]||0);
+.ggm-title{
+  font-weight: 950;
+  font-size: 14px;
+  letter-spacing: .01em;
+}
 
-      const payQuote = o>0 ? (p/o*100) : 0;
-      const delta = payQuote - pr;
-      const warn = o>0 && delta > 8;
+.ggm-sub{
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70ch;
+}
 
-      offer += o; paid += p; open += op; weightedProg += pr * o;
-      if(warn) warnCount++;
+.ggm-chips{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
 
-      return { r, o, p, op, pr, payQuote, delta, warn };
-    });
+.ggm-chip{
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: rgba(2,6,23,.25);
+  font-size: 11px;
+  color: rgba(226,232,240,.86);
+  white-space: nowrap;
+}
 
-    const wProg = offer>0 ? (weightedProg/offer) : 0;
-    const payQuoteTotal = offer>0 ? (paid/offer*100) : 0;
-    const rest = offer - paid;
+.ggm-chip-warn{
+  border-color: rgba(248,113,113,.35);
+  background: rgba(248,113,113,.08);
+  color: rgba(254,202,202,.95);
+}
 
-    const eac = wProg>0 ? (paid/(wProg/100)) : 0;
-    const eacDelta = eac - offer;
+.ggm-grid{
+  display:grid;
+  grid-template-columns: repeat(12, minmax(0,1fr));
+  gap: var(--gap);
+  min-width:0;
+}
 
-    const topRisks = enriched.slice().sort((a,b)=> (b.delta - a.delta)).slice(0,3);
-    const topBudget = enriched.slice().sort((a,b)=> (b.o - a.o)).slice(0,3);
+.ggm-panel{
+  grid-column: span 6;
+  border-radius: var(--r);
+  border: 1px solid var(--stroke);
+  background: var(--bg);
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  overflow:hidden;
+  min-width:0;
+}
 
-    const mixSorted = enriched.slice().sort((a,b)=>b.o-a.o);
-    const topMix = mixSorted.slice(0,6);
-    const otherSum = mixSorted.slice(6).reduce((s,x)=>s+x.o,0);
+.ggm-panel-wide{ grid-column: span 12; }
 
-    const mix = [
-      ...topMix.map(x=>({ label: (x.r["Gewerk"]||x.r["Handwerker"]||"Gewerk"), value:x.o })),
-      ...(otherSum>0 ? [{ label:"Andere", value:otherSum }] : [])
-    ];
+@media (max-width: 900px){
+  .ggm-panel{ grid-column: span 12; }
+}
 
-    const timeline = {
-      progress: wProg,
-      label:
-        wProg < 20 ? "Projektstart / Vorbereitung" :
-        wProg < 45 ? "Rohbau & Gewerke anlaufen" :
-        wProg < 70 ? "Innenausbau / Ausbauphase" :
-        wProg < 92 ? "Fertigstellung / Abnahmen" :
-                     "Abschluss / Übergabe"
-    };
+.ggm-panel-head{
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
 
-    return {
-      rows, enriched,
-      offer, paid, open, wProg, payQuoteTotal, rest, eac, eacDelta,
-      warnCount,
-      topRisks,
-      topBudget,
-      mix,
-      timeline
-    };
-  }
+.ggm-panel-title{
+  font-weight: 950;
+  font-size: 12px;
+}
 
-  const SEG_COLORS = ["#2563eb","#3b82f6","#22c55e","#f97316","#a855f7","#06b6d4","#64748b"];
+.ggm-panel-meta{
+  font-size: 11px;
+  color: var(--soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50ch;
+}
 
-  function render(rootEl, rowsRaw, title){
-    if(!rootEl) return;
+.ggm-kpi-row{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 10px;
+  padding: 12px 14px 6px;
+}
 
-    const s = compute(rowsRaw);
-    const isWarn = s.offer>0 && (s.payQuoteTotal > (s.wProg + 8));
+@media (max-width: 600px){
+  .ggm-kpi-row{ grid-template-columns: 1fr; }
+}
 
-    const mixTotal = s.mix.reduce((a,b)=>a + (b.value||0), 0) || 1;
+.ggm-kpi{
+  border-radius: var(--r2);
+  border: 1px solid rgba(148,163,184,.14);
+  background: var(--bg2);
+  padding: 10px 10px;
+  min-width:0;
+}
 
-    const segHTML = s.mix.map((m,i)=>{
-      const w = clamp((m.value/mixTotal*100), 0, 100);
-      const c = SEG_COLORS[i % SEG_COLORS.length];
-      return `<div class="gg-mixseg" style="width:${w}%;background:${c}" title="${m.label}: ${euro(m.value)}"></div>`;
-    }).join("");
+.ggm-k{
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(226,232,240,.58);
+}
 
-    const legendHTML = s.mix.map((m,i)=>{
-      const c = SEG_COLORS[i % SEG_COLORS.length];
-      return `
-        <div class="gg-legenditem">
-          <span class="gg-dot" style="background:${c}"></span>
-          <span>${m.label}</span>
-          <span style="opacity:.75">· ${euro(m.value)}</span>
-        </div>
-      `;
-    }).join("");
+.ggm-v{
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 950;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-    const riskList = (s.topRisks.length ? s.topRisks : []).map(x=>{
-      const name = x.r["Gewerk"] || "Gewerk";
-      const hw = x.r["Handwerker"] || "";
-      const meta = `${hw}${hw?" · ":""}Fortschritt ${p1(x.pr)} · Kostenquote ${p1(x.payQuote)}`;
-      return `
-        <div class="gg-item">
-          <div class="left">
-            <div class="name">${name}</div>
-            <div class="meta">${meta}</div>
-          </div>
-          <div class="right">
-            <div class="val">Δ ${p1(x.delta)}</div>
-            <div class="tag">${x.warn ? "Warnung" : "Beobachten"}</div>
-          </div>
-        </div>
-      `;
-    }).join("") || `<div class="gg-meta">Keine aktiven Gewerke.</div>`;
+.ggm-bar{
+  padding: 8px 14px 6px;
+}
 
-    const budgetList = (s.topBudget.length ? s.topBudget : []).map(x=>{
-      const name = x.r["Gewerk"] || "Gewerk";
-      const hw = x.r["Handwerker"] || "";
-      const meta = `${hw}${hw?" · ":""}Zahlungen ${euro(x.p)} · Fortschritt ${p1(x.pr)}`;
-      return `
-        <div class="gg-item">
-          <div class="left">
-            <div class="name">${name}</div>
-            <div class="meta">${meta}</div>
-          </div>
-          <div class="right">
-            <div class="val">${euro(x.o)}</div>
-            <div class="tag">Budget</div>
-          </div>
-        </div>
-      `;
-    }).join("") || `<div class="gg-meta">Keine aktiven Gewerke.</div>`;
+.ggm-bar-label{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size: 11px;
+  color: rgba(226,232,240,.78);
+  margin-bottom: 6px;
+}
 
-    rootEl.innerHTML = `
-      <div class="gg-head">
-        <div>
-          <h2 class="gg-title">${title || rootEl.dataset.title || "Gesamtübersicht"}</h2>
-          <div class="gg-sub">
-            <span class="gg-pill">Aktive Gewerke: ${s.rows.length}</span>
-            <span class="gg-pill">Warnungen: ${s.warnCount}</span>
-            <span class="gg-pill">Offen: ${euro(s.open)}</span>
-            <span class="gg-pill">EAC Δ: ${euro(s.eacDelta)}</span>
-          </div>
-        </div>
-        <div class="gg-status ${isWarn ? "warn":"ok"}">${isWarn ? "Risiko: Kosten > Fortschritt" : "Status: OK"}</div>
-      </div>
+.ggm-track{
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(2,6,23,.35);
+  border: 1px solid rgba(148,163,184,.14);
+  overflow:hidden;
+}
 
-      <div class="gg-body">
-        <div class="gg-kpis">
-          <div class="gg-kpi">
-            <div class="l">Gesamtbudget</div>
-            <div class="v">${euro(s.offer)}</div>
-            <div class="h">Summe Angebote (aktive Gewerke)</div>
-          </div>
-          <div class="gg-kpi">
-            <div class="l">Zahlungen</div>
-            <div class="v">${euro(s.paid)}</div>
-            <div class="h">${p1(s.payQuoteTotal)} Zahlungsquote</div>
-          </div>
-          <div class="gg-kpi">
-            <div class="l">Restbudget</div>
-            <div class="v">${euro(s.rest)}</div>
-            <div class="h">${s.rest < 0 ? "Über Budget" : "Verfügbar"}</div>
-          </div>
-          <div class="gg-kpi">
-            <div class="l">Fortschritt</div>
-            <div class="v">${p1(s.wProg)}</div>
-            <div class="h">gewichteter Ø nach Budget</div>
-          </div>
-        </div>
+.ggm-fill{
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  transition: width .85s cubic-bezier(.16,1,.3,1);
+}
 
-        <div>
-          <div class="gg-rowtitle"><span>Kostenquote</span><span>${euro(s.paid)} / ${euro(s.offer)}</span></div>
-          <div class="gg-barrow">
-            <span>0%</span>
-            <div class="gg-track">
-              <div class="gg-fill orange" data-w="${clamp(s.payQuoteTotal,0,100)}%">${p1(s.payQuoteTotal)}</div>
-            </div>
-            <span>100%</span>
-          </div>
-        </div>
+.ggm-fill-blue{
+  background: linear-gradient(90deg, rgba(59,130,246,1), rgba(37,99,235,1));
+}
 
-        <div>
-          <div class="gg-rowtitle"><span>Fortschritt</span><span>Ziel 100%</span></div>
-          <div class="gg-barrow">
-            <span>0%</span>
-            <div class="gg-track">
-              <div class="gg-fill green" data-w="${clamp(s.wProg,0,100)}%">${p1(s.wProg)}</div>
-            </div>
-            <span>100%</span>
-          </div>
-        </div>
+.ggm-fill-green{
+  background: linear-gradient(90deg, rgba(34,197,94,1), rgba(74,222,128,1));
+}
 
-        <div class="gg-mix">
-          <div class="gg-rowtitle"><span>Budget-Verteilung</span><span>Top Gewerke</span></div>
-          <div class="gg-mixbar">${segHTML}</div>
-          <div class="gg-mixlegend">${legendHTML}</div>
-        </div>
+.ggm-mini{
+  padding: 2px 14px 12px;
+  font-size: 11px;
+  color: var(--soft);
+}
 
-        <div class="gg-timeline">
-          <div class="gg-timeline-head">
-            <div class="gg-timeline-title">Projekt-Timeline</div>
-            <div class="gg-timeline-sub">${s.timeline.label}</div>
-          </div>
-          <div class="gg-timeline-track">
-            <div class="gg-timeline-fill" data-w="${clamp(s.timeline.progress,0,100)}%"></div>
-          </div>
-          <div class="gg-timeline-steps">
-            <div>Start</div>
-            <div>Ausbau</div>
-            <div>Innen</div>
-            <div>Fertig</div>
-          </div>
-        </div>
+.ggm-lists{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 10px;
+  padding: 12px 14px;
+}
 
-        <div class="gg-insights">
-          <div class="gg-box">
-            <div class="gg-boxhead">
-              <div class="gg-boxtitle">Top Risiken</div>
-              <div class="gg-boxsub">Kostenquote vs Fortschritt</div>
-            </div>
-            <div class="gg-list">${riskList}</div>
-          </div>
+@media (max-width: 900px){
+  .ggm-lists{ grid-template-columns: 1fr; }
+}
 
-          <div class="gg-box">
-            <div class="gg-boxhead">
-              <div class="gg-boxtitle">Top Budget</div>
-              <div class="gg-boxsub">größte Angebotssummen</div>
-            </div>
-            <div class="gg-list">${budgetList}</div>
-          </div>
-        </div>
+.ggm-list{
+  border-radius: var(--r2);
+  border: 1px solid rgba(148,163,184,.14);
+  background: var(--bg2);
+  overflow:hidden;
+  min-width:0;
+}
 
-        <div class="gg-meta">
-          Forecast (EAC): <strong>${euro(s.eac)}</strong> ·
-          EAC Δ: <strong>${euro(s.eacDelta)}</strong> ·
-          Offene Rechnungen: <strong>${euro(s.open)}</strong>
-        </div>
-      </div>
-    `;
+.ggm-list-head{
+  padding: 10px 10px 8px;
+  font-size: 11px;
+  font-weight: 950;
+  border-bottom: 1px solid rgba(148,163,184,.12);
+  color: rgba(226,232,240,.88);
+}
 
-    requestAnimationFrame(()=>{
-      rootEl.querySelectorAll(".gg-fill").forEach(el=>{
-        const w = el.getAttribute("data-w") || "0%";
-        el.style.width = "0%";
-        requestAnimationFrame(()=>{ el.style.width = w; });
-      });
+.ggm-list-body{
+  padding: 8px 10px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
 
-      rootEl.querySelectorAll(".gg-timeline-fill").forEach(el=>{
-        const w = el.getAttribute("data-w") || "0%";
-        el.style.width = "0%";
-        requestAnimationFrame(()=>{ el.style.width = w; });
-      });
-    });
-  }
-})();
+.ggm-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+  font-size: 12px;
+}
+
+.ggm-row-left{
+  min-width:0;
+}
+.ggm-row-name{
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40ch;
+}
+.ggm-row-sub{
+  margin-top:2px;
+  font-size: 11px;
+  color: var(--soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45ch;
+}
+
+.ggm-row-val{
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.ggm-footer-hint{
+  padding: 0 14px 14px;
+  font-size: 11px;
+  color: rgba(226,232,240,.70);
+}
