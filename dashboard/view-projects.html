@@ -3,20 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Finanzen – Dashboard</title>
+  <title>Projekte / Bau</title>
 
   <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
 
-  <!-- NUR diese eine CSS für die komplette View (Sidebar + Grid) -->
-  <link rel="stylesheet" href="./view-finance.css?v=1">
-
-  <!-- View Loader -->
-  <script src="./view-finance.js?v=1" defer></script>
+  <link rel="stylesheet" href="./view-projects.css?v=1">
+  <script src="./view-projects.js?v=1" defer></script>
 </head>
 
 <body>
   <div class="app">
-    <!-- Sidebar (bleibt immer da) -->
+    <!-- Sidebar always visible -->
     <aside class="sidebar" aria-label="Navigation">
       <div class="brand">
         <div class="brand-dot"></div>
@@ -27,29 +25,47 @@
       </div>
 
       <nav class="nav" id="nav">
-        <a href="./index.html">
+        <a href="./index.html" data-title="Übersicht" data-sub="Startseite / Quick KPIs">
           <div class="nav-ic">⌂</div>
           <div class="nav-txt">
             <div class="nav-title">Übersicht</div>
-            <div class="nav-sub">Startseite</div>
+            <div class="nav-sub">Startseite / Quick KPIs</div>
           </div>
         </a>
 
-        <div class="nav-label">Views</div>
+        <div class="nav-label">Projekte</div>
 
-        <a href="./view-projects.html">
+        <a href="./view-projects.html" data-title="Projekte / Bau" data-sub="Module: Gesamt + Gewerke" class="active">
           <div class="nav-ic">🏗</div>
           <div class="nav-txt">
             <div class="nav-title">Projekte / Bau</div>
-            <div class="nav-sub">Gewerke & Handwerker</div>
+            <div class="nav-sub">Module: Gesamt + Gewerke</div>
           </div>
         </a>
 
-        <a href="./view-finance.html" class="active">
+        <a href="./view-finance.html" data-title="Finanzen" data-sub="Budget, Cashflow, Forecast">
           <div class="nav-ic">€</div>
           <div class="nav-txt">
             <div class="nav-title">Finanzen</div>
-            <div class="nav-sub">Cashflow & Budget</div>
+            <div class="nav-sub">Budget, Cashflow, Forecast</div>
+          </div>
+        </a>
+
+        <a href="./view-vermietung.html" data-title="Vermietung" data-sub="Leerstand, Mieten, Anfragen">
+          <div class="nav-ic">🏠</div>
+          <div class="nav-txt">
+            <div class="nav-title">Vermietung</div>
+            <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
+          </div>
+        </a>
+
+        <div class="nav-label">Tools</div>
+
+        <a href="./admin.html" data-title="Admin" data-sub="Uploads, Settings, Debug">
+          <div class="nav-ic">⚙</div>
+          <div class="nav-txt">
+            <div class="nav-title">Admin</div>
+            <div class="nav-sub">Uploads, Settings, Debug</div>
           </div>
         </a>
       </nav>
@@ -64,42 +80,36 @@
     <section class="main">
       <header class="topbar">
         <div class="page-title">
-          <h1>Finanzen</h1>
-          <div>Modular · Datenquelle später: Dashboard.xlsx</div>
+          <h1 id="pageTitle">Projekte / Bau</h1>
+          <div id="pageSub">Gesamtübersicht + Gewerke (Module)</div>
         </div>
-
         <div class="top-right">
           <span class="chip" id="clockTop">—</span>
-          <button class="btn" id="btnRefresh">↻ Reload Module</button>
         </div>
       </header>
 
       <main class="content">
-        <div class="fx-root">
-          <!-- Fehlerbox -->
-          <pre class="fx-error" id="fxError" style="display:none;"></pre>
+        <div class="vp-root">
+          <header class="vp-header">
+            <div class="vp-head-left">
+              <div class="vp-h1">Projekte / Bau</div>
+              <div class="vp-h2">Gesamtübersicht & Gewerke – Excel-ready</div>
+            </div>
+            <div class="vp-tabs" id="vpTabs"></div>
+          </header>
 
-          <!-- OBEN: Gesamtmodul volle Breite -->
-          <section class="fx-row">
-            <div id="slotGesamt"></div>
-          </section>
+          <div class="vp-body">
+            <div class="vp-stack">
+              <section class="vp-sticky">
+                <div id="vpGesamtSlot" class="vp-span-2"></div>
+              </section>
 
-          <!-- UNTEN: 2-Spalten Grid – klare Linie -->
-          <section class="fx-grid-2" id="fxGrid2">
-            <div class="fx-cell" id="slotCashflow"></div>
-            <div class="fx-cell" id="slotBudget"></div>
-            <div class="fx-cell" id="slotOP"></div>
-            <div class="fx-cell" id="slotReserven"></div>
-          </section>
+              <section class="vp-grid" id="vpGewerkeGrid"></section>
 
-          <!-- Optional: volle Breite unten -->
-          <section class="fx-row">
-            <div id="slotMieten"></div>
-          </section>
-
-          <div class="fx-footer">
-            <div class="fx-hint">
-              Hinweis: Wenn wieder “weiß + nur Text” kommt, dann lädt die CSS nicht (Pfad/Name/Cache).
+              <section class="vp-footer">
+                <div class="vp-hint" id="vpHint"></div>
+                <pre class="vp-error" id="vpError" style="display:none;"></pre>
+              </section>
             </div>
           </div>
         </div>
@@ -113,11 +123,18 @@
       const clockSide = document.getElementById("clockSide");
       function tick(){
         const d = new Date();
-        const t = d.toLocaleString("de-DE",{ weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+        const t = d.toLocaleString("de-DE", { weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
         if(clockTop) clockTop.textContent = t;
         if(clockSide) clockSide.textContent = t;
       }
       tick(); setInterval(tick, 15000);
+
+      const path = (location.pathname || "").toLowerCase();
+      document.querySelectorAll("#nav a").forEach(a=>{
+        const href = (a.getAttribute("href")||"").toLowerCase();
+        const normalized = href.replace("./","/").replace("//","/");
+        a.classList.toggle("active", path.endsWith(normalized));
+      });
     })();
   </script>
 </body>
