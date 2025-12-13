@@ -1,0 +1,81 @@
+.fin-op-root{
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.55);
+  overflow:hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  color:#e2e8f0;
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+}
+.fin-op-root *{ box-sizing:border-box; }
+
+.fo-head{
+  padding: 12px 14px 10px;
+  border-bottom:1px solid rgba(148,163,184,.14);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+
+.fo-title{ font-size:13px; font-weight:950; }
+.fo-sub{ margin-top:3px; font-size:11px; color: rgba(226,232,240,.72); line-height:1.25; }
+
+.fo-badges{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.fo-badge{
+  font-size:10px;
+  padding: 4px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.22);
+  background: rgba(2,6,23,.28);
+  color: rgba(226,232,240,.78);
+  white-space:nowrap;
+}
+
+.fo-badge.warn{ border-color: rgba(248,113,113,.65); color: rgba(254,202,202,.95); }
+.fo-badge.ok{ border-color: rgba(34,197,94,.55); color: rgba(187,247,208,.95); }
+
+.fo-body{ padding: 12px 14px 14px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+@media (max-width: 900px){ .fo-body{ grid-template-columns: 1fr; } }
+
+.fo-box{
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.26);
+  padding:10px;
+}
+
+.fo-boxtitle{ font-size:12px; font-weight:950; }
+.fo-boxsub{ margin-top:3px; font-size:11px; color: rgba(226,232,240,.65); }
+
+.fo-list{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }
+
+.fo-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(15,23,42,.30);
+}
+.fo-row .left{ min-width:0; }
+.fo-row .name{
+  font-size:12px;
+  font-weight:950;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.fo-row .meta{
+  margin-top:2px;
+  font-size:11px;
+  color: rgba(226,232,240,.70);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.fo-row .right{ text-align:right; flex:0 0 auto; }
+.fo-row .val{ font-size:12px; font-weight:950; }
+.fo-row .tag{ margin-top:2px; font-size:10px; color: rgba(226,232,240,.72); }
