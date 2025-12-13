@@ -1,11 +1,163 @@
-<div class="view-root">
-  <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0;">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Finanzen</div>
-        <div class="card-sub">Cashflow, Eigenkapital & Portfolio-ROI aus den Dummy-Daten.</div>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Finanzen</title>
+
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
+
+  <link rel="stylesheet" href="./view-finance.css?v=1">
+  <script src="./view-finance.js?v=1" defer></script>
+</head>
+
+<body>
+  <div class="app">
+    <!-- Sidebar always visible -->
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div class="brand-txt">
+          <div class="brand-title">Bücking Dashboard</div>
+          <div class="brand-sub">Immobilien · Projekte · KPIs</div>
+        </div>
       </div>
-    </div>
-    <div class="summary-block" id="finance-summary"></div>
+
+      <nav class="nav" id="nav">
+        <a href="./index.html">
+          <div class="nav-ic">⌂</div>
+          <div class="nav-txt">
+            <div class="nav-title">Übersicht</div>
+            <div class="nav-sub">Startseite / Quick KPIs</div>
+          </div>
+        </a>
+
+        <div class="nav-label">Projekte</div>
+
+        <a href="./view-projects.html">
+          <div class="nav-ic">🏗</div>
+          <div class="nav-txt">
+            <div class="nav-title">Projekte / Bau</div>
+            <div class="nav-sub">Module: Gesamt + Gewerke</div>
+          </div>
+        </a>
+
+        <a href="./view-finance.html" class="active">
+          <div class="nav-ic">€</div>
+          <div class="nav-txt">
+            <div class="nav-title">Finanzen</div>
+            <div class="nav-sub">Budget, Cashflow, Forecast</div>
+          </div>
+        </a>
+
+        <a href="./view-vermietung.html">
+          <div class="nav-ic">🏠</div>
+          <div class="nav-txt">
+            <div class="nav-title">Vermietung</div>
+            <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
+          </div>
+        </a>
+
+        <div class="nav-label">Tools</div>
+
+        <a href="./admin.html">
+          <div class="nav-ic">⚙</div>
+          <div class="nav-txt">
+            <div class="nav-title">Admin</div>
+            <div class="nav-sub">Uploads, Settings, Debug</div>
+          </div>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="chip" id="clockSide">—</span>
+        <span class="chip">online</span>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <section class="main">
+      <header class="topbar">
+        <div class="page-title">
+          <h1>Finanzen</h1>
+          <div>Liquidität · Cashflow · Budget · Offene Posten</div>
+        </div>
+
+        <div class="top-right">
+          <span class="chip" id="clockTop">—</span>
+
+          <div class="seg" role="group" aria-label="Zeitraum">
+            <button class="seg-btn is-active" id="seg12">12M</button>
+            <button class="seg-btn" id="seg6">6M</button>
+            <button class="seg-btn" id="seg3">3M</button>
+          </div>
+
+          <button class="btn" id="btnRefresh">↻ Aktualisieren</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="fx-root">
+          <header class="fx-header">
+            <div class="fx-head-left">
+              <div class="fx-h1">Finanz-Dashboard</div>
+              <div class="fx-h2">Modular aufgebaut · später live aus <strong>Dashboard.xlsx</strong></div>
+            </div>
+
+            <div class="fx-actions">
+              <span class="chip">Quelle: Dashboard.xlsx</span>
+              <span class="chip" id="fxSourceState">Demo-Daten</span>
+            </div>
+          </header>
+
+          <!-- Gesamt (breit) -->
+          <section class="fx-span-2">
+            <div id="slotGesamt"></div>
+          </section>
+
+          <!-- Grid 2: Cashflow + Budget -->
+          <section class="fx-grid-2">
+            <div id="slotCashflow"></div>
+            <div id="slotBudget"></div>
+          </section>
+
+          <!-- Grid 3: OP + Reserven -->
+          <section class="fx-grid-3">
+            <div id="slotOP"></div>
+            <div id="slotReserven"></div>
+            <div id="slotMieten"></div>
+          </section>
+
+          <section class="fx-footer">
+            <div class="fx-hint" id="fxHint">
+              Excel Hook folgt als nächster Schritt: wir lesen <strong>/dashboard/Dashboard.xlsx</strong> und füllen <code>window.DASHBOARD_DATA</code>.
+            </div>
+            <pre class="fx-error" id="fxError" style="display:none;"></pre>
+          </section>
+        </div>
+      </main>
+    </section>
   </div>
-</div>
+
+  <script>
+    (function(){
+      const clockTop = document.getElementById("clockTop");
+      const clockSide = document.getElementById("clockSide");
+      function tick(){
+        const d = new Date();
+        const t = d.toLocaleString("de-DE",{ weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+        if(clockTop) clockTop.textContent = t;
+        if(clockSide) clockSide.textContent = t;
+      }
+      tick(); setInterval(tick, 15000);
+
+      const path = (location.pathname || "").toLowerCase();
+      document.querySelectorAll("#nav a").forEach(a=>{
+        const href = (a.getAttribute("href")||"").toLowerCase().replace("./","/");
+        a.classList.toggle("active", path.endsWith(href));
+      });
+    })();
+  </script>
+</body>
+</html>
