@@ -1,258 +1,244 @@
-.ggm-root{
-  --bg: rgba(15,23,42,.55);
-  --bg2: rgba(2,6,23,.35);
-  --stroke: rgba(148,163,184,.18);
-  --text: rgba(226,232,240,.92);
-  --soft: rgba(226,232,240,.70);
+/* dashboard/gewerk-gesamt-modul.js
+   Export: window.GewerkGesamtModul.render(container, rows)
+   Robust: accepts ARRAY (preferred) or OBJECT (wrap to array)
+*/
 
-  --r: 18px;
-  --r2: 14px;
-  --gap: 12px;
+(function () {
+  function qs(root, sel){ return root.querySelector(sel); }
 
-  color: var(--text);
-  min-width: 0;
-}
+  function formatEuro(v){
+    const n = Number(v);
+    if(!isFinite(n)) return "0 €";
+    return new Intl.NumberFormat("de-DE", {
+      style:"currency", currency:"EUR", maximumFractionDigits:0
+    }).format(n);
+  }
 
-.ggm-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
-  padding: 6px 2px 10px;
-}
+  function formatPct(v){
+    const n = Number(v);
+    if(!isFinite(n)) return "0,0 %";
+    return (Math.round(n*10)/10).toFixed(1).replace(".", ",") + " %";
+  }
 
-.ggm-title{
-  font-weight: 950;
-  font-size: 14px;
-  letter-spacing: .01em;
-}
+  function clamp(n, a, b){
+    n = Number(n);
+    if(!isFinite(n)) n = 0;
+    return Math.max(a, Math.min(b, n));
+  }
 
-.ggm-sub{
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--soft);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 70ch;
-}
+  function toNumber(x){
+    if(x == null || x === "") return 0;
+    if(typeof x === "number" && isFinite(x)) return x;
+    const s = String(x)
+      .replace(/\s/g, "")
+      .replace(/€/g, "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .replace(/[^\d.-]/g, "");
+    const n = Number(s);
+    return isFinite(n) ? n : 0;
+  }
 
-.ggm-chips{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
+  function pick(row, keys){
+    for(const k of keys){
+      if(row && Object.prototype.hasOwnProperty.call(row, k) && row[k] !== "" && row[k] != null) return row[k];
+    }
+    return undefined;
+  }
 
-.ggm-chip{
-  padding: 7px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--stroke);
-  background: rgba(2,6,23,.25);
-  font-size: 11px;
-  color: rgba(226,232,240,.86);
-  white-space: nowrap;
-}
+  function getOffer(row){
+    return toNumber(pick(row, ["Angebotssumme","Angebot","Budget","Summe","Angebot (€)","Angebotssumme €"]));
+  }
 
-.ggm-chip-warn{
-  border-color: rgba(248,113,113,.35);
-  background: rgba(248,113,113,.08);
-  color: rgba(254,202,202,.95);
-}
+  function getPaid(row){
+    return toNumber(pick(row, ["Zahlungen_bisher","Gezahlt","Zahlungen","Ist","Zahlungen bisher","Zahlungen (€)","Bisher gezahlt"]));
+  }
 
-.ggm-grid{
-  display:grid;
-  grid-template-columns: repeat(12, minmax(0,1fr));
-  gap: var(--gap);
-  min-width:0;
-}
+  function getProgress(row){
+    let p = toNumber(pick(row, ["Baufortschritt_prozent","Baufortschritt_%","Fortschritt_%","Fortschritt %","Baufortschritt %","Progress"]));
+    if(p > 0 && p <= 1) p = p * 100;
+    return clamp(p, 0, 100);
+  }
 
-.ggm-panel{
-  grid-column: span 6;
-  border-radius: var(--r);
-  border: 1px solid var(--stroke);
-  background: var(--bg);
-  box-shadow: 0 20px 60px rgba(0,0,0,.25);
-  overflow:hidden;
-  min-width:0;
-}
+  function isActive(row){
+    const v = String(pick(row, ["Aktiv (Ja/Nein)","Aktiv","Active"]) ?? "Ja").trim().toLowerCase();
+    if(v === "nein" || v === "no" || v === "0" || v === "false") return false;
+    return v.startsWith("j") || v.startsWith("y") || v === "1" || v === "true";
+  }
 
-.ggm-panel-wide{ grid-column: span 12; }
+  function nameOf(row){
+    return String(pick(row, ["Gewerk","Handwerker","Name","Titel"]) ?? "").trim();
+  }
 
-@media (max-width: 900px){
-  .ggm-panel{ grid-column: span 12; }
-}
+  function subOf(row){
+    const p = String(pick(row, ["Projekt"]) ?? "").trim();
+    const o = String(pick(row, ["Objekt","Adresse"]) ?? "").trim();
+    const h = String(pick(row, ["Handwerker"]) ?? "").trim();
+    return [p, o, h].filter(Boolean).join(" · ");
+  }
 
-.ggm-panel-head{
-  padding: 12px 14px 10px;
-  border-bottom: 1px solid rgba(148,163,184,.14);
-  background: rgba(2,6,23,.18);
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  align-items:flex-start;
-}
+  function ensureSkeleton(container){
+    // If HTML template is injected, use it. Otherwise, build minimal skeleton.
+    const existing = container.querySelector("[data-ggm-root]");
+    if(existing) return existing;
 
-.ggm-panel-title{
-  font-weight: 950;
-  font-size: 12px;
-}
+    container.innerHTML = `
+      <div class="ggm-root" data-ggm-root>
+        <div class="ggm-top">
+          <div class="ggm-title-wrap">
+            <div class="ggm-title" data-ggm-title>Gesamtübersicht</div>
+            <div class="ggm-sub" data-ggm-sub>—</div>
+          </div>
+          <div class="ggm-chips">
+            <div class="ggm-chip" data-ggm-chip-count>—</div>
+            <div class="ggm-chip" data-ggm-chip-active>—</div>
+            <div class="ggm-chip ggm-chip-warn" data-ggm-chip-warn style="display:none;">—</div>
+          </div>
+        </div>
 
-.ggm-panel-meta{
-  font-size: 11px;
-  color: var(--soft);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 50ch;
-}
+        <div class="ggm-grid">
+          <div class="ggm-panel">
+            <div class="ggm-panel-head">
+              <div class="ggm-panel-title">Budget & Zahlungen</div>
+              <div class="ggm-panel-meta" data-ggm-budget-meta>—</div>
+            </div>
 
-.ggm-kpi-row{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 10px;
-  padding: 12px 14px 6px;
-}
+            <div class="ggm-kpi-row">
+              <div class="ggm-kpi"><div class="ggm-k">Gesamtbudget</div><div class="ggm-v" data-ggm-budget>—</div></div>
+              <div class="ggm-kpi"><div class="ggm-k">Gezahlt</div><div class="ggm-v" data-ggm-paid>—</div></div>
+              <div class="ggm-kpi"><div class="ggm-k">Offen</div><div class="ggm-v" data-ggm-open>—</div></div>
+            </div>
 
-@media (max-width: 600px){
-  .ggm-kpi-row{ grid-template-columns: 1fr; }
-}
+            <div class="ggm-bar">
+              <div class="ggm-bar-label"><span>Zahlungsquote</span><span data-ggm-payquote>—</span></div>
+              <div class="ggm-track"><div class="ggm-fill ggm-fill-blue" data-ggm-paybar style="width:0%"></div></div>
+            </div>
 
-.ggm-kpi{
-  border-radius: var(--r2);
-  border: 1px solid rgba(148,163,184,.14);
-  background: var(--bg2);
-  padding: 10px 10px;
-  min-width:0;
-}
+            <div class="ggm-mini" data-ggm-paynote>—</div>
+          </div>
 
-.ggm-k{
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: rgba(226,232,240,.58);
-}
+          <div class="ggm-panel">
+            <div class="ggm-panel-head">
+              <div class="ggm-panel-title">Baufortschritt</div>
+              <div class="ggm-panel-meta" data-ggm-progress-meta>—</div>
+            </div>
 
-.ggm-v{
-  margin-top: 6px;
-  font-size: 16px;
-  font-weight: 950;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+            <div class="ggm-kpi-row" style="grid-template-columns: repeat(2, minmax(0,1fr));">
+              <div class="ggm-kpi"><div class="ggm-k">Ø Fortschritt (gewichtet)</div><div class="ggm-v" data-ggm-progress>—</div></div>
+              <div class="ggm-kpi"><div class="ggm-k">Überzahlung vs. Fortschritt</div><div class="ggm-v" data-ggm-risk>—</div></div>
+            </div>
 
-.ggm-bar{
-  padding: 8px 14px 6px;
-}
+            <div class="ggm-bar">
+              <div class="ggm-bar-label"><span>Fortschritt gesamt</span><span data-ggm-proglabel>—</span></div>
+              <div class="ggm-track"><div class="ggm-fill ggm-fill-green" data-ggm-progbar style="width:0%"></div></div>
+            </div>
 
-.ggm-bar-label{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  font-size: 11px;
-  color: rgba(226,232,240,.78);
-  margin-bottom: 6px;
-}
+            <div class="ggm-mini" data-ggm-prognote>—</div>
+          </div>
+        </div>
+      </div>
+    `;
+    return container.querySelector("[data-ggm-root]");
+  }
 
-.ggm-track{
-  height: 14px;
-  border-radius: 999px;
-  background: rgba(2,6,23,.35);
-  border: 1px solid rgba(148,163,184,.14);
-  overflow:hidden;
-}
+  function render(container, input){
+    const root = ensureSkeleton(container);
 
-.ggm-fill{
-  height: 100%;
-  width: 0%;
-  border-radius: 999px;
-  transition: width .85s cubic-bezier(.16,1,.3,1);
-}
+    // normalize input to array
+    let rows = input;
+    if(rows && !Array.isArray(rows) && typeof rows === "object") rows = [rows];
+    if(!Array.isArray(rows)) rows = [];
 
-.ggm-fill-blue{
-  background: linear-gradient(90deg, rgba(59,130,246,1), rgba(37,99,235,1));
-}
+    const activeRows = rows.filter(isActive);
+    const base = activeRows.length ? activeRows : rows;
 
-.ggm-fill-green{
-  background: linear-gradient(90deg, rgba(34,197,94,1), rgba(74,222,128,1));
-}
+    let totalOffer = 0, totalPaid = 0, weightedProg = 0, warnCount = 0;
 
-.ggm-mini{
-  padding: 2px 14px 12px;
-  font-size: 11px;
-  color: var(--soft);
-}
+    const items = base.map((r, idx) => {
+      const offer = getOffer(r);
+      const paid  = getPaid(r);
+      const prog  = getProgress(r);
 
-.ggm-lists{
-  display:grid;
-  grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 10px;
-  padding: 12px 14px;
-}
+      totalOffer += offer;
+      totalPaid  += paid;
+      weightedProg += prog * offer;
 
-@media (max-width: 900px){
-  .ggm-lists{ grid-template-columns: 1fr; }
-}
+      const payPct = offer > 0 ? (paid / offer * 100) : 0;
+      const risk = payPct - prog;
+      if(risk > 10) warnCount++;
 
-.ggm-list{
-  border-radius: var(--r2);
-  border: 1px solid rgba(148,163,184,.14);
-  background: var(--bg2);
-  overflow:hidden;
-  min-width:0;
-}
+      return { idx, offer, paid, prog, payPct, risk, title: nameOf(r) || ("Eintrag " + (idx+1)), sub: subOf(r) };
+    });
 
-.ggm-list-head{
-  padding: 10px 10px 8px;
-  font-size: 11px;
-  font-weight: 950;
-  border-bottom: 1px solid rgba(148,163,184,.12);
-  color: rgba(226,232,240,.88);
-}
+    const progressWeighted = totalOffer > 0 ? (weightedProg / totalOffer) : 0;
+    const payQuote = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
+    const open = Math.max(0, totalOffer - totalPaid);
 
-.ggm-list-body{
-  padding: 8px 10px 10px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
+    let riskScore = 0;
+    if(totalOffer > 0){
+      for(const it of items){
+        const w = it.offer / totalOffer;
+        riskScore += Math.max(0, it.risk) * w;
+      }
+    }
 
-.ggm-row{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  align-items:flex-start;
-  font-size: 12px;
-}
+    // header
+    const projectName = String(pick(base[0] || {}, ["Projekt"]) ?? "").trim();
+    qs(root, "[data-ggm-title]").textContent = projectName ? ("Gesamtübersicht · " + projectName) : "Gesamtübersicht";
+    qs(root, "[data-ggm-sub]").textContent = items.length ? ("Auswertung über " + items.length + " Gewerke") : "Keine Daten gefunden.";
 
-.ggm-row-left{
-  min-width:0;
-}
-.ggm-row-name{
-  font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 40ch;
-}
-.ggm-row-sub{
-  margin-top:2px;
-  font-size: 11px;
-  color: var(--soft);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 45ch;
-}
+    qs(root, "[data-ggm-chip-count]").textContent = "Gewerke: " + items.length;
+    qs(root, "[data-ggm-chip-active]").textContent = "Aktiv: " + (activeRows.length ? activeRows.length : items.length);
 
-.ggm-row-val{
-  font-weight: 950;
-  white-space: nowrap;
-}
+    const chipWarn = qs(root, "[data-ggm-chip-warn]");
+    if(chipWarn){
+      if(warnCount > 0){
+        chipWarn.style.display = "";
+        chipWarn.textContent = "Warnungen: " + warnCount;
+      }else{
+        chipWarn.style.display = "none";
+      }
+    }
 
-.ggm-footer-hint{
-  padding: 0 14px 14px;
-  font-size: 11px;
-  color: rgba(226,232,240,.70);
-}
+    // KPIs
+    qs(root, "[data-ggm-budget]").textContent = formatEuro(totalOffer);
+    qs(root, "[data-ggm-paid]").textContent   = formatEuro(totalPaid);
+    qs(root, "[data-ggm-open]").textContent   = formatEuro(open);
+
+    qs(root, "[data-ggm-progress]").textContent = formatPct(progressWeighted);
+    qs(root, "[data-ggm-risk]").textContent     = formatPct(riskScore);
+
+    // Meta / notes
+    qs(root, "[data-ggm-budget-meta]").textContent =
+      totalOffer > 0 ? ("Zahlungen " + formatEuro(totalPaid) + " von " + formatEuro(totalOffer)) : "Kein Budget vorhanden.";
+
+    qs(root, "[data-ggm-progress-meta]").textContent = "Gewichteter Fortschritt nach Angebotsvolumen.";
+
+    const delta = totalPaid - totalOffer;
+    qs(root, "[data-ggm-paynote]").textContent =
+      totalOffer > 0
+        ? ("Abweichung: " + (delta >= 0 ? "+" : "") + formatEuro(delta) + " · Offen: " + formatEuro(open))
+        : "Bitte Angebotswerte je Gewerk pflegen.";
+
+    qs(root, "[data-ggm-prognote]").textContent =
+      "Risikowert = Überzahlung gegenüber Fortschritt (gewichteter Mittelwert).";
+
+    // Bars
+    const payW = clamp(payQuote, 0, 100);
+    const progW = clamp(progressWeighted, 0, 100);
+
+    qs(root, "[data-ggm-payquote]").textContent = formatPct(payW);
+    qs(root, "[data-ggm-proglabel]").textContent = formatPct(progW);
+
+    const paybar = qs(root, "[data-ggm-paybar]");
+    const progbar = qs(root, "[data-ggm-progbar]");
+
+    requestAnimationFrame(() => {
+      if(paybar) paybar.style.width = payW + "%";
+      if(progbar) progbar.style.width = progW + "%";
+    });
+  }
+
+  // ✅ EXACT export your view expects:
+  window.GewerkGesamtModul = { render };
+})();
