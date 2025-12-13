@@ -2,18 +2,22 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Dashboard</title>
   <meta name="robots" content="noindex,nofollow" />
-  <script src="./dashboard/auth.js"></script>
+  <meta name="theme-color" content="#0b1220" />
+  <script src="./auth.js"></script>
 </head>
 <body>
   <script>
-    if(Auth.isAuthed()){
-      location.href = "./view-home.html";
-    }else{
-      location.href = "./login.html";
-    }
+    (function(){
+      // Wenn eingeloggt -> Home, sonst -> Login
+      if (window.Auth && Auth.isAuthed()) {
+        location.replace("./view-home.html");
+      } else {
+        location.replace("./login.html");
+      }
+    })();
   </script>
 </body>
 </html>
