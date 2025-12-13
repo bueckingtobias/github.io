@@ -1,28 +1,173 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <title>Login Test</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Login · Dashboard</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
   <script src="./auth.js"></script>
-</head>
-<body style="font-family:system-ui;background:#111;color:#fff;display:grid;place-items:center;height:100vh">
 
-  <div>
-    <h1>Login</h1>
-    <input id="pw" type="password" placeholder="Passwort">
-    <button onclick="go()">Login</button>
-    <p id="err" style="color:red;display:none">Falsch</p>
-  </div>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel: rgba(15,23,42,.70);
+      --panel2: rgba(2,6,23,.55);
+      --stroke: rgba(148,163,184,.18);
+      --text:#e2e8f0;
+      --soft: rgba(226,232,240,.72);
+      --r: 18px;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(34,197,94,.12), transparent 35%),
+        var(--bg);
+      display:grid;
+      place-items:center;
+      padding: 18px;
+    }
+    .card{
+      width: min(520px, 100%);
+      border-radius: var(--r);
+      border: 1px solid var(--stroke);
+      background: rgba(15,23,42,.55);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .head{
+      padding: 14px 14px 12px;
+      border-bottom:1px solid rgba(148,163,184,.14);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .dot{
+      width:12px;height:12px;border-radius:999px;
+      background: linear-gradient(180deg, rgba(59,130,246,1), rgba(37,99,235,1));
+      box-shadow: 0 0 0 4px rgba(59,130,246,.12);
+      flex:0 0 auto;
+    }
+    .title{ font-weight:950; font-size:14px; }
+    .sub{ margin-top:2px; font-size:11px; color: var(--soft); }
+    .body{
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    label{ font-size:11px; color: var(--soft); }
+    input{
+      width:100%;
+      border-radius: 12px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.25);
+      color: var(--text);
+      padding: 12px 12px;
+      font-size: 14px;
+      outline:none;
+    }
+    input:focus{
+      border-color: rgba(59,130,246,.35);
+      box-shadow: 0 0 0 4px rgba(59,130,246,.10);
+    }
+    button{
+      cursor:pointer;
+      border-radius: 12px;
+      border:1px solid rgba(34,197,94,.30);
+      background: rgba(34,197,94,.10);
+      color: var(--text);
+      padding: 12px 12px;
+      font-size: 13px;
+      font-weight: 950;
+    }
+    button:hover{
+      border-color: rgba(34,197,94,.35);
+      box-shadow: 0 0 0 4px rgba(34,197,94,.08);
+    }
+    .hint{
+      font-size: 11px;
+      min-height: 16px;
+      color: rgba(226,232,240,.72);
+    }
+    .hint.bad{ color: rgba(254,202,202,.95); }
+    .row{
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top: 2px;
+    }
+    a{ color: rgba(191,219,254,.95); text-decoration:none; font-weight:900; font-size:12px; }
+    a:hover{ text-decoration:underline; }
+  </style>
+</head>
+
+<body>
+  <section class="card" aria-label="Login">
+    <div class="head">
+      <div class="dot" aria-hidden="true"></div>
+      <div>
+        <div class="title">Bücking Dashboard</div>
+        <div class="sub">Login erforderlich</div>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="hint" id="hint">Bitte Passwort eingeben.</div>
+
+      <label for="pw">Passwort</label>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="••••••••" />
+
+      <button id="btn" type="button">Einloggen</button>
+
+      <div class="row">
+        <a href="./index.html">Start prüfen</a>
+      </div>
+    </div>
+  </section>
 
   <script>
-    function go(){
-      if(Auth.login(document.getElementById("pw").value)){
-        location.href = "./view-home.html";
-      }else{
-        document.getElementById("err").style.display="block";
+    (function(){
+      if (window.Auth && Auth.isAuthed()){
+        location.replace("./view-home.html");
+        return;
       }
-    }
-  </script>
 
+      const pw = document.getElementById("pw");
+      const btn = document.getElementById("btn");
+      const hint = document.getElementById("hint");
+
+      function setHint(text, bad){
+        hint.textContent = text;
+        hint.classList.toggle("bad", !!bad);
+      }
+
+      function submit(){
+        setHint("Prüfe…", false);
+        const ok = Auth.login(pw.value);
+        if(ok){
+          setHint("OK ✅ Weiterleitung…", false);
+          Auth.redirectToNextOr("./view-home.html");
+        }else{
+          setHint("Falsches Passwort.", true);
+          pw.focus();
+          pw.select();
+        }
+      }
+
+      btn.addEventListener("click", submit);
+      pw.addEventListener("keydown", (e)=>{ if(e.key === "Enter") submit(); });
+
+      setTimeout(()=> pw.focus(), 120);
+    })();
+  </script>
 </body>
 </html>
