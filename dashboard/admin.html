@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Admin · Dashboard</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
+
+  <link rel="stylesheet" href="./dashboard/shell.css" />
+  <script src="./dashboard/auth.js"></script>
+  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
+
+  <script src="./dashboard/shell.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <template id="pageTpl">
+    <section class="grid">
+      <section class="card" style="grid-column: span 12;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Admin</div>
+            <div class="card-sub">Uploads / Debug / Settings (später).</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a class="btn btn-primary" href="./view-home.html">⌂ Home</a>
+            <a class="btn" href="./view-projects.html">🏗 Projekte</a>
+            <a class="btn" href="./view-finance.html">€ Finanzen</a>
+            <a class="btn" href="./view-vermietung.html">🏠 Vermietung</a>
+          </div>
+
+          <div style="height:12px;"></div>
+
+          <div class="card" style="box-shadow:none;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Session</div>
+                <div class="card-sub">Logout beendet die Session auf diesem Gerät.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <button class="btn btn-danger" type="button" onclick="Auth.logout(); location.href='./login.html';">Logout</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </template>
+
+  <script>
+    (function(){
+      Shell.mount({ active:"./admin.html", title:"Admin", sub:"Uploads · Settings · Debug" });
+    })();
+  </script>
+</body>
+</html>
