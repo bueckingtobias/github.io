@@ -64,7 +64,6 @@
 
   // ===== Data (Demo now, Excel later) =====
   function getFinanceData(){
-    // später: window.DASHBOARD_DATA.finance (aus Dashboard.xlsx)
     if(window.DASHBOARD_DATA && window.DASHBOARD_DATA.finance){
       if(fxSourceState) fxSourceState.textContent = "Live: Dashboard.xlsx";
       return window.DASHBOARD_DATA.finance;
@@ -212,7 +211,10 @@
       );
 
     }catch(e){
-      showError("Finanzen Fehler:\n" + (e?.message || e) + "\n\nCheck:\n- Module liegen in /dashboard/\n- Dateinamen exakt\n- Case-sensitiv (dashboard klein)\n");
+      showError(
+        "Finanzen Fehler:\n" + (e?.message || e) +
+        "\n\nCheck:\n- Alle Dateien liegen in /dashboard/\n- Dateinamen exakt (case-sensitiv)\n- dashboard Ordner kleingeschrieben\n"
+      );
     }
   }
 
