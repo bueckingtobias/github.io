@@ -1,94 +1,53 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Projekte · Dashboard</title>
-  <meta name="robots" content="noindex,nofollow" />
-  <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./shell.css" />
+  <link rel="stylesheet" href="./shell.css">
 
   <script src="./auth.js"></script>
-  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
+  <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
 
   <script src="./shell.js"></script>
-
-  <!-- Projekte-Module (Platzhalter – später wieder deine echten Dateien einsetzen) -->
-  <link rel="stylesheet" href="./projects-gesamt-modul.css" />
-  <script src="./projects-gesamt-modul.js"></script>
-
-  <link rel="stylesheet" href="./projects-gewerk-modul.css" />
-  <script src="./projects-gewerk-modul.js"></script>
-
-  <style>
-    .proj-wrap{ display:flex; flex-direction:column; gap: var(--gap); min-width:0; }
-    .proj-grid{
-      display:grid;
-      grid-template-columns: repeat(12, minmax(0,1fr));
-      gap: var(--gap);
-      min-width:0;
-    }
-    .span12{ grid-column: span 12; }
-    .span6{ grid-column: span 6; }
-    @media (max-width: 900px){
-      .span6{ grid-column: span 12; }
-    }
-  </style>
+  <script src="./excel-loader.js"></script>
 </head>
 
 <body>
-  <div id="app"></div>
+<div id="app"></div>
 
-  <template id="pageTpl">
-    <section class="proj-wrap">
-
-      <!-- Gesamt oben -->
-      <section class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Gesamtübersicht</div>
-            <div class="card-sub">Budget · Zahlungen · Fortschritt · Timeline (später).</div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="projects-gesamt-root"></div>
-        </div>
-      </section>
-
-      <!-- 10 Gewerke in 2-Spalten (iPad) / 1-Spalte (Mobile) -->
-      <section class="proj-grid">
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 1</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="1"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 2</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="2"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 3</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="3"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 4</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="4"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 5</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="5"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 6</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="6"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 7</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="7"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 8</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="8"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 9</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="9"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 10</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="10"></div></div></div></section>
-      </section>
-
+<template id="pageTpl">
+  <section class="grid">
+    <section class="card" style="grid-column:span 12;">
+      <div class="card-body" id="proj-gesamt"></div>
     </section>
-  </template>
 
-  <script>
-    (function(){
-      Shell.mount({ active:"./view-projects.html", title:"Projekte / Bau", sub:"Gesamt + Gewerke" });
+    <div id="proj-gewerke" style="display:contents;"></div>
+  </section>
+</template>
 
-      const g = document.querySelector(".projects-gesamt-root");
-      if(g && window.ProjectsGesamtModul && typeof ProjectsGesamtModul.render === "function"){
-        ProjectsGesamtModul.render(g, {});
-      }
+<script>
+(async function(){
+  Shell.mount({ active:"./view-projects.html", title:"Projekte / Bau", sub:"Excel-gesteuert" });
 
-      document.querySelectorAll(".projects-gewerk-root").forEach(el=>{
-        const idx = Number(el.getAttribute("data-idx") || "1");
-        if(window.ProjectsGewerkModul && typeof ProjectsGewerkModul.render === "function"){
-          ProjectsGewerkModul.render(el, { index: idx });
-        }
-      });
-    })();
-  </script>
+  await ExcelLoader.load("./Dashboard.xlsx");
+
+  const gesamt = window.IMMO_DATA.projects.gesamt;
+  const gewerke = window.IMMO_DATA.projects.gewerke;
+
+  GewerkGesamtModul.render(document.getElementById("proj-gesamt"), gesamt);
+
+  const wrap = document.getElementById("proj-gewerke");
+  gewerke.forEach((g,i)=>{
+    const sec = document.createElement("section");
+    sec.className = "card";
+    sec.style.gridColumn = "span 6";
+    sec.innerHTML = `<div class="card-body" id="gw-${i}"></div>`;
+    wrap.appendChild(sec);
+    GewerkModul.render(sec.querySelector(".card-body"), g);
+  });
+})();
+</script>
 </body>
 </html>
