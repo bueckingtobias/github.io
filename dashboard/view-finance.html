@@ -7,31 +7,49 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./dashboard/shell.css" />
-  <script src="./dashboard/auth.js"></script>
-  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
+  <!-- Shell -->
+  <link rel="stylesheet" href="./shell.css" />
 
-  <script src="./dashboard/shell.js"></script>
+  <!-- Auth (guard) -->
+  <script src="./auth.js"></script>
+  <script>
+    // Redirect to login if not authed
+    Auth.requireAuth({ loginUrl: "./login.html" });
+  </script>
 
-  <!-- Finance modules (wenn vorhanden) -->
-  <link rel="stylesheet" href="./dashboard/finance-cashflow-modul.css" />
-  <script src="./dashboard/finance-cashflow-modul.js"></script>
-
-  <link rel="stylesheet" href="./dashboard/finance-kpis-modul.css" />
-  <script src="./dashboard/finance-kpis-modul.js"></script>
+  <!-- Shell JS -->
+  <script src="./shell.js"></script>
 
   <style>
+    /* harte Regel: niemals horizontal scrollen */
+    html, body { overflow-x: hidden !important; }
+    #app, .app, .main, .content, .container { max-width: 100% !important; }
+
     .fin-grid{
       display:grid;
       grid-template-columns: repeat(12, minmax(0,1fr));
       gap: var(--gap);
       min-width:0;
     }
-    .span12{ grid-column: span 12; }
-    .span6{ grid-column: span 6; }
-    @media (max-width: 900px){
-      .span6{ grid-column: span 12; }
+    .span12{ grid-column: span 12; min-width:0; }
+
+    .module-slot{ width:100%; min-width:0; }
+
+    /* Debug card */
+    .dbg{
+      border-radius: 14px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.25);
+      padding: 10px 12px;
+      font-size: 12px;
+      color: rgba(226,232,240,.82);
+      line-height: 1.35;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
+    .dbg .ok{ color: rgba(34,197,94,.95); font-weight: 900; }
+    .dbg .bad{ color: rgba(248,113,113,.95); font-weight: 900; }
+    .dbg .muted{ color: rgba(226,232,240,.62); }
   </style>
 </head>
 
@@ -40,16 +58,31 @@
 
   <template id="pageTpl">
     <section class="fin-grid">
+
+      <section class="span12">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Finanzen</div>
+              <div class="card-sub">Module: Cashflow · KPIs (bestehende Dateien).</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="dbg" id="dbgBox">Debug wird geladen…</div>
+          </div>
+        </div>
+      </section>
+
       <section class="span12">
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">Cashflow</div>
-              <div class="card-sub">Monatlich · YTD · Forecast (später aus Dashboard.xlsx).</div>
+              <div class="card-sub">Dein bestehendes Cashflow-Modul.</div>
             </div>
           </div>
           <div class="card-body">
-            <div class="finance-cashflow-root"></div>
+            <div class="module-slot" id="slotCashflow">Lade Modul…</div>
           </div>
         </div>
       </section>
@@ -58,31 +91,191 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Finance KPIs</div>
-              <div class="card-sub">Rückblick + Forecast.</div>
+              <div class="card-title">KPIs</div>
+              <div class="card-sub">Dein bestehendes KPI-Modul.</div>
             </div>
           </div>
           <div class="card-body">
-            <div class="finance-kpis-root"></div>
+            <div class="module-slot" id="slotKpis">Lade Modul…</div>
           </div>
         </div>
       </section>
+
     </section>
   </template>
 
   <script>
     (function(){
-      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Cashflow · KPIs · Forecast" });
+      // 1) Shell mount MUST happen first (so you never get a white page)
+      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Cashflow · KPIs" });
 
-      const c = document.querySelector(".finance-cashflow-root");
-      if(c && window.FinanceCashflowModul && typeof FinanceCashflowModul.render === "function"){
-        FinanceCashflowModul.render(c, {});
+      // 2) Small helpers
+      const dbgBox = document.getElementById("dbgBox");
+      const slotCashflow = document.getElementById("slotCashflow");
+      const slotKpis = document.getElementById("slotKpis");
+
+      function log(lines){
+        dbgBox.textContent = lines.join("\n");
       }
 
-      const k = document.querySelector(".finance-kpis-root");
-      if(k && window.FinanceKpisModul && typeof FinanceKpisModul.render === "function"){
-        FinanceKpisModul.render(k, {});
+      function now(){
+        const d = new Date();
+        return d.toLocaleString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
       }
+
+      function loadCss(href){
+        return new Promise((resolve, reject)=>{
+          const link = document.createElement("link");
+          link.rel = "stylesheet";
+          link.href = href;
+          link.onload = () => resolve({ href });
+          link.onerror = () => reject(new Error("CSS nicht geladen: " + href));
+          document.head.appendChild(link);
+        });
+      }
+
+      // dynamic JS load prevents “white page” on module errors
+      function loadJs(src){
+        return new Promise((resolve, reject)=>{
+          const s = document.createElement("script");
+          s.src = src;
+          s.defer = true;
+          s.onload = () => resolve({ src });
+          s.onerror = () => reject(new Error("JS nicht geladen: " + src));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function loadHtmlInto(url, mountEl){
+        const res = await fetch(url, { cache: "no-store" });
+        if(!res.ok) throw new Error("HTML nicht geladen: " + url + " (" + res.status + ")");
+        const html = await res.text();
+        mountEl.innerHTML = html;
+      }
+
+      // 3) Configure EXISTING module file names here (no new modules!)
+      // If your filenames differ, change ONLY these strings.
+      const files = {
+        cashflow: {
+          html: "./finance-cashflow-modul.html",
+          css:  "./finance-cashflow-modul.css",
+          js:   "./finance-cashflow-modul.js",
+          globalCandidates: ["FinanceCashflowModul", "CashflowModul", "CashflowModule"]
+        },
+        kpis: {
+          html: "./finance-kpis-modul.html",
+          css:  "./finance-kpis-modul.css",
+          js:   "./finance-kpis-modul.js",
+          globalCandidates: ["FinanceKpisModul", "FinanceKPIsModul", "KpisModul", "KPI-Modul"]
+        }
+      };
+
+      // 4) Run
+      (async function(){
+        const debug = [];
+        debug.push("Finance Boot: " + now());
+        debug.push("");
+
+        // Step A: load module HTML (so you see structure even if JS fails)
+        try{
+          await loadHtmlInto(files.cashflow.html, slotCashflow);
+          debug.push("Cashflow HTML: ✅ " + files.cashflow.html);
+        }catch(e){
+          slotCashflow.textContent = "Fehler: " + e.message;
+          debug.push("Cashflow HTML: ❌ " + e.message);
+        }
+
+        try{
+          await loadHtmlInto(files.kpis.html, slotKpis);
+          debug.push("KPIs HTML: ✅ " + files.kpis.html);
+        }catch(e){
+          slotKpis.textContent = "Fehler: " + e.message;
+          debug.push("KPIs HTML: ❌ " + e.message);
+        }
+
+        debug.push("");
+
+        // Step B: load CSS (non-blocking but visible in debug)
+        try{
+          await loadCss(files.cashflow.css);
+          debug.push("Cashflow CSS: ✅ " + files.cashflow.css);
+        }catch(e){
+          debug.push("Cashflow CSS: ❌ " + e.message);
+        }
+
+        try{
+          await loadCss(files.kpis.css);
+          debug.push("KPIs CSS: ✅ " + files.kpis.css);
+        }catch(e){
+          debug.push("KPIs CSS: ❌ " + e.message);
+        }
+
+        debug.push("");
+
+        // Step C: load JS (critical)
+        try{
+          await loadJs(files.cashflow.js);
+          debug.push("Cashflow JS: ✅ " + files.cashflow.js);
+        }catch(e){
+          debug.push("Cashflow JS: ❌ " + e.message);
+        }
+
+        try{
+          await loadJs(files.kpis.js);
+          debug.push("KPIs JS: ✅ " + files.kpis.js);
+        }catch(e){
+          debug.push("KPIs JS: ❌ " + e.message);
+        }
+
+        debug.push("");
+
+        // Step D: call render() on your existing globals (we try candidates)
+        function findModule(candidates){
+          for(const name of candidates){
+            const mod = window[name];
+            if(mod && typeof mod.render === "function") return { name, mod };
+          }
+          return null;
+        }
+
+        // data: keep compatibility with your old pattern if present
+        const financeData = (window.IMMO_DATA && window.IMMO_DATA.finance) ? window.IMMO_DATA.finance : {};
+        const kpiData = (window.IMMO_DATA && window.IMMO_DATA.home) ? window.IMMO_DATA.home : {};
+
+        // Cashflow render
+        try{
+          const found = findModule(files.cashflow.globalCandidates);
+          if(found){
+            found.mod.render(slotCashflow, financeData);
+            debug.push("Cashflow render(): ✅ window." + found.name);
+          }else{
+            debug.push("Cashflow render(): ❌ Kein globales Modul gefunden. Erwartet: " + files.cashflow.globalCandidates.join(" / "));
+          }
+        }catch(e){
+          slotCashflow.textContent = "Cashflow Render-Fehler: " + e.message;
+          debug.push("Cashflow render(): ❌ " + e.message);
+        }
+
+        // KPI render
+        try{
+          const found = findModule(files.kpis.globalCandidates);
+          if(found){
+            found.mod.render(slotKpis, kpiData);
+            debug.push("KPIs render(): ✅ window." + found.name);
+          }else{
+            debug.push("KPIs render(): ❌ Kein globales Modul gefunden. Erwartet: " + files.kpis.globalCandidates.join(" / "));
+          }
+        }catch(e){
+          slotKpis.textContent = "KPI Render-Fehler: " + e.message;
+          debug.push("KPIs render(): ❌ " + e.message);
+        }
+
+        // Present debug
+        debug.unshift("Status: " + (debug.some(x=>x.includes("❌")) ? "FEHLER vorhanden" : "OK"));
+        debug.unshift("");
+        debug.unshift("Hinweis: Diese View lädt Module dynamisch, damit ein fehlerhaftes Modul die Seite nicht mehr weiß macht.");
+        log(debug);
+      })();
     })();
   </script>
 </body>
