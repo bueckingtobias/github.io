@@ -49,7 +49,7 @@
 
       await ExcelLoader.load("./Dashboard.xlsx");
       const projectGesamt = window.IMMO_DATA?.projects?.gesamt || {};
-      const projectGewerke = window.IMMO_DATA?.projects?.gewerke || [];
+      const gewerke = window.IMMO_DATA?.projects?.gewerke || [];
 
       function loadCssOnce(href){
         if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
@@ -75,31 +75,61 @@
         el.innerHTML = await r.text();
       }
 
-      // Projekt-Module laden (deine bestehenden)
+      // scoped selector fix (same as finance)
+      function scopedRender(scopeEl, fn){
+        const orig = {
+          getElementById: document.getElementById.bind(document),
+          querySelector: document.querySelector.bind(document),
+          querySelectorAll: document.querySelectorAll.bind(document)
+        };
+
+        document.getElementById = function(id){
+          const local = scopeEl.querySelector("#" + CSS.escape(id));
+          return local || orig.getElementById(id);
+        };
+        document.querySelector = function(sel){
+          const local = scopeEl.querySelector(sel);
+          return local || orig.querySelector(sel);
+        };
+        document.querySelectorAll = function(sel){
+          const local = scopeEl.querySelectorAll(sel);
+          return (local && local.length) ? local : orig.querySelectorAll(sel);
+        };
+
+        try { return fn(); }
+        finally {
+          document.getElementById = orig.getElementById;
+          document.querySelector = orig.querySelector;
+          document.querySelectorAll = orig.querySelectorAll;
+        }
+      }
+
+      // Load module assets once
       await loadCssOnce("./gewerk-gesamt-modul.css");
       await loadJsOnce("./gewerk-gesamt-modul.js");
       await loadCssOnce("./gewerk-modul.css");
       await loadJsOnce("./gewerk-modul.js");
 
-      // Gesamt HTML + render
+      // Gesamt
       const slotGesamt = document.getElementById("slotProjGesamt");
       try{
         await loadHtmlInto("./gewerk-gesamt-modul.html", slotGesamt);
         if(!window.GewerkGesamtModul || typeof window.GewerkGesamtModul.render !== "function"){
           throw new Error("window.GewerkGesamtModul.render fehlt");
         }
-        window.GewerkGesamtModul.render(slotGesamt, projectGesamt);
+        scopedRender(slotGesamt, () => window.GewerkGesamtModul.render(slotGesamt, projectGesamt));
       }catch(e){
         slotGesamt.textContent = "Gesamtmodul Fehler: " + e.message;
       }
 
-      // 10 Karten bauen + je Karte Modul-HTML + render
+      // 10 Gewerke
       const wrap = document.getElementById("gewerkCards");
       wrap.innerHTML = "";
-      const count = Math.min(10, projectGewerke.length || 10);
+      const count = Math.min(10, Math.max(10, gewerke.length || 0)); // immer 10 Karten zeigen
 
       for(let i=0;i<count;i++){
-        const g = projectGewerke[i] || {};
+        const g = gewerke[i] || { Gewerk:"Gewerk " + (i+1), Projekt: projectGesamt.Projekt || "" };
+
         const sec = document.createElement("section");
         sec.className = "span6";
         sec.innerHTML = `
@@ -121,7 +151,7 @@
           if(!window.GewerkModul || typeof window.GewerkModul.render !== "function"){
             throw new Error("window.GewerkModul.render fehlt");
           }
-          window.GewerkModul.render(slot, g);
+          scopedRender(slot, () => window.GewerkModul.render(slot, g));
         }catch(e){
           slot.textContent = "Gewerk-Modul Fehler: " + e.message;
         }
