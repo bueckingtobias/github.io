@@ -1,130 +1,18 @@
 (function(){
+  window.ViewHome = window.ViewHome || {};
+  window.ViewHome.mount = mount;
 
-  const chipBase    = document.getElementById("chipBase");
-  const chipCSS     = document.getElementById("chipCSS");
-  const chipModules = document.getElementById("chipModules");
-  const appRoot     = document.getElementById("appRoot");
+  const BASE = "./";
+  const CB = (window.__CB__ || Date.now().toString(36));
 
-  const BASE = (window.__BASE_DASH__ || "./");
-  const CB   = (window.__CB__ || Date.now().toString(36));
-
-  if(chipBase) chipBase.textContent = "Base: " + BASE;
-
-  function isActive(fileName){
-    const p = (location.pathname || "").toLowerCase();
-    const current = (p.split("/").pop() || "");
-    return current === (fileName || "").toLowerCase();
-  }
-
-  function loadViewCss(){
-    return new Promise((resolve)=>{
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = BASE + "view-home.css?cb=" + CB;
-      link.onload = ()=> resolve(true);
-      link.onerror = ()=> resolve(false);
-      document.head.appendChild(link);
-    });
-  }
-
-  function renderShell(){
-    appRoot.innerHTML = `
-      <div class="app">
-        <aside class="sidebar" aria-label="Navigation">
-          <div class="brand">
-            <div class="brand-dot"></div>
-            <div class="brand-txt">
-              <div class="brand-title">Bücking Dashboard</div>
-              <div class="brand-sub">Immobilien · Projekte · KPIs</div>
-            </div>
-          </div>
-
-          <nav class="nav">
-            <a href="${BASE}view-home.html" class="${isActive("view-home.html") ? "active" : ""}">
-              <div class="nav-ic">⌂</div>
-              <div class="nav-txt">
-                <div class="nav-title">Home</div>
-                <div class="nav-sub">Wetter · Kalender · KPIs</div>
-              </div>
-            </a>
-
-            <div class="nav-label">Views</div>
-
-            <a href="${BASE}view-projects.html" class="${isActive("view-projects.html") ? "active" : ""}">
-              <div class="nav-ic">🏗</div>
-              <div class="nav-txt">
-                <div class="nav-title">Projekte / Bau</div>
-                <div class="nav-sub">Gewerke & Handwerker</div>
-              </div>
-            </a>
-
-            <a href="${BASE}view-finance.html" class="${isActive("view-finance.html") ? "active" : ""}">
-              <div class="nav-ic">€</div>
-              <div class="nav-txt">
-                <div class="nav-title">Finanzen</div>
-                <div class="nav-sub">Cashflow, Budget, OPs</div>
-              </div>
-            </a>
-
-            <a href="${BASE}view-vermietung.html" class="${isActive("view-vermietung.html") ? "active" : ""}">
-              <div class="nav-ic">🏠</div>
-              <div class="nav-txt">
-                <div class="nav-title">Vermietung</div>
-                <div class="nav-sub">Mieten, Leerstand, Leads</div>
-              </div>
-            </a>
-
-            <div class="nav-label">Tools</div>
-
-            <a href="${BASE}admin.html" class="${isActive("admin.html") ? "active" : ""}">
-              <div class="nav-ic">⚙</div>
-              <div class="nav-txt">
-                <div class="nav-title">Admin</div>
-                <div class="nav-sub">Uploads, Debug, Settings</div>
-              </div>
-            </a>
-          </nav>
-
-          <div class="sidebar-footer">
-            <span class="chip" id="clockSide">—</span>
-            <span class="chip">online</span>
-          </div>
-        </aside>
-
-        <section class="main">
-          <header class="topbar">
-            <div class="page-title">
-              <h1>Home</h1>
-              <div>Wetter links · Kalender rechts · KPIs unten</div>
-            </div>
-            <button class="btn" id="btnRefresh">↻ Reload</button>
-          </header>
-
-          <main class="content">
-            <div class="home-root">
-              <pre class="home-error" id="homeErr"></pre>
-
-              <section class="home-grid-top">
-                <div class="home-cell" id="slotWeather"></div>
-                <div class="home-cell" id="slotCalendar"></div>
-              </section>
-
-              <section class="home-row" id="slotKpis"></section>
-            </div>
-          </main>
-        </section>
-      </div>
-    `;
-  }
-
-  function errBox(){ return document.getElementById("homeErr"); }
-  function showErr(msg){
-    const b = errBox(); if(!b) return;
+  function errBox(container){ return container.querySelector("#homeErr"); }
+  function showErr(container, msg){
+    const b = errBox(container); if(!b) return;
     b.style.display = "block";
     b.textContent = msg;
   }
-  function clearErr(){
-    const b = errBox(); if(!b) return;
+  function clearErr(container){
+    const b = errBox(container); if(!b) return;
     b.style.display = "none";
     b.textContent = "";
   }
@@ -149,7 +37,6 @@
   async function loadScriptFresh(id, src){
     const old = document.getElementById(id);
     if(old) old.remove();
-
     await new Promise((res, rej)=>{
       const s = document.createElement("script");
       s.id = id;
@@ -196,16 +83,15 @@
     };
   }
 
-  async function renderAll(){
-    clearErr();
+  async function mount(container){
+    clearErr(container);
 
-    const slotWeather  = document.getElementById("slotWeather");
-    const slotCalendar = document.getElementById("slotCalendar");
-    const slotKpis     = document.getElementById("slotKpis");
+    const slotWeather  = container.querySelector("#slotWeather");
+    const slotCalendar = container.querySelector("#slotCalendar");
+    const slotKpis     = container.querySelector("#slotKpis");
 
     let ok = 0, fail = 0;
     const fails = [];
-
     const cfg = getHomeConfig();
 
     async function tryMount(slot, html, cssId, css, jsId, js, globalName, args){
@@ -222,42 +108,9 @@
     await tryMount(slotCalendar, "home-calendar-modul.html", "css-home-calendar", "home-calendar-modul.css", "js-home-calendar", "home-calendar-modul.js", "HomeCalendarModul", [cfg]);
     await tryMount(slotKpis,     "home-kpis-modul.html",     "css-home-kpis",     "home-kpis-modul.css",     "js-home-kpis",     "home-kpis-modul.js",     "HomeKpisModul",     [cfg]);
 
-    if(chipModules){
-      chipModules.textContent = `Module: ${ok} ok / ${fail} fail`;
-      chipModules.className = "chip " + (fail ? "warn" : "ok");
-    }
-
     if(fails.length){
-      showErr(
-        "Module konnten nicht geladen werden:\n\n" +
-        fails.join("\n") +
-        "\n\nCheck:\n- Dateien liegen in: " + BASE +
-        "\n- Ordner heißt exakt: dashboard (klein)\n- Dateinamen exakt (case-sensitiv)\n"
-      );
+      showErr(container, "Home-Module konnten nicht geladen werden:\n\n" + fails.join("\n"));
     }
   }
-
-  window.addEventListener("DOMContentLoaded", async ()=>{
-    renderShell();
-
-    const cssOk = await loadViewCss();
-    if(chipCSS){
-      chipCSS.textContent = "CSS: " + (cssOk ? "ok" : "FAIL");
-      chipCSS.className = "chip " + (cssOk ? "ok" : "warn");
-    }
-
-    await renderAll();
-
-    const btn = document.getElementById("btnRefresh");
-    if(btn) btn.addEventListener("click", renderAll);
-
-    const clockSide = document.getElementById("clockSide");
-    function tick(){
-      const d = new Date();
-      const t = d.toLocaleString("de-DE",{ weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-      if(clockSide) clockSide.textContent = t;
-    }
-    tick(); setInterval(tick, 15000);
-  });
 
 })();
