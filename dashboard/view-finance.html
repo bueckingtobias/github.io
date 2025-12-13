@@ -10,19 +10,15 @@
   <!-- Shell -->
   <link rel="stylesheet" href="./shell.css" />
 
-  <!-- Auth (guard) -->
+  <!-- Auth -->
   <script src="./auth.js"></script>
-  <script>
-    // Redirect to login if not authed
-    Auth.requireAuth({ loginUrl: "./login.html" });
-  </script>
+  <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
 
   <!-- Shell JS -->
   <script src="./shell.js"></script>
 
   <style>
-    /* harte Regel: niemals horizontal scrollen */
-    html, body { overflow-x: hidden !important; }
+    html,body{ overflow-x:hidden !important; }
     #app, .app, .main, .content, .container { max-width: 100% !important; }
 
     .fin-grid{
@@ -33,9 +29,14 @@
     }
     .span12{ grid-column: span 12; min-width:0; }
 
+    /* 2-Spalten auf iPad/desktop, 1-Spalte auf mobile */
+    .span6{ grid-column: span 6; min-width:0; }
+    @media (max-width: 900px){
+      .span6{ grid-column: span 12; }
+    }
+
     .module-slot{ width:100%; min-width:0; }
 
-    /* Debug card */
     .dbg{
       border-radius: 14px;
       border:1px solid rgba(148,163,184,.18);
@@ -47,9 +48,7 @@
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
-    .dbg .ok{ color: rgba(34,197,94,.95); font-weight: 900; }
-    .dbg .bad{ color: rgba(248,113,113,.95); font-weight: 900; }
-    .dbg .muted{ color: rgba(226,232,240,.62); }
+    .dbg strong{ color: rgba(226,232,240,.95); }
   </style>
 </head>
 
@@ -59,30 +58,89 @@
   <template id="pageTpl">
     <section class="fin-grid">
 
+      <!-- Debug / Status -->
       <section class="span12">
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">Finanzen</div>
-              <div class="card-sub">Module: Cashflow · KPIs (bestehende Dateien).</div>
+              <div class="card-sub">Lädt alle Finance-Module (bestehende Dateien) robust.</div>
             </div>
           </div>
           <div class="card-body">
-            <div class="dbg" id="dbgBox">Debug wird geladen…</div>
+            <div class="dbg" id="dbgBox">Starte…</div>
           </div>
         </div>
       </section>
 
+      <!-- Gesamt oben breit -->
       <section class="span12">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Gesamt</div>
+              <div class="card-sub">Übersicht</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="module-slot" id="slotGesamt">Lade…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2-Spalten Linie -->
+      <section class="span6">
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">Cashflow</div>
-              <div class="card-sub">Dein bestehendes Cashflow-Modul.</div>
+              <div class="card-sub">Monatlich / Verlauf</div>
             </div>
           </div>
           <div class="card-body">
-            <div class="module-slot" id="slotCashflow">Lade Modul…</div>
+            <div class="module-slot" id="slotCashflow">Lade…</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="span6">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Mieten</div>
+              <div class="card-sub">Einnahmen</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="module-slot" id="slotMieten">Lade…</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="span6">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">OP</div>
+              <div class="card-sub">Kosten / Ausgaben</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="module-slot" id="slotOp">Lade…</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="span6">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Reserven</div>
+              <div class="card-sub">Liquidität / Rücklagen</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="module-slot" id="slotReserven">Lade…</div>
           </div>
         </div>
       </section>
@@ -91,12 +149,12 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">KPIs</div>
-              <div class="card-sub">Dein bestehendes KPI-Modul.</div>
+              <div class="card-title">Budget</div>
+              <div class="card-sub">Soll / Ist / Abweichung</div>
             </div>
           </div>
           <div class="card-body">
-            <div class="module-slot" id="slotKpis">Lade Modul…</div>
+            <div class="module-slot" id="slotBudget">Lade…</div>
           </div>
         </div>
       </section>
@@ -106,21 +164,18 @@
 
   <script>
     (function(){
-      // 1) Shell mount MUST happen first (so you never get a white page)
-      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Cashflow · KPIs" });
+      // Mount shell first: prevents "white page"
+      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Gesamt · Cashflow · Mieten · OP · Reserven · Budget" });
 
-      // 2) Small helpers
       const dbgBox = document.getElementById("dbgBox");
-      const slotCashflow = document.getElementById("slotCashflow");
-      const slotKpis = document.getElementById("slotKpis");
-
-      function log(lines){
-        dbgBox.textContent = lines.join("\n");
-      }
 
       function now(){
         const d = new Date();
         return d.toLocaleString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+      }
+
+      function setDbg(lines){
+        dbgBox.textContent = lines.join("\n");
       }
 
       function loadCss(href){
@@ -128,153 +183,156 @@
           const link = document.createElement("link");
           link.rel = "stylesheet";
           link.href = href;
-          link.onload = () => resolve({ href });
+          link.onload = () => resolve(href);
           link.onerror = () => reject(new Error("CSS nicht geladen: " + href));
           document.head.appendChild(link);
         });
       }
 
-      // dynamic JS load prevents “white page” on module errors
+      // Dynamic JS load to avoid whole-page crash
       function loadJs(src){
         return new Promise((resolve, reject)=>{
           const s = document.createElement("script");
           s.src = src;
           s.defer = true;
-          s.onload = () => resolve({ src });
+          s.onload = () => resolve(src);
           s.onerror = () => reject(new Error("JS nicht geladen: " + src));
           document.head.appendChild(s);
         });
       }
 
       async function loadHtmlInto(url, mountEl){
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await fetch(url, { cache:"no-store" });
         if(!res.ok) throw new Error("HTML nicht geladen: " + url + " (" + res.status + ")");
-        const html = await res.text();
-        mountEl.innerHTML = html;
+        mountEl.innerHTML = await res.text();
       }
 
-      // 3) Configure EXISTING module file names here (no new modules!)
-      // If your filenames differ, change ONLY these strings.
-      const files = {
-        cashflow: {
-          html: "./finance-cashflow-modul.html",
-          css:  "./finance-cashflow-modul.css",
-          js:   "./finance-cashflow-modul.js",
-          globalCandidates: ["FinanceCashflowModul", "CashflowModul", "CashflowModule"]
-        },
-        kpis: {
-          html: "./finance-kpis-modul.html",
-          css:  "./finance-kpis-modul.css",
-          js:   "./finance-kpis-modul.js",
-          globalCandidates: ["FinanceKpisModul", "FinanceKPIsModul", "KpisModul", "KPI-Modul"]
-        }
-      };
+      function cap(s){ return s ? (s.charAt(0).toUpperCase() + s.slice(1)) : s; }
+      function toPascalFromKey(key){
+        // key examples: "gesamt", "cashflow", "mieten", "op", "reserven", "budget"
+        if(key === "op") return "Op";
+        return cap(key);
+      }
 
-      // 4) Run
+      function findModuleGlobal(key){
+        // Tries common global names that we used before in this project
+        // We do NOT change your modules, we just adapt the view.
+        const pas = toPascalFromKey(key);
+
+        const candidates = [
+          "Finance" + pas + "Modul",
+          "finance" + pas + "Modul",
+          pas + "Modul",
+          pas + "Module",
+          "Finance" + pas + "Module",
+          // legacy naming patterns:
+          "Finance" + pas,
+          pas
+        ];
+
+        for(const name of candidates){
+          const mod = window[name];
+          if(mod && typeof mod.render === "function"){
+            return { name, mod };
+          }
+        }
+
+        // Fallback: search any window.*Modul with render(), best-effort match
+        const keys = Object.keys(window);
+        const renderables = keys.filter(k => k.toLowerCase().includes(key) && window[k] && typeof window[k].render === "function");
+        if(renderables.length){
+          const name = renderables[0];
+          return { name, mod: window[name] };
+        }
+
+        return null;
+      }
+
+      async function loadAndRenderModule(opts){
+        // opts: { key, slotId, html, css, js, data }
+        const lines = opts._dbgLines;
+
+        const slot = document.getElementById(opts.slotId);
+        if(!slot) {
+          lines.push(`❌ ${opts.key}: Slot #${opts.slotId} nicht gefunden`);
+          return;
+        }
+
+        // Load HTML first so user sees something even if JS fails
+        try{
+          await loadHtmlInto(opts.html, slot);
+          lines.push(`✅ ${opts.key}: HTML geladen (${opts.html})`);
+        }catch(e){
+          slot.textContent = e.message;
+          lines.push(`❌ ${opts.key}: ${e.message}`);
+          return;
+        }
+
+        // CSS
+        try{
+          await loadCss(opts.css);
+          lines.push(`✅ ${opts.key}: CSS geladen (${opts.css})`);
+        }catch(e){
+          lines.push(`⚠️ ${opts.key}: ${e.message}`);
+        }
+
+        // JS
+        try{
+          await loadJs(opts.js);
+          lines.push(`✅ ${opts.key}: JS geladen (${opts.js})`);
+        }catch(e){
+          // Still not fatal for the page
+          slot.textContent = e.message;
+          lines.push(`❌ ${opts.key}: ${e.message}`);
+          return;
+        }
+
+        // Render
+        try{
+          const found = findModuleGlobal(opts.key);
+          if(!found){
+            lines.push(`❌ ${opts.key}: Kein globales Modul mit render() gefunden (window.*)`);
+            // keep HTML visible
+            return;
+          }
+          found.mod.render(slot, opts.data);
+          lines.push(`✅ ${opts.key}: render() via window.${found.name}`);
+        }catch(e){
+          slot.textContent = `${opts.key} Render-Fehler: ${e.message}`;
+          lines.push(`❌ ${opts.key}: Render-Fehler: ${e.message}`);
+        }
+      }
+
       (async function(){
-        const debug = [];
-        debug.push("Finance Boot: " + now());
-        debug.push("");
+        const dbg = [];
+        dbg.push("Finance Boot: " + now());
+        dbg.push("Hinweis: Die View lädt ALLE vorhandenen finance-*-modul.* Dateien aus /dashboard/.");
+        dbg.push("");
 
-        // Step A: load module HTML (so you see structure even if JS fails)
-        try{
-          await loadHtmlInto(files.cashflow.html, slotCashflow);
-          debug.push("Cashflow HTML: ✅ " + files.cashflow.html);
-        }catch(e){
-          slotCashflow.textContent = "Fehler: " + e.message;
-          debug.push("Cashflow HTML: ❌ " + e.message);
+        // Use whatever data object you already have (Excel-Bridge etc.)
+        const financeData = (window.IMMO_DATA && window.IMMO_DATA.finance) ? window.IMMO_DATA.finance : (window.IMMO_DATA || {});
+
+        const modules = [
+          { key:"gesamt",   slotId:"slotGesamt",   html:"./finance-gesamt-modul.html",   css:"./finance-gesamt-modul.css",   js:"./finance-gesamt-modul.js",   data: financeData },
+          { key:"cashflow", slotId:"slotCashflow", html:"./finance-cashflow-modul.html", css:"./finance-cashflow-modul.css", js:"./finance-cashflow-modul.js", data: financeData },
+          { key:"mieten",   slotId:"slotMieten",   html:"./finance-mieten-modul.html",   css:"./finance-mieten-modul.css",   js:"./finance-mieten-modul.js",   data: financeData },
+          { key:"op",       slotId:"slotOp",       html:"./finance-op-modul.html",       css:"./finance-op-modul.css",       js:"./finance-op-modul.js",       data: financeData },
+          { key:"reserven", slotId:"slotReserven", html:"./finance-reserven-modul.html", css:"./finance-reserven-modul.css", js:"./finance-reserven-modul.js", data: financeData },
+          { key:"budget",   slotId:"slotBudget",   html:"./finance-budget-modul.html",   css:"./finance-budget-modul.css",   js:"./finance-budget-modul.js",   data: financeData }
+        ];
+
+        // Load sequentially for predictable behavior (and easier debugging)
+        for(const m of modules){
+          m._dbgLines = dbg;
+          await loadAndRenderModule(m);
+          dbg.push(""); // spacer
+          setDbg(dbg);
         }
 
-        try{
-          await loadHtmlInto(files.kpis.html, slotKpis);
-          debug.push("KPIs HTML: ✅ " + files.kpis.html);
-        }catch(e){
-          slotKpis.textContent = "Fehler: " + e.message;
-          debug.push("KPIs HTML: ❌ " + e.message);
-        }
-
-        debug.push("");
-
-        // Step B: load CSS (non-blocking but visible in debug)
-        try{
-          await loadCss(files.cashflow.css);
-          debug.push("Cashflow CSS: ✅ " + files.cashflow.css);
-        }catch(e){
-          debug.push("Cashflow CSS: ❌ " + e.message);
-        }
-
-        try{
-          await loadCss(files.kpis.css);
-          debug.push("KPIs CSS: ✅ " + files.kpis.css);
-        }catch(e){
-          debug.push("KPIs CSS: ❌ " + e.message);
-        }
-
-        debug.push("");
-
-        // Step C: load JS (critical)
-        try{
-          await loadJs(files.cashflow.js);
-          debug.push("Cashflow JS: ✅ " + files.cashflow.js);
-        }catch(e){
-          debug.push("Cashflow JS: ❌ " + e.message);
-        }
-
-        try{
-          await loadJs(files.kpis.js);
-          debug.push("KPIs JS: ✅ " + files.kpis.js);
-        }catch(e){
-          debug.push("KPIs JS: ❌ " + e.message);
-        }
-
-        debug.push("");
-
-        // Step D: call render() on your existing globals (we try candidates)
-        function findModule(candidates){
-          for(const name of candidates){
-            const mod = window[name];
-            if(mod && typeof mod.render === "function") return { name, mod };
-          }
-          return null;
-        }
-
-        // data: keep compatibility with your old pattern if present
-        const financeData = (window.IMMO_DATA && window.IMMO_DATA.finance) ? window.IMMO_DATA.finance : {};
-        const kpiData = (window.IMMO_DATA && window.IMMO_DATA.home) ? window.IMMO_DATA.home : {};
-
-        // Cashflow render
-        try{
-          const found = findModule(files.cashflow.globalCandidates);
-          if(found){
-            found.mod.render(slotCashflow, financeData);
-            debug.push("Cashflow render(): ✅ window." + found.name);
-          }else{
-            debug.push("Cashflow render(): ❌ Kein globales Modul gefunden. Erwartet: " + files.cashflow.globalCandidates.join(" / "));
-          }
-        }catch(e){
-          slotCashflow.textContent = "Cashflow Render-Fehler: " + e.message;
-          debug.push("Cashflow render(): ❌ " + e.message);
-        }
-
-        // KPI render
-        try{
-          const found = findModule(files.kpis.globalCandidates);
-          if(found){
-            found.mod.render(slotKpis, kpiData);
-            debug.push("KPIs render(): ✅ window." + found.name);
-          }else{
-            debug.push("KPIs render(): ❌ Kein globales Modul gefunden. Erwartet: " + files.kpis.globalCandidates.join(" / "));
-          }
-        }catch(e){
-          slotKpis.textContent = "KPI Render-Fehler: " + e.message;
-          debug.push("KPIs render(): ❌ " + e.message);
-        }
-
-        // Present debug
-        debug.unshift("Status: " + (debug.some(x=>x.includes("❌")) ? "FEHLER vorhanden" : "OK"));
-        debug.unshift("");
-        debug.unshift("Hinweis: Diese View lädt Module dynamisch, damit ein fehlerhaftes Modul die Seite nicht mehr weiß macht.");
-        log(debug);
+        // Summary
+        const hasErr = dbg.some(x => x.startsWith("❌"));
+        dbg.unshift(hasErr ? "STATUS: FEHLER in mindestens einem Modul" : "STATUS: OK – alle Module geladen");
+        setDbg(dbg);
       })();
     })();
   </script>
