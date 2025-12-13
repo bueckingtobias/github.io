@@ -3,137 +3,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Projekte / Bau</title>
-
+  <title>Projekte · Dashboard</title>
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./view-projects.css?v=1">
-  <script src="./view-projects.js?v=1" defer></script>
+  <link rel="stylesheet" href="./dashboard/shell.css" />
+  <script src="./dashboard/auth.js"></script>
+  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
+
+  <script src="./dashboard/shell.js"></script>
+
+  <!-- Deine Projektmodule: (Beispiel) -->
+  <link rel="stylesheet" href="./dashboard/gewerk-gesamt-modul.css" />
+  <script src="./dashboard/gewerk-gesamt-modul.js"></script>
+
+  <link rel="stylesheet" href="./dashboard/gewerk-modul.css" />
+  <script src="./dashboard/gewerk-modul.js"></script>
+
+  <style>
+    .projects-wrap{ display:flex; flex-direction:column; gap: var(--gap); min-width:0; }
+    .two-col{
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap: var(--gap);
+      min-width:0;
+    }
+    .span12{ grid-column: span 12; }
+    .span6{ grid-column: span 6; }
+    @media (max-width: 900px){
+      .span6{ grid-column: span 12; }
+    }
+  </style>
 </head>
 
 <body>
-  <div class="app">
-    <!-- Sidebar always visible -->
-    <aside class="sidebar" aria-label="Navigation">
-      <div class="brand">
-        <div class="brand-dot"></div>
-        <div class="brand-txt">
-          <div class="brand-title">Bücking Dashboard</div>
-          <div class="brand-sub">Immobilien · Projekte · KPIs</div>
-        </div>
-      </div>
+  <div id="app"></div>
 
-      <nav class="nav" id="nav">
-        <a href="./index.html" data-title="Übersicht" data-sub="Startseite / Quick KPIs">
-          <div class="nav-ic">⌂</div>
-          <div class="nav-txt">
-            <div class="nav-title">Übersicht</div>
-            <div class="nav-sub">Startseite / Quick KPIs</div>
-          </div>
-        </a>
+  <template id="pageTpl">
+    <section class="projects-wrap">
 
-        <div class="nav-label">Projekte</div>
-
-        <a href="./view-projects.html" data-title="Projekte / Bau" data-sub="Module: Gesamt + Gewerke" class="active">
-          <div class="nav-ic">🏗</div>
-          <div class="nav-txt">
-            <div class="nav-title">Projekte / Bau</div>
-            <div class="nav-sub">Module: Gesamt + Gewerke</div>
-          </div>
-        </a>
-
-        <a href="./view-finance.html" data-title="Finanzen" data-sub="Budget, Cashflow, Forecast">
-          <div class="nav-ic">€</div>
-          <div class="nav-txt">
-            <div class="nav-title">Finanzen</div>
-            <div class="nav-sub">Budget, Cashflow, Forecast</div>
-          </div>
-        </a>
-
-        <a href="./view-vermietung.html" data-title="Vermietung" data-sub="Leerstand, Mieten, Anfragen">
-          <div class="nav-ic">🏠</div>
-          <div class="nav-txt">
-            <div class="nav-title">Vermietung</div>
-            <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
-          </div>
-        </a>
-
-        <div class="nav-label">Tools</div>
-
-        <a href="./admin.html" data-title="Admin" data-sub="Uploads, Settings, Debug">
-          <div class="nav-ic">⚙</div>
-          <div class="nav-txt">
-            <div class="nav-title">Admin</div>
-            <div class="nav-sub">Uploads, Settings, Debug</div>
-          </div>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <span class="chip" id="clockSide">—</span>
-        <span class="chip">online</span>
-      </div>
-    </aside>
-
-    <!-- Main -->
-    <section class="main">
-      <header class="topbar">
-        <div class="page-title">
-          <h1 id="pageTitle">Projekte / Bau</h1>
-          <div id="pageSub">Gesamtübersicht + Gewerke (Module)</div>
-        </div>
-        <div class="top-right">
-          <span class="chip" id="clockTop">—</span>
-        </div>
-      </header>
-
-      <main class="content">
-        <div class="vp-root">
-          <header class="vp-header">
-            <div class="vp-head-left">
-              <div class="vp-h1">Projekte / Bau</div>
-              <div class="vp-h2">Gesamtübersicht & Gewerke – Excel-ready</div>
-            </div>
-            <div class="vp-tabs" id="vpTabs"></div>
-          </header>
-
-          <div class="vp-body">
-            <div class="vp-stack">
-              <section class="vp-sticky">
-                <div id="vpGesamtSlot" class="vp-span-2"></div>
-              </section>
-
-              <section class="vp-grid" id="vpGewerkeGrid"></section>
-
-              <section class="vp-footer">
-                <div class="vp-hint" id="vpHint"></div>
-                <pre class="vp-error" id="vpError" style="display:none;"></pre>
-              </section>
-            </div>
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Gesamtübersicht</div>
+            <div class="card-sub">Projektüberblick (sticky hatten wir – kann man später wieder aktivieren).</div>
           </div>
         </div>
-      </main>
+        <div class="card-body">
+          <div class="gewerk-gesamt-root"></div>
+        </div>
+      </section>
+
+      <section class="two-col">
+        <!-- 10x Gewerk-Module -->
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 1</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="1"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 2</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="2"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 3</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="3"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 4</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="4"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 5</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="5"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 6</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="6"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 7</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="7"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 8</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="8"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 9</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="9"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 10</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="10"></div></div></div></section>
+      </section>
+
     </section>
-  </div>
+  </template>
 
   <script>
     (function(){
-      const clockTop = document.getElementById("clockTop");
-      const clockSide = document.getElementById("clockSide");
-      function tick(){
-        const d = new Date();
-        const t = d.toLocaleString("de-DE", { weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-        if(clockTop) clockTop.textContent = t;
-        if(clockSide) clockSide.textContent = t;
-      }
-      tick(); setInterval(tick, 15000);
+      Shell.mount({ active:"./view-projects.html", title:"Projekte / Bau", sub:"Gesamt + Gewerke" });
 
-      const path = (location.pathname || "").toLowerCase();
-      document.querySelectorAll("#nav a").forEach(a=>{
-        const href = (a.getAttribute("href")||"").toLowerCase();
-        const normalized = href.replace("./","/").replace("//","/");
-        a.classList.toggle("active", path.endsWith(normalized));
+      const g = document.querySelector(".gewerk-gesamt-root");
+      if(g && window.GewerkGesamtModul && typeof GewerkGesamtModul.render === "function"){
+        GewerkGesamtModul.render(g, {});
+      }
+
+      document.querySelectorAll(".gewerk-root").forEach(el=>{
+        const idx = Number(el.getAttribute("data-gewerk-index") || "1");
+        if(window.GewerkModul && typeof GewerkModul.render === "function"){
+          GewerkModul.render(el, { index: idx });
+        }
       });
     })();
   </script>
