@@ -69,7 +69,14 @@
     (async function(){
       Shell.mount({ active:"./view-projects.html", title:"Projekte / Bau", sub:"Gesamt + Gewerke" });
 
-      // ---- helpers: load assets + mount module instances ----
+      function showError(el, title, err){
+        el.innerHTML = "";
+        const box = document.createElement("div");
+        box.className = "alert";
+        box.innerHTML = `<strong>${title}</strong>\n${err && err.message ? err.message : String(err)}`;
+        el.appendChild(box);
+      }
+
       function loadCssOnce(href){
         if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
         return new Promise((resolve,reject)=>{
@@ -98,71 +105,75 @@
         el.innerHTML = await r.text();
       }
 
-      function showError(el, title, err){
-        el.innerHTML = "";
-        const box = document.createElement("div");
-        box.className = "alert";
-        box.innerHTML = `<strong>${title}</strong>\n${err && err.message ? err.message : String(err)}`;
-        el.appendChild(box);
-      }
-
       async function mountSingleModule({ slotEl, html, css, js, globalName, data }){
-        try{
-          await loadHtmlInto(html, slotEl);
-          await loadCssOnce(css);
-          await loadJsOnce(js);
+        await loadHtmlInto(html, slotEl);
+        await loadCssOnce(css);
+        await loadJsOnce(js);
 
-          const mod = window[globalName];
-          if(!mod || typeof mod.render !== "function"){
-            throw new Error("Modul nicht verfügbar: window." + globalName + ".render()");
-          }
-          mod.render(slotEl, data);
-        }catch(e){
-          showError(slotEl, "Modul konnte nicht geladen werden.", e);
-          throw e;
+        const mod = window[globalName];
+        if(!mod || typeof mod.render !== "function"){
+          throw new Error("Modul nicht verfügbar: window." + globalName + ".render()");
         }
+        mod.render(slotEl, data);
       }
 
-      // ---- 1) Excel laden (Production: muss vorhanden sein) ----
+      // 1) Excel laden
+      const slotGesamt = document.getElementById("slotProjGesamt");
       try{
         await ExcelLoader.load("./Dashboard.xlsx");
       }catch(e){
-        // Wenn Excel fehlt: Seite bleibt nutzbar, zeigt klare Meldung (ohne Dummy/Test)
-        const slot = document.getElementById("slotProjGesamt");
-        showError(slot, "Daten konnten nicht geladen werden.", e);
-        return; // kein weiteres Rendern ohne Daten
-      }
-
-      const projectGesamt = window.IMMO_DATA?.projects?.gesamt || {};
-      const gewerke = window.IMMO_DATA?.projects?.gewerke || [];
-
-      // Minimal-Validierung (ohne Dummy):
-      // Wenn Excel leer: Meldung statt leere Module
-      if(!projectGesamt || Object.keys(projectGesamt).length === 0){
-        const slot = document.getElementById("slotProjGesamt");
-        showError(slot, "Keine Projektdaten gefunden.", new Error("Sheet 'Projects_Gesamt' ist leer oder falsch benannt."));
+        showError(slotGesamt, "Daten konnten nicht geladen werden.", e);
         return;
       }
 
-      // ---- 2) Gesamtmodul MOUNT (FIX) ----
-      const slotGesamt = document.getElementById("slotProjGesamt");
-      await mountSingleModule({
-        slotEl: slotGesamt,
-        html: "./gewerk-gesamt-modul.html",
-        css: "./gewerk-gesamt-modul.css",
-        js:  "./gewerk-gesamt-modul.js",
-        globalName: "GewerkGesamtModul",
-        data: projectGesamt
+      // 2) Daten holen
+      const projectGesamt = window.IMMO_DATA?.projects?.gesamt || {};
+      const gewerkeRaw = window.IMMO_DATA?.projects?.gewerke;
+
+      const gewerke = Array.isArray(gewerkeRaw) ? gewerkeRaw : [];
+
+      // Hard requirement: Gesamtmodul erwartet ARRAY
+      if(!gewerke.length){
+        showError(slotGesamt, "Keine Gewerke-Daten gefunden.", new Error("Sheet 'Projects_Gewerke' ist leer oder falsch benannt."));
+        return;
+      }
+
+      // Modul filtert nach "Aktiv (Ja/Nein)". Falls nicht vorhanden/leer: als aktiv behandeln.
+      const allRowsForGesamt = gewerke.map(r => {
+        const out = Object.assign({}, r || {});
+        if(out["Aktiv (Ja/Nein)"] == null || String(out["Aktiv (Ja/Nein)"]).trim() === ""){
+          out["Aktiv (Ja/Nein)"] = "Ja";
+        }
+        // Optional: Projektname fallback aus Projects_Gesamt
+        if((out.Projekt == null || String(out.Projekt).trim()==="") && projectGesamt.Projekt){
+          out.Projekt = projectGesamt.Projekt;
+        }
+        return out;
       });
 
-      // ---- 3) 10 Gewerke MOUNT ----
-      // Assets pro Gewerk nur einmal laden, HTML wird pro Slot geladen
+      // 3) Module-Assets laden & rendern
+      try{
+        await mountSingleModule({
+          slotEl: slotGesamt,
+          html: "./gewerk-gesamt-modul.html",
+          css: "./gewerk-gesamt-modul.css",
+          js:  "./gewerk-gesamt-modul.js",
+          globalName: "GewerkGesamtModul",
+          data: allRowsForGesamt   // <-- ARRAY (FIX)
+        });
+      }catch(e){
+        showError(slotGesamt, "Modul konnte nicht geladen werden.", e);
+        return;
+      }
+
+      // 4) 10 Gewerke Module
+      const wrap = document.getElementById("gewerkCards");
+      wrap.innerHTML = "";
+
       try{
         await loadCssOnce("./gewerk-modul.css");
         await loadJsOnce("./gewerk-modul.js");
       }catch(e){
-        // Wenn das Basismodul nicht lädt, können wir die Karten nicht rendern
-        const wrap = document.getElementById("gewerkCards");
         const fail = document.createElement("section");
         fail.className = "span12";
         fail.innerHTML = `<div class="card"><div class="card-body"><div class="alert"><strong>Gewerk-Module konnten nicht geladen werden.</strong>\n${e.message}</div></div></div>`;
@@ -170,20 +181,17 @@
         return;
       }
 
-      const wrap = document.getElementById("gewerkCards");
-      wrap.innerHTML = "";
+      for(let i=0;i<10;i++){
+        const g = allRowsForGesamt[i];
 
-      const count = 10;
-      for(let i=0;i<count;i++){
-        const g = gewerke[i];
         const sec = document.createElement("section");
         sec.className = "span6";
         sec.innerHTML = `
           <div class="card">
             <div class="card-header">
               <div>
-                <div class="card-title">${(g && g.Gewerk) ? g.Gewerk : ("Gewerk " + (i+1))}</div>
-                <div class="card-sub">${(g && g.Projekt) ? g.Projekt : (projectGesamt.Projekt || "")}</div>
+                <div class="card-title">${g ? (g.Gewerk || ("Gewerk " + (i+1))) : ("Gewerk " + (i+1))}</div>
+                <div class="card-sub">${g ? (g.Projekt || projectGesamt.Projekt || "") : (projectGesamt.Projekt || "")}</div>
               </div>
             </div>
             <div class="card-body"><div class="module-slot" id="slotG${i}"></div></div>
@@ -194,20 +202,18 @@
         const slot = sec.querySelector(".module-slot");
 
         if(!g){
-          // Production: keine Dummy. Leere Daten = klare Meldung.
-          showError(slot, "Keine Daten für dieses Gewerk.", new Error("Sheet 'Projects_Gewerke' hat weniger als 10 Zeilen."));
+          showError(slot, "Keine Daten vorhanden.", new Error("Sheet 'Projects_Gewerke' hat weniger als 10 Zeilen."));
           continue;
         }
 
         try{
           await loadHtmlInto("./gewerk-modul.html", slot);
-          const mod = window.GewerkModul;
-          if(!mod || typeof mod.render !== "function"){
+          if(!window.GewerkModul || typeof window.GewerkModul.render !== "function"){
             throw new Error("Modul nicht verfügbar: window.GewerkModul.render()");
           }
-          mod.render(slot, g);
+          window.GewerkModul.render(slot, g);
         }catch(e){
-          showError(slot, "Gewerk-Modul konnte nicht geladen werden.", e);
+          showError(slot, "Modul konnte nicht geladen werden.", e);
         }
       }
     })();
