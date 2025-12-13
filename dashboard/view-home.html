@@ -8,10 +8,21 @@
   <meta name="theme-color" content="#0b1220" />
 
   <link rel="stylesheet" href="./shell.css" />
+
   <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
 
   <script src="./shell.js"></script>
+
+  <!-- Home-Module -->
+  <link rel="stylesheet" href="./home-weather-modul.css" />
+  <script src="./home-weather-modul.js"></script>
+
+  <link rel="stylesheet" href="./home-calendar-modul.css" />
+  <script src="./home-calendar-modul.js"></script>
+
+  <link rel="stylesheet" href="./home-kpis-modul.css" />
+  <script src="./home-kpis-modul.js"></script>
 
   <style>
     .home-grid{
@@ -34,17 +45,16 @@
 
   <template id="pageTpl">
     <section class="home-grid">
-
       <section class="span6">
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">Wetter</div>
-              <div class="card-sub">Modul kommt hier rein.</div>
+              <div class="card-sub">Kompakt · iPad-friendly.</div>
             </div>
           </div>
           <div class="card-body">
-            <div>✅ Shell + Login läuft. Wetter-Modul kommt als nächstes.</div>
+            <div class="home-weather-root"></div>
           </div>
         </div>
       </section>
@@ -58,7 +68,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div>✅ Platzhalter — Kalender-Modul wird hier gerendert.</div>
+            <div class="home-calendar-root"></div>
           </div>
         </div>
       </section>
@@ -72,17 +82,25 @@
             </div>
           </div>
           <div class="card-body">
-            <div>✅ Platzhalter — KPI-Modul wird hier gerendert.</div>
+            <div class="home-kpis-root"></div>
           </div>
         </div>
       </section>
-
     </section>
   </template>
 
   <script>
     (function(){
       Shell.mount({ active:"./view-home.html", title:"Home", sub:"Wetter · Kalender · KPIs" });
+
+      const w = document.querySelector(".home-weather-root");
+      if(w && window.HomeWeatherModul && typeof HomeWeatherModul.render === "function") HomeWeatherModul.render(w, {});
+
+      const c = document.querySelector(".home-calendar-root");
+      if(c && window.HomeCalendarModul && typeof HomeCalendarModul.render === "function") HomeCalendarModul.render(c);
+
+      const k = document.querySelector(".home-kpis-root");
+      if(k && window.HomeKpisModul && typeof HomeKpisModul.render === "function") HomeKpisModul.render(k, {});
     })();
   </script>
 </body>
