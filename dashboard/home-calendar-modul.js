@@ -3,237 +3,449 @@
   window.HomeCalendarModul.rootClass = "home-calendar-root";
   window.HomeCalendarModul.render = render;
 
-  // >>> HIER EINTRAGEN nach Deployment (z.B. https://dein-worker.deinname.workers.dev/ics)
-  const PROXY_URL = ""; // leer = zeigt Hinweis, dass Proxy fehlt
+  // ===== Config (kannst du später aus Excel speisen) =====
+  const DEFAULT_RENT_DAY = 1; // 1..28 empfohlen
+  const STORAGE_KEY = "DASH_HOME_USER_EVENTS_V1";
+  const STORAGE_CFG = "DASH_HOME_CAL_CFG_V1";
 
   function esc(s){ return String(s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
 
-  function pad2(n){ return String(n).padStart(2,"0"); }
-  function fmtDate(d){
+  function ymd(d){
+    const x = new Date(d);
+    const y = x.getFullYear();
+    const m = String(x.getMonth()+1).padStart(2,"0");
+    const da= String(x.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  }
+
+  function addDays(date, n){
+    const d = new Date(date);
+    d.setDate(d.getDate()+n);
+    return d;
+  }
+
+  function startOfMonth(y,m){ return new Date(y, m, 1); }
+  function endOfMonth(y,m){ return new Date(y, m+1, 0); }
+
+  function monthLabel(d){
+    return d.toLocaleDateString("de-DE",{ month:"long", year:"numeric" });
+  }
+
+  function dowLabels(){
+    // Monday-first
+    return ["Mo","Di","Mi","Do","Fr","Sa","So"];
+  }
+
+  // ===== Holidays (Germany national) =====
+  // We implement: fixed + Easter-based.
+  function easterSunday(year){
+    // Anonymous Gregorian algorithm (Meeus/Jones/Butcher)
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19*a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2*e + 2*i - h - k) % 7;
+    const m = Math.floor((a + 11*h + 22*l) / 451);
+    const month = Math.floor((h + l - 7*m + 114) / 31); // 3=March, 4=April
+    const day = ((h + l - 7*m + 114) % 31) + 1;
+    return new Date(year, month-1, day);
+  }
+
+  function holidayMapForYear(year){
+    const map = new Map();
+
+    const fixed = [
+      { mmdd:"01-01", name:"Neujahr" },
+      { mmdd:"05-01", name:"Tag der Arbeit" },
+      { mmdd:"10-03", name:"Tag der Deutschen Einheit" },
+      { mmdd:"12-25", name:"1. Weihnachtstag" },
+      { mmdd:"12-26", name:"2. Weihnachtstag" }
+    ];
+    fixed.forEach(h=>{
+      map.set(`${year}-${h.mmdd}`, h.name);
+    });
+
+    const easter = easterSunday(year);
+    const goodFriday = addDays(easter, -2);
+    const easterMonday = addDays(easter, 1);
+    const ascension = addDays(easter, 39);
+    const whitMonday = addDays(easter, 50);
+
+    map.set(ymd(goodFriday), "Karfreitag");
+    map.set(ymd(easterMonday), "Ostermontag");
+    map.set(ymd(ascension), "Christi Himmelfahrt");
+    map.set(ymd(whitMonday), "Pfingstmontag");
+
+    return map;
+  }
+
+  function loadUserEvents(){
     try{
-      const dd = new Date(d);
-      return dd.toLocaleString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
-    }catch(_){ return String(d||""); }
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(arr)) return [];
+      return arr
+        .filter(e=>e && typeof e === "object")
+        .map(e=>({ id:e.id||cryptoId(), title:String(e.title||"").trim(), date:String(e.date||"") }))
+        .filter(e=>e.title && /^\d{4}-\d{2}-\d{2}$/.test(e.date));
+    }catch(_){ return []; }
   }
 
-  // Minimal ICS parser (VEVENT only, DTSTART/DTEND/SUMMARY/LOCATION/DESCRIPTION)
-  function unfoldIcs(text){
-    return text.replace(/\r?\n[ \t]/g, "");
+  function saveUserEvents(events){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
   }
 
-  function parseIcsDate(v){
-    // Supports:
-    // 20251213T120000Z
-    // 20251213T120000
-    // 20251213 (all-day)
-    if(!v) return null;
-    const s = String(v).trim();
-    const isAllDay = /^\d{8}$/.test(s);
-    if(isAllDay){
-      const y = s.slice(0,4), m = s.slice(4,6), d = s.slice(6,8);
-      return { date: new Date(`${y}-${m}-${d}T00:00:00`), allDay:true };
+  function loadCfg(){
+    try{
+      const raw = localStorage.getItem(STORAGE_CFG);
+      const cfg = raw ? JSON.parse(raw) : {};
+      const rentDay = clampInt(cfg.rentDay ?? DEFAULT_RENT_DAY, 1, 28);
+      return { rentDay };
+    }catch(_){
+      return { rentDay: DEFAULT_RENT_DAY };
     }
-    const z = s.endsWith("Z");
-    const core = z ? s.slice(0,-1) : s;
-    const y = core.slice(0,4), mo = core.slice(4,6), da = core.slice(6,8);
-    const hh = core.slice(9,11), mm = core.slice(11,13), ss = core.slice(13,15) || "00";
-    // interpret as UTC if Z else local
-    const iso = `${y}-${mo}-${da}T${hh}:${mm}:${ss}${z ? "Z" : ""}`;
-    return { date: new Date(iso), allDay:false };
   }
 
-  function parseIcsEvents(icsText){
-    const txt = unfoldIcs(icsText);
-    const lines = txt.split(/\r?\n/);
-    const events = [];
-    let cur = null;
+  function saveCfg(cfg){
+    localStorage.setItem(STORAGE_CFG, JSON.stringify(cfg));
+  }
 
-    for(const raw of lines){
-      const line = raw.trim();
-      if(line === "BEGIN:VEVENT"){ cur = {}; continue; }
-      if(line === "END:VEVENT"){
-        if(cur){
-          events.push(cur);
-          cur = null;
-        }
-        continue;
-      }
-      if(!cur) continue;
+  function clampInt(v, a, b){
+    const n = Math.floor(Number(v));
+    if(!isFinite(n)) return a;
+    return Math.max(a, Math.min(b, n));
+  }
 
-      const idx = line.indexOf(":");
-      if(idx < 0) continue;
+  function cryptoId(){
+    // simple id, no dependency
+    return "e_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+  }
 
-      const left = line.slice(0, idx);
-      const value = line.slice(idx+1);
+  function nextRentDate(fromDate, rentDay){
+    const d = new Date(fromDate);
+    const y = d.getFullYear();
+    const m = d.getMonth();
 
-      const key = left.split(";")[0].toUpperCase();
+    const thisMonthRent = new Date(y, m, rentDay);
+    if(thisMonthRent >= stripTime(d)) return thisMonthRent;
 
-      if(key === "SUMMARY") cur.summary = value;
-      if(key === "LOCATION") cur.location = value;
-      if(key === "DESCRIPTION") cur.description = value;
+    // next month
+    return new Date(y, m+1, rentDay);
+  }
 
-      if(key === "DTSTART"){
-        cur.dtstartRaw = value;
-        const parsed = parseIcsDate(value);
-        if(parsed){ cur.dtstart = parsed.date; cur.allDay = parsed.allDay; }
-      }
-      if(key === "DTEND"){
-        cur.dtendRaw = value;
-        const parsed = parseIcsDate(value);
-        if(parsed){ cur.dtend = parsed.date; }
-      }
+  function stripTime(d){
+    const x = new Date(d);
+    x.setHours(0,0,0,0);
+    return x;
+  }
+
+  function daysBetween(a,b){
+    const A = stripTime(a).getTime();
+    const B = stripTime(b).getTime();
+    return Math.round((B - A) / (1000*60*60*24));
+  }
+
+  function buildMonthGrid(viewDate){
+    // monday-first grid with leading/trailing days
+    const y = viewDate.getFullYear();
+    const m = viewDate.getMonth();
+    const first = startOfMonth(y,m);
+    const last  = endOfMonth(y,m);
+
+    const firstDowSunday0 = first.getDay(); // 0=Sun
+    const firstDowMon1 = (firstDowSunday0 === 0) ? 7 : firstDowSunday0; // 1..7, Mon=1
+    const leading = firstDowMon1 - 1;
+
+    const daysInMonth = last.getDate();
+    const totalCells = Math.ceil((leading + daysInMonth) / 7) * 7;
+
+    const start = addDays(first, -leading);
+    const cells = [];
+    for(let i=0;i<totalCells;i++){
+      const d = addDays(start, i);
+      const out = (d.getMonth() !== m);
+      const dowMon1 = ((d.getDay()===0)?7:d.getDay());
+      const weekend = (dowMon1 === 6 || dowMon1 === 7);
+      cells.push({ date:d, out, weekend });
     }
-
-    // filter invalid + sort
-    const now = new Date();
-    return events
-      .filter(e => e.dtstart instanceof Date && !isNaN(e.dtstart.getTime()))
-      .sort((a,b)=> a.dtstart - b.dtstart)
-      .filter(e => e.dtend ? (e.dtend >= now || e.dtstart >= now) : (e.dtstart >= now));
-  }
-
-  function renderSkeleton(listEl){
-    listEl.innerHTML = `
-      <div class="hc-skeleton"></div>
-      <div class="hc-skeleton"></div>
-      <div class="hc-skeleton"></div>
-    `;
-  }
-
-  async function fetchIcsViaProxy(webcalUrl){
-    if(!PROXY_URL) throw new Error("PROXY_URL ist nicht gesetzt (Worker fehlt).");
-    const url = PROXY_URL + "?url=" + encodeURIComponent(webcalUrl);
-    const r = await fetch(url, { cache:"no-store" });
-    if(!r.ok) throw new Error("Proxy HTTP " + r.status);
-    return await r.text();
+    return cells;
   }
 
   function render(root, cfg){
-    const webcal = cfg?.calendarWebcal || "";
+    const today = new Date();
+    let view = stripTime(today);
+
+    const state = {
+      cfg: loadCfg(),
+      events: loadUserEvents()
+    };
+
     root.innerHTML = `
       <div class="hc-head">
         <div>
           <div class="hc-title">Kalender</div>
-          <div class="hc-sub">Live via ICS Proxy · iCloud Published</div>
+          <div class="hc-sub">Feiertage · Wochenenden · Miet-Countdown · Quick-Events</div>
         </div>
-        <div class="hc-pill" id="hcStatus">bereit</div>
+        <div class="hc-actions">
+          <span class="hc-pill" id="hcNow">—</span>
+          <button class="hc-btn" id="hcToday">Heute</button>
+        </div>
       </div>
 
       <div class="hc-body">
-        <div class="hc-card">
-          <div class="hc-linkRow">
-            <a class="hc-a" id="hcLink" href="${esc(webcal)}">Kalender öffnen (webcal://)</a>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-              <button class="hc-btn" id="hcReload">Reload</button>
-              <button class="hc-btn" id="hcCopy">Link kopieren</button>
+        <div class="hc-topgrid">
+          <div class="hc-card">
+            <div class="hc-kpiRow">
+              <div class="hc-kpi">
+                <div class="hc-k">Nächste Mieteinnahme</div>
+                <div class="hc-v" id="rentNext">—</div>
+                <div class="hc-h" id="rentHint">—</div>
+              </div>
+              <div class="hc-kpi">
+                <div class="hc-k">Countdown</div>
+                <div class="hc-v" id="rentCountdown">—</div>
+                <div class="hc-h">Tage bis zur nächsten Miete</div>
+              </div>
+              <div class="hc-kpi">
+                <div class="hc-k">Einstellungen</div>
+                <div class="hc-v" id="rentDayTxt">—</div>
+                <div class="hc-h">
+                  Miettag (monatlich).<br>
+                  <span style="opacity:.85">Edit unten im Quick-Add.</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div class="hc-calHead">
+                <div class="hc-month" id="hcMonth">—</div>
+                <div class="hc-nav">
+                  <button id="hcPrev" aria-label="Vorheriger Monat">←</button>
+                  <button id="hcNext" aria-label="Nächster Monat">→</button>
+                </div>
+              </div>
+
+              <div class="hc-grid" id="hcDow"></div>
+              <div class="hc-grid" id="hcGrid"></div>
             </div>
           </div>
-          <div class="hc-divider"></div>
-          <div class="hc-hint" id="hcHint">
-            Lädt Termine… (wenn Proxy konfiguriert ist).
+
+          <div class="hc-card">
+            <div class="hc-sideTitle">Nächste Events</div>
+            <div class="hc-list" id="hcUpcoming"></div>
+
+            <div class="hc-divider" style="height:1px;background:rgba(148,163,184,.14);margin:12px 0;"></div>
+
+            <div class="hc-sideTitle">Quick Add</div>
+            <div class="hc-form">
+              <input class="hc-input" id="evTitle" placeholder="Event Titel (z.B. Handwerker Termin, Abnahme, Call…)" />
+              <input class="hc-input" id="evDate" type="date" />
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+              <button class="hc-btn" id="evAdd">Event hinzufügen</button>
+              <button class="hc-btn" id="evClear">Alle eigenen Events löschen</button>
+              <button class="hc-btn" id="rentEdit">Miettag ändern</button>
+            </div>
+            <div class="hc-small">
+              Eigene Events werden lokal im Browser gespeichert (localStorage). Kein Sync – dafür 100% simpel.
+            </div>
           </div>
         </div>
-
-        <div class="hc-list" id="hcList"></div>
       </div>
     `;
 
-    const statusEl = root.querySelector("#hcStatus");
-    const hintEl   = root.querySelector("#hcHint");
-    const listEl   = root.querySelector("#hcList");
+    const elNow = root.querySelector("#hcNow");
 
-    renderSkeleton(listEl);
+    function tick(){
+      const d = new Date();
+      elNow.textContent = d.toLocaleString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+    }
+    tick(); setInterval(tick, 15000);
 
-    async function load(){
-      statusEl.textContent = "lädt…";
-      renderSkeleton(listEl);
+    root.querySelector("#hcToday").addEventListener("click", ()=>{
+      view = stripTime(new Date());
+      renderAll();
+    });
 
-      try{
-        if(!webcal) throw new Error("Kein Kalender-Link konfiguriert.");
+    root.querySelector("#hcPrev").addEventListener("click", ()=>{
+      view = new Date(view.getFullYear(), view.getMonth()-1, 1);
+      renderAll();
+    });
+    root.querySelector("#hcNext").addEventListener("click", ()=>{
+      view = new Date(view.getFullYear(), view.getMonth()+1, 1);
+      renderAll();
+    });
 
-        if(!PROXY_URL){
-          statusEl.textContent = "Proxy fehlt";
-          hintEl.innerHTML =
-            `Damit wir den iCloud Kalender <strong>wirklich auslesen</strong>, brauchst du den Proxy (Cloudflare Worker).<br>` +
-            `Sobald du die Worker-URL hast, trage sie oben in <code>PROXY_URL</code> ein.`;
-          listEl.innerHTML = `
-            <div class="hc-item">
-              <div class="hc-top">
-                <div class="hc-name">Kalender kann im Browser nicht direkt gelesen werden</div>
-                <div class="hc-time">CORS / webcal</div>
-              </div>
-              <div class="hc-note">
-                Du kannst den Kalender-Link trotzdem öffnen (Apple Kalender), aber fürs Dashboard brauchen wir den Proxy.
-              </div>
-            </div>
-          `;
-          return;
+    root.querySelector("#evAdd").addEventListener("click", ()=>{
+      const title = String(root.querySelector("#evTitle").value||"").trim();
+      const date  = String(root.querySelector("#evDate").value||"").trim();
+      if(!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+
+      state.events.push({ id: cryptoId(), title, date });
+      saveUserEvents(state.events);
+      root.querySelector("#evTitle").value = "";
+      renderAll();
+    });
+
+    root.querySelector("#evClear").addEventListener("click", ()=>{
+      state.events = [];
+      saveUserEvents(state.events);
+      renderAll();
+    });
+
+    root.querySelector("#rentEdit").addEventListener("click", ()=>{
+      const cur = state.cfg.rentDay;
+      const input = prompt("Miettag (monatlich) eingeben (1–28):", String(cur));
+      if(input == null) return;
+      const v = clampInt(input, 1, 28);
+      state.cfg.rentDay = v;
+      saveCfg(state.cfg);
+      renderAll();
+    });
+
+    // init date input default = today
+    root.querySelector("#evDate").value = ymd(new Date());
+
+    function renderAll(){
+      // KPIs
+      const nextRent = nextRentDate(new Date(), state.cfg.rentDay);
+      const dLeft = daysBetween(new Date(), nextRent);
+
+      root.querySelector("#rentNext").textContent = nextRent.toLocaleDateString("de-DE", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
+      root.querySelector("#rentHint").textContent = "Monatlich am " + state.cfg.rentDay + ".";
+      root.querySelector("#rentCountdown").textContent = (dLeft === 0) ? "Heute" : (dLeft + " Tage");
+      root.querySelector("#rentDayTxt").textContent = "Miettag: " + state.cfg.rentDay + ".";
+
+      // Month label
+      root.querySelector("#hcMonth").textContent = monthLabel(new Date(view));
+
+      // DOW labels
+      const dow = root.querySelector("#hcDow");
+      dow.innerHTML = dowLabels().map(x=>`<div class="hc-dow">${x}</div>`).join("");
+
+      // Holidays map for current year + adjacent year (for leading/trailing days)
+      const y = view.getFullYear();
+      const holA = holidayMapForYear(y-1);
+      const holB = holidayMapForYear(y);
+      const holC = holidayMapForYear(y+1);
+
+      function holidayName(date){
+        const key = ymd(date);
+        return holA.get(key) || holB.get(key) || holC.get(key) || "";
+      }
+
+      // Build month cells
+      const cells = buildMonthGrid(new Date(view));
+      const grid = root.querySelector("#hcGrid");
+
+      const todayKey = ymd(new Date());
+      const rentKeyThisMonth = ymd(new Date(view.getFullYear(), view.getMonth(), state.cfg.rentDay));
+
+      // Build event map (user)
+      const userByDate = new Map();
+      for(const ev of state.events){
+        if(!userByDate.has(ev.date)) userByDate.set(ev.date, []);
+        userByDate.get(ev.date).push(ev);
+      }
+
+      grid.innerHTML = cells.map(c=>{
+        const key = ymd(c.date);
+        const hol = holidayName(c.date);
+        const isToday = key === todayKey;
+
+        // rent badge on rent day of THIS viewed month
+        const isRent = key === rentKeyThisMonth;
+
+        const badges = [];
+        if(hol) badges.push(`<div class="hc-badge hol"><span>${esc(hol)}</span></div>`);
+        if(isRent) badges.push(`<div class="hc-badge pay"><span>Mieteinnahme</span></div>`);
+
+        const userEvents = (userByDate.get(key) || []);
+        userEvents.slice(0,2).forEach(ev=>{
+          badges.push(`<div class="hc-badge user"><span>${esc(ev.title)}</span></div>`);
+        });
+        if(userEvents.length > 2){
+          badges.push(`<div class="hc-badge user"><span>+${userEvents.length-2} weitere</span></div>`);
         }
 
-        const ics = await fetchIcsViaProxy(webcal);
-        const events = parseIcsEvents(ics).slice(0, 8);
+        const cls = [
+          "hc-day",
+          c.out ? "out":"in",
+          c.weekend ? "weekend":"",
+          hol ? "holiday":"",
+          isToday ? "today":""
+        ].join(" ").trim();
 
-        if(!events.length){
-          statusEl.textContent = "keine Termine";
-          hintEl.textContent = "Keine zukünftigen Termine gefunden (oder Kalender ist leer).";
-          listEl.innerHTML = `
-            <div class="hc-item">
-              <div class="hc-top">
-                <div class="hc-name">Keine zukünftigen Termine</div>
-                <div class="hc-time">—</div>
-              </div>
-              <div class="hc-note">Wenn du erwartest Termine zu sehen: prüfe, ob der Kalender wirklich „published“ ist.</div>
-            </div>
-          `;
-          return;
+        return `
+          <div class="${cls}" title="${esc(hol||"")}">
+            <div class="n">${c.date.getDate()}</div>
+            <div class="hc-badges">${badges.join("")}</div>
+          </div>
+        `;
+      }).join("");
+
+      // Upcoming list (next 14 days)
+      const now = stripTime(new Date());
+      const horizon = addDays(now, 60);
+
+      const upcoming = [];
+
+      // Rent events (next 3 occurrences)
+      let r1 = nextRentDate(now, state.cfg.rentDay);
+      upcoming.push({ date: r1, type:"pay", title:"Mieteinnahme", sub:"Monatlich am " + state.cfg.rentDay + "." });
+      let r2 = nextRentDate(addDays(r1, 1), state.cfg.rentDay);
+      upcoming.push({ date: r2, type:"pay", title:"Mieteinnahme", sub:"Monatlich am " + state.cfg.rentDay + "." });
+      let r3 = nextRentDate(addDays(r2, 1), state.cfg.rentDay);
+      upcoming.push({ date: r3, type:"pay", title:"Mieteinnahme", sub:"Monatlich am " + state.cfg.rentDay + "." });
+
+      // Holidays in range
+      for(let d = new Date(now); d <= horizon; d = addDays(d, 1)){
+        const hn = holidayName(d);
+        if(hn){
+          upcoming.push({ date: new Date(d), type:"hol", title: hn, sub:"Feiertag (bundesweit)" });
         }
+      }
 
-        statusEl.textContent = events.length + " Termine";
-        hintEl.textContent = "Live aus iCloud ICS (via Proxy).";
+      // User events
+      for(const ev of state.events){
+        const d = new Date(ev.date + "T00:00:00");
+        if(d >= now && d <= horizon){
+          upcoming.push({ date: d, type:"user", title: ev.title, sub:"Eigenes Event" });
+        }
+      }
 
-        listEl.innerHTML = events.map(ev=>{
-          const title = esc(ev.summary || "Termin");
-          const time  = ev.allDay ? "Ganztägig" : fmtDate(ev.dtstart);
-          const loc   = esc(ev.location || "");
-          const desc  = esc((ev.description||"").split("\\n").join("\n")).slice(0, 240);
+      upcoming.sort((a,b)=> a.date - b.date);
 
+      const list = root.querySelector("#hcUpcoming");
+      const items = upcoming.slice(0,8);
+
+      if(!items.length){
+        list.innerHTML = `<div class="hc-item"><div class="hc-itemName">Keine Events</div><div class="hc-itemSub">Füge unten ein Event hinzu.</div></div>`;
+      }else{
+        list.innerHTML = items.map(x=>{
+          const tag =
+            x.type === "pay" ? "Miete" :
+            x.type === "hol" ? "Feiertag" : "Event";
+          const time = x.date.toLocaleDateString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit" });
           return `
             <div class="hc-item">
-              <div class="hc-top">
-                <div class="hc-name">${title}</div>
-                <div class="hc-time">${time}</div>
+              <div class="hc-itemTop">
+                <div class="hc-itemName">${esc(x.title)}</div>
+                <div class="hc-itemTime">${time}</div>
               </div>
-              ${loc ? `<div class="hc-loc">${loc}</div>` : ``}
-              ${desc ? `<div class="hc-note">${desc}</div>` : ``}
+              <div class="hc-itemSub">${esc(tag)} · ${esc(x.sub || "")}</div>
             </div>
           `;
         }).join("");
-      }catch(e){
-        statusEl.textContent = "Fehler";
-        hintEl.textContent = "Konnte Kalender nicht laden: " + (e?.message || e);
-        listEl.innerHTML = `
-          <div class="hc-item">
-            <div class="hc-top">
-              <div class="hc-name">Fehler beim Laden</div>
-              <div class="hc-time">—</div>
-            </div>
-            <div class="hc-note">${esc(e?.message || String(e))}</div>
-          </div>
-        `;
       }
     }
 
-    root.querySelector("#hcReload").addEventListener("click", load);
-    root.querySelector("#hcCopy").addEventListener("click", async ()=>{
-      try{
-        await navigator.clipboard.writeText(webcal);
-        statusEl.textContent = "kopiert ✅";
-        setTimeout(()=> statusEl.textContent = "bereit", 1200);
-      }catch(_){
-        statusEl.textContent = "nicht möglich";
-      }
-    });
-
-    load();
+    renderAll();
   }
 })();
