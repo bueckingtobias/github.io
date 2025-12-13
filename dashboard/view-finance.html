@@ -4,121 +4,86 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Finanzen – Dashboard</title>
-
   <meta name="robots" content="noindex,nofollow" />
 
-  <!-- NUR diese eine CSS für die komplette View (Sidebar + Grid) -->
-  <link rel="stylesheet" href="./view-finance.css?v=1">
+  <!-- CRITICAL CSS (damit es NIE wieder weiß bleibt, selbst wenn externe CSS nicht lädt) -->
+  <style>
+    :root{
+      --bg:#0b1220;
+      --text:#e2e8f0;
+      --soft:rgba(226,232,240,.72);
+      --stroke:rgba(148,163,184,.18);
+      --pad:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html{overflow-x:hidden}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(34,197,94,.12), transparent 35%),
+        var(--bg);
+      color:var(--text);
+      overflow:hidden;
+    }
+    .boot{
+      padding:12px var(--pad);
+      border-bottom:1px solid var(--stroke);
+      background:rgba(2,6,23,.45);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-size:12px;
+    }
+    .boot strong{font-weight:900}
+    .boot .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .chip{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(15,23,42,.45);
+      color:rgba(226,232,240,.86);
+      white-space:nowrap;
+      font-size:11px;
+    }
+    .boot .warn{border-color:rgba(248,113,113,.35); background:rgba(127,29,29,.18); color:rgba(254,202,202,.95)}
+    .boot .ok{border-color:rgba(34,197,94,.30); background:rgba(20,83,45,.18); color:rgba(187,247,208,.95)}
+    .boot .info{border-color:rgba(59,130,246,.28); background:rgba(30,58,138,.18); color:rgba(191,219,254,.95)}
+  </style>
 
-  <!-- View Loader -->
-  <script src="./view-finance.js?v=1" defer></script>
+  <!-- Externe CSS wird dynamisch über JS geladen (mit Auto-BasePath) -->
+  <script>
+    (function(){
+      // Auto Base Path:
+      // - Wenn URL .../dashboard/view-finance.html => base = "./"
+      // - Wenn URL .../view-finance.html          => base = "./dashboard/"
+      var p = (location.pathname || "").toLowerCase();
+      window.__BASE_DASH__ = p.includes("/dashboard/") ? "./" : "./dashboard/";
+    })();
+  </script>
+
+  <!-- View Loader (lädt CSS/Module über __BASE_DASH__) -->
+  <script src="./view-finance.js?v=3" defer></script>
 </head>
 
 <body>
-  <div class="app">
-    <!-- Sidebar (bleibt immer da) -->
-    <aside class="sidebar" aria-label="Navigation">
-      <div class="brand">
-        <div class="brand-dot"></div>
-        <div class="brand-txt">
-          <div class="brand-title">Bücking Dashboard</div>
-          <div class="brand-sub">Immobilien · Projekte · KPIs</div>
-        </div>
-      </div>
-
-      <nav class="nav" id="nav">
-        <a href="./index.html">
-          <div class="nav-ic">⌂</div>
-          <div class="nav-txt">
-            <div class="nav-title">Übersicht</div>
-            <div class="nav-sub">Startseite</div>
-          </div>
-        </a>
-
-        <div class="nav-label">Views</div>
-
-        <a href="./view-projects.html">
-          <div class="nav-ic">🏗</div>
-          <div class="nav-txt">
-            <div class="nav-title">Projekte / Bau</div>
-            <div class="nav-sub">Gewerke & Handwerker</div>
-          </div>
-        </a>
-
-        <a href="./view-finance.html" class="active">
-          <div class="nav-ic">€</div>
-          <div class="nav-txt">
-            <div class="nav-title">Finanzen</div>
-            <div class="nav-sub">Cashflow & Budget</div>
-          </div>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <span class="chip" id="clockSide">—</span>
-        <span class="chip">online</span>
-      </div>
-    </aside>
-
-    <!-- Main -->
-    <section class="main">
-      <header class="topbar">
-        <div class="page-title">
-          <h1>Finanzen</h1>
-          <div>Modular · Datenquelle später: Dashboard.xlsx</div>
-        </div>
-
-        <div class="top-right">
-          <span class="chip" id="clockTop">—</span>
-          <button class="btn" id="btnRefresh">↻ Reload Module</button>
-        </div>
-      </header>
-
-      <main class="content">
-        <div class="fx-root">
-          <!-- Fehlerbox -->
-          <pre class="fx-error" id="fxError" style="display:none;"></pre>
-
-          <!-- OBEN: Gesamtmodul volle Breite -->
-          <section class="fx-row">
-            <div id="slotGesamt"></div>
-          </section>
-
-          <!-- UNTEN: 2-Spalten Grid – klare Linie -->
-          <section class="fx-grid-2" id="fxGrid2">
-            <div class="fx-cell" id="slotCashflow"></div>
-            <div class="fx-cell" id="slotBudget"></div>
-            <div class="fx-cell" id="slotOP"></div>
-            <div class="fx-cell" id="slotReserven"></div>
-          </section>
-
-          <!-- Optional: volle Breite unten -->
-          <section class="fx-row">
-            <div id="slotMieten"></div>
-          </section>
-
-          <div class="fx-footer">
-            <div class="fx-hint">
-              Hinweis: Wenn wieder “weiß + nur Text” kommt, dann lädt die CSS nicht (Pfad/Name/Cache).
-            </div>
-          </div>
-        </div>
-      </main>
-    </section>
+  <!-- Boot/Health Bar: zeigt dir sofort, was geladen wurde -->
+  <div class="boot">
+    <div>
+      <strong>Finanzen</strong>
+      <span style="color:var(--soft);margin-left:8px">Health-Check aktiv</span>
+    </div>
+    <div class="chips" id="bootChips">
+      <span class="chip info" id="chipBase">Base: —</span>
+      <span class="chip" id="chipCSS">CSS: —</span>
+      <span class="chip" id="chipModules">Module: —</span>
+    </div>
   </div>
 
-  <script>
-    (function(){
-      const clockTop = document.getElementById("clockTop");
-      const clockSide = document.getElementById("clockSide");
-      function tick(){
-        const d = new Date();
-        const t = d.toLocaleString("de-DE",{ weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-        if(clockTop) clockTop.textContent = t;
-        if(clockSide) clockSide.textContent = t;
-      }
-      tick(); setInterval(tick, 15000);
-    })();
-  </script>
+  <!-- App Root: wird durch CSS schön, aber bleibt auch ohne CSS lesbar -->
+  <div id="appRoot" style="height:calc(100dvh - 49px); overflow:hidden;"></div>
 </body>
 </html>
