@@ -6,14 +6,11 @@
   <title>Finanzen – Dashboard</title>
   <meta name="robots" content="noindex,nofollow" />
 
-  <!-- CRITICAL CSS (damit es NIE wieder weiß bleibt, selbst wenn externe CSS nicht lädt) -->
+  <!-- CRITICAL CSS (damit es nie “weiß + Text” wird) -->
   <style>
     :root{
-      --bg:#0b1220;
-      --text:#e2e8f0;
-      --soft:rgba(226,232,240,.72);
-      --stroke:rgba(148,163,184,.18);
-      --pad:14px;
+      --bg:#0b1220; --text:#e2e8f0; --soft:rgba(226,232,240,.72);
+      --stroke:rgba(148,163,184,.18); --pad:14px;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -32,58 +29,48 @@
       padding:12px var(--pad);
       border-bottom:1px solid var(--stroke);
       background:rgba(2,6,23,.45);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      font-size:12px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; font-size:12px;
     }
     .boot strong{font-weight:900}
     .boot .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
     .chip{
-      padding:6px 10px;
-      border-radius:999px;
+      padding:6px 10px; border-radius:999px;
       border:1px solid rgba(148,163,184,.18);
       background: rgba(15,23,42,.45);
       color:rgba(226,232,240,.86);
-      white-space:nowrap;
-      font-size:11px;
+      white-space:nowrap; font-size:11px;
     }
-    .boot .warn{border-color:rgba(248,113,113,.35); background:rgba(127,29,29,.18); color:rgba(254,202,202,.95)}
-    .boot .ok{border-color:rgba(34,197,94,.30); background:rgba(20,83,45,.18); color:rgba(187,247,208,.95)}
-    .boot .info{border-color:rgba(59,130,246,.28); background:rgba(30,58,138,.18); color:rgba(191,219,254,.95)}
+    .warn{border-color:rgba(248,113,113,.35); background:rgba(127,29,29,.18); color:rgba(254,202,202,.95)}
+    .ok{border-color:rgba(34,197,94,.30); background:rgba(20,83,45,.18); color:rgba(187,247,208,.95)}
+    .info{border-color:rgba(59,130,246,.28); background:rgba(30,58,138,.18); color:rgba(191,219,254,.95)}
   </style>
 
-  <!-- Externe CSS wird dynamisch über JS geladen (mit Auto-BasePath) -->
+  <!-- Auto Base Path -->
   <script>
     (function(){
-      // Auto Base Path:
-      // - Wenn URL .../dashboard/view-finance.html => base = "./"
-      // - Wenn URL .../view-finance.html          => base = "./dashboard/"
       var p = (location.pathname || "").toLowerCase();
       window.__BASE_DASH__ = p.includes("/dashboard/") ? "./" : "./dashboard/";
+      // Cache-bust Token (neu pro Reload)
+      window.__CB__ = Date.now().toString(36);
     })();
   </script>
 
-  <!-- View Loader (lädt CSS/Module über __BASE_DASH__) -->
-  <script src="./view-finance.js?v=3" defer></script>
+  <!-- Wichtig: Diese Version MUSS hochgezählt sein, sonst kommt alter Cache -->
+  <script src="./view-finance.js?v=FIN_SIDEBAR_20251213_001" defer></script>
 </head>
 
 <body>
-  <!-- Boot/Health Bar: zeigt dir sofort, was geladen wurde -->
   <div class="boot">
-    <div>
-      <strong>Finanzen</strong>
-      <span style="color:var(--soft);margin-left:8px">Health-Check aktiv</span>
-    </div>
-    <div class="chips" id="bootChips">
+    <div><strong>Finanzen</strong><span style="color:var(--soft);margin-left:8px">Health-Check aktiv</span></div>
+    <div class="chips">
       <span class="chip info" id="chipBase">Base: —</span>
       <span class="chip" id="chipCSS">CSS: —</span>
       <span class="chip" id="chipModules">Module: —</span>
+      <span class="chip info" id="chipBuild">Build: FIN_SIDEBAR_20251213_001</span>
     </div>
   </div>
 
-  <!-- App Root: wird durch CSS schön, aber bleibt auch ohne CSS lesbar -->
   <div id="appRoot" style="height:calc(100dvh - 49px); overflow:hidden;"></div>
 </body>
 </html>
