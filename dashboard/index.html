@@ -30,6 +30,7 @@
 
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
+    html{ overflow-x:hidden; }
     body{
       margin:0;
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
@@ -47,6 +48,7 @@
       display:grid;
       grid-template-columns: var(--sidebarW) 1fr;
       min-height:0;
+      min-width:0;
     }
 
     /* ===== Sidebar (always visible) ===== */
@@ -62,6 +64,7 @@
       flex-direction:column;
       min-height:0;
       overflow:hidden;
+      min-width:0;
     }
 
     .brand{
@@ -226,6 +229,7 @@
       padding: var(--pad);
       display:flex;
       justify-content:center;
+      overflow-x:hidden; /* never horizontal */
     }
 
     .container{
@@ -237,53 +241,8 @@
       min-width:0;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(12, minmax(0,1fr));
-      gap: var(--gap);
-      align-items:stretch;
-    }
-
-    .card{
-      border-radius: var(--r);
-      border:1px solid rgba(148,163,184,.18);
-      background: rgba(15,23,42,.55);
-      overflow:hidden;
-      box-shadow: var(--shadow);
-    }
-
-    .card-header{
-      padding: 12px 14px 10px;
-      border-bottom:1px solid rgba(148,163,184,.14);
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-    }
-    .card-title{ font-size:13px; font-weight:950; margin:0; }
-    .card-sub{ font-size:11px; color: var(--soft); margin-top:3px; line-height:1.25; }
-    .card-body{ padding: 12px 14px 14px; }
-
-    .tiles{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 10px;
-    }
-    .tile{
-      border-radius: 14px;
-      border:1px solid rgba(148,163,184,.14);
-      background: rgba(2,6,23,.30);
-      padding: 12px;
-      min-height: 92px;
-    }
-    .tile .k{
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      color: rgba(226,232,240,.58);
-    }
-    .tile .v{ margin-top:6px; font-size:16px; font-weight:950; }
-    .tile .h{ margin-top:6px; font-size:11px; color: rgba(226,232,240,.70); line-height:1.25; }
+    /* slot where view-home.html gets injected */
+    #viewSlot{ min-width:0; }
 
     /* Mobile: Sidebar stays, but collapses to icon bar */
     @media (max-width: 900px){
@@ -297,11 +256,17 @@
 
       .sidebar-footer{ padding: 10px 10px 12px; justify-content:center; }
       .sidebar-footer .chip{ display:none; }
-
-      .tiles{ grid-template-columns: 1fr; }
-      .top-right a.btn-primary{ display:none; } /* Platz sparen */
     }
   </style>
+
+  <script>
+    (function(){
+      // base path & cache bust used by loader
+      window.__BASE_DASH__ = "./";
+      window.__CB__ = Date.now().toString(36);
+    })();
+  </script>
+  <script src="./index.js?v=INDEX_HOME_20251213_001" defer></script>
 </head>
 
 <body>
@@ -317,11 +282,11 @@
       </div>
 
       <nav class="nav" id="nav">
-        <a href="./index.html" data-title="Übersicht" data-sub="Startseite / Quick KPIs" class="active">
+        <a href="./index.html" data-title="Home" data-sub="Wetter · Kalender · KPIs" class="active">
           <div class="nav-ic">⌂</div>
           <div class="nav-txt">
-            <div class="nav-title">Übersicht</div>
-            <div class="nav-sub">Startseite / Quick KPIs</div>
+            <div class="nav-title">Home</div>
+            <div class="nav-sub">Wetter · Kalender · KPIs</div>
           </div>
         </a>
 
@@ -372,8 +337,8 @@
     <section class="main">
       <header class="topbar">
         <div class="page-title">
-          <h1 id="pageTitle">Übersicht</h1>
-          <div id="pageSub">Startseite / Quick KPIs</div>
+          <h1 id="pageTitle">Home</h1>
+          <div id="pageSub">Wetter · Kalender · KPIs</div>
         </div>
         <div class="top-right">
           <span class="chip" id="clockTop">—</span>
@@ -382,96 +347,11 @@
       </header>
 
       <main class="content">
-        <div class="container">
-          <section class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Start</div>
-                <div class="card-sub">Always-On Sidebar: Navigation bleibt links, Main scrollt stabil (iPad-safe).</div>
-              </div>
-              <div style="display:flex;gap:10px;flex-wrap:wrap">
-                <a class="btn" href="./view-projects.html">🏗 Projekte / Bau</a>
-                <a class="btn" href="./admin.html">⚙ Admin</a>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="tiles">
-                <div class="tile">
-                  <div class="k">Heute</div>
-                  <div class="v" id="todayTxt">—</div>
-                  <div class="h">Keine überlappenden Layer mehr: nur Sidebar + Main.</div>
-                </div>
-                <div class="tile">
-                  <div class="k">Projekte</div>
-                  <div class="v">Baumstraße 35</div>
-                  <div class="h">Projekt-View: Gesamtmodul + 10 Gewerke.</div>
-                </div>
-                <div class="tile">
-                  <div class="k">Nächster Ausbau</div>
-                  <div class="v">Excel Hook</div>
-                  <div class="h">`projects.xlsx` einlesen → Tabs aus Sheet-Namen.</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="grid">
-            <section class="card" style="grid-column: span 12;">
-              <div class="card-header">
-                <div>
-                  <div class="card-title">Schnellzugriff</div>
-                  <div class="card-sub">Direkt in die wichtigsten Views.</div>
-                </div>
-              </div>
-              <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
-                <a class="btn btn-primary" href="./view-projects.html">🏗 Projekte / Bau</a>
-                <a class="btn" href="./view-finance.html">€ Finanzen</a>
-                <a class="btn" href="./view-vermietung.html">🏠 Vermietung</a>
-                <a class="btn" href="./admin.html">⚙ Admin</a>
-              </div>
-            </section>
-          </section>
-
+        <div class="container" id="viewSlot">
+          <!-- view-home.html wird hier hinein geladen -->
         </div>
       </main>
     </section>
   </div>
-
-  <script>
-    (function(){
-      // Clock
-      const clockTop = document.getElementById("clockTop");
-      const clockSide = document.getElementById("clockSide");
-      const todayTxt = document.getElementById("todayTxt");
-
-      function tick(){
-        const d = new Date();
-        const t = d.toLocaleString("de-DE", { weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-        const today = d.toLocaleDateString("de-DE", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
-        if(clockTop) clockTop.textContent = t;
-        if(clockSide) clockSide.textContent = t;
-        if(todayTxt) todayTxt.textContent = today;
-      }
-      tick(); setInterval(tick, 15000);
-
-      // Active nav highlight + header title/sub
-      const path = (location.pathname || "").toLowerCase();
-      const nav = document.getElementById("nav");
-      const links = Array.from(nav.querySelectorAll("a[href]"));
-      links.forEach(a => a.classList.remove("active"));
-
-      const match = links.find(a=>{
-        const href = (a.getAttribute("href")||"").toLowerCase();
-        const normalized = href.replace("./","/").replace("//","/");
-        return path.endsWith(normalized);
-      }) || links[0];
-
-      if(match){
-        match.classList.add("active");
-        document.getElementById("pageTitle").textContent = match.getAttribute("data-title") || "Dashboard";
-        document.getElementById("pageSub").textContent = match.getAttribute("data-sub") || "";
-      }
-    })();
-  </script>
 </body>
 </html>
