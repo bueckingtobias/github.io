@@ -1,53 +1,132 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Projekte · Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Projekte / Bau · Dashboard</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./shell.css">
+  <link rel="stylesheet" href="./shell.css" />
 
   <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
 
   <script src="./shell.js"></script>
   <script src="./excel-loader.js"></script>
+
+  <style>
+    html,body{ overflow-x:hidden !important; }
+    .proj-grid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); min-width:0; }
+    .span12{ grid-column:span 12; min-width:0; }
+    .span6{ grid-column:span 6; min-width:0; }
+    @media (max-width:900px){ .span6{ grid-column:span 12; } }
+    .module-slot{ width:100%; min-width:0; }
+  </style>
 </head>
 
 <body>
-<div id="app"></div>
+  <div id="app"></div>
 
-<template id="pageTpl">
-  <section class="grid">
-    <section class="card" style="grid-column:span 12;">
-      <div class="card-body" id="proj-gesamt"></div>
+  <template id="pageTpl">
+    <section class="proj-grid">
+      <section class="span12">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Gesamtübersicht</div><div class="card-sub">Budget · Zahlungen · Fortschritt</div></div>
+          </div>
+          <div class="card-body"><div class="module-slot" id="slotProjGesamt"></div></div>
+        </div>
+      </section>
+
+      <div id="gewerkCards" style="display:contents;"></div>
     </section>
+  </template>
 
-    <div id="proj-gewerke" style="display:contents;"></div>
-  </section>
-</template>
+  <script>
+    (async function(){
+      Shell.mount({ active:"./view-projects.html", title:"Projekte / Bau", sub:"Gesamt + 10 Gewerke" });
 
-<script>
-(async function(){
-  Shell.mount({ active:"./view-projects.html", title:"Projekte / Bau", sub:"Excel-gesteuert" });
+      await ExcelLoader.load("./Dashboard.xlsx");
+      const projectGesamt = window.IMMO_DATA?.projects?.gesamt || {};
+      const projectGewerke = window.IMMO_DATA?.projects?.gewerke || [];
 
-  await ExcelLoader.load("./Dashboard.xlsx");
+      function loadCssOnce(href){
+        if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
+        return new Promise((resolve,reject)=>{
+          const l=document.createElement("link");
+          l.rel="stylesheet"; l.href=href; l.dataset.href=href;
+          l.onload=resolve; l.onerror=()=>reject(new Error("CSS nicht geladen: "+href));
+          document.head.appendChild(l);
+        });
+      }
+      function loadJsOnce(src){
+        if(document.querySelector('script[data-src="'+src+'"]')) return Promise.resolve();
+        return new Promise((resolve,reject)=>{
+          const s=document.createElement("script");
+          s.src=src; s.defer=true; s.dataset.src=src;
+          s.onload=resolve; s.onerror=()=>reject(new Error("JS nicht geladen: "+src));
+          document.head.appendChild(s);
+        });
+      }
+      async function loadHtmlInto(url, el){
+        const r = await fetch(url, { cache:"no-store" });
+        if(!r.ok) throw new Error("HTML nicht geladen: "+url+" ("+r.status+")");
+        el.innerHTML = await r.text();
+      }
 
-  const gesamt = window.IMMO_DATA.projects.gesamt;
-  const gewerke = window.IMMO_DATA.projects.gewerke;
+      // Projekt-Module laden (deine bestehenden)
+      await loadCssOnce("./gewerk-gesamt-modul.css");
+      await loadJsOnce("./gewerk-gesamt-modul.js");
+      await loadCssOnce("./gewerk-modul.css");
+      await loadJsOnce("./gewerk-modul.js");
 
-  GewerkGesamtModul.render(document.getElementById("proj-gesamt"), gesamt);
+      // Gesamt HTML + render
+      const slotGesamt = document.getElementById("slotProjGesamt");
+      try{
+        await loadHtmlInto("./gewerk-gesamt-modul.html", slotGesamt);
+        if(!window.GewerkGesamtModul || typeof window.GewerkGesamtModul.render !== "function"){
+          throw new Error("window.GewerkGesamtModul.render fehlt");
+        }
+        window.GewerkGesamtModul.render(slotGesamt, projectGesamt);
+      }catch(e){
+        slotGesamt.textContent = "Gesamtmodul Fehler: " + e.message;
+      }
 
-  const wrap = document.getElementById("proj-gewerke");
-  gewerke.forEach((g,i)=>{
-    const sec = document.createElement("section");
-    sec.className = "card";
-    sec.style.gridColumn = "span 6";
-    sec.innerHTML = `<div class="card-body" id="gw-${i}"></div>`;
-    wrap.appendChild(sec);
-    GewerkModul.render(sec.querySelector(".card-body"), g);
-  });
-})();
-</script>
+      // 10 Karten bauen + je Karte Modul-HTML + render
+      const wrap = document.getElementById("gewerkCards");
+      wrap.innerHTML = "";
+      const count = Math.min(10, projectGewerke.length || 10);
+
+      for(let i=0;i<count;i++){
+        const g = projectGewerke[i] || {};
+        const sec = document.createElement("section");
+        sec.className = "span6";
+        sec.innerHTML = `
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">${g.Gewerk || ("Gewerk " + (i+1))}</div>
+                <div class="card-sub">${g.Projekt || projectGesamt.Projekt || ""}</div>
+              </div>
+            </div>
+            <div class="card-body"><div class="module-slot" id="slotGewerk${i}"></div></div>
+          </div>
+        `;
+        wrap.appendChild(sec);
+
+        const slot = sec.querySelector(".module-slot");
+        try{
+          await loadHtmlInto("./gewerk-modul.html", slot);
+          if(!window.GewerkModul || typeof window.GewerkModul.render !== "function"){
+            throw new Error("window.GewerkModul.render fehlt");
+          }
+          window.GewerkModul.render(slot, g);
+        }catch(e){
+          slot.textContent = "Gewerk-Modul Fehler: " + e.message;
+        }
+      }
+    })();
+  </script>
 </body>
 </html>
