@@ -3,74 +3,87 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Finanzen – Dashboard</title>
+  <title>Finanzen · Dashboard</title>
   <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
 
-  <!-- CRITICAL CSS (damit es nie “weiß + Text” wird) -->
+  <link rel="stylesheet" href="./dashboard/shell.css" />
+  <script src="./dashboard/auth.js"></script>
+  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
+
+  <script src="./dashboard/shell.js"></script>
+
+  <!-- Finance modules (wenn vorhanden) -->
+  <link rel="stylesheet" href="./dashboard/finance-cashflow-modul.css" />
+  <script src="./dashboard/finance-cashflow-modul.js"></script>
+
+  <link rel="stylesheet" href="./dashboard/finance-kpis-modul.css" />
+  <script src="./dashboard/finance-kpis-modul.js"></script>
+
   <style>
-    :root{
-      --bg:#0b1220; --text:#e2e8f0; --soft:rgba(226,232,240,.72);
-      --stroke:rgba(148,163,184,.18); --pad:14px;
+    .fin-grid{
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap: var(--gap);
+      min-width:0;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    html{overflow-x:hidden}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(59,130,246,.16), transparent 35%),
-        radial-gradient(circle at 80% 0%, rgba(34,197,94,.12), transparent 35%),
-        var(--bg);
-      color:var(--text);
-      overflow:hidden;
+    .span12{ grid-column: span 12; }
+    .span6{ grid-column: span 6; }
+    @media (max-width: 900px){
+      .span6{ grid-column: span 12; }
     }
-    .boot{
-      padding:12px var(--pad);
-      border-bottom:1px solid var(--stroke);
-      background:rgba(2,6,23,.45);
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px; font-size:12px;
-    }
-    .boot strong{font-weight:900}
-    .boot .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .chip{
-      padding:6px 10px; border-radius:999px;
-      border:1px solid rgba(148,163,184,.18);
-      background: rgba(15,23,42,.45);
-      color:rgba(226,232,240,.86);
-      white-space:nowrap; font-size:11px;
-    }
-    .warn{border-color:rgba(248,113,113,.35); background:rgba(127,29,29,.18); color:rgba(254,202,202,.95)}
-    .ok{border-color:rgba(34,197,94,.30); background:rgba(20,83,45,.18); color:rgba(187,247,208,.95)}
-    .info{border-color:rgba(59,130,246,.28); background:rgba(30,58,138,.18); color:rgba(191,219,254,.95)}
   </style>
-
-  <!-- Auto Base Path -->
-  <script>
-    (function(){
-      var p = (location.pathname || "").toLowerCase();
-      window.__BASE_DASH__ = p.includes("/dashboard/") ? "./" : "./dashboard/";
-      // Cache-bust Token (neu pro Reload)
-      window.__CB__ = Date.now().toString(36);
-    })();
-  </script>
-
-  <!-- Wichtig: Diese Version MUSS hochgezählt sein, sonst kommt alter Cache -->
-  <script src="./view-finance.js?v=FIN_SIDEBAR_20251213_001" defer></script>
 </head>
 
 <body>
-  <div class="boot">
-    <div><strong>Finanzen</strong><span style="color:var(--soft);margin-left:8px">Health-Check aktiv</span></div>
-    <div class="chips">
-      <span class="chip info" id="chipBase">Base: —</span>
-      <span class="chip" id="chipCSS">CSS: —</span>
-      <span class="chip" id="chipModules">Module: —</span>
-      <span class="chip info" id="chipBuild">Build: FIN_SIDEBAR_20251213_001</span>
-    </div>
-  </div>
+  <div id="app"></div>
 
-  <div id="appRoot" style="height:calc(100dvh - 49px); overflow:hidden;"></div>
+  <template id="pageTpl">
+    <section class="fin-grid">
+      <section class="span12">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Cashflow</div>
+              <div class="card-sub">Monatlich · YTD · Forecast (später aus Dashboard.xlsx).</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="finance-cashflow-root"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="span12">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Finance KPIs</div>
+              <div class="card-sub">Rückblick + Forecast.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="finance-kpis-root"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </template>
+
+  <script>
+    (function(){
+      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Cashflow · KPIs · Forecast" });
+
+      const c = document.querySelector(".finance-cashflow-root");
+      if(c && window.FinanceCashflowModul && typeof FinanceCashflowModul.render === "function"){
+        FinanceCashflowModul.render(c, {});
+      }
+
+      const k = document.querySelector(".finance-kpis-root");
+      if(k && window.FinanceKpisModul && typeof FinanceKpisModul.render === "function"){
+        FinanceKpisModul.render(k, {});
+      }
+    })();
+  </script>
 </body>
 </html>
