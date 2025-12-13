@@ -1,304 +1,90 @@
-(function(){
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Finanzen · Dashboard</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
 
-  const chipBase    = document.getElementById("chipBase");
-  const chipCSS     = document.getElementById("chipCSS");
-  const chipModules = document.getElementById("chipModules");
-  const appRoot     = document.getElementById("appRoot");
+  <link rel="stylesheet" href="./shell.css" />
 
-  const BASE = (window.__BASE_DASH__ || "./");
-  const CB   = (window.__CB__ || Date.now().toString(36));
+  <script src="./auth.js"></script>
+  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
 
-  if(chipBase) chipBase.textContent = "Base: " + BASE;
+  <script src="./shell.js"></script>
 
-  // --- Active tab ---
-  function isActive(fileName){
-    const p = (location.pathname || "").toLowerCase();
-    const current = (p.split("/").pop() || "");
-    return current === (fileName || "").toLowerCase();
-  }
+  <!-- Finance-Module -->
+  <link rel="stylesheet" href="./finance-cashflow-modul.css" />
+  <script src="./finance-cashflow-modul.js"></script>
 
-  // --- Load view CSS (cache-busted) ---
-  function loadViewCss(){
-    return new Promise((resolve)=>{
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = BASE + "view-finance.css?cb=" + CB;
-      link.onload = ()=> resolve(true);
-      link.onerror = ()=> resolve(false);
-      document.head.appendChild(link);
-    });
-  }
+  <link rel="stylesheet" href="./finance-kpis-modul.css" />
+  <script src="./finance-kpis-modul.js"></script>
 
-  // --- Render Shell (Sidebar with ALL tabs) ---
-  function renderShell(){
-    appRoot.innerHTML = `
-      <div class="app">
-        <aside class="sidebar" aria-label="Navigation">
-          <div class="brand">
-            <div class="brand-dot"></div>
-            <div class="brand-txt">
-              <div class="brand-title">Bücking Dashboard</div>
-              <div class="brand-sub">Immobilien · Projekte · KPIs</div>
+  <style>
+    .fin-grid{
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap: var(--gap);
+      min-width:0;
+    }
+    .span12{ grid-column: span 12; }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <template id="pageTpl">
+    <section class="fin-grid">
+      <section class="span12">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Cashflow</div>
+              <div class="card-sub">Monatlich · YTD · Forecast.</div>
             </div>
           </div>
-
-          <nav class="nav" id="nav">
-            <a href="${BASE}index.html" class="${isActive("index.html") ? "active" : ""}">
-              <div class="nav-ic">⌂</div>
-              <div class="nav-txt">
-                <div class="nav-title">Übersicht</div>
-                <div class="nav-sub">Startseite / Quick KPIs</div>
-              </div>
-            </a>
-
-            <div class="nav-label">Views</div>
-
-            <a href="${BASE}view-projects.html" class="${isActive("view-projects.html") ? "active" : ""}">
-              <div class="nav-ic">🏗</div>
-              <div class="nav-txt">
-                <div class="nav-title">Projekte / Bau</div>
-                <div class="nav-sub">Gewerke & Handwerker</div>
-              </div>
-            </a>
-
-            <a href="${BASE}view-finance.html" class="${isActive("view-finance.html") ? "active" : ""}">
-              <div class="nav-ic">€</div>
-              <div class="nav-txt">
-                <div class="nav-title">Finanzen</div>
-                <div class="nav-sub">Cashflow, Budget, OPs</div>
-              </div>
-            </a>
-
-            <a href="${BASE}view-vermietung.html" class="${isActive("view-vermietung.html") ? "active" : ""}">
-              <div class="nav-ic">🏠</div>
-              <div class="nav-txt">
-                <div class="nav-title">Vermietung</div>
-                <div class="nav-sub">Mieten, Leerstand, Leads</div>
-              </div>
-            </a>
-
-            <div class="nav-label">Tools</div>
-
-            <a href="${BASE}admin.html" class="${isActive("admin.html") ? "active" : ""}">
-              <div class="nav-ic">⚙</div>
-              <div class="nav-txt">
-                <div class="nav-title">Admin</div>
-                <div class="nav-sub">Uploads, Debug, Settings</div>
-              </div>
-            </a>
-          </nav>
-
-          <div class="sidebar-footer">
-            <span class="chip" id="clockSide">—</span>
-            <span class="chip">online</span>
+          <div class="card-body">
+            <div class="finance-cashflow-root"></div>
           </div>
-        </aside>
+        </div>
+      </section>
 
-        <section class="main">
-          <header class="topbar">
-            <div class="page-title">
-              <h1>Finanzen</h1>
-              <div>Modular · Datenquelle später: Dashboard.xlsx</div>
+      <section class="span12">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Finance KPIs</div>
+              <div class="card-sub">Charts + Kennzahlen.</div>
             </div>
-            <button class="btn" id="btnRefresh">↻ Reload</button>
-          </header>
+          </div>
+          <div class="card-body">
+            <div class="finance-kpis-root"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </template>
 
-          <main class="content">
-            <div class="fx-root">
-              <pre class="fx-error" id="fxErrBox" style="display:none;"></pre>
+  <script>
+    (function(){
+      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Cashflow · KPIs · Forecast" });
 
-              <section class="fx-row">
-                <div id="slotGesamt"></div>
-              </section>
-
-              <section class="fx-grid-2">
-                <div class="fx-cell" id="slotCashflow"></div>
-                <div class="fx-cell" id="slotBudget"></div>
-                <div class="fx-cell" id="slotOP"></div>
-                <div class="fx-cell" id="slotReserven"></div>
-              </section>
-
-              <section class="fx-row">
-                <div id="slotMieten"></div>
-              </section>
-            </div>
-          </main>
-        </section>
-      </div>
-    `;
-  }
-
-  // --- Error box helpers ---
-  function errBox(){ return document.getElementById("fxErrBox"); }
-  function showErr(msg){
-    const b = errBox();
-    if(!b) return;
-    b.style.display = "block";
-    b.textContent = msg;
-  }
-  function clearErr(){
-    const b = errBox();
-    if(!b) return;
-    b.style.display = "none";
-    b.textContent = "";
-  }
-
-  // --- Module loader (like projects) ---
-  async function fetchText(url){
-    const r = await fetch(url, { cache:"no-store" });
-    if(!r.ok) throw new Error(`${url} → HTTP ${r.status}`);
-    return await r.text();
-  }
-
-  function loadCssOnce(id, href){
-    let l = document.getElementById(id);
-    if(!l){
-      l = document.createElement("link");
-      l.id = id;
-      l.rel = "stylesheet";
-      document.head.appendChild(l);
-    }
-    l.href = href + (href.includes("?") ? "&" : "?") + "cb=" + CB;
-  }
-
-  async function loadScriptFresh(id, src){
-    const old = document.getElementById(id);
-    if(old) old.remove();
-
-    await new Promise((res, rej)=>{
-      const s = document.createElement("script");
-      s.id = id;
-      s.src = src + (src.includes("?") ? "&" : "?") + "cb=" + CB;
-      s.onload = res;
-      s.onerror = () => rej(new Error("Script konnte nicht geladen werden: " + s.src));
-      document.head.appendChild(s);
-    });
-  }
-
-  async function mountModule(slotEl, htmlFile, cssId, cssFile, jsId, jsFile, globalName, renderArgs){
-    const html = await fetchText(htmlFile);
-    slotEl.innerHTML = html;
-
-    loadCssOnce(cssId, cssFile);
-    await loadScriptFresh(jsId, jsFile);
-
-    const api = window[globalName];
-    if(!api || typeof api.render !== "function"){
-      throw new Error(`${globalName}.render fehlt`);
-    }
-
-    const root =
-      slotEl.querySelector(`.${api.rootClass || ""}`) ||
-      slotEl.querySelector("[data-module-root]") ||
-      slotEl.firstElementChild;
-
-    if(!root) throw new Error(`Kein Root im HTML: ${htmlFile}`);
-
-    api.render(root, ...renderArgs);
-  }
-
-  // Demo Data
-  function getFinanceData(){
-    return {
-      startCash: 185000,
-      cashflow: [
-        { month:"2025-01", inflow:52000, outflow:61000 },
-        { month:"2025-02", inflow:54000, outflow:58500 },
-        { month:"2025-03", inflow:61000, outflow:74000 },
-        { month:"2025-04", inflow:59000, outflow:62000 },
-        { month:"2025-05", inflow:63000, outflow:69000 },
-        { month:"2025-06", inflow:66000, outflow:72000 },
-        { month:"2025-07", inflow:65000, outflow:70000 },
-        { month:"2025-08", inflow:67000, outflow:68000 },
-        { month:"2025-09", inflow:64000, outflow:71000 },
-        { month:"2025-10", inflow:69000, outflow:76000 },
-        { month:"2025-11", inflow:72000, outflow:74000 },
-        { month:"2025-12", inflow:76000, outflow:79000 }
-      ]
-    };
-  }
-  function sliceHorizon(arr, h){
-    return (arr||[]).slice(Math.max(0, (arr||[]).length - h));
-  }
-
-  async function renderAll(){
-    clearErr();
-
-    const data = getFinanceData();
-    const horizon = 12;
-    const cash = sliceHorizon(data.cashflow, horizon);
-
-    const slotGesamt   = document.getElementById("slotGesamt");
-    const slotCashflow = document.getElementById("slotCashflow");
-    const slotBudget   = document.getElementById("slotBudget");
-    const slotOP       = document.getElementById("slotOP");
-    const slotRes      = document.getElementById("slotReserven");
-    const slotMieten   = document.getElementById("slotMieten");
-
-    let okCount = 0;
-    let failCount = 0;
-    const fails = [];
-
-    async function tryMount(slot, html, cssId, css, jsId, js, globalName, args){
-      try{
-        await mountModule(slot, BASE+html, cssId, BASE+css, jsId, BASE+js, globalName, args);
-        okCount++;
-      }catch(e){
-        failCount++;
-        fails.push(globalName + ": " + (e?.message || e));
+      const c = document.querySelector(".finance-cashflow-root");
+      if(c && window.FinanceCashflowModul && typeof FinanceCashflowModul.render === "function"){
+        FinanceCashflowModul.render(c, {});
+      } else if(c){
+        c.textContent = "FinanceCashflowModul fehlt (JS nicht gefunden).";
       }
-    }
 
-    await tryMount(slotGesamt,   "finance-gesamt-modul.html",   "css-fin-gesamt", "finance-gesamt-modul.css",   "js-fin-gesamt", "finance-gesamt-modul.js",   "FinanceGesamtModul",   [data, cash, { horizon }]);
-    await tryMount(slotCashflow, "finance-cashflow-modul.html", "css-fin-cash",   "finance-cashflow-modul.css", "js-fin-cash",   "finance-cashflow-modul.js", "FinanceCashflowModul", [data, cash, { horizon }]);
-
-    await tryMount(slotBudget,   "finance-budget-modul.html",   "css-fin-budget", "finance-budget-modul.css",   "js-fin-budget", "finance-budget-modul.js",   "FinanceBudgetModul",   [data, { horizon }]);
-    await tryMount(slotOP,       "finance-op-modul.html",       "css-fin-op",     "finance-op-modul.css",       "js-fin-op",     "finance-op-modul.js",       "FinanceOPModul",       [data, { horizon }]);
-    await tryMount(slotRes,      "finance-reserven-modul.html", "css-fin-res",    "finance-reserven-modul.css", "js-fin-res",    "finance-reserven-modul.js", "FinanceReservenModul", [data, { horizon }]);
-    await tryMount(slotMieten,   "finance-mieten-modul.html",   "css-fin-mieten", "finance-mieten-modul.css",   "js-fin-mieten", "finance-mieten-modul.js",   "FinanceMietenModul",   [data, { horizon }]);
-
-    if(chipModules){
-      chipModules.textContent = `Module: ${okCount} ok / ${failCount} fail`;
-      chipModules.className = "chip " + (failCount ? "warn" : "ok");
-    }
-
-    if(fails.length){
-      showErr(
-        "Module konnten nicht geladen werden:\n\n" +
-        fails.join("\n") +
-        "\n\nCheck:\n- Dateien liegen in: " + BASE +
-        "\n- Ordner heißt exakt: dashboard (klein)\n- Dateinamen exakt (case-sensitiv)\n"
-      );
-    }
-  }
-
-  // ===== Start =====
-  window.addEventListener("DOMContentLoaded", async ()=>{
-    // 1) shell rendern (damit Sidebar sicher neu ist)
-    renderShell();
-
-    // 2) CSS laden
-    const cssOk = await loadViewCss();
-    if(chipCSS){
-      chipCSS.textContent = "CSS: " + (cssOk ? "ok" : "FAIL");
-      chipCSS.className = "chip " + (cssOk ? "ok" : "warn");
-    }
-
-    // 3) modules
-    await renderAll();
-
-    // refresh
-    const btn = document.getElementById("btnRefresh");
-    if(btn) btn.addEventListener("click", renderAll);
-
-    // clock
-    const clockSide = document.getElementById("clockSide");
-    function tick(){
-      const d = new Date();
-      const t = d.toLocaleString("de-DE",{ weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-      if(clockSide) clockSide.textContent = t;
-    }
-    tick(); setInterval(tick, 15000);
-  });
-
-})();
+      const k = document.querySelector(".finance-kpis-root");
+      if(k && window.FinanceKpisModul && typeof FinanceKpisModul.render === "function"){
+        FinanceKpisModul.render(k, {});
+      } else if(k){
+        k.textContent = "FinanceKpisModul fehlt (JS nicht gefunden).";
+      }
+    })();
+  </script>
+</body>
+</html>
