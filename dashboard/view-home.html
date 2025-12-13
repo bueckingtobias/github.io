@@ -1,11 +1,108 @@
-<!-- PARTIAL: wird von index.html in #viewSlot injiziert -->
-<div class="home-root">
-  <pre class="home-error" id="homeErr" style="display:none;"></pre>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Home · Dashboard</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
 
-  <section class="home-grid-top">
-    <div class="home-cell" id="slotWeather"></div>
-    <div class="home-cell" id="slotCalendar"></div>
-  </section>
+  <link rel="stylesheet" href="./dashboard/shell.css" />
+  <script src="./dashboard/auth.js"></script>
+  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
 
-  <section class="home-row" id="slotKpis"></section>
-</div>
+  <script src="./dashboard/shell.js"></script>
+
+  <!-- Home modules -->
+  <link rel="stylesheet" href="./dashboard/home-weather-modul.css" />
+  <script src="./dashboard/home-weather-modul.js"></script>
+
+  <link rel="stylesheet" href="./dashboard/home-calendar-modul.css" />
+  <script src="./dashboard/home-calendar-modul.js"></script>
+
+  <link rel="stylesheet" href="./dashboard/home-kpis-modul.css" />
+  <script src="./dashboard/home-kpis-modul.js"></script>
+
+  <style>
+    /* Page-specific layout: Wetter links, Kalender rechts, KPIs full width below */
+    .home-grid{
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap: var(--gap);
+      align-items:stretch;
+    }
+    .span6{ grid-column: span 6; }
+    .span12{ grid-column: span 12; }
+
+    @media (max-width: 900px){
+      .span6{ grid-column: span 12; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <template id="pageTpl">
+    <section class="home-grid">
+      <section class="span6">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Wetter</div>
+              <div class="card-sub">Standort-basiert oder feste Stadt (später).</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="home-weather-root"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="span6">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Kalender</div>
+              <div class="card-sub">Feiertage im Kalender · Countdown bis 01.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="home-calendar-root"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="span12">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">KPIs</div>
+              <div class="card-sub">6 Monate Rückblick + 3 Monate Forecast.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="home-kpis-root"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </template>
+
+  <script>
+    (function(){
+      Shell.mount({ active:"./view-home.html", title:"Home", sub:"Wetter · Kalender · KPIs" });
+
+      // Render modules (they render into rootClass containers)
+      const w = document.querySelector(".home-weather-root");
+      if(w && window.HomeWeatherModul && typeof HomeWeatherModul.render === "function") HomeWeatherModul.render(w, {});
+
+      const c = document.querySelector(".home-calendar-root");
+      if(c && window.HomeCalendarModul && typeof HomeCalendarModul.render === "function") HomeCalendarModul.render(c, {});
+
+      const k = document.querySelector(".home-kpis-root");
+      if(k && window.HomeKpisModul && typeof HomeKpisModul.render === "function") HomeKpisModul.render(k, {});
+    })();
+  </script>
+</body>
+</html>
