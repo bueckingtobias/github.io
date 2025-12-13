@@ -7,22 +7,23 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./dashboard/shell.css" />
-  <script src="./dashboard/auth.js"></script>
+  <link rel="stylesheet" href="./shell.css" />
+
+  <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
 
-  <script src="./dashboard/shell.js"></script>
+  <script src="./shell.js"></script>
 
-  <!-- Deine Projektmodule: (Beispiel) -->
-  <link rel="stylesheet" href="./dashboard/gewerk-gesamt-modul.css" />
-  <script src="./dashboard/gewerk-gesamt-modul.js"></script>
+  <!-- Projekte-Module (Platzhalter – später wieder deine echten Dateien einsetzen) -->
+  <link rel="stylesheet" href="./projects-gesamt-modul.css" />
+  <script src="./projects-gesamt-modul.js"></script>
 
-  <link rel="stylesheet" href="./dashboard/gewerk-modul.css" />
-  <script src="./dashboard/gewerk-modul.js"></script>
+  <link rel="stylesheet" href="./projects-gewerk-modul.css" />
+  <script src="./projects-gewerk-modul.js"></script>
 
   <style>
-    .projects-wrap{ display:flex; flex-direction:column; gap: var(--gap); min-width:0; }
-    .two-col{
+    .proj-wrap{ display:flex; flex-direction:column; gap: var(--gap); min-width:0; }
+    .proj-grid{
       display:grid;
       grid-template-columns: repeat(12, minmax(0,1fr));
       gap: var(--gap);
@@ -40,32 +41,33 @@
   <div id="app"></div>
 
   <template id="pageTpl">
-    <section class="projects-wrap">
+    <section class="proj-wrap">
 
+      <!-- Gesamt oben -->
       <section class="card">
         <div class="card-header">
           <div>
             <div class="card-title">Gesamtübersicht</div>
-            <div class="card-sub">Projektüberblick (sticky hatten wir – kann man später wieder aktivieren).</div>
+            <div class="card-sub">Budget · Zahlungen · Fortschritt · Timeline (später).</div>
           </div>
         </div>
         <div class="card-body">
-          <div class="gewerk-gesamt-root"></div>
+          <div class="projects-gesamt-root"></div>
         </div>
       </section>
 
-      <section class="two-col">
-        <!-- 10x Gewerk-Module -->
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 1</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="1"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 2</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="2"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 3</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="3"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 4</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="4"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 5</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="5"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 6</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="6"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 7</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="7"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 8</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="8"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 9</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="9"></div></div></div></section>
-        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 10</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="gewerk-root" data-gewerk-index="10"></div></div></div></section>
+      <!-- 10 Gewerke in 2-Spalten (iPad) / 1-Spalte (Mobile) -->
+      <section class="proj-grid">
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 1</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="1"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 2</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="2"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 3</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="3"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 4</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="4"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 5</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="5"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 6</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="6"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 7</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="7"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 8</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="8"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 9</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="9"></div></div></div></section>
+        <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Gewerk 10</div><div class="card-sub">Modul</div></div></div><div class="card-body"><div class="projects-gewerk-root" data-idx="10"></div></div></div></section>
       </section>
 
     </section>
@@ -75,15 +77,15 @@
     (function(){
       Shell.mount({ active:"./view-projects.html", title:"Projekte / Bau", sub:"Gesamt + Gewerke" });
 
-      const g = document.querySelector(".gewerk-gesamt-root");
-      if(g && window.GewerkGesamtModul && typeof GewerkGesamtModul.render === "function"){
-        GewerkGesamtModul.render(g, {});
+      const g = document.querySelector(".projects-gesamt-root");
+      if(g && window.ProjectsGesamtModul && typeof ProjectsGesamtModul.render === "function"){
+        ProjectsGesamtModul.render(g, {});
       }
 
-      document.querySelectorAll(".gewerk-root").forEach(el=>{
-        const idx = Number(el.getAttribute("data-gewerk-index") || "1");
-        if(window.GewerkModul && typeof GewerkModul.render === "function"){
-          GewerkModul.render(el, { index: idx });
+      document.querySelectorAll(".projects-gewerk-root").forEach(el=>{
+        const idx = Number(el.getAttribute("data-idx") || "1");
+        if(window.ProjectsGewerkModul && typeof ProjectsGewerkModul.render === "function"){
+          ProjectsGewerkModul.render(el, { index: idx });
         }
       });
     })();
