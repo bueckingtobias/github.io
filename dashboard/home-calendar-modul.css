@@ -1,53 +1,73 @@
-.hc-root{
-  color: rgba(226,232,240,.92);
-  min-width:0;
+.ac-root{
   height: 100%;
+  min-width:0;
+  overflow:hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  color: rgba(226,232,240,.92);
+  padding: 14px;
   display:flex;
   flex-direction:column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.hc-head{
+.ac-header{
   display:flex;
   justify-content:space-between;
   gap:12px;
   align-items:flex-start;
 }
 
-.hc-month{
+.ac-month{
   font-size: 14px;
   font-weight: 950;
-  margin-top: 2px;
+  letter-spacing:.01em;
 }
 
-.hc-countdown{
+.ac-mini{
+  margin-top: 4px;
+  font-size: 11px;
+  color: rgba(226,232,240,.68);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 50ch;
+}
+
+.ac-count{
   text-align:right;
-  min-width: 180px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  padding: 10px 10px;
+  min-width: 160px;
 }
 
-.hc-countdown-k{
+.ac-ck{
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .08em;
-  color: rgba(226,232,240,.55);
+  color: rgba(226,232,240,.60);
 }
 
-.hc-countdown-v{
+.ac-cv{
   margin-top: 6px;
   font-size: 18px;
   font-weight: 950;
 }
 
-.hc-grid{
-  flex: 1 1 auto;     /* ✅ nimmt identische Höhe ein wie Wetterbereich */
-  min-height: 0;
+.ac-grid{
+  flex: 1 1 auto;
+  min-height:0;
   display:grid;
   grid-template-columns: repeat(7, minmax(0,1fr));
   gap: 6px;
   align-content:start;
 }
 
-.hc-dow{
+.ac-dow{
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .08em;
@@ -56,39 +76,65 @@
   padding: 4px 0 6px;
 }
 
-.hc-cell{
-  border-radius: 12px;
-  border:1px solid rgba(148,163,184,.14);
-  background: rgba(2,6,23,.20);
-  padding: 8px 6px;
-  min-height: 42px;
+.ac-cell{
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  padding: 8px 8px;
+  min-height: 46px;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  align-items:flex-start;
+  gap: 6px;
 }
 
-.hc-cell.muted{ opacity: .35; }
-.hc-cell.weekend{ border-color: rgba(148,163,184,.22); }
-.hc-cell.holiday{ box-shadow: 0 0 0 2px rgba(248,113,113,.18) inset; }
-.hc-cell.rent{ box-shadow: 0 0 0 2px rgba(59,130,246,.22) inset; }
+.ac-cell.muted{ opacity:.35; }
 
-.hc-day{
+.ac-topline{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+
+.ac-day{
   font-size: 12px;
   font-weight: 950;
 }
 
-.hc-tag{
+.ac-badge{
+  width: 10px; height:10px;
+  border-radius:999px;
+  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(148,163,184,.18);
+  flex:0 0 auto;
+  opacity: 0;
+}
+
+.ac-cell.today .ac-badge{ opacity: 1; background: rgba(255,255,255,.45); border-color: rgba(255,255,255,.25); }
+.ac-cell.rent  .ac-badge{ opacity: 1; background: rgba(59,130,246,.70); border-color: rgba(59,130,246,.35); }
+.ac-cell.holiday .ac-badge{ opacity: 1; background: rgba(248,113,113,.70); border-color: rgba(248,113,113,.35); }
+
+.ac-tag{
   font-size: 10px;
   color: rgba(226,232,240,.70);
   white-space: nowrap;
   overflow:hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
 }
 
-.hc-legend{
-  margin-top: auto;   /* ✅ klebt unten wie Wetter-Note */
+.ac-cell.holiday .ac-tag{
+  color: rgba(254,202,202,.95);
+  font-weight: 800;
+}
+
+.ac-cell.weekend{
+  border-color: rgba(255,255,255,.14);
+}
+
+.ac-foot{
+  margin-top:auto;
   display:flex;
   align-items:center;
   gap:8px;
@@ -97,12 +143,10 @@
   flex-wrap:wrap;
 }
 
-.hc-dot{
-  width:10px; height:10px;
-  border-radius:999px;
-  display:inline-block;
+.ac-dot{
+  width:10px;height:10px;border-radius:999px;display:inline-block;
   border: 1px solid rgba(148,163,184,.18);
 }
-.hc-dot-weekend{ background: rgba(148,163,184,.25); }
-.hc-dot-holiday{ background: rgba(248,113,113,.45); border-color: rgba(248,113,113,.35); }
-.hc-dot-rent{ background: rgba(59,130,246,.55); border-color: rgba(59,130,246,.35); }
+.ac-dot-today{ background: rgba(255,255,255,.45); border-color: rgba(255,255,255,.25); }
+.ac-dot-rent{ background: rgba(59,130,246,.70); border-color: rgba(59,130,246,.35); }
+.ac-dot-holiday{ background: rgba(248,113,113,.70); border-color: rgba(248,113,113,.35); }
