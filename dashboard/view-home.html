@@ -23,12 +23,18 @@
       grid-template-columns: repeat(12, minmax(0,1fr));
       gap: var(--gap);
       min-width:0;
+      align-items: stretch; /* ✅ gleiche Höhe der oberen Row */
     }
     .span6{ grid-column: span 6; min-width:0; }
     .span12{ grid-column: span 12; min-width:0; }
     @media (max-width: 900px){
       .span6{ grid-column: span 12; }
     }
+
+    /* ✅ Cards in der oberen Row: volle Höhe und sauberes Innenlayout */
+    .row-equal .card{ height: 100%; display:flex; flex-direction:column; min-height:0; }
+    .row-equal .card-body{ flex:1 1 auto; min-height:0; display:flex; }
+    .row-equal .module-slot{ flex:1 1 auto; min-height:0; }
 
     .module-slot{ width:100%; min-width:0; }
 
@@ -54,7 +60,7 @@
     <section class="home-grid">
 
       <!-- Wetter links -->
-      <section class="span6">
+      <section class="span6 row-equal">
         <div class="card">
           <div class="card-header">
             <div>
@@ -69,7 +75,7 @@
       </section>
 
       <!-- Kalender rechts -->
-      <section class="span6">
+      <section class="span6 row-equal">
         <div class="card">
           <div class="card-header">
             <div>
@@ -163,13 +169,7 @@
         }
       }
 
-      // Excel laden (für KPIs). Wetter/Kalender laufen auch ohne Excel.
-      try{
-        await ExcelLoader.load(withV("./Dashboard.xlsx"));
-      }catch(e){
-        // KPIs kriegen dann Fehlbox, Wetter/Kalender trotzdem rendern
-        console.warn("Excel load failed:", e);
-      }
+      try{ await ExcelLoader.load(withV("./Dashboard.xlsx")); } catch(e){ console.warn("Excel load failed:", e); }
 
       const homeKpis = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
       const finance  = Array.isArray(window.IMMO_DATA?.finance) ? window.IMMO_DATA.finance : [];
@@ -189,7 +189,7 @@
         css:"./home-calendar-modul.css",
         js:"./home-calendar-modul.js",
         globalName:"HomeCalendarModul",
-        data:{ rentDay: 1, country:"DE", region:"NI" } // NI = Niedersachsen (Feiertage sinnvoll)
+        data:{ rentDay: 1, country:"DE", region:"NI" }
       });
 
       await mountModule({
