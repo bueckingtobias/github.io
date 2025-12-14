@@ -149,3 +149,166 @@
             <div>
               <div class="card-title">Reserven</div>
               <div class="card-sub">Puffer, Runway, Zielkorridor</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="slot" id="slotReserven"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4) Budget unten (full width & größer) -->
+      <section class="span12 budget-big">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Budget</div>
+              <div class="card-sub">Kategorien, Plan/Ist, Abweichung, Restbudget – full width.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="slot" id="slotBudget"></div>
+          </div>
+        </div>
+      </section>
+
+    </section>
+  </template>
+
+  <script>
+    (async function(){
+      // Sidebar/Topbar mount (Shell bleibt immer sichtbar)
+      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Gesamt · Cashflow · Mieten · OP · Reserven · Budget" });
+
+      // Cache-bust for GitHub Pages / iPad Safari
+      const V = new URLSearchParams(location.search).get("v") || String(Date.now());
+      const withV = (p)=> p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(V);
+
+      function showError(el, title, msg){
+        el.innerHTML = "";
+        const box = document.createElement("div");
+        box.className = "alert";
+        box.innerHTML = `<strong>${title}</strong>\n${msg}`;
+        el.appendChild(box);
+      }
+
+      function loadCssOnce(href){
+        const key = withV(href);
+        if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
+        return new Promise((resolve,reject)=>{
+          const l=document.createElement("link");
+          l.rel="stylesheet"; l.href=key; l.dataset.href=href;
+          l.onload=resolve;
+          l.onerror=()=>reject(new Error("CSS nicht geladen (404?): " + href));
+          document.head.appendChild(l);
+        });
+      }
+
+      function loadJsOnce(src){
+        const key = withV(src);
+        if(document.querySelector('script[data-src="'+src+'"]')) return Promise.resolve();
+        return new Promise((resolve,reject)=>{
+          const s=document.createElement("script");
+          s.src=key; s.defer=true; s.dataset.src=src;
+          s.onload=resolve;
+          s.onerror=()=>reject(new Error("JS nicht geladen (404?): " + src));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function loadHtmlInto(url, el){
+        const r = await fetch(withV(url), { cache:"no-store" });
+        if(!r.ok) throw new Error("HTML nicht geladen (404?): " + url + " (HTTP " + r.status + ")");
+        el.innerHTML = await r.text();
+      }
+
+      async function mountModule({slotId, html, css, js, globalName, data}){
+        const slot = document.getElementById(slotId);
+        try{
+          await loadHtmlInto(html, slot);
+          await loadCssOnce(css);
+          await loadJsOnce(js);
+
+          const mod = window[globalName];
+          if(!mod) throw new Error("Global fehlt: window." + globalName);
+          if(typeof mod.render !== "function") throw new Error("render() fehlt: window." + globalName + ".render");
+
+          mod.render(slot, data);
+        }catch(e){
+          showError(slot, "Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e));
+        }
+      }
+
+      // Excel laden
+      try{
+        await ExcelLoader.load(withV("./Dashboard.xlsx"));
+      }catch(e){
+        console.warn("Excel load failed:", e);
+      }
+
+      // Datenbereiche (müssen im Loader so gesetzt sein)
+      const financeRows  = Array.isArray(window.IMMO_DATA?.finance) ? window.IMMO_DATA.finance : [];
+      const opRows       = Array.isArray(window.IMMO_DATA?.op) ? window.IMMO_DATA.op : [];
+      const reservesRows = Array.isArray(window.IMMO_DATA?.reserven) ? window.IMMO_DATA.reserven : [];
+      const budgetRows   = Array.isArray(window.IMMO_DATA?.budget) ? window.IMMO_DATA.budget : [];
+      const homeRows     = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
+
+      // Module: NAMES GENAU wie in deinem Ordner
+      await mountModule({
+        slotId:"slotGesamt",
+        html:"./finance-gesamt-modul.html",
+        css:"./finance-gesamt-modul.css",
+        js:"./finance-gesamt-modul.js",
+        globalName:"FinanceGesamtModul",
+        data:{ financeRows, opRows, reservesRows, budgetRows, homeRows }
+      });
+
+      await mountModule({
+        slotId:"slotCashflow",
+        html:"./finance-cashflow-modul.html",
+        css:"./finance-cashflow-modul.css",
+        js:"./finance-cashflow-modul.js",
+        globalName:"FinanceCashflowModul",
+        data:{ financeRows }
+      });
+
+      await mountModule({
+        slotId:"slotMieten",
+        html:"./finance-mieten-modul.html",
+        css:"./finance-mieten-modul.css",
+        js:"./finance-mieten-modul.js",
+        globalName:"FinanceMietenModul",
+        data:{ financeRows, homeRows }
+      });
+
+      await mountModule({
+        slotId:"slotOP",
+        html:"./finance-op-modul.html",
+        css:"./finance-op-modul.css",
+        js:"./finance-op-modul.js",
+        globalName:"FinanceOPModul",
+        data:{ opRows }
+      });
+
+      await mountModule({
+        slotId:"slotReserven",
+        html:"./finance-reserven-modul.html",
+        css:"./finance-reserven-modul.css",
+        js:"./finance-reserven-modul.js",
+        globalName:"FinanceReservenModul",
+        data:{ reservesRows, financeRows }
+      });
+
+      await mountModule({
+        slotId:"slotBudget",
+        html:"./finance-budget-modul.html",
+        css:"./finance-budget-modul.css",
+        js:"./finance-budget-modul.js",
+        globalName:"FinanceBudgetModul",
+        data:{ budgetRows }
+      });
+
+    })();
+  </script>
+</body>
+</html>
