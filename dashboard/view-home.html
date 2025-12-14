@@ -7,29 +7,35 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <!-- Cache-Buster (hochzählen wenn iPad Safari cached) -->
+  <!-- Cache-Buster -->
   <script>
-    window.__VER = "20251214-Home-1";
+    window.__VER = "20251214-Home-2";
   </script>
 
   <!-- ===== GLOBAL / SHELL ===== -->
-  <link rel="stylesheet" href="./shell.css?v=20251214-Home-1" />
+  <link rel="stylesheet" href="./shell.css?v=20251214-Home-2" />
 
   <!-- ===== HOME MODULE STYLES (unverändert) ===== -->
-  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-1" />
-  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-1" />
-  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-1" />
+  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-2" />
+  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-2" />
+  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-2" />
 
   <style>
+    :root{
+      --homeGap: 12px;
+      --homeTopH: 360px; /* 👈 mehr Höhe für Wetter + Kalender */
+    }
+
     html, body { overflow-x: hidden; }
 
     .home-grid{
       display:grid;
       grid-template-columns: repeat(12, minmax(0,1fr));
-      gap: 12px;
+      gap: var(--homeGap);
       align-items:stretch;
       min-width:0;
     }
+
     .col-6{ grid-column: span 6; min-width:0; }
     .col-12{ grid-column: span 12; min-width:0; }
 
@@ -39,7 +45,7 @@
 
     /* gleiche Höhe oben (iPad) */
     .home-top{
-      height: 280px;
+      height: var(--homeTopH);
       display:flex;
       flex-direction:column;
       min-height:0;
@@ -69,9 +75,7 @@
 <body>
 <div class="app">
 
-  <!-- ========================================================= -->
   <!-- SIDEBAR (einheitlich + Logout) -->
-  <!-- ========================================================= -->
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-dot"></div>
@@ -124,9 +128,7 @@
     </div>
   </aside>
 
-  <!-- ========================================================= -->
   <!-- MAIN -->
-  <!-- ========================================================= -->
   <section class="main">
 
     <header class="topbar">
@@ -182,26 +184,19 @@
   </section>
 </div>
 
-<!-- ========================================================= -->
 <!-- DATA SOURCE (A) -->
-<!-- ========================================================= -->
-<script src="./master-data.js?v=20251214-Home-1"></script>
-<script src="./data-loader.js?v=20251214-Home-1"></script>
+<script src="./master-data.js?v=20251214-Home-2"></script>
+<script src="./data-loader.js?v=20251214-Home-2"></script>
 
-<!-- ========================================================= -->
-<!-- MODULE SCRIPTS (unverändert) -->
-<!-- ========================================================= -->
-<script src="./home-weather-modul.js?v=20251214-Home-1"></script>
-<script src="./home-calendar-modul.js?v=20251214-Home-1"></script>
-<script src="./home-kpis-modul.js?v=20251214-Home-1"></script>
+<!-- MODULE SCRIPTS -->
+<script src="./home-weather-modul.js?v=20251214-Home-2"></script>
+<script src="./home-calendar-modul.js?v=20251214-Home-2"></script>
+<script src="./home-kpis-modul.js?v=20251214-Home-2"></script>
 
-<!-- ========================================================= -->
-<!-- BOOTSTRAP -->
-<!-- ========================================================= -->
 <script>
 (async function(){
 
-  /* Clock */
+  // Clock
   const clockTop = document.getElementById("clockTop");
   function tick(){
     const d = new Date();
@@ -211,13 +206,12 @@
   }
   tick(); setInterval(tick, 15000);
 
-  /* Logout (nutzt deinen bestehenden Login-State: safe hard logout) */
+  // Logout
   document.getElementById("logoutBtn").onclick = () => {
     try { localStorage.clear(); } catch {}
     location.href = "./index.html";
   };
 
-  /* Helper: fetch module fragment into host */
   async function injectFragment(hostId, fragmentPath){
     const host = document.getElementById(hostId);
     if (!host) return;
@@ -236,19 +230,15 @@
     }
   }
 
-  /* 1) Erst Modul-HTML-Fragmente laden (sonst rendert JS ins Nichts) */
+  // 1) Module-HTML laden
   await injectFragment("weatherHost", "./home-weather-modul.html");
   await injectFragment("calendarHost", "./home-calendar-modul.html");
   await injectFragment("kpisHost", "./home-kpis-modul.html");
 
-  /* 2) Daten laden (master-data / override) */
-  try{
-    await DataLoader.load();
-  }catch(e){
-    console.error("DataLoader.load failed:", e);
-  }
+  // 2) Daten laden (master/override)
+  try { await DataLoader.load(); } catch(e){ console.error("DataLoader.load failed:", e); }
 
-  /* 3) Module rendern */
+  // 3) Render
   const wHost = document.getElementById("weatherHost");
   const cHost = document.getElementById("calendarHost");
   const kHost = document.getElementById("kpisHost");
@@ -257,7 +247,7 @@
   if (window.HomeCalendarModul?.render) window.HomeCalendarModul.render(cHost);
   if (window.HomeKpisModul?.render) window.HomeKpisModul.render(kHost);
 
-  /* 4) Race-proof: nochmal kurz nachziehen (iPad Safari Timing) */
+  // 4) iPad Timing-Fallback
   setTimeout(() => {
     if (window.HomeWeatherModul?.render) window.HomeWeatherModul.render(wHost);
     if (window.HomeCalendarModul?.render) window.HomeCalendarModul.render(cHost);
