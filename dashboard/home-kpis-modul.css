@@ -1,43 +1,82 @@
-/* home-kpi-modul.css
-   KPI Grid: 2 nebeneinander, 3 untereinander => 6 Kacheln
-   Apple-clean lines, no horizontal scroll
+/* home-kpis-modul.css
+   Scoped styling: KEIN body/html, damit Wetter/Kalender unangetastet bleiben
 */
 
-.home-kpi-mount{
+.home-kpis-modul{
   width: 100%;
   min-width: 0;
 }
 
-.home-kpi-wrap{
+.home-kpis-modul .hkpi-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(148,163,184,.14);
+}
+
+.home-kpis-modul .hkpi-title{
+  font-size: 13px;
+  font-weight: 950;
+  color: rgba(226,232,240,.95);
+}
+
+.home-kpis-modul .hkpi-sub{
+  margin-top: 3px;
+  font-size: 11px;
+  color: rgba(226,232,240,.72);
+  line-height: 1.25;
+}
+
+.home-kpis-modul .hkpi-badge{
+  font-size: 11px;
+  color: rgba(226,232,240,.82);
+  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.30);
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.home-kpis-modul .hkpi-body{
   padding: 14px;
-  display: grid;
+  min-width: 0;
+}
+
+/* 2 nebeneinander, 3 untereinander = 6 Tiles */
+.home-kpis-modul .hkpi-grid{
+  display:grid;
   grid-template-columns: repeat(2, minmax(0,1fr));
   gap: 12px;
   min-width: 0;
 }
 
 @media (max-width: 900px){
-  .home-kpi-wrap{ grid-template-columns: minmax(0,1fr); }
+  .home-kpis-modul .hkpi-grid{
+    grid-template-columns: minmax(0,1fr);
+  }
 }
 
-.kpi-card{
+/* Tile */
+.home-kpis-modul .hkpi-tile{
   border-radius: 16px;
-  border: 1px solid rgba(148,163,184,.18);
+  border: 1px solid rgba(148,163,184,.16);
   background: rgba(2,6,23,.30);
   padding: 12px 12px 10px;
   min-width: 0;
   overflow: hidden;
 }
 
-.kpi-head{
+.home-kpis-modul .hkpi-top{
   display:flex;
   justify-content:space-between;
-  gap:10px;
+  gap: 10px;
   align-items:flex-start;
   min-width:0;
 }
 
-.kpi-title{
+.home-kpis-modul .hkpi-name{
   font-size: 12px;
   font-weight: 950;
   color: rgba(226,232,240,.92);
@@ -46,7 +85,7 @@
   text-overflow: ellipsis;
 }
 
-.kpi-sub{
+.home-kpis-modul .hkpi-desc{
   margin-top: 3px;
   font-size: 11px;
   color: rgba(148,163,184,.95);
@@ -55,51 +94,49 @@
   text-overflow: ellipsis;
 }
 
-.kpi-value{
+.home-kpis-modul .hkpi-val{
   text-align:right;
   min-width:0;
 }
-
-.kpi-value .v{
+.home-kpis-modul .hkpi-val .v{
   font-size: 18px;
   font-weight: 950;
   color: rgba(226,232,240,.95);
   white-space: nowrap;
 }
-
-.kpi-value .d{
+.home-kpis-modul .hkpi-val .d{
   margin-top: 3px;
   font-size: 11px;
   color: rgba(148,163,184,.95);
   white-space: nowrap;
 }
 
-.kpi-spark{
+/* Spark area */
+.home-kpis-modul .hkpi-spark{
   margin-top: 10px;
   border-top: 1px solid rgba(148,163,184,.12);
   padding-top: 10px;
 }
 
-.spark-bars{
+.home-kpis-modul .hkpi-bars{
   display:flex;
   gap: 6px;
   align-items:flex-end;
-  height: 54px;
-  min-width: 0;
-  overflow: hidden;
+  height: 56px;
+  overflow: hidden; /* NO sideways scroll */
 }
 
-.spark-col{
+.home-kpis-modul .hkpi-col{
   flex: 1 1 0;
   min-width: 0;
   border-radius: 8px;
   position: relative;
   background: rgba(148,163,184,.10);
-  overflow: hidden;
   border: 1px solid rgba(148,163,184,.10);
+  overflow: hidden;
 }
 
-.spark-col > i{
+.home-kpis-modul .hkpi-col > i{
   display:block;
   width:100%;
   position:absolute;
@@ -109,29 +146,48 @@
   background: rgba(148,163,184,.45); /* past default */
 }
 
-.spark-col[data-state="current"] > i{
-  background: rgba(59,130,246,.95);  /* current month blue */
+.home-kpis-modul .hkpi-col[data-state="current"] > i{
+  background: rgba(59,130,246,.95);  /* blue */
 }
 
-.spark-col[data-state="future_up"] > i{
-  background: rgba(34,197,94,.95);   /* future trend up green */
+.home-kpis-modul .hkpi-col[data-state="future_up"] > i{
+  background: rgba(34,197,94,.95);   /* green */
 }
 
-.spark-col[data-state="future_down"] > i{
-  background: rgba(239,68,68,.95);   /* future trend down red */
+.home-kpis-modul .hkpi-col[data-state="future_down"] > i{
+  background: rgba(239,68,68,.95);   /* red */
 }
 
-.spark-labels{
+.home-kpis-modul .hkpi-labels{
   margin-top: 8px;
   display:flex;
   justify-content:space-between;
-  gap:10px;
+  gap: 10px;
   font-size: 10px;
   color: rgba(148,163,184,.95);
 }
 
-.kpi-empty{
-  padding: 14px;
-  color: rgba(226,232,240,.75);
+.home-kpis-modul .hkpi-foot{
+  padding: 10px 14px 12px;
+  border-top: 1px solid rgba(148,163,184,.14);
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  color: rgba(148,163,184,.95);
+  font-size: 11px;
+}
+
+.home-kpis-modul .hkpi-dot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(34,197,94,.95);
+  box-shadow: 0 0 0 4px rgba(34,197,94,.12);
+}
+
+.home-kpis-modul .hkpi-empty{
+  margin-top: 10px;
+  color: rgba(226,232,240,.72);
   font-size: 12px;
+  line-height: 1.35;
 }
