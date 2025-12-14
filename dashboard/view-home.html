@@ -17,11 +17,33 @@
 
   <style>
     html,body{ overflow-x:hidden !important; }
-    .home-grid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); min-width:0; }
-    .span6{ grid-column:span 6; min-width:0; }
-    .span12{ grid-column:span 12; min-width:0; }
-    @media (max-width:900px){ .span6{ grid-column:span 12; } }
+
+    .home-grid{
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap: var(--gap);
+      min-width:0;
+    }
+    .span6{ grid-column: span 6; min-width:0; }
+    .span12{ grid-column: span 12; min-width:0; }
+    @media (max-width: 900px){
+      .span6{ grid-column: span 12; }
+    }
+
     .module-slot{ width:100%; min-width:0; }
+
+    .alert{
+      border-radius:14px;
+      border:1px solid rgba(248,113,113,.35);
+      background: rgba(248,113,113,.08);
+      padding:12px 14px;
+      color: rgba(226,232,240,.92);
+      font-size:12px;
+      line-height:1.35;
+      white-space: pre-wrap;
+      overflow-wrap:anywhere;
+    }
+    .alert strong{ font-weight:950; }
   </style>
 </head>
 
@@ -30,26 +52,52 @@
 
   <template id="pageTpl">
     <section class="home-grid">
+
+      <!-- Wetter links -->
       <section class="span6">
         <div class="card">
-          <div class="card-header"><div><div class="card-title">Wetter</div></div></div>
-          <div class="card-body"><div class="module-slot" id="slotHomeWeather"></div></div>
+          <div class="card-header">
+            <div>
+              <div class="card-title">Wetter</div>
+              <div class="card-sub">Heute + 5 Tage Vorschau</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="module-slot" id="slotWeather"></div>
+          </div>
         </div>
       </section>
 
+      <!-- Kalender rechts -->
       <section class="span6">
         <div class="card">
-          <div class="card-header"><div><div class="card-title">Kalender</div></div></div>
-          <div class="card-body"><div class="module-slot" id="slotHomeCalendar"></div></div>
+          <div class="card-header">
+            <div>
+              <div class="card-title">Kalender</div>
+              <div class="card-sub">Monat · Feiertage im Grid · Countdown bis 01.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="module-slot" id="slotCalendar"></div>
+          </div>
         </div>
       </section>
 
+      <!-- KPIs unten volle Breite -->
       <section class="span12">
         <div class="card">
-          <div class="card-header"><div><div class="card-title">KPIs</div><div class="card-sub">aus Excel</div></div></div>
-          <div class="card-body" id="slotHomeKPIs"></div>
+          <div class="card-header">
+            <div>
+              <div class="card-title">KPIs</div>
+              <div class="card-sub">6 Monate Rückblick + 3 Monate Forecast</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="module-slot" id="slotKpis"></div>
+          </div>
         </div>
       </section>
+
     </section>
   </template>
 
@@ -57,27 +105,101 @@
     (async function(){
       Shell.mount({ active:"./view-home.html", title:"Home", sub:"Wetter · Kalender · KPIs" });
 
-      await ExcelLoader.load("./Dashboard.xlsx");
+      const V = new URLSearchParams(location.search).get("v") || String(Date.now());
+      const withV = (p)=> p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(V);
 
-      // KPIs simple aus Excel (falls du dafür ein eigenes Modul hast: sag Dateinamen, dann binde ich es wie Finance/Projects ein)
-      const kpis = window.IMMO_DATA?.home || [];
-      const kpiEl = document.getElementById("slotHomeKPIs");
-      kpiEl.innerHTML = `
-        <div class="tiles">
-          ${kpis.map(k=>`
-            <div class="tile">
-              <div class="k">${k.KPI || ""}</div>
-              <div class="v">${(k.Wert ?? "")} ${(k.Einheit ?? "")}</div>
-              <div class="h">${k.Kommentar || ""}</div>
-            </div>
-          `).join("")}
-        </div>
-      `;
+      function show(el, title, msg){
+        el.innerHTML = "";
+        const box = document.createElement("div");
+        box.className = "alert";
+        box.innerHTML = `<strong>${title}</strong>\n${msg}`;
+        el.appendChild(box);
+      }
 
-      // Wetter/Kalender: falls du dafür schon Module hast, sag die Dateinamen,
-      // dann binde ich sie genauso wie Finance/Projects ein (html/css/js + render()).
-      document.getElementById("slotHomeWeather").textContent = "Wetter-Modul: Dateinamen bitte nennen (html/css/js), dann binde ich es 1:1 ein.";
-      document.getElementById("slotHomeCalendar").textContent = "Kalender-Modul: Dateinamen bitte nennen (html/css/js), dann binde ich es 1:1 ein.";
+      function loadCssOnce(href){
+        const key = withV(href);
+        if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
+        return new Promise((resolve,reject)=>{
+          const l=document.createElement("link");
+          l.rel="stylesheet"; l.href=key; l.dataset.href=href;
+          l.onload=resolve;
+          l.onerror=()=>reject(new Error("CSS nicht geladen (404?): " + href));
+          document.head.appendChild(l);
+        });
+      }
+
+      function loadJsOnce(src){
+        const key = withV(src);
+        if(document.querySelector('script[data-src="'+src+'"]')) return Promise.resolve();
+        return new Promise((resolve,reject)=>{
+          const s=document.createElement("script");
+          s.src=key; s.defer=true; s.dataset.src=src;
+          s.onload=resolve;
+          s.onerror=()=>reject(new Error("JS nicht geladen (404?): " + src));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function loadHtmlInto(url, el){
+        const r = await fetch(withV(url), { cache:"no-store" });
+        if(!r.ok) throw new Error("HTML nicht geladen (404?): " + url + " (HTTP " + r.status + ")");
+        el.innerHTML = await r.text();
+      }
+
+      async function mountModule({slotId, html, css, js, globalName, data}){
+        const slot = document.getElementById(slotId);
+        try{
+          await loadHtmlInto(html, slot);
+          await loadCssOnce(css);
+          await loadJsOnce(js);
+
+          const mod = window[globalName];
+          if(!mod) throw new Error("Global fehlt: window." + globalName);
+          if(typeof mod.render !== "function") throw new Error("render() fehlt: window." + globalName + ".render");
+
+          mod.render(slot, data);
+        }catch(e){
+          show(slot, "Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e));
+        }
+      }
+
+      // Excel laden (für KPIs). Wetter/Kalender laufen auch ohne Excel.
+      try{
+        await ExcelLoader.load(withV("./Dashboard.xlsx"));
+      }catch(e){
+        // KPIs kriegen dann Fehlbox, Wetter/Kalender trotzdem rendern
+        console.warn("Excel load failed:", e);
+      }
+
+      const homeKpis = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
+      const finance  = Array.isArray(window.IMMO_DATA?.finance) ? window.IMMO_DATA.finance : [];
+
+      await mountModule({
+        slotId:"slotWeather",
+        html:"./home-weather-modul.html",
+        css:"./home-weather-modul.css",
+        js:"./home-weather-modul.js",
+        globalName:"HomeWeatherModul",
+        data:{ location:"Ganderkesee", country:"DE" }
+      });
+
+      await mountModule({
+        slotId:"slotCalendar",
+        html:"./home-calendar-modul.html",
+        css:"./home-calendar-modul.css",
+        js:"./home-calendar-modul.js",
+        globalName:"HomeCalendarModul",
+        data:{ rentDay: 1, country:"DE", region:"NI" } // NI = Niedersachsen (Feiertage sinnvoll)
+      });
+
+      await mountModule({
+        slotId:"slotKpis",
+        html:"./home-kpis-modul.html",
+        css:"./home-kpis-modul.css",
+        js:"./home-kpis-modul.js",
+        globalName:"HomeKpisModul",
+        data:{ homeKpis, finance }
+      });
     })();
   </script>
 </body>
