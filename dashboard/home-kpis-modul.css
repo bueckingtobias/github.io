@@ -5,10 +5,9 @@
 
 .kpi6-grid{
   display:grid;
-  grid-template-columns: repeat(2, minmax(0,1fr)); /* ✅ 2 nebeneinander */
+  grid-template-columns: repeat(2, minmax(0,1fr));
   gap: 12px;
   align-items: stretch;
-  min-width:0;
 }
 
 @media (max-width: 900px){
@@ -20,51 +19,36 @@
   border: 1px solid rgba(148,163,184,.16);
   background: rgba(2,6,23,.22);
   overflow:hidden;
-  min-width:0;
   display:flex;
   flex-direction:column;
-  min-height: 210px; /* ✅ deutlich größer */
+  min-height: 220px;
 }
 
 .kpi6-head{
-  padding: 14px 14px 12px;
+  padding: 14px;
   border-bottom: 1px solid rgba(148,163,184,.14);
   display:flex;
   justify-content:space-between;
   gap:10px;
-  align-items:flex-start;
-  background: rgba(255,255,255,.02);
 }
 
 .kpi6-title{
   font-size: 12px;
   font-weight: 950;
-  color: rgba(226,232,240,.92);
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  max-width: 42ch;
 }
 
 .kpi6-sub{
   margin-top: 4px;
   font-size: 11px;
   color: rgba(226,232,240,.66);
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  max-width: 60ch;
 }
 
 .kpi6-badge{
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  backdrop-filter: blur(10px);
-  padding: 7px 10px;
+  padding: 6px 10px;
   font-size: 10px;
-  color: rgba(226,232,240,.75);
-  white-space: nowrap;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
 }
 
 .kpi6-body{
@@ -72,65 +56,49 @@
   display:flex;
   flex-direction:column;
   gap: 12px;
-  min-height:0;
   flex: 1 1 auto;
 }
 
 .kpi6-value{
   font-size: 26px;
   font-weight: 950;
-  letter-spacing: -.02em;
-  color: rgba(226,232,240,.95);
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-}
-
-.kpi6-meta{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  font-size: 11px;
-  color: rgba(226,232,240,.66);
 }
 
 .kpi6-chart{
-  flex: 1 1 auto;
-  min-height: 0;
+  flex:1 1 auto;
   display:grid;
-  grid-template-columns: repeat(9, minmax(0,1fr)); /* 6 Rückblick + 3 Forecast */
+  grid-template-columns: repeat(9, minmax(0,1fr));
   gap: 6px;
   align-items:end;
 }
 
 .kpi6-bar{
+  height: 90px;
   border-radius: 10px;
   background: rgba(148,163,184,.10);
-  border: 1px solid rgba(148,163,184,.10);
-  height: 84px;
-  overflow:hidden;
+  border:1px solid rgba(148,163,184,.12);
   display:flex;
   align-items:flex-end;
+  overflow:hidden;
 }
 
 .kpi6-fill{
-  width: 100%;
-  height: 0%;
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(59,130,246,1), rgba(37,99,235,1));
-  transition: height .9s cubic-bezier(.16,1,.3,1);
+  width:100%;
+  height:0%;
+  border-radius:10px;
+  transition: height .9s cubic-bezier(.16,1,.3,1),
+              background .4s ease;
 }
 
-.kpi6-fill.forecast{
-  background: linear-gradient(180deg, rgba(34,197,94,1), rgba(74,222,128,1)); /* Forecast grün */
-  opacity: .90;
-}
+/* ===== Farben ===== */
+.kpi-past{ background: linear-gradient(180deg,#9ca3af,#6b7280); }   /* grau */
+.kpi-current{ background: linear-gradient(180deg,#3b82f6,#2563eb); } /* blau */
+.kpi-future-up{ background: linear-gradient(180deg,#22c55e,#16a34a); } /* grün */
+.kpi-future-down{ background: linear-gradient(180deg,#ef4444,#dc2626); } /* rot */
 
 .kpi6-foot{
-  margin-top: 4px;
-  font-size: 10px;
+  font-size:10px;
   color: rgba(226,232,240,.60);
   display:flex;
   justify-content:space-between;
-  gap:10px;
 }
