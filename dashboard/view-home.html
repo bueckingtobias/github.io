@@ -7,28 +7,25 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <!-- Cache-Buster -->
+  <!-- Cache-Buster: hochzählen wenn Safari cached -->
   <script>
-    window.__VER = "20251214-Home-3";
+    window.__VER = "20251214-Home-4";
   </script>
 
-  <!-- ===== GLOBAL / SHELL ===== -->
-  <link rel="stylesheet" href="./shell.css?v=20251214-Home-3" />
+  <!-- Shell / Sidebar -->
+  <link rel="stylesheet" href="./shell.css?v=20251214-Home-4" />
 
-  <!-- ===== HOME MODULE STYLES ===== -->
-  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-3" />
-  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-3" />
-  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-3" />
+  <!-- Home Module CSS -->
+  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-4" />
+  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-4" />
+  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-4" />
 
   <style>
     :root{
       --homeGap: 14px;
-
-      /* ⬆⬆ HIER: doppelte Höhe für Wetter + Kalender */
-      --homeTopH: 720px;
+      --homeTopH: 720px; /* doppelt hoch */
     }
-
-    html, body { overflow-x: hidden; }
+    html, body { overflow-x:hidden; }
 
     .home-grid{
       display:grid;
@@ -37,7 +34,6 @@
       align-items:stretch;
       min-width:0;
     }
-
     .col-6{ grid-column: span 6; min-width:0; }
     .col-12{ grid-column: span 12; min-width:0; }
 
@@ -45,19 +41,14 @@
       .col-6{ grid-column: span 12; }
     }
 
-    /* ===== TOP MODULE HEIGHT ===== */
     .home-top{
       height: var(--homeTopH);
       display:flex;
       flex-direction:column;
       min-height:0;
     }
-
-    /* Mobile: content-driven height */
     @media (max-width: 900px){
-      .home-top{
-        height: auto;
-      }
+      .home-top{ height:auto; }
     }
 
     .module-host{
@@ -75,13 +66,27 @@
       border: 1px solid rgba(239,68,68,.25);
       background: rgba(239,68,68,.08);
     }
+
+    /* Optional: kleine Statuschips oben rechts */
+    .top-right .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(15,23,42,.45);
+      color: rgba(226,232,240,.82);
+      font-size:11px;
+      white-space:nowrap;
+    }
   </style>
 </head>
 
 <body>
 <div class="app">
 
-  <!-- SIDEBAR -->
+  <!-- Sidebar (gleich überall + Logout) -->
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-dot"></div>
@@ -124,7 +129,7 @@
         <div class="nav-ic">✎</div>
         <div class="nav-txt">
           <div class="nav-title">Admin Daten</div>
-          <div class="nav-sub">Pflege IMMO_DATA</div>
+          <div class="nav-sub">Pflege Master</div>
         </div>
       </a>
     </nav>
@@ -134,7 +139,7 @@
     </div>
   </aside>
 
-  <!-- MAIN -->
+  <!-- Main -->
   <section class="main">
 
     <header class="topbar">
@@ -144,6 +149,7 @@
       </div>
       <div class="top-right">
         <span class="chip" id="clockTop">—</span>
+        <span class="chip" id="dataChip">Daten: —</span>
       </div>
     </header>
 
@@ -152,7 +158,7 @@
 
         <section class="home-grid">
 
-          <!-- WETTER -->
+          <!-- Wetter -->
           <section class="card col-6 home-top">
             <div class="card-header">
               <div>
@@ -163,7 +169,7 @@
             <div class="card-body module-host" id="weatherHost"></div>
           </section>
 
-          <!-- KALENDER -->
+          <!-- Kalender -->
           <section class="card col-6 home-top">
             <div class="card-header">
               <div>
@@ -192,14 +198,14 @@
   </section>
 </div>
 
-<!-- DATA -->
-<script src="./master-data.js?v=20251214-Home-3"></script>
-<script src="./data-loader.js?v=20251214-Home-3"></script>
+<!-- Data (Master → IMMO_DATA) -->
+<script src="./master-data.js?v=20251214-Home-4"></script>
+<script src="./data-loader.js?v=20251214-Home-4"></script>
 
-<!-- MODULE SCRIPTS -->
-<script src="./home-weather-modul.js?v=20251214-Home-3"></script>
-<script src="./home-calendar-modul.js?v=20251214-Home-3"></script>
-<script src="./home-kpis-modul.js?v=20251214-Home-3"></script>
+<!-- Module scripts -->
+<script src="./home-weather-modul.js?v=20251214-Home-4"></script>
+<script src="./home-calendar-modul.js?v=20251214-Home-4"></script>
+<script src="./home-kpis-modul.js?v=20251214-Home-4"></script>
 
 <script>
 (async function(){
@@ -208,9 +214,7 @@
   const clockTop = document.getElementById("clockTop");
   function tick(){
     const d = new Date();
-    clockTop.textContent = d.toLocaleString("de-DE", {
-      weekday:"short", hour:"2-digit", minute:"2-digit"
-    });
+    clockTop.textContent = d.toLocaleString("de-DE", { weekday:"short", hour:"2-digit", minute:"2-digit" });
   }
   tick(); setInterval(tick, 15000);
 
@@ -220,6 +224,7 @@
     location.href = "./index.html";
   };
 
+  // Fragment loader
   async function injectFragment(hostId, fragmentPath){
     const host = document.getElementById(hostId);
     if (!host) return;
@@ -239,18 +244,31 @@
     }
   }
 
-  // Load fragments
+  // 1) Inject module HTML
   await injectFragment("weatherHost", "./home-weather-modul.html");
   await injectFragment("calendarHost", "./home-calendar-modul.html");
   await injectFragment("kpisHost", "./home-kpis-modul.html");
 
-  // Load data
+  // 2) Load data
   await DataLoader.load();
 
-  // Render modules
+  // 3) Data chip
+  const chip = document.getElementById("dataChip");
+  const homeCount = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home.length : 0;
+  const ver = window.IMMO_DATA_META?.version || window.IMMO_MASTER_DATA?.version || "—";
+  chip.textContent = `Daten: ${homeCount} Monate · v ${ver}`;
+
+  // 4) Render modules
   if (window.HomeWeatherModul?.render) HomeWeatherModul.render(document.getElementById("weatherHost"));
   if (window.HomeCalendarModul?.render) HomeCalendarModul.render(document.getElementById("calendarHost"));
   if (window.HomeKpisModul?.render) HomeKpisModul.render(document.getElementById("kpisHost"));
+
+  // 5) iPad timing retry
+  setTimeout(() => {
+    if (window.HomeWeatherModul?.render) HomeWeatherModul.render(document.getElementById("weatherHost"));
+    if (window.HomeCalendarModul?.render) HomeCalendarModul.render(document.getElementById("calendarHost"));
+    if (window.HomeKpisModul?.render) HomeKpisModul.render(document.getElementById("kpisHost"));
+  }, 250);
 
 })();
 </script>
