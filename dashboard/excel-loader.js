@@ -5,63 +5,123 @@
     await loadXLSX();
 
     const res = await fetch(path, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Excel fetch failed: ${res.status}`);
+
     const buf = await res.arrayBuffer();
     const wb = XLSX.read(buf, { type: "array" });
 
     const sheets = {};
-    wb.SheetNames.forEach(n => {
-      sheets[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], { defval: "" });
+    wb.SheetNames.forEach(name => {
+      sheets[name] = XLSX.utils.sheet_to_json(wb.Sheets[name], {
+        defval: "",
+        raw: false
+      });
     });
 
-    const gesamt = sheets.Projects_Gesamt?.[0] || {};
-    const gewerke = (sheets.Projects_Gewerke || []).map((r, i) => {
-      const angebot = num(r.Angebot || r.Angebotssumme || r["Angebot (€)"]);
-      const gezahlt = num(r.Gezahlt || r.Zahlungen || r["Zahlungen bisher"] || r["Zahlungen (€)"]);
-      const fortschritt = num(r["Fortschritt_%"] || r["Fortschritt %"] || r.Baufortschritt);
+    /* =========================
+       HOME
+       ========================= */
+    const home = pickSheet(sheets,
+      "Home_KPIs",
+      "HOME_KPI",
+      "VIEW_HOME"
+    );
 
-      return {
-        ...r,
+    /* =========================
+       PROJECTS
+       ========================= */
+    const gesamt = firstRow(pickSheet(sheets,
+      "Projects_Gesamt",
+      "PROJEKTE_GESAMT",
+      "VIEW_PROJEKTE"
+    ));
 
-        // 🔥 alle Varianten gleichzeitig
-        Angebot: angebot,
-        Angebotssumme: angebot,
-        "Angebot (€)": angebot,
+    const gewerkeRaw = pickSheet(sheets,
+      "Projects_Gewerke",
+      "PROJEKTE_GEWERKE"
+    ) || [];
 
-        Gezahlt: gezahlt,
-        Zahlungen: gezahlt,
-        Zahlungen_bisher: gezahlt,
-        "Zahlungen bisher": gezahlt,
-        "Zahlungen (€)": gezahlt,
+    const gewerke = gewerkeRaw
+      .filter(r => !isEmptyRow(r))
+      .map((r, i) => {
+        const angebot = num(r["Angebot"] || r["Angebot (€)"]);
+        const gezahlt = num(r["Gezahlt"] || r["Zahlungen (€)"]);
+        const fortschritt = num(r["Baufortschritt %"]);
 
-        Baufortschritt: fortschritt,
-        Baufortschritt_prozent: fortschritt,
-        "Baufortschritt %": fortschritt,
+        return {
+          ...r,
+          Angebot: angebot,
+          Angebotssumme: angebot,
+          Gezahlt: gezahlt,
+          Zahlungen: gezahlt,
+          Baufortschritt: fortschritt,
+          Baufortschritt_prozent: fortschritt,
+          Aktiv: r["Aktiv (Ja/Nein)"] || "Ja",
+          Sortierung: i + 1,
+          Projekt: r.Projekt || gesamt.Projekt || "",
+          Objekt: r.Objekt || gesamt.Adresse || ""
+        };
+      });
 
-        Aktiv: r["Aktiv (Ja/Nein)"] || "Ja",
-        "Aktiv (Ja/Nein)": r["Aktiv (Ja/Nein)"] || "Ja",
+    /* =========================
+       FINANCE
+       ========================= */
+    const financeSheets = {
+      gesamt: pickSheet(sheets, "FINANCE_GESAMT") || [],
+      cashflow: pickSheet(sheets, "FINANCE_CASHFLOW") || [],
+      mieten: pickSheet(sheets, "FINANCE_MIETEN") || [],
+      op: pickSheet(sheets, "FINANCE_OP") || [],
+      reserven: pickSheet(sheets, "FINANCE_RESERVEN") || [],
+      budget: pickSheet(sheets, "FINANCE_BUDGET") || []
+    };
 
-        Sortierung: i + 1,
-        Projekt: r.Projekt || gesamt.Projekt || "",
-        Objekt: r.Objekt || gesamt.Adresse || ""
-      };
-    });
-
+    /* =========================
+       GLOBAL EXPORT
+       ========================= */
     window.IMMO_DATA = {
-      home: sheets.Home_KPIs || [],
-      finance: sheets.Finance || [],
+      home,
       projects: {
         gesamt,
         gewerke
-      }
+      },
+      finance: financeSheets
     };
 
-    console.log("✅ Excel loaded & normalized", window.IMMO_DATA);
+    console.log("✅ Dashboard.xlsx geladen", window.IMMO_DATA);
   }
 
+  /* =========================
+     Helpers
+     ========================= */
   function num(v) {
     if (typeof v === "number") return v;
     if (!v) return 0;
-    return Number(String(v).replace(/\./g, "").replace(",", ".")) || 0;
+    let s = String(v).replace(/\s/g, "").replace("€", "");
+    if (s.includes(",") && s.includes(".")) {
+      if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+        s = s.replace(/\./g, "").replace(",", ".");
+      } else {
+        s = s.replace(/,/g, "");
+      }
+    } else {
+      s = s.replace(",", ".");
+    }
+    return Number(s) || 0;
+  }
+
+  function pickSheet(sheets, ...names) {
+    for (const n of names) {
+      if (Array.isArray(sheets[n])) return sheets[n];
+    }
+    return [];
+  }
+
+  function firstRow(arr) {
+    return Array.isArray(arr) && arr.length ? arr[0] : {};
+  }
+
+  function isEmptyRow(r) {
+    return !r || Object.values(r).every(v => v === "" || v === null);
   }
 
   function loadXLSX() {
