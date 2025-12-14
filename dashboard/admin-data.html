@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Dashboard · Admin Daten</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#0b1220" />
+
+  <link rel="stylesheet" href="./shell.css" />
+  <link rel="stylesheet" href="./admin-data.css" />
+
+  <!-- Master data + loader -->
+  <script src="./master-data.js"></script>
+  <script src="./data-loader.js"></script>
+</head>
+
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div style="min-width:0">
+          <div class="brand-title">Bücking Dashboard</div>
+          <div class="brand-sub">Admin · Datenpflege</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <a href="./view-home.html" data-title="Home" data-sub="Wetter, Kalender, KPIs">
+          <div class="nav-ic">⌂</div>
+          <div class="nav-txt">
+            <div class="nav-title">Home</div>
+            <div class="nav-sub">Wetter, Kalender, KPIs</div>
+          </div>
+        </a>
+
+        <div class="nav-label">Projekte</div>
+
+        <a href="./view-projects.html" data-title="Projekte / Bau" data-sub="Gesamt + Gewerke">
+          <div class="nav-ic">🏗</div>
+          <div class="nav-txt">
+            <div class="nav-title">Projekte / Bau</div>
+            <div class="nav-sub">Gesamt + Gewerke</div>
+          </div>
+        </a>
+
+        <a href="./view-finance.html" data-title="Finanzen" data-sub="Cashflow, Mieten, OP, Reserven, Budget">
+          <div class="nav-ic">€</div>
+          <div class="nav-txt">
+            <div class="nav-title">Finanzen</div>
+            <div class="nav-sub">Cashflow, Mieten, OP, Reserven</div>
+          </div>
+        </a>
+
+        <div class="nav-label">Tools</div>
+
+        <a href="./admin.html" data-title="Admin" data-sub="Settings, Debug">
+          <div class="nav-ic">⚙</div>
+          <div class="nav-txt">
+            <div class="nav-title">Admin</div>
+            <div class="nav-sub">Settings, Debug</div>
+          </div>
+        </a>
+
+        <a href="./admin-data.html" class="active" data-title="Admin Daten" data-sub="IMMO_DATA bearbeiten">
+          <div class="nav-ic">✎</div>
+          <div class="nav-txt">
+            <div class="nav-title">Admin Daten</div>
+            <div class="nav-sub">IMMO_DATA bearbeiten</div>
+          </div>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="chip" id="clockSide">—</span>
+        <span class="chip" id="overrideChip">override: —</span>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <section class="main">
+      <header class="topbar">
+        <div class="page-title">
+          <h1>Admin Daten</h1>
+          <div>Pflege direkt im Dashboard · Export als master-data.js</div>
+        </div>
+        <div class="top-right">
+          <span class="chip" id="clockTop">—</span>
+          <a class="btn btn-primary" href="./view-home.html">⌂ Home</a>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="container" style="max-width:1200px;">
+          <section class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Status</div>
+                <div class="card-sub">Datenquelle: Local Override (wenn gesetzt) sonst master-data.js</div>
+              </div>
+              <div class="adm-actions">
+                <button class="btn" id="btnReload">Neu laden</button>
+                <button class="btn" id="btnValidate">Validieren</button>
+                <button class="btn btn-primary" id="btnSave">Speichern (Override)</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="adm-status">
+                <span class="adm-chip" id="chipSource">Quelle: —</span>
+                <span class="adm-chip" id="chipVersion">Version: —</span>
+                <span class="adm-chip" id="chipUpdated">Updated: —</span>
+                <span class="adm-chip" id="chipCounts">Counts: —</span>
+              </div>
+              <div class="adm-hint">
+                Empfehlung: Pflege hier → “Export master-data.js” → Datei im Repo ersetzen → Override löschen (sauberer Go-Live).
+              </div>
+            </div>
+          </section>
+
+          <section class="grid">
+            <section class="card" style="grid-column: span 12;">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Editor</div>
+                  <div class="card-sub">JSON bearbeiten (IMMO_DATA). Zahlen bitte als Zahl, Monat als YYYY-MM.</div>
+                </div>
+                <div class="adm-actions">
+                  <button class="btn" id="btnCopy">Copy JSON</button>
+                  <button class="btn" id="btnDownload">Export master-data.js</button>
+                  <button class="btn" id="btnClear">Override löschen</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <textarea id="jsonEditor" class="adm-editor" spellcheck="false"></textarea>
+                <div class="adm-foot">
+                  <div class="adm-foot-left">
+                    <span class="adm-badge" id="msgBox">—</span>
+                  </div>
+                  <div class="adm-foot-right">
+                    <span class="adm-badge" id="sizeBox">—</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" style="grid-column: span 12;">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Schnellhilfe</div>
+                  <div class="card-sub">Wenn du willst, mache ich dir danach einen “Guided Editor” (Tabellen-UI) – ohne JSON.</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="adm-mini">
+                  <div class="adm-mini-title">Pfad-Struktur (wichtig für Module):</div>
+                  <pre class="adm-pre">window.IMMO_DATA = {
+  home: [ { Monat, Cashflow, Mieteinnahmen, Pachteinnahmen, Auslastung_%, Portfolio_Wert, Investiertes_Kapital }, ... ],
+  projects: { gesamt: {...}, gewerke: [ {...}, ... ] },
+  finance: { gesamt:[], cashflow:[], mieten:[], op:[], reserven:[], budget:[] }
+}</pre>
+                </div>
+              </div>
+            </section>
+          </section>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <script src="./admin-data.js"></script>
+</body>
+</html>
