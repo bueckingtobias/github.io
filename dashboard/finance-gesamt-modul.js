@@ -1,165 +1,86 @@
 (function(){
-  window.FinanceGesamtModul = window.FinanceGesamtModul || {};
-  window.FinanceGesamtModul.rootClass = "fin-gesamt-root";
-  window.FinanceGesamtModul.render = render;
-
-  function euro(n){
-    return (Number(n)||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+  function n(x){
+    if(x == null || x === "") return 0;
+    if(typeof x === "number" && isFinite(x)) return x;
+    const s = String(x).replace(/\s/g,"").replace(/€/g,"").replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,"");
+    const v = Number(s);
+    return isFinite(v) ? v : 0;
   }
-  function pct1(n){
-    return (Number(n)||0).toFixed(1).replace(".",",") + " %";
+  function eur(v){
+    return new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n(v));
   }
-  function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+  function pct(v){
+    const x = Number(v);
+    if(!isFinite(x)) return "—";
+    return (Math.round(x*10)/10).toFixed(1).replace(".",",") + " %";
+  }
+  function last(arr){ return (arr && arr.length) ? arr[arr.length-1] : null; }
 
-  function sum(arr, fn){
-    return (arr||[]).reduce((a,x)=>a + (fn?fn(x):Number(x||0)), 0);
+  function pickHome(homeRows, key){
+    const r = (homeRows||[]).find(x => String(x.KPI||"").trim() === key);
+    return r ? n(r.Wert) : null;
   }
 
-  function computeCashSeries(startCash, cashflow){
-    let cash = Number(startCash||0);
-    return (cashflow||[]).map(r=>{
-      const inflow = Number(r.inflow||0);
-      const outflow = Number(r.outflow||0);
-      const net = inflow - outflow;
-      cash += net;
-      return { ...r, inflow, outflow, net, cash };
+  function render(container, data){
+    const root = container.querySelector("[data-fg-root]") || container;
+
+    const financeRows  = Array.isArray(data?.financeRows) ? data.financeRows : [];
+    const opRows       = Array.isArray(data?.opRows) ? data.opRows : [];
+    const reservesRows = Array.isArray(data?.reservesRows) ? data.reservesRows : [];
+    const budgetRows   = Array.isArray(data?.budgetRows) ? data.budgetRows : [];
+    const homeRows     = Array.isArray(data?.homeRows) ? data.homeRows : [];
+
+    const elSub   = root.querySelector("[data-fg-sub]");
+    const elKpis  = root.querySelector("[data-fg-kpis]");
+    const elFazit = root.querySelector("[data-fg-fazit]");
+    const elNext  = root.querySelector("[data-fg-next]");
+
+    const now = new Date();
+    elSub.textContent = "Stand: " + now.toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+
+    const cur = last(financeRows);
+    const cashM  = cur ? n(cur.Cashflow) : null;
+    const mieteM = cur ? n(cur.Mieteinnahmen) : null;
+    const pachtM = cur ? n(cur.Pachteinnahmen) : null;
+
+    const opTotal = opRows.reduce((a,r)=> a + n(r.Betrag ?? r.Amount ?? r.Summe), 0);
+    const reservesTotal = reservesRows.reduce((a,r)=> a + n(r.Betrag ?? r.Amount ?? r.Summe), 0);
+
+    const budgetTotal = budgetRows.reduce((a,r)=> a + n(r.Budget), 0);
+    const istTotal    = budgetRows.reduce((a,r)=> a + n(r.Ist), 0);
+    const restBudget  = budgetTotal - istTotal;
+
+    const auslast = pickHome(homeRows, "Auslastung der Wohnungen");
+    const roi     = pickHome(homeRows, "Portfolio ROI");
+
+    const tiles = [
+      { k:"Cashflow (Monat)", v: cashM==null ? "—" : eur(cashM), m:"letzte Finance-Zeile" },
+      { k:"Miete (Monat)", v: mieteM==null ? "—" : eur(mieteM), m:"Eingang/Plan" },
+      { k:"Pacht (Monat)", v: pachtM==null ? "—" : eur(pachtM), m:"Eingang/Plan" },
+      { k:"OP gesamt", v: eur(opTotal), m:"offene Posten" },
+      { k:"Reserven", v: eur(reservesTotal), m:"Puffer" },
+      { k:"Restbudget", v: (budgetTotal>0 ? eur(restBudget) : "—"), m:"Budget - Ist" },
+    ];
+
+    elKpis.innerHTML = "";
+    tiles.forEach(t=>{
+      const d = document.createElement("div");
+      d.className = "fg-tile";
+      d.innerHTML = `<div class="fg-k">${t.k}</div><div class="fg-v">${t.v}</div><div class="fg-m">${t.m}</div>`;
+      elKpis.appendChild(d);
     });
+
+    const cashTxt = (cashM==null) ? "Cashflow-Daten prüfen" : (cashM >= 0 ? "Cashflow positiv" : "Cashflow negativ");
+    const opTxt   = opTotal > 0 ? ("OP offen: " + eur(opTotal)) : "OP sauber";
+    const extraA  = (auslast!=null) ? (" · Auslastung: " + pct(auslast)) : "";
+    const extraR  = (roi!=null) ? (" · ROI: " + pct(roi)) : "";
+    elFazit.textContent = cashTxt + " · " + opTxt + extraA + extraR;
+
+    const next = (opTotal > 0) ? "OP priorisieren & Fälligkeiten sichern"
+              : (restBudget < 0) ? "Budget-Überzug prüfen & korrigieren"
+              : "Forecast / Planwerte fortschreiben";
+    elNext.textContent = next;
   }
 
-  function overdueCount(items){
-    return (items||[]).filter(x => (""+(x.status||"")).toLowerCase().includes("ueber")).length;
-  }
-
-  function budgetInfo(budget){
-    const planned = sum(budget, x=>Number(x.plan||0));
-    const actual  = sum(budget, x=>Number(x.actual||0));
-    const fixed   = sum((budget||[]).filter(x=>(x.type||"")==="fixed"), x=>Number(x.actual||0));
-    const fixedShare = actual>0 ? fixed/actual*100 : 0;
-    return { planned, actual, fixed, fixedShare };
-  }
-
-  function render(rootEl, data, cashflowSliced, opts){
-    opts = opts || {};
-    const horizon = opts.horizon || 12;
-
-    const cashSeries = computeCashSeries(data.startCash, cashflowSliced);
-    const last = cashSeries[cashSeries.length-1] || { cash: Number(data.startCash||0) };
-
-    const netSum = sum(cashSeries, x=>x.net);
-    const avgNet = cashSeries.length ? (netSum/cashSeries.length) : 0;
-
-    const trend = cashSeries.length>=2 ? (cashSeries[cashSeries.length-1].cash - cashSeries[0].cash) : 0;
-
-    const b = budgetInfo(data.budget || []);
-    const bUsage = b.planned>0 ? (b.actual/b.planned*100) : 0;
-
-    const arSum = sum(data.ar, x=>Number(x.amount||0));
-    const apSum = sum(data.ap, x=>Number(x.amount||0));
-    const arOver = overdueCount(data.ar);
-    const apOver = overdueCount(data.ap);
-
-    const tax = (data.reserves||[]).find(r => (r.name||"").toLowerCase().includes("steuer")) || (data.reserves||[])[0] || { current:0, target:0 };
-    const buf = (data.reserves||[]).find(r => (r.name||"").toLowerCase().includes("liquid")) || (data.reserves||[])[2] || { current:0, target:0 };
-
-    const runway = avgNet < 0 ? (last.cash / Math.abs(avgNet)) : null;
-
-    const risk = (apOver>0) || (bUsage>108) || (runway!==null && runway < 6);
-    const statusClass = risk ? "warn" : "ok";
-    const statusText  = risk ? "Achtung: Risiken" : "Status: OK";
-
-    const cashW = clamp((last.cash / Math.max(1, Number(data.startCash||1))) * 100, 0, 200);
-    const budgetW = clamp(bUsage, 0, 200);
-
-    rootEl.innerHTML = `
-      <div class="fg-head">
-        <div>
-          <h2 class="fg-title">Finanzen – Gesamtübersicht</h2>
-          <div class="fg-sub">
-            <span class="fg-pill">Zeitraum: ${horizon}M</span>
-            <span class="fg-pill">Netto: ${euro(netSum)}</span>
-            <span class="fg-pill">Trend: ${(trend>=0?"↗ ":"↘ ")+euro(trend)}</span>
-            <span class="fg-pill">OP Netto (AR−AP): ${euro(arSum - apSum)}</span>
-          </div>
-        </div>
-        <div class="fg-status ${statusClass}">${statusText}</div>
-      </div>
-
-      <div class="fg-body">
-        <div class="fg-kpis">
-          <div class="fg-kpi">
-            <div class="l">Kontostand (EOM)</div>
-            <div class="v">${euro(last.cash)}</div>
-            <div class="h">Start: ${euro(data.startCash)} · Netto: ${euro(netSum)}</div>
-          </div>
-
-          <div class="fg-kpi">
-            <div class="l">Ø Net Cashflow</div>
-            <div class="v">${euro(avgNet)}</div>
-            <div class="h">${avgNet>=0 ? "positiver Trend" : "negativer Trend"} (Ø/Monat)</div>
-          </div>
-
-          <div class="fg-kpi">
-            <div class="l">Budgetverbrauch</div>
-            <div class="v">${pct1(bUsage)}</div>
-            <div class="h">Ist: ${euro(b.actual)} · Plan: ${euro(b.planned)}</div>
-          </div>
-
-          <div class="fg-kpi">
-            <div class="l">Fixkostenquote</div>
-            <div class="v">${pct1(b.fixedShare)}</div>
-            <div class="h">Fix: ${euro(b.fixed)} · Gesamt: ${euro(b.actual)}</div>
-          </div>
-
-          <div class="fg-kpi">
-            <div class="l">Überfällige OP</div>
-            <div class="v">${arOver + apOver}</div>
-            <div class="h">AR: ${arOver} · AP: ${apOver}</div>
-          </div>
-
-          <div class="fg-kpi">
-            <div class="l">Runway</div>
-            <div class="v">${runway===null ? "∞" : (runway.toFixed(1).replace(".",",")+"M")}</div>
-            <div class="h">nur relevant bei negativem Ø Cashflow</div>
-          </div>
-        </div>
-
-        <div class="fg-bars">
-          <div>
-            <div class="fg-rowtitle"><span>Cash-Entwicklung</span><span>${euro(last.cash)}</span></div>
-            <div class="fg-barrow">
-              <span>0</span>
-              <div class="fg-track">
-                <div class="fg-fill blue" data-w="${clamp(cashW,0,100)}%">${pct1(cashW)} vs Start</div>
-              </div>
-              <span>${euro(data.startCash)}</span>
-            </div>
-          </div>
-
-          <div>
-            <div class="fg-rowtitle"><span>Budget-Status</span><span>${euro(b.actual)} / ${euro(b.planned)}</span></div>
-            <div class="fg-barrow">
-              <span>0%</span>
-              <div class="fg-track">
-                <div class="fg-fill ${bUsage>110 ? "orange" : (bUsage>95 ? "blue" : "green")}" data-w="${clamp(bUsage,0,100)}%">${pct1(bUsage)}</div>
-              </div>
-              <span>100%</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="fg-meta">
-          Rücklagen: Steuern <strong>${euro(Number(tax.current||0))}</strong> / ${euro(Number(tax.target||0))} ·
-          Liquiditätspuffer <strong>${euro(Number(buf.current||0))}</strong> / ${euro(Number(buf.target||0))}
-        </div>
-      </div>
-    `;
-
-    requestAnimationFrame(()=>{
-      rootEl.querySelectorAll(".fg-fill[data-w]").forEach(el=>{
-        const w = el.getAttribute("data-w") || "0%";
-        el.style.width = "0%";
-        requestAnimationFrame(()=>{ el.style.width = w; });
-      });
-    });
-  }
+  window.FinanceGesamtModul = { render };
 })();
