@@ -1,104 +1,137 @@
-.kpi6-root{
-  min-width:0;
-  width:100%;
+/* home-kpi-modul.css
+   KPI Grid: 2 nebeneinander, 3 untereinander => 6 Kacheln
+   Apple-clean lines, no horizontal scroll
+*/
+
+.home-kpi-mount{
+  width: 100%;
+  min-width: 0;
 }
 
-.kpi6-grid{
-  display:grid;
+.home-kpi-wrap{
+  padding: 14px;
+  display: grid;
   grid-template-columns: repeat(2, minmax(0,1fr));
   gap: 12px;
-  align-items: stretch;
+  min-width: 0;
 }
 
 @media (max-width: 900px){
-  .kpi6-grid{ grid-template-columns: 1fr; }
+  .home-kpi-wrap{ grid-template-columns: minmax(0,1fr); }
 }
 
-.kpi6-card{
-  border-radius: 18px;
-  border: 1px solid rgba(148,163,184,.16);
-  background: rgba(2,6,23,.22);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  min-height: 220px;
+.kpi-card{
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.30);
+  padding: 12px 12px 10px;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.kpi6-head{
-  padding: 14px;
-  border-bottom: 1px solid rgba(148,163,184,.14);
+.kpi-head{
   display:flex;
   justify-content:space-between;
   gap:10px;
+  align-items:flex-start;
+  min-width:0;
 }
 
-.kpi6-title{
+.kpi-title{
   font-size: 12px;
   font-weight: 950;
+  color: rgba(226,232,240,.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.kpi6-sub{
-  margin-top: 4px;
+.kpi-sub{
+  margin-top: 3px;
   font-size: 11px;
-  color: rgba(226,232,240,.66);
+  color: rgba(148,163,184,.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.kpi6-badge{
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 10px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
+.kpi-value{
+  text-align:right;
+  min-width:0;
 }
 
-.kpi6-body{
-  padding: 14px;
-  display:flex;
-  flex-direction:column;
-  gap: 12px;
-  flex: 1 1 auto;
-}
-
-.kpi6-value{
-  font-size: 26px;
+.kpi-value .v{
+  font-size: 18px;
   font-weight: 950;
+  color: rgba(226,232,240,.95);
+  white-space: nowrap;
 }
 
-.kpi6-chart{
-  flex:1 1 auto;
-  display:grid;
-  grid-template-columns: repeat(9, minmax(0,1fr));
-  gap: 6px;
-  align-items:end;
+.kpi-value .d{
+  margin-top: 3px;
+  font-size: 11px;
+  color: rgba(148,163,184,.95);
+  white-space: nowrap;
 }
 
-.kpi6-bar{
-  height: 90px;
-  border-radius: 10px;
-  background: rgba(148,163,184,.10);
-  border:1px solid rgba(148,163,184,.12);
+.kpi-spark{
+  margin-top: 10px;
+  border-top: 1px solid rgba(148,163,184,.12);
+  padding-top: 10px;
+}
+
+.spark-bars{
   display:flex;
+  gap: 6px;
   align-items:flex-end;
-  overflow:hidden;
+  height: 54px;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.kpi6-fill{
+.spark-col{
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 8px;
+  position: relative;
+  background: rgba(148,163,184,.10);
+  overflow: hidden;
+  border: 1px solid rgba(148,163,184,.10);
+}
+
+.spark-col > i{
+  display:block;
   width:100%;
-  height:0%;
-  border-radius:10px;
-  transition: height .9s cubic-bezier(.16,1,.3,1),
-              background .4s ease;
+  position:absolute;
+  left:0; bottom:0;
+  height: 10%;
+  border-radius: 8px;
+  background: rgba(148,163,184,.45); /* past default */
 }
 
-/* ===== Farben ===== */
-.kpi-past{ background: linear-gradient(180deg,#9ca3af,#6b7280); }   /* grau */
-.kpi-current{ background: linear-gradient(180deg,#3b82f6,#2563eb); } /* blau */
-.kpi-future-up{ background: linear-gradient(180deg,#22c55e,#16a34a); } /* grün */
-.kpi-future-down{ background: linear-gradient(180deg,#ef4444,#dc2626); } /* rot */
+.spark-col[data-state="current"] > i{
+  background: rgba(59,130,246,.95);  /* current month blue */
+}
 
-.kpi6-foot{
-  font-size:10px;
-  color: rgba(226,232,240,.60);
+.spark-col[data-state="future_up"] > i{
+  background: rgba(34,197,94,.95);   /* future trend up green */
+}
+
+.spark-col[data-state="future_down"] > i{
+  background: rgba(239,68,68,.95);   /* future trend down red */
+}
+
+.spark-labels{
+  margin-top: 8px;
   display:flex;
   justify-content:space-between;
+  gap:10px;
+  font-size: 10px;
+  color: rgba(148,163,184,.95);
+}
+
+.kpi-empty{
+  padding: 14px;
+  color: rgba(226,232,240,.75);
+  font-size: 12px;
 }
