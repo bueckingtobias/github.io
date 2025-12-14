@@ -1,0 +1,96 @@
+/* dashboard/admin-data.css */
+
+.adm-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.adm-status{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+
+.adm-chip{
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.45);
+  color: rgba(226,232,240,.82);
+  font-size: 11px;
+  white-space:nowrap;
+}
+
+.adm-hint{
+  margin-top:10px;
+  font-size: 12px;
+  color: rgba(226,232,240,.72);
+  line-height: 1.35;
+}
+
+.adm-editor{
+  width:100%;
+  min-height: 460px;
+  border-radius: 14px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.45);
+  color: rgba(226,232,240,.92);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 12px;
+  outline: none;
+  resize: vertical;
+}
+
+.adm-editor:focus{
+  border-color: rgba(59,130,246,.30);
+  box-shadow: 0 0 0 4px rgba(59,130,246,.08);
+}
+
+.adm-foot{
+  margin-top:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.adm-badge{
+  padding:6px 10px;
+  border-radius: 999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.35);
+  color: rgba(226,232,240,.78);
+  font-size: 11px;
+  white-space:nowrap;
+}
+
+.adm-mini{
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.30);
+  padding: 12px;
+}
+
+.adm-mini-title{
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.adm-pre{
+  margin: 0;
+  padding: 10px;
+  border-radius: 12px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.35);
+  overflow:auto;
+  color: rgba(226,232,240,.90);
+  font-size: 11px;
+  line-height: 1.45;
+}
