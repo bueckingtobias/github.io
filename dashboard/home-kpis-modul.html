@@ -1,3 +1,24 @@
-<div class="kpi6-root" data-kpi6-root>
-  <div class="kpi6-grid" data-kpi6-grid></div>
+<div class="home-kpis-modul" id="homeKpisModul">
+  <div class="hkpi-head">
+    <div>
+      <div class="hkpi-title">KPIs</div>
+      <div class="hkpi-sub">6 Monate Rückblick · aktueller Monat blau · 3 Monate Forecast (Trend grün/rot)</div>
+    </div>
+    <div class="hkpi-badge" id="hkpiBadge">—</div>
+  </div>
+
+  <div class="hkpi-body">
+    <div class="hkpi-grid" id="hkpiGrid">
+      <!-- wird per JS gerendert -->
+    </div>
+
+    <div class="hkpi-empty" id="hkpiEmpty" style="display:none;">
+      Keine KPI-Daten gefunden. Prüfe bitte, ob dein Loader das Sheet <b>HOME_KPI</b> bereitstellt.
+    </div>
+  </div>
+
+  <div class="hkpi-foot" id="hkpiFoot">
+    <span class="hkpi-dot"></span>
+    <span id="hkpiStatus">Warte auf Daten …</span>
+  </div>
 </div>
