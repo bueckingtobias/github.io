@@ -1,43 +1,10 @@
 (function(){
-  window.HomeCalendarModul = window.HomeCalendarModul || {};
-  window.HomeCalendarModul.rootClass = "home-calendar-root";
-  window.HomeCalendarModul.render = render;
+  function qs(root, sel){ return root.querySelector(sel); }
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
 
-  // Fixed rent date: 01. of each month
-  const RENT_DAY = 1;
-
-  function esc(s){ return String(s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
-
-  function ymd(d){
-    const x = new Date(d);
-    const y = x.getFullYear();
-    const m = String(x.getMonth()+1).padStart(2,"0");
-    const da= String(x.getDate()).padStart(2,"0");
-    return `${y}-${m}-${da}`;
-  }
-  function addDays(date, n){ const d = new Date(date); d.setDate(d.getDate()+n); return d; }
-  function addMonths(date, n){ const d = new Date(date); d.setDate(1); d.setMonth(d.getMonth()+n); return d; }
-  function stripTime(d){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
-  function monthLabel(d){ return d.toLocaleDateString("de-DE",{ month:"long", year:"numeric" }); }
-  function dowLabels(){ return ["Mo","Di","Mi","Do","Fr","Sa","So"]; }
-
-  function daysBetween(a,b){
-    const A = stripTime(a).getTime();
-    const B = stripTime(b).getTime();
-    return Math.round((B - A) / (1000*60*60*24));
-  }
-
-  function nextRentDate(fromDate){
-    const d = stripTime(fromDate);
-    const y = d.getFullYear();
-    const m = d.getMonth();
-    const thisMonth = new Date(y, m, RENT_DAY);
-    if(thisMonth >= d) return thisMonth;
-    return new Date(y, m+1, RENT_DAY);
-  }
-
-  // Easter Sunday (Gregorian)
-  function easterSunday(year){
+  // Easter (Anonymous Gregorian algorithm)
+  function easterDate(year){
     const a = year % 19;
     const b = Math.floor(year / 100);
     const c = year % 100;
@@ -54,169 +21,123 @@
     const day = ((h + l - 7*m + 114) % 31) + 1;
     return new Date(year, month-1, day);
   }
+  function addDays(d, n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
 
-  // Germany (bundesweit) holidays: fixed + Easter-based subset
-  function holidayMapForYear(year){
+  function holidaysDE(year, region){
+    const e = easterDate(year);
     const map = new Map();
 
-    // Fixed
-    [
-      { mmdd:"01-01", name:"Neujahr" },
-      { mmdd:"05-01", name:"Tag der Arbeit" },
-      { mmdd:"10-03", name:"Tag der Deutschen Einheit" },
-      { mmdd:"12-25", name:"1. Weihnachtstag" },
-      { mmdd:"12-26", name:"2. Weihnachtstag" }
-    ].forEach(h=> map.set(`${year}-${h.mmdd}`, h.name));
+    map.set(`${year}-01-01`, "Neujahr");
+    map.set(`${year}-05-01`, "Tag der Arbeit");
+    map.set(`${year}-10-03`, "Tag der Deutschen Einheit");
+    map.set(`${year}-12-25`, "1. Weihnachtstag");
+    map.set(`${year}-12-26`, "2. Weihnachtstag");
 
-    // Easter-based
-    const easter = easterSunday(year);
-    map.set(ymd(addDays(easter, -2)), "Karfreitag");
-    map.set(ymd(addDays(easter, 1)), "Ostermontag");
-    map.set(ymd(addDays(easter, 39)), "Christi Himmelfahrt");
-    map.set(ymd(addDays(easter, 50)), "Pfingstmontag");
+    map.set(iso(addDays(e,-2)), "Karfreitag");
+    map.set(iso(addDays(e,1)), "Ostermontag");
+    map.set(iso(addDays(e,39)), "Christi Himmelfahrt");
+    map.set(iso(addDays(e,50)), "Pfingstmontag");
 
+    if(String(region||"").toUpperCase() === "NI"){
+      map.set(`${year}-10-31`, "Reformationstag");
+    }
     return map;
   }
 
-  function holidayName(date){
-    const y = date.getFullYear();
-    const key = ymd(date);
-    const m1 = holidayMapForYear(y-1);
-    const m2 = holidayMapForYear(y);
-    const m3 = holidayMapForYear(y+1);
-    return m1.get(key) || m2.get(key) || m3.get(key) || "";
-  }
+  function render(container, data){
+    const root = container.querySelector("[data-ac-root]") || container;
 
-  function buildMonthGrid(viewDate){
-    const y = viewDate.getFullYear();
-    const m = viewDate.getMonth();
-    const first = new Date(y, m, 1);
-    const last  = new Date(y, m+1, 0);
+    const rentDay = (data && Number(data.rentDay)) ? Number(data.rentDay) : 1;
+    const region = (data && data.region) ? String(data.region) : "NI";
 
-    // monday-first
-    const firstDowSunday0 = first.getDay(); // 0=Sun
-    const firstDowMon1 = (firstDowSunday0 === 0) ? 7 : firstDowSunday0; // 1..7
-    const leading = firstDowMon1 - 1;
+    const elMonth = qs(root, "[data-ac-month]");
+    const elMini = qs(root, "[data-ac-mini]");
+    const elCountdown = qs(root, "[data-ac-countdown]");
+    const elGrid = qs(root, "[data-ac-grid]");
 
-    const daysInMonth = last.getDate();
-    const totalCells = Math.ceil((leading + daysInMonth) / 7) * 7;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const todayIso = iso(now);
 
-    const start = addDays(first, -leading);
-    const cells = [];
-    for(let i=0;i<totalCells;i++){
-      const d = addDays(start, i);
-      const out = (d.getMonth() !== m);
-      const dowMon1 = ((d.getDay()===0)?7:d.getDay());
-      const weekend = (dowMon1 === 6 || dowMon1 === 7);
-      cells.push({ date:d, out, weekend });
-    }
-    return cells;
-  }
+    const monthName = now.toLocaleDateString("de-DE", { month:"long", year:"numeric" });
+    elMonth.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-  function render(root){
-    const today = stripTime(new Date());
-    let view = new Date(today.getFullYear(), today.getMonth(), 1);
+    // Countdown to next rent day
+    const nextRent = new Date(year, month, rentDay);
+    if(now > nextRent) nextRent.setMonth(nextRent.getMonth()+1);
+    const diffMs = nextRent.setHours(0,0,0,0) - new Date().setHours(0,0,0,0);
+    const days = Math.max(0, Math.round(diffMs / (1000*60*60*24)));
+    elCountdown.textContent = days + " Tage";
 
-    root.innerHTML = `
-      <div class="hc-head">
-        <div>
-          <div class="hc-title">Kalender</div>
-          <div class="hc-sub" id="hcSub">—</div>
-        </div>
-        <div class="hc-right">
-          <span class="hc-pill" id="hcNow">—</span>
-          <button class="hc-btn" id="hcToday">Heute</button>
-        </div>
-      </div>
+    elMini.textContent = "Wochenenden dezenter · Feiertage rot · 01. markiert";
 
-      <div class="hc-body">
-        <div class="hc-calWrap">
-          <div class="hc-calHead">
-            <div class="hc-month" id="hcMonth">—</div>
-            <div class="hc-nav">
-              <button id="hcPrev" aria-label="Vorheriger Monat">←</button>
-              <button id="hcNext" aria-label="Nächster Monat">→</button>
-            </div>
-          </div>
+    const hol = holidaysDE(year, region);
 
-          <div class="hc-grid" id="hcDow"></div>
-          <div class="hc-grid" id="hcGrid"></div>
-        </div>
-      </div>
-    `;
-
-    const elNow = root.querySelector("#hcNow");
-    const elSub = root.querySelector("#hcSub");
-
-    function tick(){
-      const d = new Date();
-      elNow.textContent = d.toLocaleString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
-    }
-    tick(); setInterval(tick, 15000);
-
-    root.querySelector("#hcToday").addEventListener("click", ()=>{
-      view = new Date(today.getFullYear(), today.getMonth(), 1);
-      renderAll();
-    });
-    root.querySelector("#hcPrev").addEventListener("click", ()=>{
-      view = addMonths(view, -1);
-      renderAll();
-    });
-    root.querySelector("#hcNext").addEventListener("click", ()=>{
-      view = addMonths(view, +1);
-      renderAll();
+    elGrid.innerHTML = "";
+    const dows = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+    dows.forEach(x=>{
+      const c = document.createElement("div");
+      c.className = "ac-dow";
+      c.textContent = x;
+      elGrid.appendChild(c);
     });
 
-    function renderAll(){
-      // Countdown (only thing besides calendar)
-      const nr = nextRentDate(new Date());
-      const left = daysBetween(new Date(), nr);
-      const rentTxt = nr.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit", year:"numeric" });
+    const first = new Date(year, month, 1);
+    const firstDow = (first.getDay() + 6) % 7; // Mon=0..Sun=6
+    const daysInMonth = new Date(year, month+1, 0).getDate();
 
-      elSub.textContent =
-        left === 0
-          ? `Mieteinnahme am 01. — heute (${rentTxt})`
-          : `Countdown bis Mieteinnahme am 01.: ${left} Tage (nächster Termin: ${rentTxt})`;
-
-      // Month label
-      root.querySelector("#hcMonth").textContent = monthLabel(view);
-
-      // DOW header
-      root.querySelector("#hcDow").innerHTML = dowLabels().map(x=>`<div class="hc-dow">${x}</div>`).join("");
-
-      // Grid
-      const cells = buildMonthGrid(view);
-      const grid = root.querySelector("#hcGrid");
-      const todayKey = ymd(new Date());
-      const rentKey  = ymd(new Date(view.getFullYear(), view.getMonth(), RENT_DAY));
-
-      grid.innerHTML = cells.map(c=>{
-        const key = ymd(c.date);
-        const hol = holidayName(c.date);
-        const isToday = key === todayKey;
-        const isRent  = key === rentKey;
-
-        const cls = [
-          "hc-day",
-          c.out ? "out":"in",
-          c.weekend ? "weekend":"",
-          hol ? "holiday":"",
-          isRent ? "rentday":"",
-          isToday ? "today":""
-        ].join(" ").trim();
-
-        const title = hol ? `${hol}` : (isRent ? "Mieteinnahme (01.)" : "");
-        const dot = hol ? `<span class="hc-holDot" aria-hidden="true"></span>` : "";
-
-        return `
-          <div class="${cls}" title="${esc(title)}">
-            ${dot}
-            <div class="n">${c.date.getDate()}</div>
-          </div>
-        `;
-      }).join("");
+    const prevDays = new Date(year, month, 0).getDate();
+    for(let i=0;i<firstDow;i++){
+      const day = prevDays - firstDow + 1 + i;
+      const cell = document.createElement("div");
+      cell.className = "ac-cell muted";
+      cell.innerHTML = `
+        <div class="ac-topline"><div class="ac-day">${day}</div><div class="ac-badge"></div></div>
+        <div class="ac-tag"></div>
+      `;
+      elGrid.appendChild(cell);
     }
 
-    renderAll();
+    for(let day=1; day<=daysInMonth; day++){
+      const dateObj = new Date(year, month, day);
+      const dow = (dateObj.getDay() + 6) % 7;
+      const isWeekend = (dow >= 5);
+
+      const key = iso(dateObj);
+      const holidayName = hol.get(key);
+
+      const cls = [
+        "ac-cell",
+        isWeekend ? "weekend" : "",
+        holidayName ? "holiday" : "",
+        (day === rentDay) ? "rent" : "",
+        (key === todayIso) ? "today" : ""
+      ].filter(Boolean).join(" ");
+
+      const tag = holidayName ? holidayName : (day === rentDay ? "Mieteinnahme" : "");
+      const cell = document.createElement("div");
+      cell.className = cls;
+      cell.innerHTML = `
+        <div class="ac-topline"><div class="ac-day">${day}</div><div class="ac-badge"></div></div>
+        <div class="ac-tag">${tag}</div>
+      `;
+      elGrid.appendChild(cell);
+    }
+
+    const totalCells = 7 + firstDow + daysInMonth;
+    const remainder = totalCells % 7;
+    const fill = remainder === 0 ? 0 : (7 - remainder);
+    for(let i=1;i<=fill;i++){
+      const cell = document.createElement("div");
+      cell.className = "ac-cell muted";
+      cell.innerHTML = `
+        <div class="ac-topline"><div class="ac-day">${i}</div><div class="ac-badge"></div></div>
+        <div class="ac-tag"></div>
+      `;
+      elGrid.appendChild(cell);
+    }
   }
+
+  window.HomeCalendarModul = { render };
 })();
