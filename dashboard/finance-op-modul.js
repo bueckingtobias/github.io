@@ -1,75 +1,51 @@
 (function(){
-  window.FinanceOPModul = window.FinanceOPModul || {};
-  window.FinanceOPModul.rootClass = "fin-op-root";
-  window.FinanceOPModul.render = render;
-
-  function euro(n){
-    return (Number(n)||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+  function n(x){
+    if(x==null||x==="") return 0;
+    if(typeof x==="number") return x;
+    const s=String(x).replace(/\s/g,"").replace(/€/g,"").replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,"");
+    const v=Number(s); return isFinite(v)?v:0;
   }
-  function sum(arr, fn){
-    return (arr||[]).reduce((a,x)=>a + (fn?fn(x):Number(x||0)), 0);
-  }
-  function overdueCount(items){
-    return (items||[]).filter(x => (""+(x.status||"")).toLowerCase().includes("ueber")).length;
+  function eur(v){
+    return new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n(v));
   }
 
-  function rowHTML(x, sign){
-    const isOver = (""+(x.status||"")).toLowerCase().includes("ueber");
-    const due = x.due ? `fällig ${x.due}` : "";
-    const meta = `${x.object || x.vendor || ""}${(x.object||x.vendor) ? " · " : ""}${due}`;
-    return `
-      <div class="fo-row">
-        <div class="left">
-          <div class="name">${x.title || "Eintrag"}</div>
-          <div class="meta">${meta}</div>
-        </div>
-        <div class="right">
-          <div class="val">${sign} ${euro(x.amount)}</div>
-          <div class="tag">${isOver ? "Überfällig" : "Fällig"}</div>
-        </div>
-      </div>
-    `;
+  function render(container,data){
+    const root=container.querySelector("[data-fop-root]")||container;
+    const rows=Array.isArray(data?.opRows)?data.opRows:[];
+
+    const now=new Date();
+    root.querySelector("[data-fop-sub]").textContent =
+      "Stand " + now.toLocaleDateString("de-DE");
+
+    let total=0, overdue=0, daysSum=0;
+    rows.forEach(r=>{
+      const amt=n(r.Betrag||r.Summe||r.Amount);
+      total+=amt;
+      const due=new Date(r.Faelligkeit||r.DueDate||r.Fällig);
+      if(!isNaN(due)){
+        const diff=(now-due)/(1000*60*60*24);
+        if(diff>0) overdue+=amt;
+        daysSum+=diff;
+      }
+    });
+
+    root.querySelector("[data-fop-total]").textContent=eur(total);
+    root.querySelector("[data-fop-overdue]").textContent=eur(overdue);
+    root.querySelector("[data-fop-avgdays]").textContent =
+      rows.length?Math.round(daysSum/rows.length)+"":"—";
+
+    const list=root.querySelector("[data-fop-list]");
+    list.innerHTML="";
+    rows.slice(0,5).forEach(r=>{
+      const row=document.createElement("div");
+      row.className="fop-row";
+      row.innerHTML=`
+        <span>${r.Bezeichnung||r.Text||"Posten"}</span>
+        <span class="${n(r.Betrag)>0?'':'fop-warn'}">${eur(r.Betrag)}</span>
+      `;
+      list.appendChild(row);
+    });
   }
 
-  function render(rootEl, data){
-    const ar = data.ar || [];
-    const ap = data.ap || [];
-
-    const arSum = sum(ar, x=>Number(x.amount||0));
-    const apSum = sum(ap, x=>Number(x.amount||0));
-    const arOver = overdueCount(ar);
-    const apOver = overdueCount(ap);
-
-    rootEl.innerHTML = `
-      <div class="fo-head">
-        <div>
-          <div class="fo-title">Offene Posten</div>
-          <div class="fo-sub">Eingänge (AR) & Ausgänge (AP) inklusive Überfällig-Check.</div>
-        </div>
-        <div class="fo-badges">
-          <span class="fo-badge ${arOver>0 ? "warn":"ok"}">AR: ${euro(arSum)} · ÜF: ${arOver}</span>
-          <span class="fo-badge ${apOver>0 ? "warn":"ok"}">AP: ${euro(apSum)} · ÜF: ${apOver}</span>
-          <span class="fo-badge">Netto (AR−AP): ${euro(arSum-apSum)}</span>
-        </div>
-      </div>
-
-      <div class="fo-body">
-        <div class="fo-box">
-          <div class="fo-boxtitle">Eingänge (AR)</div>
-          <div class="fo-boxsub">Forderungen / Mieten / Nachzahlungen</div>
-          <div class="fo-list">
-            ${(ar.length ? ar.map(x=>rowHTML(x, "+")).join("") : `<div style="font-size:12px;color:rgba(226,232,240,.72);">Keine Einträge.</div>`)}
-          </div>
-        </div>
-
-        <div class="fo-box">
-          <div class="fo-boxtitle">Ausgänge (AP)</div>
-          <div class="fo-boxsub">Rechnungen / Abschläge / Services</div>
-          <div class="fo-list">
-            ${(ap.length ? ap.map(x=>rowHTML(x, "−")).join("") : `<div style="font-size:12px;color:rgba(226,232,240,.72);">Keine Einträge.</div>`)}
-          </div>
-        </div>
-      </div>
-    `;
-  }
+  window.FinanceOPModul={render};
 })();
