@@ -1,29 +1,35 @@
 <div class="fop-root" data-fop-root>
+  <div class="fop-bg"></div>
+
   <div class="fop-head">
     <div>
       <div class="fop-title">Offene Posten</div>
       <div class="fop-sub" data-fop-sub>—</div>
     </div>
-    <div class="fop-pill">OP</div>
+    <div class="fop-pill" data-fop-pill>OP</div>
   </div>
 
-  <div class="fop-kpis">
-    <div class="fop-tile">
-      <div class="fop-k">Gesamt OP</div>
-      <div class="fop-v" data-fop-total>—</div>
-      <div class="fop-m">offen</div>
+  <div class="fop-kpis" data-fop-kpis></div>
+
+  <div class="fop-ages" data-fop-ages></div>
+
+  <div class="fop-split">
+    <div class="fop-panel">
+      <div class="fop-panel-head">
+        <div class="fop-panel-title">Top OP</div>
+        <div class="fop-panel-sub">größte Beträge</div>
+      </div>
+      <div class="fop-list" data-fop-top></div>
     </div>
-    <div class="fop-tile">
-      <div class="fop-k">Überfällig</div>
-      <div class="fop-v" data-fop-overdue>—</div>
-      <div class="fop-m">kritisch</div>
-    </div>
-    <div class="fop-tile">
-      <div class="fop-k">Ø Fälligkeit</div>
-      <div class="fop-v" data-fop-avgdays>—</div>
-      <div class="fop-m">Tage</div>
+
+    <div class="fop-panel">
+      <div class="fop-panel-head">
+        <div class="fop-panel-title">Nächste Fälligkeiten</div>
+        <div class="fop-panel-sub">priorisieren</div>
+      </div>
+      <div class="fop-list" data-fop-due></div>
     </div>
   </div>
 
-  <div class="fop-list" data-fop-list></div>
+  <div class="fop-foot" data-fop-foot>—</div>
 </div>
