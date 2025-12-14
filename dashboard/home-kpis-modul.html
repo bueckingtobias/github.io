@@ -1,24 +1,22 @@
 <div class="home-kpis-modul" id="homeKpisModul">
   <div class="hkpi-head">
-    <div>
+    <div class="hkpi-left">
       <div class="hkpi-title">KPIs</div>
       <div class="hkpi-sub">6 Monate Rückblick · aktueller Monat blau · 3 Monate Forecast (Trend grün/rot)</div>
     </div>
-    <div class="hkpi-badge" id="hkpiBadge">—</div>
-  </div>
 
-  <div class="hkpi-body">
-    <div class="hkpi-grid" id="hkpiGrid">
-      <!-- wird per JS gerendert -->
-    </div>
-
-    <div class="hkpi-empty" id="hkpiEmpty" style="display:none;">
-      Keine KPI-Daten gefunden. Prüfe bitte, ob dein Loader das Sheet <b>HOME_KPI</b> bereitstellt.
+    <div class="hkpi-right">
+      <div class="hkpi-badge" id="hkpiBadge">HOME KPIs: —</div>
     </div>
   </div>
 
-  <div class="hkpi-foot" id="hkpiFoot">
-    <span class="hkpi-dot"></span>
-    <span id="hkpiStatus">Warte auf Daten …</span>
+  <div class="hkpi-status" id="hkpiStatus">Lade Daten…</div>
+
+  <div class="hkpi-empty" id="hkpiEmpty" style="display:none;">
+    Keine KPI-Daten gefunden (window.IMMO_DATA.home ist leer).
+  </div>
+
+  <div class="hkpi-grid" id="hkpiGrid">
+    <!-- Tiles kommen per JS -->
   </div>
 </div>
