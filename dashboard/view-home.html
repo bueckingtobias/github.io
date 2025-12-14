@@ -7,23 +7,20 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <!-- Cache-Buster: hochzählen wenn Safari cached -->
   <script>
-    window.__VER = "20251214-Home-4";
+    window.__VER = "20251214-Home-5";
   </script>
 
-  <!-- Shell / Sidebar -->
-  <link rel="stylesheet" href="./shell.css?v=20251214-Home-4" />
+  <link rel="stylesheet" href="./shell.css?v=20251214-Home-5" />
 
-  <!-- Home Module CSS -->
-  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-4" />
-  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-4" />
-  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-4" />
+  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-5" />
+  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-5" />
+  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-5" />
 
   <style>
     :root{
       --homeGap: 14px;
-      --homeTopH: 720px; /* doppelt hoch */
+      --homeTopH: 720px;
     }
     html, body { overflow-x:hidden; }
 
@@ -67,8 +64,7 @@
       background: rgba(239,68,68,.08);
     }
 
-    /* Optional: kleine Statuschips oben rechts */
-    .top-right .chip{
+    .chip{
       display:inline-flex;
       align-items:center;
       gap:8px;
@@ -86,7 +82,6 @@
 <body>
 <div class="app">
 
-  <!-- Sidebar (gleich überall + Logout) -->
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-dot"></div>
@@ -106,7 +101,6 @@
       </a>
 
       <div class="nav-label">Projekte</div>
-
       <a href="./view-projects.html">
         <div class="nav-ic">🏗</div>
         <div class="nav-txt">
@@ -124,7 +118,6 @@
       </a>
 
       <div class="nav-label">Tools</div>
-
       <a href="./admin-data.html">
         <div class="nav-ic">✎</div>
         <div class="nav-txt">
@@ -139,9 +132,7 @@
     </div>
   </aside>
 
-  <!-- Main -->
   <section class="main">
-
     <header class="topbar">
       <div class="page-title">
         <h1>Home</h1>
@@ -155,10 +146,8 @@
 
     <main class="content">
       <div class="container" style="max-width:1400px;">
-
         <section class="home-grid">
 
-          <!-- Wetter -->
           <section class="card col-6 home-top">
             <div class="card-header">
               <div>
@@ -169,7 +158,6 @@
             <div class="card-body module-host" id="weatherHost"></div>
           </section>
 
-          <!-- Kalender -->
           <section class="card col-6 home-top">
             <div class="card-header">
               <div>
@@ -180,7 +168,6 @@
             <div class="card-body module-host" id="calendarHost"></div>
           </section>
 
-          <!-- KPIs -->
           <section class="card col-12">
             <div class="card-header">
               <div>
@@ -192,20 +179,18 @@
           </section>
 
         </section>
-
       </div>
     </main>
   </section>
 </div>
 
-<!-- Data (Master → IMMO_DATA) -->
-<script src="./master-data.js?v=20251214-Home-4"></script>
-<script src="./data-loader.js?v=20251214-Home-4"></script>
+<!-- ✅ ORDER IS CRITICAL -->
+<script src="./master-data.js?v=20251214-Home-5"></script>
+<script src="./data-loader.js?v=20251214-Home-5"></script>
 
-<!-- Module scripts -->
-<script src="./home-weather-modul.js?v=20251214-Home-4"></script>
-<script src="./home-calendar-modul.js?v=20251214-Home-4"></script>
-<script src="./home-kpis-modul.js?v=20251214-Home-4"></script>
+<script src="./home-weather-modul.js?v=20251214-Home-5"></script>
+<script src="./home-calendar-modul.js?v=20251214-Home-5"></script>
+<script src="./home-kpis-modul.js?v=20251214-Home-5"></script>
 
 <script>
 (async function(){
@@ -224,7 +209,6 @@
     location.href = "./index.html";
   };
 
-  // Fragment loader
   async function injectFragment(hostId, fragmentPath){
     const host = document.getElementById(hostId);
     if (!host) return;
@@ -244,7 +228,7 @@
     }
   }
 
-  // 1) Inject module HTML
+  // 1) inject fragments
   await injectFragment("weatherHost", "./home-weather-modul.html");
   await injectFragment("calendarHost", "./home-calendar-modul.html");
   await injectFragment("kpisHost", "./home-kpis-modul.html");
@@ -252,22 +236,28 @@
   // 2) Load data
   await DataLoader.load();
 
-  // 3) Data chip
+  // 3) Show data status
   const chip = document.getElementById("dataChip");
+  const masterOk = !!window.IMMO_MASTER_DATA;
+  const loaderOk = !!window.IMMO_DATA;
   const homeCount = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home.length : 0;
   const ver = window.IMMO_DATA_META?.version || window.IMMO_MASTER_DATA?.version || "—";
-  chip.textContent = `Daten: ${homeCount} Monate · v ${ver}`;
+  chip.textContent = `Master:${masterOk?"OK":"FAIL"} · Loader:${loaderOk?"OK":"FAIL"} · Home:${homeCount} · v ${ver}`;
 
   // 4) Render modules
-  if (window.HomeWeatherModul?.render) HomeWeatherModul.render(document.getElementById("weatherHost"));
-  if (window.HomeCalendarModul?.render) HomeCalendarModul.render(document.getElementById("calendarHost"));
-  if (window.HomeKpisModul?.render) HomeKpisModul.render(document.getElementById("kpisHost"));
+  const wHost = document.getElementById("weatherHost");
+  const cHost = document.getElementById("calendarHost");
+  const kHost = document.getElementById("kpisHost");
 
-  // 5) iPad timing retry
+  if (window.HomeWeatherModul?.render) HomeWeatherModul.render(wHost);
+  if (window.HomeCalendarModul?.render) HomeCalendarModul.render(cHost);
+  if (window.HomeKpisModul?.render) HomeKpisModul.render(kHost);
+
+  // 5) iPad retry
   setTimeout(() => {
-    if (window.HomeWeatherModul?.render) HomeWeatherModul.render(document.getElementById("weatherHost"));
-    if (window.HomeCalendarModul?.render) HomeCalendarModul.render(document.getElementById("calendarHost"));
-    if (window.HomeKpisModul?.render) HomeKpisModul.render(document.getElementById("kpisHost"));
+    if (window.HomeWeatherModul?.render) HomeWeatherModul.render(wHost);
+    if (window.HomeCalendarModul?.render) HomeCalendarModul.render(cHost);
+    if (window.HomeKpisModul?.render) HomeKpisModul.render(kHost);
   }, 250);
 
 })();
