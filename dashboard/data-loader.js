@@ -1,6 +1,6 @@
 /* dashboard/data-loader.js
    Master → IMMO_DATA (used by all modules)
-   Self-healing: tries to load master-data.js if missing
+   Self-healing: tries script injection; if blocked (MIME/nosniff/CSP), fallback fetch+eval.
 */
 
 (function () {
@@ -9,7 +9,6 @@
   const LS_KEY = "IMMO_ADMIN_OVERRIDE_V1";
 
   async function load() {
-    // 0) Try ensure master is present
     const masterOk = await ensureMaster();
 
     if (!masterOk) {
@@ -20,26 +19,22 @@
         version: "",
         updatedAt: "",
         homeCount: 0,
-        reason:
-          window.IMMO_DATA_META?.reason ||
-          "IMMO_MASTER_DATA fehlt. master-data.js konnte nicht geladen werden.",
         expectedUrl: expectedMasterUrl(),
+        reason: window.IMMO_DATA_META?.reason || "IMMO_MASTER_DATA fehlt. master-data.js konnte nicht ausgeführt werden."
       };
       fire(false, window.IMMO_DATA_META.reason);
       return;
     }
 
-    // 1) Optional override from admin
+    // Optional override from Admin
     let override = null;
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) override = JSON.parse(raw);
     } catch (_) {}
 
-    // 2) Merge (override wins)
     const merged = deepMerge(clone(window.IMMO_MASTER_DATA), override || {});
 
-    // 3) Normalize for modules
     window.IMMO_DATA = {
       home: Array.isArray(merged.home) ? merged.home : [],
       projects: {
@@ -56,46 +51,59 @@
       updatedAt: merged.updatedAt || "",
       homeCount: Array.isArray(window.IMMO_DATA.home) ? window.IMMO_DATA.home.length : 0,
       expectedUrl: expectedMasterUrl(),
+      reason: ""
     };
 
     fire(true, `OK (${window.IMMO_DATA_META.source})`);
   }
 
-  /* -------------------- master self-heal -------------------- */
+  /* -------------------- Master self-heal -------------------- */
 
   async function ensureMaster() {
     if (window.IMMO_MASTER_DATA) return true;
 
-    // Try dynamic load (in case script tag order/cache failed)
-    const url = expectedMasterUrl() + (expectedMasterUrl().includes("?") ? "&" : "?") + "v=" + Date.now();
+    const urlBase = expectedMasterUrl();
+    const url = urlBase + (urlBase.includes("?") ? "&" : "?") + "v=" + Date.now();
 
+    // 1) Try normal script tag
     try {
       await loadScript(url);
+      if (window.IMMO_MASTER_DATA) return true;
+    } catch (e) {
+      // continue to fetch+eval
+      window.IMMO_DATA_META = window.IMMO_DATA_META || {};
+      window.IMMO_DATA_META.reason =
+        "Script-Load von master-data.js fehlgeschlagen (evtl. MIME/nosniff). Fallback via fetch+eval. " +
+        "URL: " + url + " · Fehler: " + msg(e);
+    }
+
+    // 2) Fallback: fetch as text and eval (ignores MIME)
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status + " " + res.statusText);
+
+      const code = await res.text();
+      // Execute in global scope
+      (new Function(code))();
+
+      if (window.IMMO_MASTER_DATA) return true;
+
+      window.IMMO_DATA_META = window.IMMO_DATA_META || {};
+      window.IMMO_DATA_META.reason =
+        "master-data.js wurde geladen, aber IMMO_MASTER_DATA wurde nicht gesetzt. " +
+        "Bitte sicherstellen, dass am Ende `window.IMMO_MASTER_DATA = {...}` steht.";
+      return false;
+
     } catch (e) {
       window.IMMO_DATA_META = window.IMMO_DATA_META || {};
       window.IMMO_DATA_META.reason =
-        "master-data.js konnte nicht geladen werden. Prüfe Dateiname/Pfad/Casing. URL: " +
-        url +
-        " · Fehler: " +
-        String(e && e.message ? e.message : e);
+        "master-data.js konnte nicht via fetch+eval ausgeführt werden (evtl. CSP blockt eval). " +
+        "URL: " + url + " · Fehler: " + msg(e);
       return false;
     }
-
-    // If script loaded but still no global, it likely has a syntax error inside
-    if (!window.IMMO_MASTER_DATA) {
-      window.IMMO_DATA_META = window.IMMO_DATA_META || {};
-      window.IMMO_DATA_META.reason =
-        "master-data.js wurde geladen, aber IMMO_MASTER_DATA fehlt. Wahrscheinlich Syntax-Error in master-data.js. Öffne die Datei direkt im Browser: " +
-        expectedMasterUrl();
-      return false;
-    }
-
-    return true;
   }
 
   function expectedMasterUrl() {
-    // view-home.html sits in /dashboard/ → "./master-data.js" resolves correctly.
-    // Keep it explicit for debug.
     try {
       const base = location.href.replace(/#.*$/, "").replace(/\?.*$/, "");
       const dir = base.substring(0, base.lastIndexOf("/") + 1);
@@ -107,10 +115,6 @@
 
   function loadScript(src) {
     return new Promise((resolve, reject) => {
-      // prevent duplicates
-      const already = Array.from(document.scripts || []).find(s => (s.src || "").includes("master-data.js"));
-      if (already && window.IMMO_MASTER_DATA) return resolve();
-
       const s = document.createElement("script");
       s.src = src;
       s.async = true;
@@ -120,7 +124,7 @@
     });
   }
 
-  /* -------------------- helpers -------------------- */
+  /* -------------------- Helpers -------------------- */
 
   function fire(ok, msg) {
     try {
@@ -148,5 +152,9 @@
       else out[k] = pv;
     });
     return out;
+  }
+
+  function msg(e){
+    return String(e && e.message ? e.message : e);
   }
 })();
