@@ -7,306 +7,221 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <!-- Shell / Sidebar Styles (bei dir bereits vorhanden) -->
+  <!-- ===== GLOBAL STYLES / SHELL ===== -->
   <link rel="stylesheet" href="./shell.css" />
 
-  <!-- Home Module CSS -->
+  <!-- ===== HOME MODULE STYLES (unverändert) ===== -->
   <link rel="stylesheet" href="./home-weather-modul.css" />
   <link rel="stylesheet" href="./home-calendar-modul.css" />
   <link rel="stylesheet" href="./home-kpis-modul.css" />
 
   <style>
-    /* Safety: niemals horizontal scrollen */
     html, body { overflow-x: hidden; }
-    .main, .content, .container, .grid { min-width: 0; }
 
-    /* Home Layout: oben 2 Spalten (Wetter/Kalender), darunter KPI full width */
-    .home-grid {
-      display: grid;
+    .home-grid{
+      display:grid;
       grid-template-columns: repeat(12, minmax(0,1fr));
-      gap: var(--gap, 12px);
-      align-items: stretch;
-      min-width: 0;
+      gap: 12px;
+      align-items:stretch;
+      min-width:0;
     }
-    .home-col-6 { grid-column: span 6; min-width: 0; }
-    .home-col-12 { grid-column: span 12; min-width: 0; }
 
-    /* iPad & kleiner: Wetter/Kalender untereinander */
+    .col-6{ grid-column: span 6; min-width:0; }
+    .col-12{ grid-column: span 12; min-width:0; }
+
     @media (max-width: 900px){
-      .home-col-6 { grid-column: span 12; }
+      .col-6{ grid-column: span 12; }
     }
 
-    /* Gleiche Höhe für Wetter + Kalender (nur Container, Inhalte bleiben moduleigen) */
-    .home-top-card {
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      height: 280px; /* iPad-optimiert; Module nutzen den Platz */
-    }
-    @media (max-width: 900px){
-      .home-top-card { height: auto; }
-    }
-
-    /* Modul-Hosts */
-    .module-host{
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    /* kleine Statuszeile */
-    .home-status{
-      margin-top: 8px;
-      font-size: 11px;
-      color: rgba(226,232,240,.70);
+    .home-top{
+      height: 280px;
       display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap: wrap;
+      flex-direction:column;
+      min-height:0;
     }
-    .home-chip{
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,.18);
-      background: rgba(15,23,42,.45);
-      color: rgba(226,232,240,.82);
-      white-space: nowrap;
+
+    @media (max-width: 900px){
+      .home-top{ height:auto; }
+    }
+
+    .module-host{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:hidden;
     }
   </style>
 </head>
 
 <body>
-  <div class="app">
-    <!-- Sidebar always visible -->
-    <aside class="sidebar" aria-label="Navigation">
-      <div class="brand">
-        <div class="brand-dot"></div>
-        <div style="min-width:0">
-          <div class="brand-title">Bücking Dashboard</div>
-          <div class="brand-sub">Immobilien · Projekte · KPIs</div>
-        </div>
+<div class="app">
+
+  <!-- ========================================================= -->
+  <!-- SIDEBAR (EINHEITLICH + LOGOUT) -->
+  <!-- ========================================================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-title">Bücking Dashboard</div>
+        <div class="brand-sub">Immobilien · Projekte · KPIs</div>
       </div>
+    </div>
 
-      <nav class="nav" id="nav">
-        <a href="./view-home.html" data-title="Home" data-sub="Wetter, Kalender, KPIs" class="active">
-          <div class="nav-ic">⌂</div>
-          <div class="nav-txt">
-            <div class="nav-title">Home</div>
-            <div class="nav-sub">Wetter, Kalender, KPIs</div>
-          </div>
-        </a>
+    <nav class="nav">
+      <a href="./view-home.html" class="active">
+        <div class="nav-ic">⌂</div>
+        <div class="nav-txt">
+          <div class="nav-title">Home</div>
+          <div class="nav-sub">Übersicht</div>
+        </div>
+      </a>
 
-        <div class="nav-label">Projekte</div>
+      <div class="nav-label">Projekte</div>
 
-        <a href="./view-projects.html" data-title="Projekte / Bau" data-sub="Gesamt + Gewerke">
-          <div class="nav-ic">🏗</div>
-          <div class="nav-txt">
-            <div class="nav-title">Projekte / Bau</div>
-            <div class="nav-sub">Gesamt + Gewerke</div>
-          </div>
-        </a>
+      <a href="./view-projects.html">
+        <div class="nav-ic">🏗</div>
+        <div class="nav-txt">
+          <div class="nav-title">Projekte / Bau</div>
+          <div class="nav-sub">Gesamt + Gewerke</div>
+        </div>
+      </a>
 
-        <a href="./view-finance.html" data-title="Finanzen" data-sub="Cashflow, Mieten, OP, Reserven, Budget">
-          <div class="nav-ic">€</div>
-          <div class="nav-txt">
-            <div class="nav-title">Finanzen</div>
-            <div class="nav-sub">Cashflow, Mieten, OP, Reserven</div>
-          </div>
-        </a>
+      <a href="./view-finance.html">
+        <div class="nav-ic">€</div>
+        <div class="nav-txt">
+          <div class="nav-title">Finanzen</div>
+          <div class="nav-sub">Cashflow, Budget</div>
+        </div>
+      </a>
 
-        <a href="./view-vermietung.html" data-title="Vermietung" data-sub="Leerstand, Mieten, Anfragen">
-          <div class="nav-ic">🏠</div>
-          <div class="nav-txt">
-            <div class="nav-title">Vermietung</div>
-            <div class="nav-sub">Leerstand, Mieten, Anfragen</div>
-          </div>
-        </a>
+      <div class="nav-label">Tools</div>
 
-        <div class="nav-label">Tools</div>
+      <a href="./admin-data.html">
+        <div class="nav-ic">✎</div>
+        <div class="nav-txt">
+          <div class="nav-title">Admin Daten</div>
+          <div class="nav-sub">Pflege IMMO_DATA</div>
+        </div>
+      </a>
+    </nav>
 
-        <a href="./admin.html" data-title="Admin" data-sub="Uploads, Settings, Debug">
-          <div class="nav-ic">⚙</div>
-          <div class="nav-txt">
-            <div class="nav-title">Admin</div>
-            <div class="nav-sub">Uploads, Settings, Debug</div>
-          </div>
-        </a>
-      </nav>
+    <div class="sidebar-footer">
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
 
-      <div class="sidebar-footer">
-        <span class="chip" id="clockSide">—</span>
-        <span class="chip">online</span>
+  <!-- ========================================================= -->
+  <!-- MAIN -->
+  <!-- ========================================================= -->
+  <section class="main">
+
+    <!-- ===== TOPBAR ===== -->
+    <header class="topbar">
+      <div class="page-title">
+        <h1>Home</h1>
+        <div>Wetter · Kalender · KPIs</div>
       </div>
-    </aside>
+      <div class="top-right">
+        <span class="chip" id="clockTop">—</span>
+      </div>
+    </header>
 
-    <!-- Main -->
-    <section class="main">
-      <header class="topbar">
-        <div class="page-title">
-          <h1 id="pageTitle">Home</h1>
-          <div id="pageSub">Wetter · Kalender · KPIs</div>
-        </div>
-        <div class="top-right">
-          <span class="chip" id="clockTop">—</span>
-        </div>
-      </header>
+    <!-- ===== CONTENT ===== -->
+    <main class="content">
+      <div class="container" style="max-width:1300px;">
 
-      <main class="content">
-        <div class="container" style="max-width:1300px;">
-          <section class="card" style="margin-bottom:12px;">
+        <section class="home-grid">
+
+          <!-- WETTER -->
+          <section class="card col-6 home-top">
             <div class="card-header">
               <div>
-                <div class="card-title">Übersicht</div>
-                <div class="card-sub">Datenquelle: <b>Dashboard.xlsx</b> (ExcelLoader → window.IMMO_DATA)</div>
+                <div class="card-title">Wetter</div>
+                <div class="card-sub">home-weather-modul</div>
               </div>
             </div>
-            <div class="card-body">
-              <div class="home-status">
-                <span class="home-chip" id="excelStatus">Excel: …</span>
-                <span class="home-chip" id="homeStatus">Home KPIs: …</span>
+            <div class="card-body module-host" id="weatherHost"></div>
+          </section>
+
+          <!-- KALENDER -->
+          <section class="card col-6 home-top">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Kalender</div>
+                <div class="card-sub">home-calendar-modul</div>
               </div>
             </div>
+            <div class="card-body module-host" id="calendarHost"></div>
           </section>
 
-          <section class="home-grid">
-            <!-- Wetter -->
-            <section class="card home-col-6 home-top-card">
-              <div class="card-header">
-                <div>
-                  <div class="card-title">Wetter</div>
-                  <div class="card-sub">Modul: home-weather-modul.html</div>
-                </div>
+          <!-- KPIs -->
+          <section class="card col-12">
+            <div class="card-header">
+              <div>
+                <div class="card-title">KPIs</div>
+                <div class="card-sub">home-kpis-modul</div>
               </div>
-              <div class="card-body module-host" id="weatherHost"></div>
-            </section>
-
-            <!-- Kalender -->
-            <section class="card home-col-6 home-top-card">
-              <div class="card-header">
-                <div>
-                  <div class="card-title">Kalender</div>
-                  <div class="card-sub">Modul: home-calendar-modul.html</div>
-                </div>
-              </div>
-              <div class="card-body module-host" id="calendarHost"></div>
-            </section>
-
-            <!-- KPIs (full width) -->
-            <section class="card home-col-12">
-              <div class="card-header">
-                <div>
-                  <div class="card-title">KPIs</div>
-                  <div class="card-sub">Modul: home-kpis-modul.html (zieht Daten aus window.IMMO_DATA.home)</div>
-                </div>
-              </div>
-              <div class="card-body module-host" id="kpisHost"></div>
-            </section>
+            </div>
+            <div class="card-body module-host" id="kpisHost"></div>
           </section>
-        </div>
-      </main>
-    </section>
-  </div>
 
-  <!-- 1) Excel Loader -->
-  <script src="./excel-loader.js"></script>
+        </section>
 
-  <!-- 2) Module JS -->
-  <script src="./home-weather-modul.js"></script>
-  <script src="./home-calendar-modul.js"></script>
-  <script src="./home-kpis-modul.js"></script>
+      </div>
+    </main>
+  </section>
+</div>
 
-  <script>
-    (function(){
-      // ---------- Clock ----------
-      const clockTop = document.getElementById("clockTop");
-      const clockSide = document.getElementById("clockSide");
-      function tick(){
-        const d = new Date();
-        const t = d.toLocaleString("de-DE", { weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-        if(clockTop) clockTop.textContent = t;
-        if(clockSide) clockSide.textContent = t;
-      }
-      tick(); setInterval(tick, 15000);
+<!-- ========================================================= -->
+<!-- DATA SOURCE (NEU, STABIL) -->
+<!-- ========================================================= -->
+<script src="./master-data.js"></script>
+<script src="./data-loader.js"></script>
 
-      // ---------- Small helper: load module HTML fragment ----------
-      async function loadModuleHTML(hostId, htmlPath){
-        const host = document.getElementById(hostId);
-        if(!host) return;
+<!-- ========================================================= -->
+<!-- MODULE SCRIPTS (UNVERÄNDERT) -->
+<!-- ========================================================= -->
+<script src="./home-weather-modul.js"></script>
+<script src="./home-calendar-modul.js"></script>
+<script src="./home-kpis-modul.js"></script>
 
-        try{
-          const res = await fetch(htmlPath, { cache: "no-store" });
-          if(!res.ok) throw new Error(res.status + " " + res.statusText);
-          const html = await res.text();
-          host.innerHTML = html;
-        }catch(e){
-          host.innerHTML = '<div style="color:rgba(226,232,240,.75);font-size:12px;">Modul konnte nicht geladen werden: ' + htmlPath + '<br>' + String(e && e.message ? e.message : e) + '</div>';
-        }
-      }
+<!-- ========================================================= -->
+<!-- BOOTSTRAP -->
+<!-- ========================================================= -->
+<script>
+(async function(){
 
-      // ---------- Render calls (if modules expose globals) ----------
-      function safeRender(){
-        // KPI
-        if (window.HomeKpisModul && typeof window.HomeKpisModul.render === "function") {
-          window.HomeKpisModul.render(document.getElementById("kpisHost"));
-        }
-        // Wetter
-        if (window.HomeWeatherModul && typeof window.HomeWeatherModul.render === "function") {
-          window.HomeWeatherModul.render(document.getElementById("weatherHost"));
-        }
-        // Kalender
-        if (window.HomeCalendarModul && typeof window.HomeCalendarModul.render === "function") {
-          window.HomeCalendarModul.render(document.getElementById("calendarHost"));
-        }
-      }
+  /* Clock */
+  const clockTop = document.getElementById("clockTop");
+  function tick(){
+    const d = new Date();
+    clockTop.textContent = d.toLocaleString("de-DE", {
+      weekday:"short", hour:"2-digit", minute:"2-digit"
+    });
+  }
+  tick(); setInterval(tick, 15000);
 
-      // ---------- Status update ----------
-      function setStatus(){
-        const excelStatus = document.getElementById("excelStatus");
-        const homeStatus  = document.getElementById("homeStatus");
+  /* Logout */
+  document.getElementById("logoutBtn").onclick = () => {
+    localStorage.clear();
+    location.href = "./index.html";
+  };
 
-        const ok = (window.IMMO_DATA && typeof window.IMMO_DATA === "object");
-        if(excelStatus){
-          excelStatus.textContent = ok ? "Excel: geladen" : "Excel: nicht geladen";
-        }
-        if(homeStatus){
-          const n = ok && Array.isArray(window.IMMO_DATA.home) ? window.IMMO_DATA.home.length : 0;
-          homeStatus.textContent = "Home KPIs: " + n;
-        }
-      }
+  /* Load Data */
+  await DataLoader.load();
 
-      // ---------- Boot ----------
-      (async function boot(){
-        // 1) Load module HTML fragments
-        await loadModuleHTML("weatherHost", "./home-weather-modul.html");
-        await loadModuleHTML("calendarHost", "./home-calendar-modul.html");
-        await loadModuleHTML("kpisHost", "./home-kpis-modul.html");
+  /* Render Modules */
+  if (window.HomeWeatherModul?.render)
+    HomeWeatherModul.render(document.getElementById("weatherHost"));
 
-        // 2) Load Excel
-        try{
-          await window.ExcelLoader.load("./Dashboard.xlsx");
-        }catch(e){
-          console.error("ExcelLoader error:", e);
-        }
+  if (window.HomeCalendarModul?.render)
+    HomeCalendarModul.render(document.getElementById("calendarHost"));
 
-        // 3) Render modules (if they need an explicit render)
-        setStatus();
-        safeRender();
+  if (window.HomeKpisModul?.render)
+    HomeKpisModul.render(document.getElementById("kpisHost"));
 
-        // Some modules render async after data: re-run a bit later
-        setTimeout(() => { setStatus(); safeRender(); }, 250);
-        setTimeout(() => { setStatus(); safeRender(); }, 900);
-      })();
+})();
+</script>
 
-      // Active nav highlight
-      const path = (location.pathname || "").toLowerCase();
-      const nav = document.getElementById("nav");
-      if(nav){
-        const links = Array.from(nav.querySelectorAll("a[href]"));
-        links.forEach(a => a.classList.remove("active"));
-        const match = links.find(a => path.endsWith((a.getAttribute("href")||"").toLowerCase().replace("./","/"))) || links[0];
-        if(match) match.classList.add("active");
-      }
-    })();
-  </script>
 </body>
 </html>
