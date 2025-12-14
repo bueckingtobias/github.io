@@ -19,6 +19,16 @@
 
   function clamp(n,a,b){ n=Number(n); if(!isFinite(n)) n=0; return Math.max(a,Math.min(b,n)); }
 
+  function pickRowValue(rows, kpiName){
+    const r = rows.find(x => String(x.KPI||"").trim() === kpiName);
+    if(!r) return { value:0, unit:"", comment:"" };
+    return {
+      value: toNumber(r.Wert),
+      unit: String(r.Einheit||""),
+      comment: String(r.Kommentar||"")
+    };
+  }
+
   function buildSeriesFromFinance(finance, key){
     const rows = Array.isArray(finance) ? finance : [];
     const vals = rows.slice(-6).map(r => toNumber(r[key]));
@@ -30,7 +40,7 @@
     const f2 = Math.max(0, f1 + slope);
     const f3 = Math.max(0, f2 + slope);
 
-    return vals.concat([f1,f2,f3]); // 9 Werte
+    return vals.concat([f1,f2,f3]);
   }
 
   function buildStableSeries(value){
@@ -41,96 +51,106 @@
   function renderChart(el, series){
     const max = Math.max(1, ...series);
     el.innerHTML = "";
-
-    series.forEach((v)=>{
+    series.forEach((v, i)=>{
       const bar = document.createElement("div");
-      bar.className = "hk-bar";
+      bar.className = "kpi6-bar";
       const fill = document.createElement("div");
-      fill.className = "hk-fill";
-
+      fill.className = "kpi6-fill" + (i >= 6 ? " forecast" : "");
       const pct = clamp((v/max)*100, 0, 100);
       requestAnimationFrame(()=> fill.style.height = pct + "%");
-
       bar.appendChild(fill);
       el.appendChild(bar);
     });
   }
 
   function render(container, data){
-    const root = container.querySelector("[data-hk-root]") || container;
-    const grid = root.querySelector("[data-hk-grid]") || root;
+    const root = container.querySelector("[data-kpi6-root]") || container;
+    const grid = root.querySelector("[data-kpi6-grid]") || root;
 
     const homeKpis = (data && Array.isArray(data.homeKpis)) ? data.homeKpis : [];
-    const finance = (data && Array.isArray(data.finance)) ? data.finance : [];
+    const finance  = (data && Array.isArray(data.finance)) ? data.finance : [];
 
-    const map = new Map();
-    homeKpis.forEach(r=>{
-      const k = String(r.KPI || "").trim();
-      if(!k) return;
-      map.set(k, {
-        value: toNumber(r.Wert),
-        unit: String(r.Einheit || ""),
-        comment: String(r.Kommentar || "")
-      });
-    });
-
+    // ✅ 6 KPIs (2×3)
+    // Hinweis: Für "Pachteinnahmen pro Monat" liest das Modul:
+    // - Home_KPIs KPI Zeile "Pachteinnahmen pro Monat"
+    // - Finance Spalte "Pachteinnahmen" (falls vorhanden), sonst stable series.
     const defs = [
-      { key:"Monats-Cashflow", unit:"EUR", fmt:formatEuro, seriesKey:"Cashflow" },
-      { key:"Jahres-Cashflow", unit:"EUR", fmt:formatEuro, seriesKey:"Cashflow" },
-      { key:"Mieteinnahmen pro Monat", unit:"EUR", fmt:formatEuro, seriesKey:"Mieteinnahmen" },
-      { key:"Auslastung der Wohnungen", unit:"%", fmt:formatPct, seriesKey:null },
-      { key:"Portfolio ROI", unit:"%", fmt:formatPct, seriesKey:null },
+      { name:"Monats-Cashflow", fmt:formatEuro, unit:"EUR", seriesKey:"Cashflow" },
+      { name:"Jahres-Cashflow", fmt:formatEuro, unit:"EUR", seriesKey:"Cashflow" },
+      { name:"Mieteinnahmen pro Monat", fmt:formatEuro, unit:"EUR", seriesKey:"Mieteinnahmen" },
+      { name:"Pachteinnahmen pro Monat", fmt:formatEuro, unit:"EUR", seriesKey:"Pachteinnahmen" },
+      { name:"Auslastung der Wohnungen", fmt:formatPct, unit:"%", seriesKey:null },
+      { name:"Portfolio ROI", fmt:formatPct, unit:"%", seriesKey:null },
     ];
 
     grid.innerHTML = "";
 
     defs.forEach(def=>{
-      const info = map.get(def.key) || { value:0, unit:def.unit, comment:"" };
+      const info = pickRowValue(homeKpis, def.name);
+      const val = info.value;
 
       const card = document.createElement("div");
-      card.className = "hk-card";
+      card.className = "kpi6-card";
 
-      const top = document.createElement("div");
-      top.className = "hk-top";
+      const head = document.createElement("div");
+      head.className = "kpi6-head";
 
-      const k = document.createElement("div");
-      k.className = "hk-k";
-      k.textContent = def.key;
+      const left = document.createElement("div");
+      left.style.minWidth = "0";
 
-      const pill = document.createElement("div");
-      pill.className = "hk-pill";
-      pill.textContent = "6M + 3M";
+      const title = document.createElement("div");
+      title.className = "kpi6-title";
+      title.textContent = def.name;
 
-      top.appendChild(k);
-      top.appendChild(pill);
+      const sub = document.createElement("div");
+      sub.className = "kpi6-sub";
+      sub.textContent = info.comment || "6 Monate Rückblick · 3 Monate Forecast";
 
-      const v = document.createElement("div");
-      v.className = "hk-v";
-      v.textContent = def.fmt(info.value);
+      left.appendChild(title);
+      left.appendChild(sub);
 
-      const s = document.createElement("div");
-      s.className = "hk-s";
-      s.textContent = info.comment || "Rückblick (6) · Forecast (3)";
+      const badge = document.createElement("div");
+      badge.className = "kpi6-badge";
+      badge.textContent = "6M + 3M";
 
-      const divider = document.createElement("div");
-      divider.className = "hk-divider";
+      head.appendChild(left);
+      head.appendChild(badge);
+
+      const body = document.createElement("div");
+      body.className = "kpi6-body";
+
+      const value = document.createElement("div");
+      value.className = "kpi6-value";
+      value.textContent = def.fmt(val);
+
+      const meta = document.createElement("div");
+      meta.className = "kpi6-meta";
+      meta.innerHTML = `<span>Rückblick</span><span>Forecast</span>`;
 
       const chart = document.createElement("div");
-      chart.className = "hk-chart";
+      chart.className = "kpi6-chart";
 
-      const series = def.seriesKey ? buildSeriesFromFinance(finance, def.seriesKey) : buildStableSeries(info.value);
+      let series;
+      if(def.seriesKey){
+        const hasKey = finance.some(r => Object.prototype.hasOwnProperty.call(r, def.seriesKey));
+        series = hasKey ? buildSeriesFromFinance(finance, def.seriesKey) : buildStableSeries(val);
+      }else{
+        series = buildStableSeries(val);
+      }
+
       renderChart(chart, series);
 
       const foot = document.createElement("div");
-      foot.className = "hk-foot";
-      foot.innerHTML = `<span>Rückblick</span><span>Forecast</span>`;
+      foot.className = "kpi6-foot";
+      foot.innerHTML = `<span>letzte 6</span><span>nächste 3</span>`;
 
-      card.appendChild(top);
-      card.appendChild(v);
-      card.appendChild(s);
-      card.appendChild(divider);
-      card.appendChild(chart);
-      card.appendChild(foot);
+      body.appendChild(value);
+      body.appendChild(meta);
+      body.appendChild(chart);
+      body.appendChild(foot);
+
+      card.appendChild(head);
+      card.appendChild(body);
 
       grid.appendChild(card);
     });
