@@ -23,18 +23,22 @@
       grid-template-columns: repeat(12, minmax(0,1fr));
       gap: var(--gap);
       min-width:0;
-      align-items: stretch; /* ✅ gleiche Höhe der oberen Row */
+      align-items: stretch;
     }
     .span6{ grid-column: span 6; min-width:0; }
     .span12{ grid-column: span 12; min-width:0; }
+
     @media (max-width: 900px){
       .span6{ grid-column: span 12; }
     }
 
-    /* ✅ Cards in der oberen Row: volle Höhe und sauberes Innenlayout */
+    /* Gleich hohe Top-Module */
     .row-equal .card{ height: 100%; display:flex; flex-direction:column; min-height:0; }
-    .row-equal .card-body{ flex:1 1 auto; min-height:0; display:flex; }
+    .row-equal .card-body{ flex:1 1 auto; min-height:0; display:flex; padding: 12px 14px 14px; }
     .row-equal .module-slot{ flex:1 1 auto; min-height:0; }
+
+    /* KPI Modul: größer (mehr Luft) */
+    .kpi-big .card-body{ padding: 16px 16px 18px; }
 
     .module-slot{ width:100%; min-width:0; }
 
@@ -65,7 +69,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">Wetter</div>
-              <div class="card-sub">Heute + 5 Tage Vorschau</div>
+              <div class="card-sub">Apple-Style · Heute + 5 Tage</div>
             </div>
           </div>
           <div class="card-body">
@@ -80,7 +84,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">Kalender</div>
-              <div class="card-sub">Monat · Feiertage im Grid · Countdown bis 01.</div>
+              <div class="card-sub">Apple-Style · Monat · Countdown bis 01.</div>
             </div>
           </div>
           <div class="card-body">
@@ -89,13 +93,13 @@
         </div>
       </section>
 
-      <!-- KPIs unten volle Breite -->
-      <section class="span12">
+      <!-- KPIs unten volle Breite (so breit wie Wetter + Kalender zusammen) -->
+      <section class="span12 kpi-big">
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">KPIs</div>
-              <div class="card-sub">6 Monate Rückblick + 3 Monate Forecast</div>
+              <div class="card-sub">2×3 Grid · 6 Monate Rückblick + 3 Monate Forecast</div>
             </div>
           </div>
           <div class="card-body">
