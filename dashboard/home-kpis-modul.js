@@ -1,15 +1,7 @@
-/* home-kpi-modul.js
-   Renders 6 KPI cards (2x3) from existing loader data.
-   Works with multiple loader globals:
-   - window.IMMO_DATA
-   - window.DASHBOARD (data)
-   - window.DASHBOARD_DATA
-   - window.dashboardData
-*/
-
 (function(){
   "use strict";
 
+  // ---------- helpers ----------
   function normalizeKey(s){
     return String(s||"")
       .trim()
@@ -32,7 +24,7 @@
       const lc = s.lastIndexOf(",");
       const ld = s.lastIndexOf(".");
       if (lc > ld) s = s.replace(/\./g,"").replace(",","."); // de
-      else s = s.replace(/,/g,""); // en
+      else s = s.replace(/,/g,"");                           // en
     } else if (hasComma && !hasDot) {
       s = s.replace(",",".");
     }
@@ -55,56 +47,63 @@
     return `${y}-${m}`;
   }
 
-  // ---- Adapter to fetch HOME KPI rows regardless of loader format ----
-  function getAllData(){
-    // 1) Newer loaders
+  function parseMonthKey(s){
+    const m = String(s||"").trim();
+    if (/^\d{4}-\d{2}$/.test(m)) return m;
+    // allow "MM.YYYY" or "YYYY.MM"
+    const a = m.match(/^(\d{2})\.(\d{4})$/);
+    if (a) return `${a[2]}-${a[1]}`;
+    const b = m.match(/^(\d{4})\.(\d{2})$/);
+    if (b) return `${b[1]}-${b[2]}`;
+    return "";
+  }
+
+  function addMonths(ym, add){
+    const y = Number(ym.slice(0,4));
+    const m = Number(ym.slice(5,7));
+    const d = new Date(y, m-1 + add, 1);
+    return monthKeyFromDate(d);
+  }
+
+  // ---------- data adapter (works with existing loader) ----------
+  function getGlobalData(){
+    if (window.IMMO_DATA) return window.IMMO_DATA;
     if (window.DASHBOARD && window.DASHBOARD.data) return window.DASHBOARD.data;
     if (window.DASHBOARD_DATA) return window.DASHBOARD_DATA;
     if (window.dashboardData) return window.dashboardData;
-
-    // 2) Older / your setup
-    if (window.IMMO_DATA) return window.IMMO_DATA;
-
     return null;
   }
 
-  // Try to find rows either as:
-  // - data.home_kpi (already normalized)
-  // - data.homeKpi / data.homeKPI
-  // - data.sheets["HOME_KPI"] / data.sheets.HOME_KPI
-  // - data.HOME_KPI
-  function getHomeRows(data){
+  function extractHomeRows(data){
     if (!data) return [];
 
-    // normalized
+    // normalized variants
     if (Array.isArray(data.home_kpi)) return data.home_kpi;
     if (Array.isArray(data.homeKpi)) return data.homeKpi;
     if (Array.isArray(data.homeKPI)) return data.homeKPI;
 
-    if (data.sheets) {
+    // sheets map variants
+    if (data.sheets){
       if (Array.isArray(data.sheets.HOME_KPI)) return data.sheets.HOME_KPI;
       if (Array.isArray(data.sheets["HOME_KPI"])) return data.sheets["HOME_KPI"];
       if (Array.isArray(data.sheets.home_kpi)) return data.sheets.home_kpi;
     }
 
+    // direct sheet prop
     if (Array.isArray(data.HOME_KPI)) return data.HOME_KPI;
     if (Array.isArray(data["HOME_KPI"])) return data["HOME_KPI"];
-
-    // Some loaders store as objects like { HOME_KPI: {rows:[...] } }
     if (data.HOME_KPI && Array.isArray(data.HOME_KPI.rows)) return data.HOME_KPI.rows;
 
     return [];
   }
 
   function normalizeHomeRow(r){
-    // accept already-normalized keys OR raw excel headers
-    const obj = {};
     if (!r || typeof r !== "object") return null;
 
-    // If keys are already normalized:
-    if ("monat" in r && ("cashflow" in r || "mieteinnahmen" in r)) {
+    // if already normalized
+    if ("monat" in r && ("cashflow" in r || "mieteinnahmen" in r || "pachteinnahmen" in r)) {
       return {
-        monat: String(r.monat||"").trim(),
+        monat: parseMonthKey(r.monat),
         cashflow: parseNumberSmart(r.cashflow),
         mieteinnahmen: parseNumberSmart(r.mieteinnahmen),
         pachteinnahmen: parseNumberSmart(r.pachteinnahmen),
@@ -114,12 +113,12 @@
       };
     }
 
-    // Otherwise map from any header names
-    const keys = Object.keys(r);
-    keys.forEach(k => obj[normalizeKey(k)] = r[k]);
+    // map from arbitrary headers
+    const obj = {};
+    Object.keys(r).forEach(k => obj[normalizeKey(k)] = r[k]);
 
     return {
-      monat: String(obj.monat || obj.month || obj.monatswert || "").trim(),
+      monat: parseMonthKey(obj.monat || obj.month),
       cashflow: parseNumberSmart(obj.cashflow),
       mieteinnahmen: parseNumberSmart(obj.mieteinnahmen),
       pachteinnahmen: parseNumberSmart(obj.pachteinnahmen),
@@ -129,213 +128,293 @@
     };
   }
 
+  // ---------- forecasting ----------
+  function linearForecast(lastVals, steps){
+    // lastVals: array of numbers (at least 2 ideally)
+    const vals = lastVals.filter(v => Number.isFinite(v));
+    if (!vals.length) return Array.from({length:steps}, ()=>0);
+
+    if (vals.length === 1) return Array.from({length:steps}, ()=>vals[0]);
+
+    // slope using last 3 points if available
+    const use = vals.slice(-3);
+    const n = use.length;
+    const slope = (use[n-1] - use[0]) / Math.max(1, (n-1));
+    const base = use[n-1];
+
+    return Array.from({length:steps}, (_,i)=>base + slope*(i+1));
+  }
+
   function buildSeries(rows, field){
-    // rows expected chronological; filter valid months
     const cleaned = rows
       .map(normalizeHomeRow)
-      .filter(x => x && x.monat && /^\d{4}-\d{2}$/.test(x.monat))
+      .filter(x => x && x.monat)
       .sort((a,b)=>a.monat.localeCompare(b.monat));
 
-    // pick last 6 months + current + next 3 if available (total 9 points)
-    // We assume the sheet already contains the next 3 months forecast rows.
-    // If not, we still show what exists.
+    if (!cleaned.length) return null;
+
     const nowKey = monthKeyFromDate(new Date());
-    // Find current in list; if not present, use last available as "current"
     let curIdx = cleaned.findIndex(x=>x.monat===nowKey);
     if (curIdx < 0) curIdx = cleaned.length - 1;
 
+    // slice 6 months back incl current
     const start = Math.max(0, curIdx - 5);
-    const end = Math.min(cleaned.length - 1, curIdx + 3);
-    const slice = cleaned.slice(start, end + 1);
+    const hist = cleaned.slice(start, curIdx + 1);
 
-    const values = slice.map(x => ({
-      month: x.monat,
-      value: parseNumberSmart(x[field]),
-    }));
+    // try to read future 3 months from sheet if exists
+    const wantedF1 = addMonths(cleaned[curIdx].monat, 1);
+    const wantedF2 = addMonths(cleaned[curIdx].monat, 2);
+    const wantedF3 = addMonths(cleaned[curIdx].monat, 3);
 
-    // determine future trend vs current (for future color)
-    const currentPoint = values.find(v => v.month === (cleaned[curIdx]?.monat || nowKey)) || values[values.length-1];
-    const currentValue = currentPoint ? (currentPoint.value ?? 0) : 0;
-    const lastValue = values[values.length-1] ? (values[values.length-1].value ?? 0) : currentValue;
-    const trendUp = lastValue >= currentValue;
+    const lookup = new Map(cleaned.map(x=>[x.monat,x]));
+    const futureRows = [lookup.get(wantedF1), lookup.get(wantedF2), lookup.get(wantedF3)];
 
-    return { values, nowKey: cleaned[curIdx]?.monat || nowKey, trendUp };
+    const hasFuture = futureRows.every(r=>r && r[field] != null);
+
+    const histVals = hist.map(x=>parseNumberSmart(x[field]) ?? 0);
+
+    let futureVals;
+    if (hasFuture) {
+      futureVals = futureRows.map(x=>parseNumberSmart(x[field]) ?? 0);
+    } else {
+      futureVals = linearForecast(histVals.slice(-3), 3);
+    }
+
+    const points = [];
+    hist.forEach(x=>{
+      points.push({ month: x.monat, value: parseNumberSmart(x[field]) ?? 0, kind: "past_or_current" });
+    });
+
+    // append 3 forecast points
+    const baseMonth = cleaned[curIdx].monat;
+    for (let i=1;i<=3;i++){
+      points.push({ month: addMonths(baseMonth,i), value: futureVals[i-1] ?? 0, kind: "future" });
+    }
+
+    // trend for future coloring: compare last forecast vs current
+    const currentVal = points.find(p=>p.month===baseMonth)?.value ?? 0;
+    const lastVal = points[points.length-1]?.value ?? currentVal;
+    const trendUp = lastVal >= currentVal;
+
+    return { points, currentMonth: baseMonth, trendUp };
   }
 
-  function makeBarsHTML(series){
-    const vals = series.values.map(v => (Number.isFinite(v.value) ? v.value : 0));
-    const max = Math.max(1, ...vals.map(v => Math.abs(v)));
+  function barsHTML(series){
+    const vals = series.points.map(p => Math.abs(p.value ?? 0));
+    const max = Math.max(1, ...vals);
 
-    return series.values.map((p) => {
-      const h = Math.max(8, Math.round((Math.abs((p.value ?? 0)) / max) * 100));
+    return series.points.map((p) => {
+      const h = Math.max(8, Math.round((Math.abs(p.value ?? 0) / max) * 100));
       let state = "past";
-      if (p.month === series.nowKey) state = "current";
-      else if (p.month > series.nowKey) state = series.trendUp ? "future_up" : "future_down";
+      if (p.month === series.currentMonth) state = "current";
+      else if (p.month > series.currentMonth) state = series.trendUp ? "future_up" : "future_down";
 
-      return `<div class="spark-col" data-state="${state}" title="${p.month}">
+      return `<div class="hkpi-col" data-state="${state}" title="${p.month}">
         <i style="height:${h}%;"></i>
       </div>`;
     }).join("");
   }
 
-  function sumForYear(rows, field, year){
-    const y = String(year);
-    return rows
-      .map(normalizeHomeRow)
-      .filter(x => x && x.monat && x.monat.startsWith(y+"-"))
-      .reduce((acc,x)=>acc + (parseNumberSmart(x[field]) || 0), 0);
-  }
-
   function avgLastN(rows, field, n){
     const cleaned = rows
       .map(normalizeHomeRow)
-      .filter(x => x && x.monat && /^\d{4}-\d{2}$/.test(x.monat))
+      .filter(x => x && x.monat)
       .sort((a,b)=>a.monat.localeCompare(b.monat));
 
     const take = cleaned.slice(Math.max(0, cleaned.length - n));
     if (!take.length) return 0;
-    const s = take.reduce((acc,x)=>acc + (parseNumberSmart(x[field]) || 0), 0);
-    return s / take.length;
+    return take.reduce((acc,x)=>acc + (parseNumberSmart(x[field]) || 0), 0) / take.length;
   }
 
-  function latestValue(rows, field){
+  function sumYear(rows, field, year){
+    const y = String(year);
+    return rows
+      .map(normalizeHomeRow)
+      .filter(x => x && x.monat && x.monat.startsWith(y + "-"))
+      .reduce((acc,x)=>acc + (parseNumberSmart(x[field]) || 0), 0);
+  }
+
+  function latest(rows, field){
     const cleaned = rows
       .map(normalizeHomeRow)
-      .filter(x => x && x.monat && /^\d{4}-\d{2}$/.test(x.monat))
+      .filter(x => x && x.monat)
       .sort((a,b)=>a.monat.localeCompare(b.monat));
     const last = cleaned[cleaned.length-1];
     return last ? (parseNumberSmart(last[field]) || 0) : 0;
   }
 
-  function computePortfolioROI(rows){
-    // ROI p.a. approx = (Jahres-Cashflow / investiertes_kapital) * 100
+  function computeROI(rows){
     const year = new Date().getFullYear();
-    const yearCash = sumForYear(rows, "cashflow", year);
-    const invested = latestValue(rows, "investiertes_kapital");
+    const yearCash = sumYear(rows, "cashflow", year);
+    const invested = latest(rows, "investiertes_kapital");
     if (!invested) return 0;
     return (yearCash / invested) * 100;
   }
 
-  function renderInto(el){
-    const data = getAllData();
-    const rows = getHomeRows(data);
+  // ---------- render ----------
+  function render(mountEl){
+    const root = mountEl || document.getElementById("homeKpisModul");
+    if (!root) return;
 
-    if (!rows || !rows.length){
-      el.innerHTML = `
-        <div class="kpi-empty">
-          Keine KPI-Daten gefunden (HOME_KPI).<br/>
-          Check: Excel Loader liefert HOME_KPI? (Sheetname exakt) und enthält Zeilen (Monat = YYYY-MM).
-        </div>`;
-      el.dataset.rendered = "1";
+    const badgeEl = root.querySelector("#hkpiBadge");
+    const statusEl = root.querySelector("#hkpiStatus");
+    const emptyEl = root.querySelector("#hkpiEmpty");
+    const gridEl = root.querySelector("#hkpiGrid");
+
+    function setStatus(txt, ok){
+      if (statusEl) statusEl.textContent = txt;
+      const dot = root.querySelector(".hkpi-dot");
+      if (dot) {
+        dot.style.background = ok ? "rgba(34,197,94,.95)" : "rgba(239,68,68,.95)";
+        dot.style.boxShadow = ok ? "0 0 0 4px rgba(34,197,94,.12)" : "0 0 0 4px rgba(239,68,68,.12)";
+      }
+    }
+
+    const data = getGlobalData();
+    const rawRows = extractHomeRows(data);
+
+    if (!rawRows || !rawRows.length){
+      if (gridEl) gridEl.innerHTML = "";
+      if (emptyEl) emptyEl.style.display = "block";
+      if (badgeEl) badgeEl.textContent = "HOME_KPI: 0";
+      setStatus("Keine HOME_KPI Daten gefunden.", false);
       return;
     }
 
-    // Build KPI definitions (6 tiles, 2 columns x 3 rows)
-    const seriesCash = buildSeries(rows, "cashflow");
-    const seriesMonatMiete = buildSeries(rows, "mieteinnahmen");
-    const seriesMonatPacht = buildSeries(rows, "pachteinnahmen");
-    const seriesAuslast = buildSeries(rows, "auslastung_pct");
-    const roi = computePortfolioROI(rows);
-    const seriesROI = buildSeries(rows, "cashflow"); // spark based on cashflow trend for ROI card
+    const rows = rawRows.map(normalizeHomeRow).filter(r=>r && r.monat);
+    if (!rows.length){
+      if (gridEl) gridEl.innerHTML = "";
+      if (emptyEl) emptyEl.style.display = "block";
+      if (badgeEl) badgeEl.textContent = "HOME_KPI: 0";
+      setStatus("HOME_KPI vorhanden, aber Monatsformat nicht erkannt (YYYY-MM).", false);
+      return;
+    }
+
+    if (emptyEl) emptyEl.style.display = "none";
+    if (badgeEl) badgeEl.textContent = `HOME_KPI: ${rows.length}`;
 
     const year = new Date().getFullYear();
-    const yearCash = sumForYear(rows, "cashflow", year);
 
-    const currentCash = seriesCash.values.find(v=>v.month===seriesCash.nowKey)?.value ?? 0;
-    const currentMiete = seriesMonatMiete.values.find(v=>v.month===seriesMonatMiete.nowKey)?.value ?? 0;
-    const currentPacht = seriesMonatPacht.values.find(v=>v.month===seriesMonatPacht.nowKey)?.value ?? 0;
-    const currentAuslast = seriesAuslast.values.find(v=>v.month===seriesAuslast.nowKey)?.value ?? 0;
+    const sCash   = buildSeries(rows, "cashflow");
+    const sMiete  = buildSeries(rows, "mieteinnahmen");
+    const sPacht  = buildSeries(rows, "pachteinnahmen");
+    const sAusl   = buildSeries(rows, "auslastung_pct");
 
-    const avgAuslast6 = avgLastN(rows, "auslastung_pct", 6);
+    // fallback if something missing
+    if (!sCash || !sMiete || !sPacht || !sAusl){
+      if (gridEl) gridEl.innerHTML = "";
+      if (emptyEl) emptyEl.style.display = "block";
+      setStatus("KPI-Reihen konnten nicht aufgebaut werden (fehlende Spalten?).", false);
+      return;
+    }
+
+    const currentMonth = sCash.currentMonth;
+
+    const currentCash  = sCash.points.find(p=>p.month===currentMonth)?.value ?? 0;
+    const currentMiete = sMiete.points.find(p=>p.month===currentMonth)?.value ?? 0;
+    const currentPacht = sPacht.points.find(p=>p.month===currentMonth)?.value ?? 0;
+    const currentAusl  = sAusl.points.find(p=>p.month===currentMonth)?.value ?? 0;
+
+    const yearCash = sumYear(rows, "cashflow", year);
+    const roi = computeROI(rows);
+
+    const avgMiete6 = avgLastN(rows, "mieteinnahmen", 6);
+    const avgPacht6 = avgLastN(rows, "pachteinnahmen", 6);
+    const avgAusl6  = avgLastN(rows, "auslastung_pct", 6);
 
     const cards = [
       {
         title: "Monats-Cashflow",
-        sub: `${seriesCash.nowKey} · 6M Rückblick + 3M Forecast`,
+        sub: `${currentMonth} · 6M + 3M`,
         value: formatEuro(currentCash),
-        delta: `Jahr ${year}: ${formatEuro(yearCash)}`,
-        bars: makeBarsHTML(seriesCash),
-        labels: `${seriesCash.values[0].month} … ${seriesCash.values[seriesCash.values.length-1].month}`
+        delta: `YTD ${year}: ${formatEuro(yearCash)}`,
+        series: sCash,
+        isPercent: false
       },
       {
         title: "Jahres-Cashflow",
         sub: `Summe ${year} (YTD)`,
         value: formatEuro(yearCash),
-        delta: `Ø Monat: ${formatEuro(yearCash / Math.max(1, new Date().getMonth()+1))}`,
-        bars: makeBarsHTML(buildSeries(rows, "cashflow")),
-        labels: `${seriesCash.values[0].month} … ${seriesCash.values[seriesCash.values.length-1].month}`
+        delta: `Ø/Monat: ${formatEuro(yearCash / Math.max(1, (new Date().getMonth()+1)))}`,
+        series: sCash,
+        isPercent: false
       },
       {
         title: "Mieteinnahmen / Monat",
-        sub: `${seriesMonatMiete.nowKey} · Ist/Forecast`,
+        sub: `${currentMonth} · Ist/Forecast`,
         value: formatEuro(currentMiete),
-        delta: `Ø 6M: ${formatEuro(avgLastN(rows,"mieteinnahmen",6))}`,
-        bars: makeBarsHTML(seriesMonatMiete),
-        labels: `${seriesMonatMiete.values[0].month} … ${seriesMonatMiete.values[seriesMonatMiete.values.length-1].month}`
+        delta: `Ø 6M: ${formatEuro(avgMiete6)}`,
+        series: sMiete,
+        isPercent: false
       },
       {
         title: "Pachteinnahmen / Monat",
-        sub: `${seriesMonatPacht.nowKey} · Ist/Forecast`,
+        sub: `${currentMonth} · Ist/Forecast`,
         value: formatEuro(currentPacht),
-        delta: `Ø 6M: ${formatEuro(avgLastN(rows,"pachteinnahmen",6))}`,
-        bars: makeBarsHTML(seriesMonatPacht),
-        labels: `${seriesMonatPacht.values[0].month} … ${seriesMonatPacht.values[seriesMonatPacht.values.length-1].month}`
+        delta: `Ø 6M: ${formatEuro(avgPacht6)}`,
+        series: sPacht,
+        isPercent: false
       },
       {
         title: "Auslastung",
-        sub: `${seriesAuslast.nowKey} · Ziel leerstandsfrei`,
-        value: formatPercent(currentAuslast),
-        delta: `Ø 6M: ${formatPercent(avgAuslast6)}`,
-        bars: makeBarsHTML(seriesAuslast),
-        labels: `${seriesAuslast.values[0].month} … ${seriesAuslast.values[seriesAuslast.values.length-1].month}`
+        sub: `${currentMonth} · Ziel hoch`,
+        value: formatPercent(currentAusl),
+        delta: `Ø 6M: ${formatPercent(avgAusl6)}`,
+        series: sAusl,
+        isPercent: true
       },
       {
         title: "Portfolio ROI",
         sub: `${year} (approx)`,
         value: formatPercent(roi),
-        delta: `Basis: Jahres-Cashflow / investiertes Kapital`,
-        bars: makeBarsHTML(seriesROI),
-        labels: `${seriesROI.values[0].month} … ${seriesROI.values[seriesROI.values.length-1].month}`
+        delta: `Jahres-CF / invest. Kapital`,
+        series: sCash,
+        isPercent: true
       }
     ];
 
-    el.innerHTML = `
-      <div class="home-kpi-wrap">
-        ${cards.map(c => `
-          <div class="kpi-card">
-            <div class="kpi-head">
-              <div style="min-width:0">
-                <div class="kpi-title">${c.title}</div>
-                <div class="kpi-sub">${c.sub}</div>
-              </div>
-              <div class="kpi-value">
-                <div class="v">${c.value}</div>
-                <div class="d">${c.delta}</div>
-              </div>
+    gridEl.innerHTML = cards.map(c=>{
+      const first = c.series.points[0]?.month || "";
+      const last  = c.series.points[c.series.points.length-1]?.month || "";
+      return `
+        <div class="hkpi-tile">
+          <div class="hkpi-top">
+            <div style="min-width:0">
+              <div class="hkpi-name">${c.title}</div>
+              <div class="hkpi-desc">${c.sub}</div>
             </div>
-
-            <div class="kpi-spark">
-              <div class="spark-bars">${c.bars}</div>
-              <div class="spark-labels">
-                <span>${c.labels.split(" … ")[0]}</span>
-                <span>${c.labels.split(" … ")[1]}</span>
-              </div>
+            <div class="hkpi-val">
+              <div class="v">${c.value}</div>
+              <div class="d">${c.delta}</div>
             </div>
           </div>
-        `).join("")}
-      </div>
-    `;
 
-    el.dataset.rendered = "1";
+          <div class="hkpi-spark">
+            <div class="hkpi-bars">${barsHTML(c.series)}</div>
+            <div class="hkpi-labels">
+              <span>${first}</span>
+              <span>${last}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    setStatus("KPIs geladen.", true);
   }
 
-  window.HomeKpiModul = {
+  // Public API
+  window.HomeKpisModul = {
     render: function(mountEl){
-      try{
-        renderInto(mountEl);
-      }catch(e){
-        mountEl.innerHTML = `<div class="kpi-empty">KPI Modul Fehler: ${String(e && e.message ? e.message : e)}</div>`;
-        mountEl.dataset.rendered = "1";
+      try { render(mountEl); }
+      catch(e){
+        const root = mountEl || document.getElementById("homeKpisModul");
+        if (root) {
+          const grid = root.querySelector("#hkpiGrid");
+          const status = root.querySelector("#hkpiStatus");
+          if (grid) grid.innerHTML = "";
+          if (status) status.textContent = "KPI Fehler: " + String(e && e.message ? e.message : e);
+        }
       }
     }
   };
