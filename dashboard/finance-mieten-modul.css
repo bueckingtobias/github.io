@@ -1,69 +1,116 @@
-.fin-mieten-root{
-  border-radius:18px;
-  border:1px solid rgba(148,163,184,.18);
-  background: rgba(15,23,42,.55);
+.fm-root{
+  height:100%;
+  min-width:0;
+  border-radius: 18px;
+  border: 1px solid rgba(148,163,184,.16);
+  background: rgba(2,6,23,.18);
   overflow:hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,.35);
-  color:#e2e8f0;
-  font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  padding: 14px;
+  color: rgba(226,232,240,.92);
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
 }
-.fin-mieten-root *{ box-sizing:border-box; }
 
 .fm-head{
-  padding: 12px 14px 10px;
-  border-bottom:1px solid rgba(148,163,184,.14);
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
   gap:10px;
+  align-items:flex-start;
 }
-.fm-title{ font-size:13px; font-weight:950; }
-.fm-sub{ margin-top:3px; font-size:11px; color: rgba(226,232,240,.72); line-height:1.25; }
+.fm-title{ font-size:12px; font-weight:950; }
+.fm-sub{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.68); }
 
-.fm-badge{
-  font-size:10px;
-  padding: 4px 10px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.22);
-  background: rgba(2,6,23,.28);
+.fm-pill{
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  padding: 7px 10px;
+  font-size: 11px;
   color: rgba(226,232,240,.78);
-  white-space:nowrap;
-  height: fit-content;
+  white-space: nowrap;
 }
 
-.fm-body{ padding: 12px 14px 14px; display:flex; flex-direction:column; gap:10px; }
+.fm-main{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-end;
+}
+.fm-big{
+  font-size:26px;
+  font-weight:950;
+  letter-spacing:-.02em;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+.fm-small{
+  font-size:12px;
+  color: rgba(226,232,240,.70);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
 
 .fm-grid{
   display:grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, minmax(0,1fr));
   gap:10px;
 }
+@media (max-width: 600px){
+  .fm-grid{ grid-template-columns: 1fr; }
+}
 
-.fm-item{
-  border-radius:16px;
-  border:1px solid rgba(148,163,184,.18);
-  background: rgba(2,6,23,.26);
+.fm-tile{
+  border-radius: 16px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
   padding: 12px;
+  min-width:0;
 }
 
-.fm-t{ font-size:13px; font-weight:950; }
-.fm-s{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.72); }
+.fm-k{ font-size:10px; text-transform:uppercase; letter-spacing:.08em; color: rgba(226,232,240,.62); }
+.fm-v{ margin-top:8px; font-size:14px; font-weight:950; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+.fm-m{ margin-top:6px; font-size:11px; color: rgba(226,232,240,.70); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
 
-.fm-nums{
-  margin-top:10px;
+.fm-chart{
+  flex:1 1 auto;
+  min-height:0;
   display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
+  grid-template-columns: repeat(9, minmax(0,1fr));
+  gap:6px;
+  align-items:end;
 }
 
-.fm-n{
-  border-radius:14px;
-  border:1px solid rgba(148,163,184,.14);
-  background: rgba(15,23,42,.30);
-  padding: 10px;
+.fm-bar{
+  height:78px;
+  border-radius: 12px;
+  background: rgba(148,163,184,.10);
+  border:1px solid rgba(148,163,184,.12);
+  display:flex;
+  align-items:flex-end;
+  overflow:hidden;
 }
-.fm-n .k{ font-size:10px; text-transform:uppercase; letter-spacing:.08em; color: rgba(226,232,240,.62); }
-.fm-n .v{ margin-top:6px; font-size:14px; font-weight:950; }
-.fm-n .h{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.70); }
+.fm-fill{
+  width:100%;
+  height:0%;
+  border-radius: 12px;
+  transition: height .9s cubic-bezier(.16,1,.3,1);
+}
 
-.fm-hint{ font-size:12px; color: rgba(226,232,240,.72); line-height:1.35; }
+/* Past grey, current blue, forecast green/red */
+.fm-past{ background: linear-gradient(180deg,#9ca3af,#6b7280); }
+.fm-current{ background: linear-gradient(180deg,#3b82f6,#2563eb); }
+.fm-up{ background: linear-gradient(180deg,#22c55e,#16a34a); }
+.fm-down{ background: linear-gradient(180deg,#ef4444,#dc2626); }
+
+.fm-foot{
+  margin-top:auto;
+  font-size:10px;
+  color: rgba(226,232,240,.60);
+  display:flex;
+  justify-content:space-between;
+}
