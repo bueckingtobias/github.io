@@ -1,88 +1,88 @@
 /* dashboard/data-loader.js
-   Loads IMMO data from:
-   1) LocalStorage override (set by admin-data page)
-   2) Otherwise master-data.js (window.IMMO_MASTER_DATA)
-
-   Exposes:
-     window.DataLoader.load() -> Promise<IMMO_DATA>
-   And sets:
-     window.IMMO_DATA
-   Fires:
-     window "immo:data-ready"
+   Normalizes master-data into window.IMMO_DATA (used by all modules).
+   Supports optional admin override stored in localStorage.
 */
 
 (function () {
-  const LS_KEY = "IMMO_DATA_OVERRIDE_V1";
+  window.DataLoader = { load };
 
-  window.DataLoader = { load, clearOverride, hasOverride };
+  const LS_KEY = "IMMO_ADMIN_OVERRIDE_V1";
 
   async function load() {
-    const data = getOverride() || getMaster();
-
-    if (!data || typeof data !== "object") {
+    // 1) Master must exist
+    if (!window.IMMO_MASTER_DATA) {
       window.IMMO_DATA = { home: [], projects: { gesamt: {}, gewerke: [] }, finance: {} };
-      window.dispatchEvent(new Event("immo:data-ready"));
-      return window.IMMO_DATA;
+      fireReady(false, "IMMO_MASTER_DATA fehlt (master-data.js lädt nicht oder hat Syntax-Error).");
+      return;
     }
 
-    // Normalize minimal shape
-    const normalized = normalize(data);
-
-    window.IMMO_DATA = normalized;
-    window.dispatchEvent(new Event("immo:data-ready"));
-    return normalized;
-  }
-
-  function hasOverride() {
-    return !!getOverrideRaw();
-  }
-
-  function clearOverride() {
-    localStorage.removeItem(LS_KEY);
-  }
-
-  function getMaster() {
-    return window.IMMO_MASTER_DATA || null;
-  }
-
-  function getOverrideRaw() {
+    // 2) Optional override from admin
+    let override = null;
     try {
-      return localStorage.getItem(LS_KEY);
-    } catch {
-      return null;
-    }
-  }
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) override = JSON.parse(raw);
+    } catch (_) {}
 
-  function getOverride() {
-    const raw = getOverrideRaw();
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
+    // 3) Merge (override wins)
+    const merged = deepMerge(structuredCloneSafe(window.IMMO_MASTER_DATA), override || {});
 
-  function normalize(d) {
-    const out = {
-      version: d.version || d._meta?.version || "local",
-      updatedAt: d.updatedAt || d._meta?.updatedAt || new Date().toISOString(),
-      home: Array.isArray(d.home) ? d.home : [],
+    // 4) Normalize into legacy shape used by modules
+    window.IMMO_DATA = {
+      home: Array.isArray(merged.home) ? merged.home : [],
+      finance: merged.finance || {},
       projects: {
-        gesamt: (d.projects && typeof d.projects.gesamt === "object") ? d.projects.gesamt : {},
-        gewerke: (d.projects && Array.isArray(d.projects.gewerke)) ? d.projects.gewerke : []
+        gesamt: merged.projects?.gesamt || {},
+        gewerke: Array.isArray(merged.projects?.gewerke) ? merged.projects.gewerke : [],
       },
-      finance: (d.finance && typeof d.finance === "object") ? d.finance : {}
     };
 
-    // Ensure some expected sections exist
-    out.finance.gesamt = Array.isArray(out.finance.gesamt) ? out.finance.gesamt : [];
-    out.finance.cashflow = Array.isArray(out.finance.cashflow) ? out.finance.cashflow : [];
-    out.finance.mieten = Array.isArray(out.finance.mieten) ? out.finance.mieten : [];
-    out.finance.op = Array.isArray(out.finance.op) ? out.finance.op : [];
-    out.finance.reserven = Array.isArray(out.finance.reserven) ? out.finance.reserven : [];
-    out.finance.budget = Array.isArray(out.finance.budget) ? out.finance.budget : [];
+    // 5) Debug footprint (optional)
+    window.IMMO_DATA_META = {
+      version: merged.version || "",
+      updatedAt: merged.updatedAt || "",
+      source: override ? "master+override" : "master",
+    };
 
+    fireReady(true, `OK (${window.IMMO_DATA_META.source})`);
+  }
+
+  function fireReady(ok, msg) {
+    try {
+      window.dispatchEvent(
+        new CustomEvent("immo:data-ready", {
+          detail: {
+            ok,
+            msg,
+            homeCount: Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home.length : 0,
+            projectsCount: Array.isArray(window.IMMO_DATA?.projects?.gewerke) ? window.IMMO_DATA.projects.gewerke.length : 0,
+          },
+        })
+      );
+    } catch (_) {}
+    // Keep console for dev
+    console.log("✅ DataLoader:", ok, msg, window.IMMO_DATA);
+  }
+
+  function structuredCloneSafe(obj) {
+    try {
+      if (typeof structuredClone === "function") return structuredClone(obj);
+    } catch (_) {}
+    return JSON.parse(JSON.stringify(obj || {}));
+  }
+
+  function isObj(x) {
+    return x && typeof x === "object" && !Array.isArray(x);
+  }
+
+  function deepMerge(base, patch) {
+    if (!isObj(base) || !isObj(patch)) return patch ?? base;
+    const out = { ...base };
+    Object.keys(patch).forEach((k) => {
+      const pv = patch[k];
+      const bv = base[k];
+      if (isObj(bv) && isObj(pv)) out[k] = deepMerge(bv, pv);
+      else out[k] = pv;
+    });
     return out;
   }
 })();
