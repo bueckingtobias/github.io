@@ -9,21 +9,23 @@
 
   <!-- Cache-Buster -->
   <script>
-    window.__VER = "20251214-Home-2";
+    window.__VER = "20251214-Home-3";
   </script>
 
   <!-- ===== GLOBAL / SHELL ===== -->
-  <link rel="stylesheet" href="./shell.css?v=20251214-Home-2" />
+  <link rel="stylesheet" href="./shell.css?v=20251214-Home-3" />
 
-  <!-- ===== HOME MODULE STYLES (unverändert) ===== -->
-  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-2" />
-  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-2" />
-  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-2" />
+  <!-- ===== HOME MODULE STYLES ===== -->
+  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-3" />
+  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-3" />
+  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-3" />
 
   <style>
     :root{
-      --homeGap: 12px;
-      --homeTopH: 360px; /* 👈 mehr Höhe für Wetter + Kalender */
+      --homeGap: 14px;
+
+      /* ⬆⬆ HIER: doppelte Höhe für Wetter + Kalender */
+      --homeTopH: 720px;
     }
 
     html, body { overflow-x: hidden; }
@@ -43,15 +45,19 @@
       .col-6{ grid-column: span 12; }
     }
 
-    /* gleiche Höhe oben (iPad) */
+    /* ===== TOP MODULE HEIGHT ===== */
     .home-top{
       height: var(--homeTopH);
       display:flex;
       flex-direction:column;
       min-height:0;
     }
+
+    /* Mobile: content-driven height */
     @media (max-width: 900px){
-      .home-top{ height:auto; }
+      .home-top{
+        height: auto;
+      }
     }
 
     .module-host{
@@ -64,8 +70,8 @@
       font-size:12px;
       color: rgba(226,232,240,.78);
       line-height:1.35;
-      padding: 10px;
-      border-radius: 12px;
+      padding: 12px;
+      border-radius: 14px;
       border: 1px solid rgba(239,68,68,.25);
       background: rgba(239,68,68,.08);
     }
@@ -75,7 +81,7 @@
 <body>
 <div class="app">
 
-  <!-- SIDEBAR (einheitlich + Logout) -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-dot"></div>
@@ -142,9 +148,10 @@
     </header>
 
     <main class="content">
-      <div class="container" style="max-width:1300px;">
+      <div class="container" style="max-width:1400px;">
 
         <section class="home-grid">
+
           <!-- WETTER -->
           <section class="card col-6 home-top">
             <div class="card-header">
@@ -177,6 +184,7 @@
             </div>
             <div class="card-body module-host" id="kpisHost"></div>
           </section>
+
         </section>
 
       </div>
@@ -184,14 +192,14 @@
   </section>
 </div>
 
-<!-- DATA SOURCE (A) -->
-<script src="./master-data.js?v=20251214-Home-2"></script>
-<script src="./data-loader.js?v=20251214-Home-2"></script>
+<!-- DATA -->
+<script src="./master-data.js?v=20251214-Home-3"></script>
+<script src="./data-loader.js?v=20251214-Home-3"></script>
 
 <!-- MODULE SCRIPTS -->
-<script src="./home-weather-modul.js?v=20251214-Home-2"></script>
-<script src="./home-calendar-modul.js?v=20251214-Home-2"></script>
-<script src="./home-kpis-modul.js?v=20251214-Home-2"></script>
+<script src="./home-weather-modul.js?v=20251214-Home-3"></script>
+<script src="./home-calendar-modul.js?v=20251214-Home-3"></script>
+<script src="./home-kpis-modul.js?v=20251214-Home-3"></script>
 
 <script>
 (async function(){
@@ -216,7 +224,7 @@
     const host = document.getElementById(hostId);
     if (!host) return;
 
-    const url = fragmentPath + (fragmentPath.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(window.__VER || "1");
+    const url = fragmentPath + "?v=" + encodeURIComponent(window.__VER);
     try{
       const res = await fetch(url, { cache: "no-store" });
       if(!res.ok) throw new Error(res.status + " " + res.statusText);
@@ -224,35 +232,25 @@
     }catch(e){
       host.innerHTML = `
         <div class="module-error">
-          <b>Modul konnte nicht geladen werden:</b> ${fragmentPath}<br/>
+          <b>Modul konnte nicht geladen werden:</b><br/>
+          ${fragmentPath}<br/>
           ${String(e && e.message ? e.message : e)}
         </div>`;
     }
   }
 
-  // 1) Module-HTML laden
+  // Load fragments
   await injectFragment("weatherHost", "./home-weather-modul.html");
   await injectFragment("calendarHost", "./home-calendar-modul.html");
   await injectFragment("kpisHost", "./home-kpis-modul.html");
 
-  // 2) Daten laden (master/override)
-  try { await DataLoader.load(); } catch(e){ console.error("DataLoader.load failed:", e); }
+  // Load data
+  await DataLoader.load();
 
-  // 3) Render
-  const wHost = document.getElementById("weatherHost");
-  const cHost = document.getElementById("calendarHost");
-  const kHost = document.getElementById("kpisHost");
-
-  if (window.HomeWeatherModul?.render) window.HomeWeatherModul.render(wHost);
-  if (window.HomeCalendarModul?.render) window.HomeCalendarModul.render(cHost);
-  if (window.HomeKpisModul?.render) window.HomeKpisModul.render(kHost);
-
-  // 4) iPad Timing-Fallback
-  setTimeout(() => {
-    if (window.HomeWeatherModul?.render) window.HomeWeatherModul.render(wHost);
-    if (window.HomeCalendarModul?.render) window.HomeCalendarModul.render(cHost);
-    if (window.HomeKpisModul?.render) window.HomeKpisModul.render(kHost);
-  }, 250);
+  // Render modules
+  if (window.HomeWeatherModul?.render) HomeWeatherModul.render(document.getElementById("weatherHost"));
+  if (window.HomeCalendarModul?.render) HomeCalendarModul.render(document.getElementById("calendarHost"));
+  if (window.HomeKpisModul?.render) HomeKpisModul.render(document.getElementById("kpisHost"));
 
 })();
 </script>
