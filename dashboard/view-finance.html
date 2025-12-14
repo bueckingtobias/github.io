@@ -17,11 +17,31 @@
 
   <style>
     html,body{ overflow-x:hidden !important; }
-    .fin-grid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); min-width:0; }
-    .span12{ grid-column:span 12; min-width:0; }
-    .span6{ grid-column:span 6; min-width:0; }
-    @media (max-width:900px){ .span6{ grid-column:span 12; } }
-    .module-slot{ width:100%; min-width:0; }
+
+    .fin-grid{
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap: var(--gap);
+      min-width:0;
+      align-items: stretch;
+    }
+    .span12{ grid-column: span 12; min-width:0; }
+    .span6{ grid-column: span 6; min-width:0; }
+
+    @media (max-width: 900px){
+      .span6{ grid-column: span 12; }
+    }
+
+    /* ✅ gleiche Höhe innerhalb jeder Doppel-Reihe */
+    .row-equal .card{ height:100%; display:flex; flex-direction:column; min-height:0; }
+    .row-equal .card-body{ flex:1 1 auto; min-height:0; display:flex; padding: 12px 14px 14px; }
+    .row-equal .slot{ flex:1 1 auto; min-height:0; }
+
+    /* Budget darf größer wirken */
+    .budget-big .card-body{ padding: 16px 16px 18px; }
+
+    .slot{ width:100%; min-width:0; }
+
     .alert{
       border-radius:14px;
       border:1px solid rgba(248,113,113,.35);
@@ -42,31 +62,106 @@
 
   <template id="pageTpl">
     <section class="fin-grid">
+
+      <!-- Gesamtübersicht (oben) -->
       <section class="span12">
         <div class="card">
-          <div class="card-header"><div><div class="card-title">Finanzen</div><div class="card-sub">Module</div></div></div>
-          <div class="card-body"><div class="module-slot" id="slotGesamt"></div></div>
+          <div class="card-header">
+            <div>
+              <div class="card-title">Gesamtübersicht</div>
+              <div class="card-sub">Cashflow, Mieten, OP & Reserven – kompakt in einer Apple-Style Übersicht.</div>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 14px;">
+            <div class="slot" id="slotOverview"></div>
+          </div>
         </div>
       </section>
 
-      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Cashflow</div></div></div><div class="card-body"><div class="module-slot" id="slotCashflow"></div></div></div></section>
-      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Mieten</div></div></div><div class="card-body"><div class="module-slot" id="slotMieten"></div></div></div></section>
+      <!-- Reihe 2: Cashflow + Mieten -->
+      <section class="span6 row-equal">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Cashflow</div>
+              <div class="card-sub">6M Rückblick · 3M Forecast</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="slot" id="slotCashflow"></div>
+          </div>
+        </div>
+      </section>
 
-      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">OP</div></div></div><div class="card-body"><div class="module-slot" id="slotOp"></div></div></div></section>
-      <section class="span6"><div class="card"><div class="card-header"><div><div class="card-title">Reserven</div></div></div><div class="card-body"><div class="module-slot" id="slotReserven"></div></div></div></section>
+      <section class="span6 row-equal">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Mieten & Pacht</div>
+              <div class="card-sub">Einnahmen, Auslastung, nächste Fälligkeit</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="slot" id="slotRents"></div>
+          </div>
+        </div>
+      </section>
 
-      <section class="span12"><div class="card"><div class="card-header"><div><div class="card-title">Budget</div></div></div><div class="card-body"><div class="module-slot" id="slotBudget"></div></div></div></section>
+      <!-- Reihe 3: OP + Reserven -->
+      <section class="span6 row-equal">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">OP – Offene Posten</div>
+              <div class="card-sub">Fälligkeiten, überfällig, Prioritäten</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="slot" id="slotOP"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="span6 row-equal">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Reserven & Liquidität</div>
+              <div class="card-sub">Reservepuffer, Runway, Zielkorridor</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="slot" id="slotReserves"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Budget unten (größer, vollbreit) -->
+      <section class="span12 budget-big">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Budget & Plan</div>
+              <div class="card-sub">Jahresbudget, Kategorien, Abweichungen, Restbudget</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="slot" id="slotBudget"></div>
+          </div>
+        </div>
+      </section>
+
     </section>
   </template>
 
   <script>
     (async function(){
-      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Gesamt + Module" });
+      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Übersicht · Cashflow · Mieten · OP · Reserven · Budget" });
 
       const V = new URLSearchParams(location.search).get("v") || String(Date.now());
       const withV = (p)=> p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(V);
 
-      function show(el, title, msg){
+      function showError(el, title, msg){
         el.innerHTML = "";
         const box = document.createElement("div");
         box.className = "alert";
@@ -117,31 +212,78 @@
 
           mod.render(slot, data);
         }catch(e){
-          show(slot, "Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e));
+          showError(slot, "Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e));
         }
       }
 
-      // Excel
+      // Excel laden
       try{
         await ExcelLoader.load(withV("./Dashboard.xlsx"));
       }catch(e){
-        // wenn Excel fehlt, zeigen wir es in jedem Slot klar an
-        ["slotGesamt","slotCashflow","slotMieten","slotOp","slotReserven","slotBudget"].forEach(id=>{
-          const el = document.getElementById(id);
-          show(el, "Daten konnten nicht geladen werden.", (e && e.message) ? e.message : String(e));
-        });
-        return;
+        console.warn("Excel load failed:", e);
       }
 
-      const financeData = Array.isArray(window.IMMO_DATA?.finance) ? window.IMMO_DATA.finance : [];
+      // Datenbereiche (werden von Dashboard.xlsx gespeist)
+      const financeRows   = Array.isArray(window.IMMO_DATA?.finance) ? window.IMMO_DATA.finance : [];
+      const opRows        = Array.isArray(window.IMMO_DATA?.op) ? window.IMMO_DATA.op : [];
+      const reservesRows  = Array.isArray(window.IMMO_DATA?.reserven) ? window.IMMO_DATA.reserven : [];
+      const budgetRows    = Array.isArray(window.IMMO_DATA?.budget) ? window.IMMO_DATA.budget : [];
+      const homeKpisRows  = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
 
-      // Finance Modules (Dateinamen wie in deinem Ordner)
-      await mountModule({ slotId:"slotGesamt",   html:"./finance-gesamt-modul.html",   css:"./finance-gesamt-modul.css",   js:"./finance-gesamt-modul.js",   globalName:"FinanceGesamtModul",   data: financeData });
-      await mountModule({ slotId:"slotCashflow", html:"./finance-cashflow-modul.html", css:"./finance-cashflow-modul.css", js:"./finance-cashflow-modul.js", globalName:"FinanceCashflowModul", data: financeData });
-      await mountModule({ slotId:"slotMieten",   html:"./finance-mieten-modul.html",   css:"./finance-mieten-modul.css",   js:"./finance-mieten-modul.js",   globalName:"FinanceMietenModul",   data: financeData });
-      await mountModule({ slotId:"slotOp",       html:"./finance-op-modul.html",       css:"./finance-op-modul.css",       js:"./finance-op-modul.js",       globalName:"FinanceOpModul",       data: financeData });
-      await mountModule({ slotId:"slotReserven", html:"./finance-reserven-modul.html", css:"./finance-reserven-modul.css", js:"./finance-reserven-modul.js", globalName:"FinanceReservenModul", data: financeData });
-      await mountModule({ slotId:"slotBudget",   html:"./finance-budget-modul.html",   css:"./finance-budget-modul.css",   js:"./finance-budget-modul.js",   globalName:"FinanceBudgetModul",   data: financeData });
+      await mountModule({
+        slotId:"slotOverview",
+        html:"./finance-overview-modul.html",
+        css:"./finance-overview-modul.css",
+        js:"./finance-overview-modul.js",
+        globalName:"FinanceOverviewModul",
+        data:{ financeRows, opRows, reservesRows, budgetRows, homeKpisRows }
+      });
+
+      await mountModule({
+        slotId:"slotCashflow",
+        html:"./finance-cashflow-modul.html",
+        css:"./finance-cashflow-modul.css",
+        js:"./finance-cashflow-modul.js",
+        globalName:"FinanceCashflowModul",
+        data:{ financeRows }
+      });
+
+      await mountModule({
+        slotId:"slotRents",
+        html:"./finance-rents-modul.html",
+        css:"./finance-rents-modul.css",
+        js:"./finance-rents-modul.js",
+        globalName:"FinanceRentsModul",
+        data:{ financeRows, homeKpisRows }
+      });
+
+      await mountModule({
+        slotId:"slotOP",
+        html:"./finance-op-modul.html",
+        css:"./finance-op-modul.css",
+        js:"./finance-op-modul.js",
+        globalName:"FinanceOPModul",
+        data:{ opRows }
+      });
+
+      await mountModule({
+        slotId:"slotReserves",
+        html:"./finance-reserven-modul.html",
+        css:"./finance-reserven-modul.css",
+        js:"./finance-reserven-modul.js",
+        globalName:"FinanceReservenModul",
+        data:{ reservesRows, financeRows }
+      });
+
+      await mountModule({
+        slotId:"slotBudget",
+        html:"./finance-budget-modul.html",
+        css:"./finance-budget-modul.css",
+        js:"./finance-budget-modul.js",
+        globalName:"FinanceBudgetModul",
+        data:{ budgetRows }
+      });
+
     })();
   </script>
 </body>
