@@ -1,39 +1,162 @@
-.fr-root{
+.frx-root{
   height:100%;
-  padding:14px;
-  border-radius:18px;
-  border:1px solid rgba(148,163,184,.16);
-  background:rgba(2,6,23,.18);
+  min-height:0;
+  min-width:0;
+  position:relative;
   display:flex;
   flex-direction:column;
   gap:12px;
+  padding:14px;
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,.16);
+  background: rgba(2,6,23,.18);
+  overflow:hidden;
 }
 
-.fr-title{ font-size:12px; font-weight:950; }
-.fr-sub{ margin-top:4px; font-size:11px; color:rgba(226,232,240,.68); }
+.frx-bg{
+  position:absolute; inset:-40px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(34,197,94,.20), transparent 40%),
+    radial-gradient(circle at 85% 10%, rgba(59,130,246,.14), transparent 45%),
+    linear-gradient(180deg, rgba(15,23,42,.55), rgba(2,6,23,.20));
+  transform: scale(1.05);
+  pointer-events:none;
+}
+.frx-root *{ position:relative; }
 
-.fr-main{
+.frx-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+.frx-title{ font-size:12px; font-weight:950; }
+.frx-sub{ margin-top:4px; font-size:11px; color:rgba(226,232,240,.68); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.frx-pill{
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:11px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  color: rgba(226,232,240,.80);
+  white-space:nowrap;
+}
+
+.frx-topline{
   display:flex;
   justify-content:space-between;
   align-items:flex-end;
+  gap:10px;
 }
-.fr-big{ font-size:26px; font-weight:950; }
-.fr-small{ font-size:11px; color:rgba(226,232,240,.7); }
+.frx-big{
+  font-size:26px;
+  font-weight:950;
+  letter-spacing:-.02em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.frx-meta{
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-.fr-bars{
-  margin-top:auto;
+.frx-kpis{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:10px;
+}
+@media (max-width: 700px){
+  .frx-kpis{ grid-template-columns: 1fr; }
+}
+
+.frx-tile{
+  padding:12px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  min-width:0;
+}
+.frx-k{ font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:rgba(226,232,240,.62); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.frx-v{ margin-top:8px; font-size:14px; font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.frx-m{ margin-top:6px; font-size:11px; color:rgba(226,232,240,.72); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.frx-alloc{
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  padding:12px;
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:10px;
+  min-height:0;
+}
+.frx-alloc-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:baseline;
+}
+.frx-alloc-title{ font-size:11px; font-weight:950; }
+.frx-alloc-sub{ font-size:11px; color: rgba(226,232,240,.70); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.frx-alloc-bars{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-height:0;
 }
 
-.fr-bar{
+.frx-barrow{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap:10px;
+  align-items:center;
+  min-width:0;
+}
+.frx-barlabel{
+  font-size:11px;
+  color: rgba(226,232,240,.82);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.frx-barval{
+  font-size:11px;
+  font-weight:950;
+  white-space:nowrap;
+}
+
+.frx-bar{
+  grid-column: 1 / -1;
   height:10px;
   border-radius:999px;
-  background:rgba(148,163,184,.12);
+  background: rgba(148,163,184,.14);
   overflow:hidden;
 }
-.fr-fill{
+.frx-fill{
   height:100%;
-  background:linear-gradient(90deg,#22c55e,#16a34a);
+  width:0%;
+  border-radius:999px;
+  transition: width .9s cubic-bezier(.16,1,.3,1);
+  background: linear-gradient(90deg,#22c55e,#16a34a);
+}
+.frx-fill.blue{ background: linear-gradient(90deg,#3b82f6,#2563eb); }
+.frx-fill.gray{ background: linear-gradient(90deg,#9ca3af,#6b7280); }
+.frx-fill.red{ background: linear-gradient(90deg,#ef4444,#dc2626); }
+
+.frx-mini{
+  margin-top:auto;
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
