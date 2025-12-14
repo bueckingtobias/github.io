@@ -7,16 +7,22 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
+  <!-- Shell (Sidebar/Topbar) -->
   <link rel="stylesheet" href="./shell.css" />
 
+  <!-- Auth -->
   <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
 
+  <!-- Shell + Excel Loader -->
   <script src="./shell.js"></script>
   <script src="./excel-loader.js"></script>
 
   <style>
+    /* No horizontal scroll – ever */
     html,body{ overflow-x:hidden !important; }
+    .main, .content, .container{ min-width:0; }
+    .card, .card-body{ min-width:0; }
 
     .fin-grid{
       display:grid;
@@ -32,15 +38,30 @@
       .span6{ grid-column: span 12; }
     }
 
-    /* ✅ gleiche Höhe innerhalb jeder Doppel-Reihe */
-    .row-equal .card{ height:100%; display:flex; flex-direction:column; min-height:0; }
-    .row-equal .card-body{ flex:1 1 auto; min-height:0; display:flex; padding: 12px 14px 14px; }
-    .row-equal .slot{ flex:1 1 auto; min-height:0; }
+    /* Equal-height rows (pairs) */
+    .row-equal .card{
+      height: 100%;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .row-equal .card-body{
+      flex:1 1 auto;
+      min-height:0;
+      display:flex;
+      padding: 12px 14px 14px;
+    }
+    .slot{
+      width:100%;
+      min-width:0;
+      flex:1 1 auto;
+      min-height:0;
+    }
 
-    /* Budget darf größer wirken */
-    .budget-big .card-body{ padding: 16px 16px 18px; }
-
-    .slot{ width:100%; min-width:0; }
+    /* Budget bigger */
+    .budget-big .card-body{
+      padding: 16px 16px 18px;
+    }
 
     .alert{
       border-radius:14px;
@@ -63,22 +84,22 @@
   <template id="pageTpl">
     <section class="fin-grid">
 
-      <!-- Gesamtübersicht (oben) -->
+      <!-- 1) Gesamtübersicht oben -->
       <section class="span12">
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">Gesamtübersicht</div>
-              <div class="card-sub">Cashflow, Mieten, OP & Reserven – kompakt in einer Apple-Style Übersicht.</div>
+              <div class="card-sub">Cashflow, Mieten, OP & Reserven – kompakt und Apple-clean.</div>
             </div>
           </div>
-          <div class="card-body" style="padding: 14px;">
-            <div class="slot" id="slotOverview"></div>
+          <div class="card-body" style="padding:14px;">
+            <div class="slot" id="slotGesamt"></div>
           </div>
         </div>
       </section>
 
-      <!-- Reihe 2: Cashflow + Mieten -->
+      <!-- 2) Cashflow + Mieten (gleich hoch) -->
       <section class="span6 row-equal">
         <div class="card">
           <div class="card-header">
@@ -102,18 +123,18 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="slot" id="slotRents"></div>
+            <div class="slot" id="slotMieten"></div>
           </div>
         </div>
       </section>
 
-      <!-- Reihe 3: OP + Reserven -->
+      <!-- 3) OP + Reserven (gleich hoch wie Reihe 2) -->
       <section class="span6 row-equal">
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">OP – Offene Posten</div>
-              <div class="card-sub">Fälligkeiten, überfällig, Prioritäten</div>
+              <div class="card-sub">Fälligkeiten, überfällig, Priorität</div>
             </div>
           </div>
           <div class="card-body">
@@ -126,165 +147,5 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Reserven & Liquidität</div>
-              <div class="card-sub">Reservepuffer, Runway, Zielkorridor</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="slot" id="slotReserves"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Budget unten (größer, vollbreit) -->
-      <section class="span12 budget-big">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Budget & Plan</div>
-              <div class="card-sub">Jahresbudget, Kategorien, Abweichungen, Restbudget</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="slot" id="slotBudget"></div>
-          </div>
-        </div>
-      </section>
-
-    </section>
-  </template>
-
-  <script>
-    (async function(){
-      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Übersicht · Cashflow · Mieten · OP · Reserven · Budget" });
-
-      const V = new URLSearchParams(location.search).get("v") || String(Date.now());
-      const withV = (p)=> p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(V);
-
-      function showError(el, title, msg){
-        el.innerHTML = "";
-        const box = document.createElement("div");
-        box.className = "alert";
-        box.innerHTML = `<strong>${title}</strong>\n${msg}`;
-        el.appendChild(box);
-      }
-
-      function loadCssOnce(href){
-        const key = withV(href);
-        if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
-        return new Promise((resolve,reject)=>{
-          const l=document.createElement("link");
-          l.rel="stylesheet"; l.href=key; l.dataset.href=href;
-          l.onload=resolve;
-          l.onerror=()=>reject(new Error("CSS nicht geladen (404?): " + href));
-          document.head.appendChild(l);
-        });
-      }
-
-      function loadJsOnce(src){
-        const key = withV(src);
-        if(document.querySelector('script[data-src="'+src+'"]')) return Promise.resolve();
-        return new Promise((resolve,reject)=>{
-          const s=document.createElement("script");
-          s.src=key; s.defer=true; s.dataset.src=src;
-          s.onload=resolve;
-          s.onerror=()=>reject(new Error("JS nicht geladen (404?): " + src));
-          document.head.appendChild(s);
-        });
-      }
-
-      async function loadHtmlInto(url, el){
-        const r = await fetch(withV(url), { cache:"no-store" });
-        if(!r.ok) throw new Error("HTML nicht geladen (404?): " + url + " (HTTP " + r.status + ")");
-        el.innerHTML = await r.text();
-      }
-
-      async function mountModule({slotId, html, css, js, globalName, data}){
-        const slot = document.getElementById(slotId);
-        try{
-          await loadHtmlInto(html, slot);
-          await loadCssOnce(css);
-          await loadJsOnce(js);
-
-          const mod = window[globalName];
-          if(!mod) throw new Error("Global fehlt: window." + globalName);
-          if(typeof mod.render !== "function") throw new Error("render() fehlt: window." + globalName + ".render");
-
-          mod.render(slot, data);
-        }catch(e){
-          showError(slot, "Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e));
-        }
-      }
-
-      // Excel laden
-      try{
-        await ExcelLoader.load(withV("./Dashboard.xlsx"));
-      }catch(e){
-        console.warn("Excel load failed:", e);
-      }
-
-      // Datenbereiche (werden von Dashboard.xlsx gespeist)
-      const financeRows   = Array.isArray(window.IMMO_DATA?.finance) ? window.IMMO_DATA.finance : [];
-      const opRows        = Array.isArray(window.IMMO_DATA?.op) ? window.IMMO_DATA.op : [];
-      const reservesRows  = Array.isArray(window.IMMO_DATA?.reserven) ? window.IMMO_DATA.reserven : [];
-      const budgetRows    = Array.isArray(window.IMMO_DATA?.budget) ? window.IMMO_DATA.budget : [];
-      const homeKpisRows  = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
-
-      await mountModule({
-        slotId:"slotOverview",
-        html:"./finance-overview-modul.html",
-        css:"./finance-overview-modul.css",
-        js:"./finance-overview-modul.js",
-        globalName:"FinanceOverviewModul",
-        data:{ financeRows, opRows, reservesRows, budgetRows, homeKpisRows }
-      });
-
-      await mountModule({
-        slotId:"slotCashflow",
-        html:"./finance-cashflow-modul.html",
-        css:"./finance-cashflow-modul.css",
-        js:"./finance-cashflow-modul.js",
-        globalName:"FinanceCashflowModul",
-        data:{ financeRows }
-      });
-
-      await mountModule({
-        slotId:"slotRents",
-        html:"./finance-rents-modul.html",
-        css:"./finance-rents-modul.css",
-        js:"./finance-rents-modul.js",
-        globalName:"FinanceRentsModul",
-        data:{ financeRows, homeKpisRows }
-      });
-
-      await mountModule({
-        slotId:"slotOP",
-        html:"./finance-op-modul.html",
-        css:"./finance-op-modul.css",
-        js:"./finance-op-modul.js",
-        globalName:"FinanceOPModul",
-        data:{ opRows }
-      });
-
-      await mountModule({
-        slotId:"slotReserves",
-        html:"./finance-reserven-modul.html",
-        css:"./finance-reserven-modul.css",
-        js:"./finance-reserven-modul.js",
-        globalName:"FinanceReservenModul",
-        data:{ reservesRows, financeRows }
-      });
-
-      await mountModule({
-        slotId:"slotBudget",
-        html:"./finance-budget-modul.html",
-        css:"./finance-budget-modul.css",
-        js:"./finance-budget-modul.js",
-        globalName:"FinanceBudgetModul",
-        data:{ budgetRows }
-      });
-
-    })();
-  </script>
-</body>
-</html>
+              <div class="card-title">Reserven</div>
+              <div class="card-sub">Puffer, Runway, Zielkorridor</div>
