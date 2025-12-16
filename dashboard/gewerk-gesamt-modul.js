@@ -29,20 +29,40 @@
 
     const note = root.querySelector("#ggNote");
 
-    const gesamt = window.IMMO_DATA?.projects?.gesamt || {};
-    const all = window.IMMO_DATA?.projects?.gewerke;
-    const rows = Array.isArray(all) ? all : [];
+    // ✅ Quelle 1: IMMO_DATA (normalerweise das Ziel)
+    const dataGesamt = window.IMMO_DATA?.projects?.gesamt || {};
+    const dataGewerke = window.IMMO_DATA?.projects?.gewerke;
 
+    // ✅ Fallback Quelle 2: IMMO_MASTER_DATA (falls IMMO_DATA nicht korrekt befüllt wurde)
+    const masterGesamt = window.IMMO_MASTER_DATA?.projects?.gesamt || {};
+    const masterGewerke = window.IMMO_MASTER_DATA?.projects?.gewerke;
+
+    // ✅ Entscheide Quelle (mit harter Absicherung auf Array)
+    let rows = Array.isArray(dataGewerke) ? dataGewerke : [];
+    if (!rows.length && Array.isArray(masterGewerke)) rows = masterGewerke;
+
+    // ✅ Gesamdaten: IMMO_DATA bevorzugen, sonst Master
+    const gesamt = Object.keys(dataGesamt || {}).length ? dataGesamt : masterGesamt;
+
+    // Projektname setzen
     const projectName = gesamt.Projekt || gesamt.Adresse || gesamt.Objekt || "Projekt";
     if (ggTitle) ggTitle.textContent = projectName;
 
     if (badgeProject) badgeProject.textContent = `Projekt: ${projectName}`;
-    if (badgeUpdate) badgeUpdate.textContent = `Update: ${gesamt.Letztes_Update || gesamt.updatedAt || "—"}`;
+    if (badgeUpdate) badgeUpdate.textContent = `Update: ${gesamt.Letztes_Update || gesamt.updatedAt || window.IMMO_MASTER_DATA?.updatedAt?.slice(0,10) || "—"}`;
+
+    // ✅ Normalisieren, damit alle Key-Varianten sauber funktionieren
+    rows = rows.map((r, i) => normalizeRow(r, i, projectName, gesamt.Adresse || gesamt.Objekt || ""));
 
     // aktive Gewerke
     const active = rows.filter(r => String(r.Aktiv || "Ja").toLowerCase().startsWith("j"));
+
     if (!active.length){
-      setEmpty("Keine Gewerke gefunden. Prüfe IMMO_MASTER_DATA.projects.gewerke.");
+      setEmpty(
+        "Keine Gewerke gefunden. " +
+        `IMMO_DATA.projects.gewerke: ${Array.isArray(dataGewerke) ? dataGewerke.length : "kein Array"} · ` +
+        `IMMO_MASTER_DATA.projects.gewerke: ${Array.isArray(masterGewerke) ? masterGewerke.length : "kein Array"}`
+      );
       return;
     }
 
@@ -52,18 +72,18 @@
     let weightedProg = 0;
 
     active.forEach(r => {
-      const offer = num(r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"]);
-      const paid  = num(r.Gezahlt ?? r.Zahlungen ?? r.Zahlungen_bisher ?? r["Zahlungen (€)"]);
-      const prog  = num(r.Baufortschritt ?? r.Baufortschritt_prozent ?? r["Baufortschritt %"]);
+      const offer = num(r.Angebot);
+      const paid  = num(r.Gezahlt);
+      const prog  = num(r.Baufortschritt);
       totalOffer += offer;
-      totalPaid += paid;
+      totalPaid  += paid;
       weightedProg += (offer > 0 ? prog * offer : 0);
     });
 
     const progOverall = totalOffer > 0 ? (weightedProg / totalOffer) : 0;
     const payPct = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
 
-    // Risiko-Index: (Zahlungsquote - Fortschritt) => positiv = kritisch
+    // Risiko-Index: (Zahlungsquote - Fortschritt)
     const risk = payPct - progOverall;
 
     if (elBudget) elBudget.textContent = formatEuro(totalOffer);
@@ -71,7 +91,8 @@
     if (elProg) elProg.textContent = formatPercent(progOverall);
     if (elRisk) elRisk.textContent = (risk >= 0 ? "+" : "") + formatPercent(risk);
 
-    if (ggSub) ggSub.textContent = `Aktive Gewerke: ${active.length} · Aggregation: Angebot/ Zahlungen/ gewichteter Fortschritt`;
+    if (ggSub) ggSub.textContent =
+      `Aktive Gewerke: ${active.length} · Aggregation: Angebot/ Zahlungen/ gewichteter Fortschritt`;
 
     const payClamped = clamp(payPct, 0, 100);
     const progClamped = clamp(progOverall, 0, 100);
@@ -92,9 +113,9 @@
 
     // Note
     const msg = [];
-    if (risk > 10) msg.push("Auffällig: Zahlungsquote deutlich über Fortschritt (bitte OP/Abschläge prüfen).");
-    if (progOverall < 30) msg.push("Frühe Phase: Abhängigkeiten/Terminplan eng beobachten.");
-    if (totalOffer > 0 && totalPaid > totalOffer) msg.push("Über Budget gezahlt – bitte Budget/NA prüfen.");
+    if (risk > 10) msg.push("Auffällig: Zahlungsquote deutlich über Fortschritt (OP/Abschläge prüfen).");
+    if (progOverall < 30) msg.push("Frühe Phase: Terminplan/Abhängigkeiten eng monitoren.");
+    if (totalOffer > 0 && totalPaid > totalOffer) msg.push("Über Budget gezahlt – Budget/NA prüfen.");
 
     if (note){
       if (msg.length){
@@ -120,6 +141,41 @@
       if (payLabel) payLabel.textContent = "—";
       if (progLabel) progLabel.textContent = "—";
     }
+  }
+
+  function normalizeRow(r, i, projektName, objekt){
+    const offer = num(r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"] ?? r.Angebot_EUR);
+    const paid  = num(r.Gezahlt ?? r.Zahlungen ?? r.Zahlungen_bisher ?? r["Zahlungen (€)"] ?? r.Gezahlt_EUR);
+    const prog  = num(r.Baufortschritt ?? r.Baufortschritt_prozent ?? r["Baufortschritt %"] ?? r.Fortschritt);
+
+    return {
+      Projekt: r.Projekt || projektName || "",
+      Objekt: r.Objekt || objekt || "",
+      Aktiv: r.Aktiv || "Ja",
+      Sortierung: num(r.Sortierung) || (i + 1),
+      Gewerk: r.Gewerk || "",
+      Handwerker: r.Handwerker || "",
+      Angebot: offer,
+      Gezahl t: undefined, // ignoriere Tippfehler-Keys
+      Gezahlt: paid,
+      Gezahl_t: undefined,
+      Gezahl: undefined,
+      Gezahltt: undefined,
+      GeZahlt: undefined,
+      GezaHlt: undefined,
+      Gezahl_: undefined,
+      Gezahlte: undefined,
+      Gezahlter: undefined,
+      Gezahlten: undefined,
+      Gezahlt_EUR: undefined,
+      Zahlungen: paid,
+      Zahlungen_bisher: paid,
+      "Zahlungen (€)": paid,
+      Baufortschritt: clamp(num(prog), 0, 100),
+      Baufortschritt_prozent: clamp(num(prog), 0, 100),
+      "Baufortschritt %": clamp(num(prog), 0, 100),
+      ...r
+    };
   }
 
   function num(v){
