@@ -1,22 +1,179 @@
+.gewerk-gesamt-modul{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-width:0;
+}
+
 /* ===============================
-   BUDGET STACK (GESTAPELTER BALKEN)
+   HEADER
+   =============================== */
+
+.gg-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.gg-title{
+  font-size:15px;
+  font-weight:950;
+}
+
+.gg-sub{
+  margin-top:4px;
+  font-size:11px;
+  color: rgba(226,232,240,.70);
+}
+
+.gg-badges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.gg-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.35);
+  color: rgba(226,232,240,.82);
+  font-size:11px;
+  white-space:nowrap;
+}
+
+/* ===============================
+   KPI GRID
+   =============================== */
+
+.gg-grid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap:10px;
+  min-width:0;
+}
+
+@media (max-width: 1100px){
+  .gg-grid{
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
+
+.gg-kpi{
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.22);
+  padding:12px;
+  min-width:0;
+}
+
+.gg-k{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color: rgba(226,232,240,.58);
+}
+
+.gg-v{
+  margin-top:6px;
+  font-size:18px;
+  font-weight:950;
+}
+
+.gg-h{
+  margin-top:6px;
+  font-size:11px;
+  color: rgba(226,232,240,.70);
+  line-height:1.25;
+}
+
+/* ===============================
+   BARS
+   =============================== */
+
+.gg-bars{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+  min-width:0;
+}
+
+@media (max-width: 900px){
+  .gg-bars{
+    grid-template-columns: 1fr;
+  }
+}
+
+.gg-barblock{
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  padding:10px;
+  min-width:0;
+}
+
+.gg-barlabel{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+  margin-bottom:8px;
+}
+
+.gg-track{
+  height:18px;
+  border-radius:999px;
+  background: rgba(15,23,42,.65);
+  overflow:hidden;
+  position:relative;
+}
+
+.gg-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:800;
+  color: rgba(255,255,255,.95);
+  transition: width .9s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space:nowrap;
+  padding:0 8px;
+}
+
+.gg-pay{
+  background: linear-gradient(90deg, rgba(249,115,22,1), rgba(251,146,60,1));
+}
+
+.gg-prog{
+  background: linear-gradient(90deg, rgba(34,197,94,1), rgba(74,222,128,1));
+}
+
+/* ===============================
+   🔥 BUDGET STACK (GESTAPELT)
    =============================== */
 
 .gg-stack-track{
-  position: relative;
-  height: 20px;
-  border-radius: 999px;
+  position:relative;
+  height:20px;
+  border-radius:999px;
   background: rgba(15,23,42,.65);
-  overflow: hidden;
-  margin-bottom: 12px;
+  overflow:hidden;
+  margin-bottom:12px;
 }
 
-/* einzelne Segmente */
 .gg-seg{
-  position: absolute;
-  top: 0;
-  height: 100%;
-  border-radius: 999px;
+  position:absolute;
+  top:0;
+  height:100%;
+  border-radius:999px;
   transition:
     left .9s cubic-bezier(0.16,1,0.3,1),
     width .9s cubic-bezier(0.16,1,0.3,1);
@@ -27,9 +184,9 @@
    =============================== */
 
 .gg-stack-legend{
-  display: grid;
+  display:grid;
   grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 6px 12px;
+  gap:6px 12px;
 }
 
 .gg-leg{
@@ -62,4 +219,56 @@
 
 .gg-leg-val{
   white-space:nowrap;
+}
+
+/* ===============================
+   TOP RISKS / TOP SUMS
+   =============================== */
+
+.gg-item{
+  padding:8px 10px;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(15,23,42,.25);
+}
+
+.gg-item + .gg-item{
+  margin-top:6px;
+}
+
+.gg-item-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.gg-item-title{
+  font-size:12px;
+  font-weight:800;
+}
+
+.gg-item-badge{
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.gg-item-sub{
+  margin-top:4px;
+  font-size:11px;
+  color: rgba(226,232,240,.70);
+}
+
+/* ===============================
+   NOTE
+   =============================== */
+
+.gg-note{
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  color: rgba(226,232,240,.72);
+  font-size:12px;
+  line-height:1.35;
 }
