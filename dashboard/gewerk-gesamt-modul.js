@@ -28,7 +28,8 @@
     const payBarTxt = root.querySelector("#ggPayBarTxt");
     const progBarTxt = root.querySelector("#ggProgBarTxt");
 
-    const distEl = root.querySelector("#ggDist");
+    const stackTrack = root.querySelector("#ggStackTrack");
+    const stackLegend = root.querySelector("#ggStackLegend");
     const distMeta = root.querySelector("#ggBudgetShareMeta");
 
     const risksEl = root.querySelector("#ggRisks");
@@ -109,41 +110,68 @@
       if (progBar) progBar.style.width = progClamped + "%";
     });
 
-    // ---------- Budgetverteilung (Top 5 + Rest) ----------
-    if (distEl){
-      const byOffer = [...active].sort((a,b)=> num(b.Angebot) - num(a.Angebot));
-      const top = byOffer.slice(0,5);
-      const topSum = top.reduce((s,r)=> s + num(r.Angebot), 0);
-      const rest = Math.max(0, totalOffer - topSum);
+    // ---------- Budgetverteilung: gestapelter Balken + Legend ----------
+    const palette = [
+      "#2563eb","#22c55e","#f97316","#a855f7","#06b6d4",
+      "#ef4444","#eab308","#10b981","#3b82f6","#f43f5e",
+      "#84cc16","#0ea5e9"
+    ];
 
-      distEl.innerHTML = "";
+    if (stackTrack && stackLegend){
+      // Use all active, but keep legend clean: show all if <=10, else top 10 + Rest
+      const sorted = [...active].sort((a,b)=> num(b.Angebot) - num(a.Angebot));
+      const limit = 10;
 
-      const distRows = top.map(r => ({
-        name: r.Gewerk ? `${r.Gewerk}` : (r.Handwerker || "Gewerk"),
-        val: num(r.Angebot)
-      }));
+      let shown = sorted;
+      let restVal = 0;
 
-      if (rest > 0){
-        distRows.push({ name: "Rest", val: rest });
+      if (sorted.length > limit){
+        shown = sorted.slice(0, limit);
+        restVal = sorted.slice(limit).reduce((s,r)=> s + num(r.Angebot), 0);
       }
 
-      distRows.forEach(item=>{
-        const pct = totalOffer > 0 ? (item.val / totalOffer * 100) : 0;
-        const row = document.createElement("div");
-        row.className = "gg-dist-row";
-        row.innerHTML = `
-          <div class="gg-dist-name">${escapeHtml(item.name)}</div>
-          <div class="gg-dist-val">${formatEuro(item.val)} · ${formatPercent(pct)}</div>
-          <div class="gg-dist-track"><div class="gg-dist-fill" style="width:0%"></div></div>
-        `;
-        distEl.appendChild(row);
+      stackTrack.innerHTML = "";
+      stackLegend.innerHTML = "";
 
-        const fill = row.querySelector(".gg-dist-fill");
-        requestAnimationFrame(()=>{ if(fill) fill.style.width = clamp(pct,0,100) + "%"; });
+      const segments = shown.map((r, idx) => ({
+        name: r.Gewerk || r.Handwerker || `Gewerk ${idx+1}`,
+        val: num(r.Angebot),
+        color: palette[idx % palette.length]
+      }));
+
+      if (restVal > 0){
+        segments.push({ name: "Rest", val: restVal, color: "rgba(148,163,184,.55)" });
+      }
+
+      segments.forEach((seg, idx)=>{
+        const pct = totalOffer > 0 ? (seg.val / totalOffer * 100) : 0;
+        const el = document.createElement("div");
+        el.className = "gg-seg";
+        el.style.background = seg.color;
+        el.style.width = "0%";
+        el.title = `${seg.name}: ${formatEuro(seg.val)} (${formatPercent(pct)})`;
+        stackTrack.appendChild(el);
+
+        requestAnimationFrame(()=>{ el.style.width = clamp(pct,0,100) + "%"; });
+
+        // legend card
+        const leg = document.createElement("div");
+        leg.className = "gg-leg";
+        leg.innerHTML = `
+          <div class="gg-leg-left">
+            <span class="gg-dot" style="background:${seg.color}"></span>
+            <span class="gg-leg-name">${escapeHtml(seg.name)}</span>
+          </div>
+          <div class="gg-leg-val">${formatPercent(pct)} · ${formatEuro(seg.val)}</div>
+        `;
+        stackLegend.appendChild(leg);
       });
 
       if (distMeta){
-        distMeta.textContent = `Top 5: ${formatPercent(totalOffer>0 ? (topSum/totalOffer*100) : 0)}`;
+        const top10 = segments.filter(s=>s.name!=="Rest").reduce((s,x)=> s + x.val, 0);
+        distMeta.textContent = segments.some(s=>s.name==="Rest")
+          ? `Top 10: ${formatPercent(totalOffer>0 ? (top10/totalOffer*100) : 0)}`
+          : `Anteile: ${segments.length}`;
       }
     }
 
@@ -241,7 +269,8 @@
       if (progLabel) progLabel.textContent = "—";
       if (payBar) payBar.style.width = "0%";
       if (progBar) progBar.style.width = "0%";
-      if (distEl) distEl.innerHTML = "";
+      if (stackTrack) stackTrack.innerHTML = "";
+      if (stackLegend) stackLegend.innerHTML = "";
       if (risksEl) risksEl.innerHTML = "";
       if (topSumsEl) topSumsEl.innerHTML = "";
       if (note){
@@ -318,7 +347,6 @@
       .replace(/'/g,"&#039;");
   }
 
-  // Stable for injected modules
   window.addEventListener("immo:data-ready", () => {
     renderAll();
     setTimeout(renderAll, 120);
