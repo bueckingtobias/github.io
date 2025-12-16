@@ -60,23 +60,28 @@
     </div>
   </div>
 
-  <!-- NEW: Budgetverteilung + Top Listen -->
-  <div class="gg-splits">
-    <!-- Budget distribution -->
-    <div class="gg-panel">
-      <div class="gg-panel-head">
-        <div>
-          <div class="gg-panel-title">Budgetverteilung</div>
-          <div class="gg-panel-sub">Top-Gewerke nach Angebot (Rest zusammengefasst)</div>
-        </div>
-        <div class="gg-panel-chip" id="ggBudgetShareMeta">—</div>
+  <!-- Budget Distribution (stacked bar) -->
+  <div class="gg-panel">
+    <div class="gg-panel-head">
+      <div>
+        <div class="gg-panel-title">Budgetverteilung</div>
+        <div class="gg-panel-sub">Anteile nach Angebot je Gewerk (gestapelt)</div>
       </div>
-      <div class="gg-dist" id="ggDist">
-        <!-- JS injects rows -->
-      </div>
+      <div class="gg-panel-chip" id="ggBudgetShareMeta">—</div>
     </div>
 
-    <!-- Top Risks -->
+    <div class="gg-stack">
+      <div class="gg-stack-track" id="ggStackTrack" aria-label="Budgetverteilung (gestapelt)">
+        <!-- Segmente via JS -->
+      </div>
+      <div class="gg-stack-legend" id="ggStackLegend">
+        <!-- Legend via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Two columns: Risiken + Summen -->
+  <div class="gg-two">
     <div class="gg-panel">
       <div class="gg-panel-head">
         <div>
@@ -85,12 +90,9 @@
         </div>
         <div class="gg-panel-chip" id="ggRiskMeta">—</div>
       </div>
-      <div class="gg-list" id="ggRisks">
-        <!-- JS injects items -->
-      </div>
+      <div class="gg-list" id="ggRisks"></div>
     </div>
 
-    <!-- Top Sums -->
     <div class="gg-panel">
       <div class="gg-panel-head">
         <div>
@@ -99,9 +101,7 @@
         </div>
         <div class="gg-panel-chip" id="ggTopSumMeta">—</div>
       </div>
-      <div class="gg-list" id="ggTopSums">
-        <!-- JS injects items -->
-      </div>
+      <div class="gg-list" id="ggTopSums"></div>
     </div>
   </div>
 
