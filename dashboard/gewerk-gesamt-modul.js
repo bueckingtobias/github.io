@@ -111,7 +111,7 @@
       if (progBar) progBar.style.width = progClamped + "%";
     });
 
-    // ---------- Budgetverteilung: gestapelter Balken + Legend (Safari-safe) ----------
+    // ---------- Budgetverteilung: absolute segments (iPad-safe) ----------
     const palette = [
       "#2563eb","#22c55e","#f97316","#a855f7","#06b6d4",
       "#ef4444","#eab308","#10b981","#3b82f6","#f43f5e",
@@ -143,25 +143,30 @@
         segments.push({ name: "Rest", val: restVal, color: "rgba(148,163,184,.55)" });
       }
 
+      // Build segments with cumulative left
+      let left = 0;
+      const domSegs = [];
+
       segments.forEach((seg)=>{
         const pct = totalOffer > 0 ? (seg.val / totalOffer * 100) : 0;
+        const w = clamp(pct, 0, 100);
 
         const el = document.createElement("div");
         el.className = "gg-seg";
         el.style.background = seg.color;
+
+        // start collapsed
+        el.style.left = left.toFixed(4) + "%";
         el.style.width = "0%";
-        el.style.flexBasis = "0%";
-        el.style.flex = "0 0 auto";
+
+        el.dataset.left = left.toFixed(4);
+        el.dataset.width = w.toFixed(4);
+
         el.title = `${seg.name}: ${formatEuro(seg.val)} (${formatPercent(pct)})`;
         stackTrack.appendChild(el);
+        domSegs.push(el);
 
-        // ✅ Safari: animate via flex-basis (and keep width in sync)
-        requestAnimationFrame(()=> {
-          const p = clamp(pct, 0, 100);
-          el.style.flexBasis = p + "%";
-          el.style.width = p + "%";
-        });
-
+        // Legend
         const leg = document.createElement("div");
         leg.className = "gg-leg";
         leg.innerHTML = `
@@ -172,7 +177,19 @@
           <div class="gg-leg-val">${formatPercent(pct)} · ${formatEuro(seg.val)}</div>
         `;
         stackLegend.appendChild(leg);
+
+        left += w;
       });
+
+      // animate after layout (extra safe)
+      setTimeout(() => {
+        domSegs.forEach(el => {
+          const l = el.dataset.left || "0";
+          const w = el.dataset.width || "0";
+          el.style.left = l + "%";
+          el.style.width = w + "%";
+        });
+      }, 30);
 
       if (distMeta){
         const topSum = segments.filter(s=>s.name!=="Rest").reduce((s,x)=> s + x.val, 0);
@@ -301,68 +318,4 @@
       Objekt: r.Objekt || objekt || "",
       Aktiv: r.Aktiv || "Ja",
       Sortierung: num(r.Sortierung) || (i + 1),
-      Gewerk: r.Gewerk || "",
-      Handwerker: r.Handwerker || "",
-      Angebot: offer,
-      Gezahlt: paid,
-      Baufortschritt: prog,
-      ...r
-    };
-  }
-
-  function num(v){
-    if (typeof v === "number" && Number.isFinite(v)) return v;
-    if (v === null || v === undefined) return 0;
-    const s0 = String(v).trim();
-    if (!s0) return 0;
-
-    let s = s0.replace(/\s/g,"").replace(/€/g,"");
-    const hasComma = s.includes(",");
-    const hasDot = s.includes(".");
-    if (hasComma && hasDot) {
-      const lc = s.lastIndexOf(",");
-      const ld = s.lastIndexOf(".");
-      if (lc > ld) s = s.replace(/\./g,"").replace(",",".");
-      else s = s.replace(/,/g,"");
-    } else if (hasComma && !hasDot) {
-      s = s.replace(",",".");
-    }
-    s = s.replace(/[^0-9.\-]/g,"");
-    const n = Number(s);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function formatEuro(value){
-    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(Number(value)||0);
-  }
-
-  function formatPercent(value){
-    const v = Number(value)||0;
-    return (Math.round(v*10)/10).toFixed(1).replace(".",",") + " %";
-  }
-
-  function clamp(x, a, b){
-    return Math.max(a, Math.min(b, x));
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
-  }
-
-  window.addEventListener("immo:data-ready", () => {
-    renderAll();
-    setTimeout(renderAll, 120);
-    setTimeout(renderAll, 420);
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    renderAll();
-    setTimeout(renderAll, 120);
-  });
-
-})();
+      Gewerk:
