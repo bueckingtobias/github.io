@@ -53,13 +53,13 @@
   font-size: 12px;
 }
 
+/* 2 KPIs nebeneinander, 3 Zeilen */
 .hkpi-grid{
   display:grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   min-width:0;
 }
-
 @media (max-width: 900px){
   .hkpi-grid{ grid-template-columns: 1fr; }
 }
@@ -101,33 +101,50 @@
   text-align:right;
   white-space:nowrap;
 }
-
 .hkpi-val .v{
   font-size: 16px;
   font-weight: 950;
 }
-
 .hkpi-val .d{
   margin-top: 3px;
   font-size: 11px;
   color: rgba(226,232,240,.65);
 }
 
-.hkpi-spark{ margin-top: 10px; }
+/* ==== CHART: länger + schmalere Balken + Trendkurve + Werte ==== */
 
+.hkpi-chart{
+  margin-top: 10px;
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,.10);
+  background: rgba(2,6,23,.18);
+  padding: 10px;
+  overflow:hidden;
+}
+
+/* länger (mehr Höhe) */
 .hkpi-bars{
   display:flex;
   align-items:flex-end;
-  gap: 4px;
-  height: 54px;
+  gap: 6px;
+  height: 110px;                 /* ✅ deutlich höher */
+  position: relative;
+  z-index: 2;
 }
 
+/* schmaler: feste Balkenbreite */
 .hkpi-col{
-  flex: 1;
-  min-width: 0;
-  height: 100%;
+  flex: 0 0 24px;                /* ✅ schmal */
   display:flex;
   align-items:flex-end;
+  justify-content:center;
+  height: 100%;
+  position: relative;
+}
+
+@media (max-width: 900px){
+  .hkpi-col{ flex-basis: 22px; }
 }
 
 .hkpi-col i{
@@ -137,13 +154,35 @@
   background: rgba(148,163,184,.35);
 }
 
+/* States */
 .hkpi-col[data-state="past"] i{ background: rgba(148,163,184,.35); }
 .hkpi-col[data-state="current"] i{ background: rgba(59,130,246,.95); }
 .hkpi-col[data-state="future_up"] i{ background: rgba(34,197,94,.90); }
 .hkpi-col[data-state="future_down"] i{ background: rgba(239,68,68,.90); }
 
+/* Werte über Balken */
+.hkpi-num{
+  position:absolute;
+  bottom: calc(100% + 6px);
+  left:50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(226,232,240,.80);
+  white-space:nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,.55);
+  pointer-events:none;
+}
+
+/* Trendkurve (SVG overlay) */
+.hkpi-trend{
+  position:absolute;
+  inset: 10px 10px 26px 10px;    /* Platz unten für Labels */
+  z-index: 1;
+  pointer-events:none;
+}
+
 .hkpi-labels{
-  margin-top: 6px;
+  margin-top: 8px;
   display:flex;
   justify-content:space-between;
   font-size: 10px;
