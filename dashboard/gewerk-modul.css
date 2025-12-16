@@ -1,33 +1,26 @@
 .gewerk-modul{
   display:flex;
   flex-direction:column;
-  gap: 10px;
+  gap: 12px;
   min-width:0;
 }
 
 .gm-head{
   display:flex;
   justify-content:space-between;
-  gap: 10px;
   align-items:flex-start;
-  min-width:0;
+  gap: 12px;
 }
 
 .gm-title{
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 950;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
 }
 
 .gm-sub{
   margin-top: 4px;
   font-size: 11px;
   color: rgba(226,232,240,.70);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
 }
 
 .gm-tag{
@@ -41,10 +34,20 @@
 }
 
 .gm-bars{
-  display:flex;
-  flex-direction:column;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  min-width:0;
+}
+
+@media (max-width: 900px){
+  .gm-bars{ grid-template-columns: 1fr; }
+}
+
+.gm-barblock{
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.22);
+  padding: 10px;
 }
 
 .gm-barlabel{
@@ -79,8 +82,13 @@
   padding: 0 8px;
 }
 
-.gm-pay{ background: linear-gradient(90deg, rgba(37,99,235,1), rgba(59,130,246,1)); }
-.gm-prog{ background: linear-gradient(90deg, rgba(34,197,94,1), rgba(74,222,128,1)); }
+.gm-pay{
+  background: linear-gradient(90deg, rgba(249,115,22,1), rgba(251,146,60,1));
+}
+
+.gm-prog{
+  background: linear-gradient(90deg, rgba(34,197,94,1), rgba(74,222,128,1));
+}
 
 .gm-foot{
   padding: 10px 12px;
@@ -90,5 +98,4 @@
   color: rgba(226,232,240,.72);
   font-size: 12px;
   line-height:1.35;
-  min-height: 44px;
 }
