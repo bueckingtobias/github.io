@@ -11,7 +11,7 @@
 
     if (!root) return;
 
-    const index = Number(opts && opts.index != null ? opts.index : 0);
+    const index = Number(opts && opts.index != null ? opts.index : (root.closest("[data-idx]")?.getAttribute("data-idx") ?? 0));
 
     const title = root.querySelector("#gmTitle");
     const sub = root.querySelector("#gmSub");
@@ -28,26 +28,45 @@
 
     const foot = root.querySelector("#gmFoot");
 
-    const all = window.IMMO_DATA?.projects?.gewerke;
-    const rows = Array.isArray(all) ? all : [];
+    // ✅ Quelle 1: IMMO_DATA
+    const dataGewerke = window.IMMO_DATA?.projects?.gewerke;
+    const dataGesamt  = window.IMMO_DATA?.projects?.gesamt || {};
 
-    const active = rows
+    // ✅ Fallback: IMMO_MASTER_DATA
+    const masterGewerke = window.IMMO_MASTER_DATA?.projects?.gewerke;
+    const masterGesamt  = window.IMMO_MASTER_DATA?.projects?.gesamt || {};
+
+    let rows = Array.isArray(dataGewerke) ? dataGewerke : [];
+    if (!rows.length && Array.isArray(masterGewerke)) rows = masterGewerke;
+
+    const gesamt = Object.keys(dataGesamt || {}).length ? dataGesamt : masterGesamt;
+    const projectName = gesamt.Projekt || gesamt.Adresse || gesamt.Objekt || "Projekt";
+    const objektName = gesamt.Adresse || gesamt.Objekt || "";
+
+    // ✅ Normalisieren + sortieren + aktiv filtern
+    const normalized = rows
+      .map((r, i) => normalizeRow(r, i, projectName, objektName))
       .filter(r => String(r.Aktiv || "Ja").toLowerCase().startsWith("j"))
-      .sort((a,b)=> num(a.Sortierung) - num(b.Sortierung));
+      .sort((a,b) => num(a.Sortierung) - num(b.Sortierung));
 
-    const r = active[index];
+    const r = normalized[index];
 
     if (!r){
-      setEmpty(`Kein Gewerk für Index ${index}. Aktive Gewerke: ${active.length}.`);
+      setEmpty(
+        `Kein Gewerk für Index ${index}. ` +
+        `IMMO_DATA:${Array.isArray(dataGewerke) ? dataGewerke.length : "kein Array"} · ` +
+        `MASTER:${Array.isArray(masterGewerke) ? masterGewerke.length : "kein Array"} · ` +
+        `Aktiv:${normalized.length}`
+      );
       return;
     }
 
     const gewerk = r.Gewerk || "Gewerk";
     const handwerker = r.Handwerker || "Handwerker";
 
-    const offer = num(r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"]);
-    const paid  = num(r.Gezahlt ?? r.Zahlungen ?? r.Zahlungen_bisher ?? r["Zahlungen (€)"]);
-    const prog  = num(r.Baufortschritt ?? r.Baufortschritt_prozent ?? r["Baufortschritt %"]);
+    const offer = num(r.Angebot);
+    const paid  = num(r.Gezahlt);
+    const prog  = clamp(num(r.Baufortschritt), 0, 100);
 
     const payPct = offer > 0 ? (paid / offer * 100) : 0;
     const payClamp = clamp(payPct, 0, 100);
@@ -79,7 +98,7 @@
       const deltaTxt = (deltaPct >= 0 ? "+" : "") + formatPercent(deltaPct);
       const rest = Math.max(0, offer - paid);
       foot.textContent =
-        `Abweichung (Quote): ${deltaTxt} · Restbudget: ${formatEuro(rest)} · ` +
+        `Projekt: ${projectName} · Abweichung (Quote): ${deltaTxt} · Restbudget: ${formatEuro(rest)} · ` +
         `Hinweis: ${isWarn ? "Abschläge/NA prüfen." : "Im Plan."}`;
     }
 
@@ -95,6 +114,40 @@
       if (progBar) progBar.style.width = "0%";
       if (foot) foot.textContent = text || "Keine Daten.";
     }
+  }
+
+  function normalizeRow(r, i, projektName, objekt){
+    const offer = num(r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"] ?? r.Angebot_EUR);
+    const paid  = num(
+      r.Gezahlt ??
+      r.Zahlungen ??
+      r.Zahlungen_bisher ??
+      r["Zahlungen (€)"] ??
+      r["Zahlungen bisher"] ??
+      r.Gezahlt_EUR
+    );
+    const prog  = num(r.Baufortschritt ?? r.Baufortschritt_prozent ?? r["Baufortschritt %"] ?? r.Fortschritt);
+
+    return {
+      Projekt: r.Projekt || projektName || "",
+      Objekt: r.Objekt || objekt || "",
+      Aktiv: r.Aktiv || "Ja",
+      Sortierung: num(r.Sortierung) || (i + 1),
+      Gewerk: r.Gewerk || "",
+      Handwerker: r.Handwerker || "",
+      Angebot: offer,
+      Angebotssumme: offer,
+      "Angebot (€)": offer,
+      Gezahlt: paid,
+      Zahlungen: paid,
+      Zahlungen_bisher: paid,
+      "Zahlungen (€)": paid,
+      "Zahlungen bisher": paid,
+      Baufortschritt: clamp(num(prog), 0, 100),
+      Baufortschritt_prozent: clamp(num(prog), 0, 100),
+      "Baufortschritt %": clamp(num(prog), 0, 100),
+      ...r
+    };
   }
 
   function num(v){
@@ -120,4 +173,24 @@
   }
 
   function formatEuro(value){
-    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximum
+    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(Number(value)||0);
+  }
+
+  function formatPercent(value){
+    const v = Number(value)||0;
+    return (Math.round(v*10)/10).toFixed(1).replace(".",",") + " %";
+  }
+
+  function clamp(x, a, b){
+    return Math.max(a, Math.min(b, x));
+  }
+
+  // ✅ Re-render on data ready
+  window.addEventListener("immo:data-ready", () => {
+    document.querySelectorAll(".card-body[data-idx]").forEach(host => {
+      const idx = Number(host.getAttribute("data-idx"));
+      if (host.querySelector(".gewerk-modul")) render(host, { index: idx });
+    });
+  });
+
+})();
