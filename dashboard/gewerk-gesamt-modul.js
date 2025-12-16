@@ -1,152 +1,172 @@
 (function(){
   "use strict";
 
-  window.GewerkGesamtModul = { render };
+  window.GewerkGesamtModul = { render, renderAll };
 
+  // Render a single module (mount can be the card-body host OR the module root)
   function render(mountEl){
-    const root =
-      (mountEl && mountEl.querySelector && mountEl.querySelector(".gewerk-gesamt-modul")) ||
-      document.querySelector(".gewerk-gesamt-modul");
+    try{
+      const root =
+        (mountEl && mountEl.classList && mountEl.classList.contains("gewerk-gesamt-modul") && mountEl) ||
+        (mountEl && mountEl.querySelector && mountEl.querySelector(".gewerk-gesamt-modul")) ||
+        document.querySelector(".gewerk-gesamt-modul");
 
-    if (!root) return;
+      if (!root) return;
 
-    const ggTitle = root.querySelector("#ggTitle");
-    const ggSub = root.querySelector("#ggSub");
-    const badgeProject = root.querySelector("#ggBadgeProject");
-    const badgeUpdate = root.querySelector("#ggBadgeUpdate");
+      const ggTitle = root.querySelector("#ggTitle");
+      const ggSub = root.querySelector("#ggSub");
+      const badgeProject = root.querySelector("#ggBadgeProject");
+      const badgeUpdate = root.querySelector("#ggBadgeUpdate");
 
-    const elBudget = root.querySelector("#ggBudget");
-    const elPaid = root.querySelector("#ggPaid");
-    const elProg = root.querySelector("#ggProg");
-    const elRisk = root.querySelector("#ggRisk");
+      const elBudget = root.querySelector("#ggBudget");
+      const elPaid = root.querySelector("#ggPaid");
+      const elProg = root.querySelector("#ggProg");
+      const elRisk = root.querySelector("#ggRisk");
 
-    const payLabel = root.querySelector("#ggPayLabel");
-    const progLabel = root.querySelector("#ggProgLabel");
-    const payBar = root.querySelector("#ggPayBar");
-    const progBar = root.querySelector("#ggProgBar");
-    const payBarTxt = root.querySelector("#ggPayBarTxt");
-    const progBarTxt = root.querySelector("#ggProgBarTxt");
+      const payLabel = root.querySelector("#ggPayLabel");
+      const progLabel = root.querySelector("#ggProgLabel");
+      const payBar = root.querySelector("#ggPayBar");
+      const progBar = root.querySelector("#ggProgBar");
+      const payBarTxt = root.querySelector("#ggPayBarTxt");
+      const progBarTxt = root.querySelector("#ggProgBarTxt");
 
-    const note = root.querySelector("#ggNote");
+      const note = root.querySelector("#ggNote");
 
-    // ✅ Quelle 1: IMMO_DATA (normalerweise das Ziel)
-    const dataGesamt = window.IMMO_DATA?.projects?.gesamt || {};
-    const dataGewerke = window.IMMO_DATA?.projects?.gewerke;
+      // --- Data sources (prefer IMMO_DATA, fallback to IMMO_MASTER_DATA) ---
+      const dataGesamt = window.IMMO_DATA?.projects?.gesamt || {};
+      const dataGewerke = window.IMMO_DATA?.projects?.gewerke;
 
-    // ✅ Fallback Quelle 2: IMMO_MASTER_DATA (falls IMMO_DATA nicht korrekt befüllt wurde)
-    const masterGesamt = window.IMMO_MASTER_DATA?.projects?.gesamt || {};
-    const masterGewerke = window.IMMO_MASTER_DATA?.projects?.gewerke;
+      const masterGesamt = window.IMMO_MASTER_DATA?.projects?.gesamt || {};
+      const masterGewerke = window.IMMO_MASTER_DATA?.projects?.gewerke;
 
-    // ✅ Entscheide Quelle (mit harter Absicherung auf Array)
-    let rows = Array.isArray(dataGewerke) ? dataGewerke : [];
-    if (!rows.length && Array.isArray(masterGewerke)) rows = masterGewerke;
+      const hasDataArray = Array.isArray(dataGewerke);
+      const hasMasterArray = Array.isArray(masterGewerke);
 
-    // ✅ Gesamdaten: IMMO_DATA bevorzugen, sonst Master
-    const gesamt = Object.keys(dataGesamt || {}).length ? dataGesamt : masterGesamt;
+      let rows = hasDataArray ? dataGewerke : [];
+      if ((!rows || !rows.length) && hasMasterArray) rows = masterGewerke;
 
-    // Projektname setzen
-    const projectName = gesamt.Projekt || gesamt.Adresse || gesamt.Objekt || "Projekt";
-    if (ggTitle) ggTitle.textContent = projectName;
+      const gesamt = Object.keys(dataGesamt || {}).length ? dataGesamt : masterGesamt;
 
-    if (badgeProject) badgeProject.textContent = `Projekt: ${projectName}`;
-    if (badgeUpdate) badgeUpdate.textContent = `Update: ${gesamt.Letztes_Update || gesamt.updatedAt || window.IMMO_MASTER_DATA?.updatedAt?.slice(0,10) || "—"}`;
+      // Project meta
+      const projectName = gesamt.Projekt || gesamt.Adresse || gesamt.Objekt || "Projekt";
+      if (ggTitle) ggTitle.textContent = projectName;
 
-    // ✅ Normalisieren, damit alle Key-Varianten sauber funktionieren
-    rows = rows.map((r, i) => normalizeRow(r, i, projectName, gesamt.Adresse || gesamt.Objekt || ""));
+      if (badgeProject) badgeProject.textContent = `Projekt: ${projectName}`;
+      if (badgeUpdate) badgeUpdate.textContent = `Update: ${gesamt.Letztes_Update || gesamt.updatedAt || (window.IMMO_MASTER_DATA?.updatedAt ? String(window.IMMO_MASTER_DATA.updatedAt).slice(0,10) : "—")}`;
 
-    // aktive Gewerke
-    const active = rows.filter(r => String(r.Aktiv || "Ja").toLowerCase().startsWith("j"));
+      // Normalize
+      const normalized = (Array.isArray(rows) ? rows : []).map((r, i) => normalizeRow(r, i, projectName, gesamt.Adresse || gesamt.Objekt || ""));
 
-    if (!active.length){
-      setEmpty(
-        "Keine Gewerke gefunden. " +
-        `IMMO_DATA.projects.gewerke: ${Array.isArray(dataGewerke) ? dataGewerke.length : "kein Array"} · ` +
-        `IMMO_MASTER_DATA.projects.gewerke: ${Array.isArray(masterGewerke) ? masterGewerke.length : "kein Array"}`
-      );
-      return;
-    }
+      const active = normalized.filter(r => String(r.Aktiv || "Ja").toLowerCase().startsWith("j"));
 
-    // Aggregation
-    let totalOffer = 0;
-    let totalPaid = 0;
-    let weightedProg = 0;
-
-    active.forEach(r => {
-      const offer = num(r.Angebot);
-      const paid  = num(r.Gezahlt);
-      const prog  = num(r.Baufortschritt);
-      totalOffer += offer;
-      totalPaid  += paid;
-      weightedProg += (offer > 0 ? prog * offer : 0);
-    });
-
-    const progOverall = totalOffer > 0 ? (weightedProg / totalOffer) : 0;
-    const payPct = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
-
-    // Risiko-Index: (Zahlungsquote - Fortschritt)
-    const risk = payPct - progOverall;
-
-    if (elBudget) elBudget.textContent = formatEuro(totalOffer);
-    if (elPaid) elPaid.textContent = formatEuro(totalPaid);
-    if (elProg) elProg.textContent = formatPercent(progOverall);
-    if (elRisk) elRisk.textContent = (risk >= 0 ? "+" : "") + formatPercent(risk);
-
-    if (ggSub) ggSub.textContent =
-      `Aktive Gewerke: ${active.length} · Aggregation: Angebot/ Zahlungen/ gewichteter Fortschritt`;
-
-    const payClamped = clamp(payPct, 0, 100);
-    const progClamped = clamp(progOverall, 0, 100);
-
-    if (payLabel) payLabel.textContent = `${formatPercent(payPct)} · ${formatEuro(totalPaid)} / ${formatEuro(totalOffer)}`;
-    if (progLabel) progLabel.textContent = `${formatPercent(progOverall)} · gewichteter Fortschritt`;
-
-    // animate
-    if (payBar) payBar.style.width = "0%";
-    if (progBar) progBar.style.width = "0%";
-    if (payBarTxt) payBarTxt.textContent = formatPercent(payPct);
-    if (progBarTxt) progBarTxt.textContent = formatPercent(progOverall);
-
-    requestAnimationFrame(() => {
-      if (payBar) payBar.style.width = payClamped + "%";
-      if (progBar) progBar.style.width = progClamped + "%";
-    });
-
-    // Note
-    const msg = [];
-    if (risk > 10) msg.push("Auffällig: Zahlungsquote deutlich über Fortschritt (OP/Abschläge prüfen).");
-    if (progOverall < 30) msg.push("Frühe Phase: Terminplan/Abhängigkeiten eng monitoren.");
-    if (totalOffer > 0 && totalPaid > totalOffer) msg.push("Über Budget gezahlt – Budget/NA prüfen.");
-
-    if (note){
-      if (msg.length){
-        note.style.display = "block";
-        note.textContent = msg.join(" ");
-      } else {
-        note.style.display = "none";
-        note.textContent = "";
+      if (!active.length){
+        setEmpty(
+          `Keine Gewerke gefunden.\n` +
+          `IMMO_DATA.projects.gewerke: ${hasDataArray ? dataGewerke.length : "kein Array"}\n` +
+          `IMMO_MASTER_DATA.projects.gewerke: ${hasMasterArray ? masterGewerke.length : "kein Array"}`
+        );
+        return;
       }
-    }
 
-    function setEmpty(text){
-      if (note){
-        note.style.display = "block";
-        note.textContent = text;
-      }
-      if (elBudget) elBudget.textContent = "—";
-      if (elPaid) elPaid.textContent = "—";
-      if (elProg) elProg.textContent = "—";
-      if (elRisk) elRisk.textContent = "—";
+      // Aggregate
+      let totalOffer = 0;
+      let totalPaid  = 0;
+      let weightedProg = 0;
+
+      active.forEach(r=>{
+        const offer = num(r.Angebot);
+        const paid  = num(r.Gezahlt);
+        const prog  = num(r.Baufortschritt);
+        totalOffer += offer;
+        totalPaid  += paid;
+        weightedProg += (offer > 0 ? prog * offer : 0);
+      });
+
+      const overallProg = totalOffer > 0 ? (weightedProg / totalOffer) : 0;
+      const payPct = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
+      const risk = payPct - overallProg;
+
+      // Write KPIs
+      if (elBudget) elBudget.textContent = formatEuro(totalOffer);
+      if (elPaid) elPaid.textContent = formatEuro(totalPaid);
+      if (elProg) elProg.textContent = formatPercent(overallProg);
+      if (elRisk) elRisk.textContent = (risk >= 0 ? "+" : "") + formatPercent(risk);
+
+      if (ggSub) ggSub.textContent = `Aktive Gewerke: ${active.length} · Angebot/ Zahlungen/ gewichteter Fortschritt`;
+
+      // Bars
+      const payClamped = clamp(payPct, 0, 100);
+      const progClamped = clamp(overallProg, 0, 100);
+
+      if (payLabel) payLabel.textContent = `${formatPercent(payPct)} · ${formatEuro(totalPaid)} / ${formatEuro(totalOffer)}`;
+      if (progLabel) progLabel.textContent = `${formatPercent(overallProg)} · gewichteter Fortschritt`;
+
+      if (payBarTxt) payBarTxt.textContent = formatPercent(payPct);
+      if (progBarTxt) progBarTxt.textContent = formatPercent(overallProg);
+
       if (payBar) payBar.style.width = "0%";
       if (progBar) progBar.style.width = "0%";
-      if (payLabel) payLabel.textContent = "—";
-      if (progLabel) progLabel.textContent = "—";
+
+      requestAnimationFrame(() => {
+        if (payBar) payBar.style.width = payClamped + "%";
+        if (progBar) progBar.style.width = progClamped + "%";
+      });
+
+      // Notes + Debug (only if needed)
+      const msgs = [];
+      if (risk > 10) msgs.push("Auffällig: Zahlungsquote deutlich über Fortschritt (OP/Abschläge prüfen).");
+      if (overallProg < 30) msgs.push("Frühe Phase: Terminplan/Abhängigkeiten eng monitoren.");
+      if (totalOffer > 0 && totalPaid > totalOffer) msgs.push("Über Budget gezahlt – Budget/NA prüfen.");
+
+      if (note){
+        if (msgs.length){
+          note.style.display = "block";
+          note.textContent = msgs.join(" ");
+        } else {
+          note.style.display = "none";
+          note.textContent = "";
+        }
+      }
+
+      function setEmpty(text){
+        if (elBudget) elBudget.textContent = "—";
+        if (elPaid) elPaid.textContent = "—";
+        if (elProg) elProg.textContent = "—";
+        if (elRisk) elRisk.textContent = "—";
+        if (payLabel) payLabel.textContent = "—";
+        if (progLabel) progLabel.textContent = "—";
+        if (payBar) payBar.style.width = "0%";
+        if (progBar) progBar.style.width = "0%";
+        if (note){
+          note.style.display = "block";
+          note.textContent = text;
+        }
+      }
+
+    } catch (e){
+      // Hard fail visibility
+      const root =
+        (mountEl && mountEl.querySelector && mountEl.querySelector(".gewerk-gesamt-modul")) ||
+        document.querySelector(".gewerk-gesamt-modul");
+      const note = root ? root.querySelector("#ggNote") : null;
+      if (note){
+        note.style.display = "block";
+        note.textContent = "Gesamtmodul Render-Fehler: " + String(e && e.message ? e.message : e);
+      }
+      console.error("GewerkGesamtModul.render error:", e);
     }
   }
 
+  // Render all instances on page
+  function renderAll(){
+    document.querySelectorAll(".gewerk-gesamt-modul").forEach(root => render(root));
+  }
+
+  // Normalize row keys so module never misses fields
   function normalizeRow(r, i, projektName, objekt){
     const offer = num(r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"] ?? r.Angebot_EUR);
-    const paid  = num(r.Gezahlt ?? r.Zahlungen ?? r.Zahlungen_bisher ?? r["Zahlungen (€)"] ?? r.Gezahlt_EUR);
-    const prog  = num(r.Baufortschritt ?? r.Baufortschritt_prozent ?? r["Baufortschritt %"] ?? r.Fortschritt);
+    const paid  = num(r.Gezahlt ?? r.Zahlungen ?? r.Zahlungen_bisher ?? r["Zahlungen (€)"] ?? r["Zahlungen bisher"] ?? r.Gezahlt_EUR);
+    const prog  = clamp(num(r.Baufortschritt ?? r.Baufortschritt_prozent ?? r["Baufortschritt %"] ?? r.Fortschritt), 0, 100);
 
     return {
       Projekt: r.Projekt || projektName || "",
@@ -156,24 +176,8 @@
       Gewerk: r.Gewerk || "",
       Handwerker: r.Handwerker || "",
       Angebot: offer,
-      Gezahl t: undefined, // ignoriere Tippfehler-Keys
       Gezahlt: paid,
-      Gezahl_t: undefined,
-      Gezahl: undefined,
-      Gezahltt: undefined,
-      GeZahlt: undefined,
-      GezaHlt: undefined,
-      Gezahl_: undefined,
-      Gezahlte: undefined,
-      Gezahlter: undefined,
-      Gezahlten: undefined,
-      Gezahlt_EUR: undefined,
-      Zahlungen: paid,
-      Zahlungen_bisher: paid,
-      "Zahlungen (€)": paid,
-      Baufortschritt: clamp(num(prog), 0, 100),
-      Baufortschritt_prozent: clamp(num(prog), 0, 100),
-      "Baufortschritt %": clamp(num(prog), 0, 100),
+      Baufortschritt: prog,
       ...r
     };
   }
@@ -213,8 +217,16 @@
     return Math.max(a, Math.min(b, x));
   }
 
+  // ✅ Auto hooks (important for fetch-injected modules)
   window.addEventListener("immo:data-ready", () => {
-    const host = document.getElementById("gesamtHost") || document.querySelector(".gewerk-gesamt-modul");
-    if (host) render(host);
+    renderAll();
+    setTimeout(renderAll, 120);
+    setTimeout(renderAll, 420);
   });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderAll();
+    setTimeout(renderAll, 120);
+  });
+
 })();
