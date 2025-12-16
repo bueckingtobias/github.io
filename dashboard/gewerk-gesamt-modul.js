@@ -111,7 +111,7 @@
       if (progBar) progBar.style.width = progClamped + "%";
     });
 
-    // ---------- Budgetverteilung: absolute segments (iPad-safe) ----------
+    // ---------- Budgetverteilung: 100% garantiert (absolute segments) ----------
     const palette = [
       "#2563eb","#22c55e","#f97316","#a855f7","#06b6d4",
       "#ef4444","#eab308","#10b981","#3b82f6","#f43f5e",
@@ -120,8 +120,9 @@
 
     if (stackTrack && stackLegend){
       const sorted = [...active].sort((a,b)=> num(b.Angebot) - num(a.Angebot));
-      const limit = 10;
 
+      // (Optional) top 10 + Rest, but if already <=10, show all
+      const limit = 10;
       let shown = sorted;
       let restVal = 0;
 
@@ -130,39 +131,58 @@
         restVal = sorted.slice(limit).reduce((s,r)=> s + num(r.Angebot), 0);
       }
 
-      stackTrack.innerHTML = "";
-      stackLegend.innerHTML = "";
-
-      const segments = shown.map((r, idx) => ({
+      const segs = shown.map((r, idx) => ({
         name: r.Gewerk || r.Handwerker || `Gewerk ${idx+1}`,
         val: num(r.Angebot),
         color: palette[idx % palette.length]
       }));
 
       if (restVal > 0){
-        segments.push({ name: "Rest", val: restVal, color: "rgba(148,163,184,.55)" });
+        segs.push({ name: "Rest", val: restVal, color: "rgba(148,163,184,.55)" });
       }
 
-      // Build segments with cumulative left
-      let left = 0;
-      const domSegs = [];
+      // Compute fractions and normalize (robust against any parsing drift)
+      const totalForStack = segs.reduce((s,x)=> s + (Number.isFinite(x.val) ? x.val : 0), 0);
+      const safeTotal = totalForStack > 0 ? totalForStack : 1;
 
-      segments.forEach((seg)=>{
-        const pct = totalOffer > 0 ? (seg.val / totalOffer * 100) : 0;
-        const w = clamp(pct, 0, 100);
+      const fracs = segs.map(s => clamp((s.val || 0) / safeTotal, 0, 1));
+      const fracSum = fracs.reduce((s,f)=> s + f, 0) || 1;
+
+      // Widths in %; last one gets remainder to guarantee 100%
+      const widths = fracs.map(f => (f / fracSum) * 100);
+
+      // Clear + build DOM
+      stackTrack.innerHTML = "";
+      stackLegend.innerHTML = "";
+
+      const domSegs = [];
+      let left = 0;
+
+      for (let i=0; i<segs.length; i++){
+        const seg = segs[i];
+
+        // last segment fills remainder
+        const wRaw = widths[i];
+        const w = (i === segs.length - 1) ? (100 - left) : wRaw;
+
+        const wClamped = clamp(w, 0, 100);
+        const leftClamped = clamp(left, 0, 100);
 
         const el = document.createElement("div");
         el.className = "gg-seg";
         el.style.background = seg.color;
 
-        // start collapsed
-        el.style.left = left.toFixed(4) + "%";
+        // start collapsed (but keep correct left)
+        el.style.left = leftClamped.toFixed(4) + "%";
         el.style.width = "0%";
 
-        el.dataset.left = left.toFixed(4);
-        el.dataset.width = w.toFixed(4);
+        el.dataset.left = leftClamped.toFixed(4);
+        el.dataset.width = wClamped.toFixed(4);
 
-        el.title = `${seg.name}: ${formatEuro(seg.val)} (${formatPercent(pct)})`;
+        // Tooltip uses real % (based on value vs safeTotal)
+        const pctReal = (seg.val || 0) / safeTotal * 100;
+        el.title = `${seg.name}: ${formatEuro(seg.val)} (${formatPercent(pctReal)})`;
+
         stackTrack.appendChild(el);
         domSegs.push(el);
 
@@ -174,14 +194,14 @@
             <span class="gg-dot" style="background:${seg.color}"></span>
             <span class="gg-leg-name">${escapeHtml(seg.name)}</span>
           </div>
-          <div class="gg-leg-val">${formatPercent(pct)} · ${formatEuro(seg.val)}</div>
+          <div class="gg-leg-val">${formatPercent(pctReal)} · ${formatEuro(seg.val)}</div>
         `;
         stackLegend.appendChild(leg);
 
-        left += w;
-      });
+        left += wClamped;
+      }
 
-      // animate after layout (extra safe)
+      // Animate after layout (iPad/WebKit-safe)
       setTimeout(() => {
         domSegs.forEach(el => {
           const l = el.dataset.left || "0";
@@ -189,13 +209,10 @@
           el.style.left = l + "%";
           el.style.width = w + "%";
         });
-      }, 30);
+      }, 80);
 
       if (distMeta){
-        const topSum = segments.filter(s=>s.name!=="Rest").reduce((s,x)=> s + x.val, 0);
-        distMeta.textContent = segments.some(s=>s.name==="Rest")
-          ? `Top 10: ${formatPercent(totalOffer>0 ? (topSum/totalOffer*100) : 0)}`
-          : `Anteile: ${segments.length}`;
+        distMeta.textContent = segs.length > 10 ? "Top 10 + Rest" : `Anteile: ${segs.length}`;
       }
     }
 
@@ -318,4 +335,68 @@
       Objekt: r.Objekt || objekt || "",
       Aktiv: r.Aktiv || "Ja",
       Sortierung: num(r.Sortierung) || (i + 1),
-      Gewerk:
+      Gewerk: r.Gewerk || "",
+      Handwerker: r.Handwerker || "",
+      Angebot: offer,
+      Gezahlt: paid,
+      Baufortschritt: prog,
+      ...r
+    };
+  }
+
+  function num(v){
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+    if (v === null || v === undefined) return 0;
+    const s0 = String(v).trim();
+    if (!s0) return 0;
+
+    let s = s0.replace(/\s/g,"").replace(/€/g,"");
+    const hasComma = s.includes(",");
+    const hasDot = s.includes(".");
+    if (hasComma && hasDot) {
+      const lc = s.lastIndexOf(",");
+      const ld = s.lastIndexOf(".");
+      if (lc > ld) s = s.replace(/\./g,"").replace(",",".");
+      else s = s.replace(/,/g,"");
+    } else if (hasComma && !hasDot) {
+      s = s.replace(",",".");
+    }
+    s = s.replace(/[^0-9.\-]/g,"");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function formatEuro(value){
+    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(Number(value)||0);
+  }
+
+  function formatPercent(value){
+    const v = Number(value)||0;
+    return (Math.round(v*10)/10).toFixed(1).replace(".",",") + " %";
+  }
+
+  function clamp(x, a, b){
+    return Math.max(a, Math.min(b, x));
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  window.addEventListener("immo:data-ready", () => {
+    renderAll();
+    setTimeout(renderAll, 120);
+    setTimeout(renderAll, 420);
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderAll();
+    setTimeout(renderAll, 120);
+  });
+
+})();
