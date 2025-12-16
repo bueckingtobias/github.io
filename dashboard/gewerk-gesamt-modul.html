@@ -1,35 +1,31 @@
-<div class="gewerk-gesamt-modul" id="gewerkGesamtModul">
+<div class="gewerk-gesamt-modul">
   <div class="gg-head">
     <div>
-      <div class="gg-title" id="ggTitle">—</div>
-      <div class="gg-sub" id="ggSub">Aggregiert über alle aktiven Gewerke</div>
+      <div class="gg-title" id="ggTitle">Projekt</div>
+      <div class="gg-sub" id="ggSub">—</div>
     </div>
     <div class="gg-badges">
-      <span class="gg-badge" id="ggBadgeProject">Projekt: —</span>
-      <span class="gg-badge" id="ggBadgeUpdate">Update: —</span>
+      <span class="gg-badge" id="ggBadgeProject">—</span>
+      <span class="gg-badge" id="ggBadgeUpdate">—</span>
     </div>
   </div>
 
-  <!-- KPIs -->
   <div class="gg-grid">
     <div class="gg-kpi">
       <div class="gg-k">Gesamtbudget</div>
       <div class="gg-v" id="ggBudget">—</div>
       <div class="gg-h">Summe aller Angebote</div>
     </div>
-
     <div class="gg-kpi">
       <div class="gg-k">Zahlungen</div>
       <div class="gg-v" id="ggPaid">—</div>
-      <div class="gg-h" id="ggPaidHint">Gezahlt vs. Budget</div>
+      <div class="gg-h">Gezahlt vs. Budget</div>
     </div>
-
     <div class="gg-kpi">
       <div class="gg-k">Baufortschritt</div>
       <div class="gg-v" id="ggProg">—</div>
       <div class="gg-h">Gewichtet nach Angebot</div>
     </div>
-
     <div class="gg-kpi">
       <div class="gg-k">Risiko-Index</div>
       <div class="gg-v" id="ggRisk">—</div>
@@ -37,7 +33,6 @@
     </div>
   </div>
 
-  <!-- Bars -->
   <div class="gg-bars">
     <div class="gg-barblock">
       <div class="gg-barlabel">
@@ -45,7 +40,9 @@
         <span id="ggPayLabel">—</span>
       </div>
       <div class="gg-track">
-        <div class="gg-fill gg-pay" id="ggPayBar"><span id="ggPayBarTxt"></span></div>
+        <div class="gg-fill gg-pay" id="ggPayBar">
+          <span id="ggPayBarTxt"></span>
+        </div>
       </div>
     </div>
 
@@ -55,53 +52,39 @@
         <span id="ggProgLabel">—</span>
       </div>
       <div class="gg-track">
-        <div class="gg-fill gg-prog" id="ggProgBar"><span id="ggProgBarTxt"></span></div>
+        <div class="gg-fill gg-prog" id="ggProgBar">
+          <span id="ggProgBarTxt"></span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Budget Distribution (stacked bar) -->
-  <div class="gg-panel">
-    <div class="gg-panel-head">
-      <div>
-        <div class="gg-panel-title">Budgetverteilung</div>
-        <div class="gg-panel-sub">Anteile nach Angebot je Gewerk (gestapelt)</div>
-      </div>
-      <div class="gg-panel-chip" id="ggBudgetShareMeta">—</div>
+  <!-- 🔥 BUDGET STACK -->
+  <div class="gg-barblock">
+    <div class="gg-barlabel">
+      <span>Budgetverteilung</span>
+      <span id="ggBudgetShareMeta">—</span>
     </div>
 
-    <div class="gg-stack">
-      <div class="gg-stack-track" id="ggStackTrack" aria-label="Budgetverteilung (gestapelt)">
-        <!-- Segmente via JS -->
-      </div>
-      <div class="gg-stack-legend" id="ggStackLegend">
-        <!-- Legend via JS -->
-      </div>
-    </div>
+    <div class="gg-stack-track" id="ggStackTrack"></div>
+    <div class="gg-stack-legend" id="ggStackLegend"></div>
   </div>
 
-  <!-- Two columns: Risiken + Summen -->
-  <div class="gg-two">
-    <div class="gg-panel">
-      <div class="gg-panel-head">
-        <div>
-          <div class="gg-panel-title">Top Risiken</div>
-          <div class="gg-panel-sub">größte Abweichung: Zahlungsquote − Fortschritt</div>
-        </div>
-        <div class="gg-panel-chip" id="ggRiskMeta">—</div>
+  <div class="gg-bars">
+    <div class="gg-barblock">
+      <div class="gg-barlabel">
+        <span>Top Risiken</span>
+        <span id="ggRiskMeta">—</span>
       </div>
-      <div class="gg-list" id="ggRisks"></div>
+      <div id="ggRisks"></div>
     </div>
 
-    <div class="gg-panel">
-      <div class="gg-panel-head">
-        <div>
-          <div class="gg-panel-title">Top Summen</div>
-          <div class="gg-panel-sub">größte Angebote</div>
-        </div>
-        <div class="gg-panel-chip" id="ggTopSumMeta">—</div>
+    <div class="gg-barblock">
+      <div class="gg-barlabel">
+        <span>Top Summen</span>
+        <span id="ggTopSumMeta">—</span>
       </div>
-      <div class="gg-list" id="ggTopSums"></div>
+      <div id="ggTopSums"></div>
     </div>
   </div>
 
