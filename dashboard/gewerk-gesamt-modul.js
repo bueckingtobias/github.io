@@ -1,244 +1,164 @@
-/* dashboard/gewerk-gesamt-modul.js
-   Export: window.GewerkGesamtModul.render(container, rows)
-   Robust: accepts ARRAY (preferred) or OBJECT (wrap to array)
-*/
+(function(){
+  "use strict";
 
-(function () {
-  function qs(root, sel){ return root.querySelector(sel); }
+  window.GewerkGesamtModul = { render };
 
-  function formatEuro(v){
-    const n = Number(v);
-    if(!isFinite(n)) return "0 €";
-    return new Intl.NumberFormat("de-DE", {
-      style:"currency", currency:"EUR", maximumFractionDigits:0
-    }).format(n);
-  }
+  function render(mountEl){
+    const root =
+      (mountEl && mountEl.querySelector && mountEl.querySelector(".gewerk-gesamt-modul")) ||
+      document.querySelector(".gewerk-gesamt-modul");
 
-  function formatPct(v){
-    const n = Number(v);
-    if(!isFinite(n)) return "0,0 %";
-    return (Math.round(n*10)/10).toFixed(1).replace(".", ",") + " %";
-  }
+    if (!root) return;
 
-  function clamp(n, a, b){
-    n = Number(n);
-    if(!isFinite(n)) n = 0;
-    return Math.max(a, Math.min(b, n));
-  }
+    const ggTitle = root.querySelector("#ggTitle");
+    const ggSub = root.querySelector("#ggSub");
+    const badgeProject = root.querySelector("#ggBadgeProject");
+    const badgeUpdate = root.querySelector("#ggBadgeUpdate");
 
-  function toNumber(x){
-    if(x == null || x === "") return 0;
-    if(typeof x === "number" && isFinite(x)) return x;
-    const s = String(x)
-      .replace(/\s/g, "")
-      .replace(/€/g, "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .replace(/[^\d.-]/g, "");
-    const n = Number(s);
-    return isFinite(n) ? n : 0;
-  }
+    const elBudget = root.querySelector("#ggBudget");
+    const elPaid = root.querySelector("#ggPaid");
+    const elProg = root.querySelector("#ggProg");
+    const elRisk = root.querySelector("#ggRisk");
 
-  function pick(row, keys){
-    for(const k of keys){
-      if(row && Object.prototype.hasOwnProperty.call(row, k) && row[k] !== "" && row[k] != null) return row[k];
+    const payLabel = root.querySelector("#ggPayLabel");
+    const progLabel = root.querySelector("#ggProgLabel");
+    const payBar = root.querySelector("#ggPayBar");
+    const progBar = root.querySelector("#ggProgBar");
+    const payBarTxt = root.querySelector("#ggPayBarTxt");
+    const progBarTxt = root.querySelector("#ggProgBarTxt");
+
+    const note = root.querySelector("#ggNote");
+
+    const gesamt = window.IMMO_DATA?.projects?.gesamt || {};
+    const all = window.IMMO_DATA?.projects?.gewerke;
+    const rows = Array.isArray(all) ? all : [];
+
+    const projectName = gesamt.Projekt || gesamt.Adresse || gesamt.Objekt || "Projekt";
+    if (ggTitle) ggTitle.textContent = projectName;
+
+    if (badgeProject) badgeProject.textContent = `Projekt: ${projectName}`;
+    if (badgeUpdate) badgeUpdate.textContent = `Update: ${gesamt.Letztes_Update || gesamt.updatedAt || "—"}`;
+
+    // aktive Gewerke
+    const active = rows.filter(r => String(r.Aktiv || "Ja").toLowerCase().startsWith("j"));
+    if (!active.length){
+      setEmpty("Keine Gewerke gefunden. Prüfe IMMO_MASTER_DATA.projects.gewerke.");
+      return;
     }
-    return undefined;
-  }
 
-  function getOffer(row){
-    return toNumber(pick(row, ["Angebotssumme","Angebot","Budget","Summe","Angebot (€)","Angebotssumme €"]));
-  }
+    // Aggregation
+    let totalOffer = 0;
+    let totalPaid = 0;
+    let weightedProg = 0;
 
-  function getPaid(row){
-    return toNumber(pick(row, ["Zahlungen_bisher","Gezahlt","Zahlungen","Ist","Zahlungen bisher","Zahlungen (€)","Bisher gezahlt"]));
-  }
-
-  function getProgress(row){
-    let p = toNumber(pick(row, ["Baufortschritt_prozent","Baufortschritt_%","Fortschritt_%","Fortschritt %","Baufortschritt %","Progress"]));
-    if(p > 0 && p <= 1) p = p * 100;
-    return clamp(p, 0, 100);
-  }
-
-  function isActive(row){
-    const v = String(pick(row, ["Aktiv (Ja/Nein)","Aktiv","Active"]) ?? "Ja").trim().toLowerCase();
-    if(v === "nein" || v === "no" || v === "0" || v === "false") return false;
-    return v.startsWith("j") || v.startsWith("y") || v === "1" || v === "true";
-  }
-
-  function nameOf(row){
-    return String(pick(row, ["Gewerk","Handwerker","Name","Titel"]) ?? "").trim();
-  }
-
-  function subOf(row){
-    const p = String(pick(row, ["Projekt"]) ?? "").trim();
-    const o = String(pick(row, ["Objekt","Adresse"]) ?? "").trim();
-    const h = String(pick(row, ["Handwerker"]) ?? "").trim();
-    return [p, o, h].filter(Boolean).join(" · ");
-  }
-
-  function ensureSkeleton(container){
-    // If HTML template is injected, use it. Otherwise, build minimal skeleton.
-    const existing = container.querySelector("[data-ggm-root]");
-    if(existing) return existing;
-
-    container.innerHTML = `
-      <div class="ggm-root" data-ggm-root>
-        <div class="ggm-top">
-          <div class="ggm-title-wrap">
-            <div class="ggm-title" data-ggm-title>Gesamtübersicht</div>
-            <div class="ggm-sub" data-ggm-sub>—</div>
-          </div>
-          <div class="ggm-chips">
-            <div class="ggm-chip" data-ggm-chip-count>—</div>
-            <div class="ggm-chip" data-ggm-chip-active>—</div>
-            <div class="ggm-chip ggm-chip-warn" data-ggm-chip-warn style="display:none;">—</div>
-          </div>
-        </div>
-
-        <div class="ggm-grid">
-          <div class="ggm-panel">
-            <div class="ggm-panel-head">
-              <div class="ggm-panel-title">Budget & Zahlungen</div>
-              <div class="ggm-panel-meta" data-ggm-budget-meta>—</div>
-            </div>
-
-            <div class="ggm-kpi-row">
-              <div class="ggm-kpi"><div class="ggm-k">Gesamtbudget</div><div class="ggm-v" data-ggm-budget>—</div></div>
-              <div class="ggm-kpi"><div class="ggm-k">Gezahlt</div><div class="ggm-v" data-ggm-paid>—</div></div>
-              <div class="ggm-kpi"><div class="ggm-k">Offen</div><div class="ggm-v" data-ggm-open>—</div></div>
-            </div>
-
-            <div class="ggm-bar">
-              <div class="ggm-bar-label"><span>Zahlungsquote</span><span data-ggm-payquote>—</span></div>
-              <div class="ggm-track"><div class="ggm-fill ggm-fill-blue" data-ggm-paybar style="width:0%"></div></div>
-            </div>
-
-            <div class="ggm-mini" data-ggm-paynote>—</div>
-          </div>
-
-          <div class="ggm-panel">
-            <div class="ggm-panel-head">
-              <div class="ggm-panel-title">Baufortschritt</div>
-              <div class="ggm-panel-meta" data-ggm-progress-meta>—</div>
-            </div>
-
-            <div class="ggm-kpi-row" style="grid-template-columns: repeat(2, minmax(0,1fr));">
-              <div class="ggm-kpi"><div class="ggm-k">Ø Fortschritt (gewichtet)</div><div class="ggm-v" data-ggm-progress>—</div></div>
-              <div class="ggm-kpi"><div class="ggm-k">Überzahlung vs. Fortschritt</div><div class="ggm-v" data-ggm-risk>—</div></div>
-            </div>
-
-            <div class="ggm-bar">
-              <div class="ggm-bar-label"><span>Fortschritt gesamt</span><span data-ggm-proglabel>—</span></div>
-              <div class="ggm-track"><div class="ggm-fill ggm-fill-green" data-ggm-progbar style="width:0%"></div></div>
-            </div>
-
-            <div class="ggm-mini" data-ggm-prognote>—</div>
-          </div>
-        </div>
-      </div>
-    `;
-    return container.querySelector("[data-ggm-root]");
-  }
-
-  function render(container, input){
-    const root = ensureSkeleton(container);
-
-    // normalize input to array
-    let rows = input;
-    if(rows && !Array.isArray(rows) && typeof rows === "object") rows = [rows];
-    if(!Array.isArray(rows)) rows = [];
-
-    const activeRows = rows.filter(isActive);
-    const base = activeRows.length ? activeRows : rows;
-
-    let totalOffer = 0, totalPaid = 0, weightedProg = 0, warnCount = 0;
-
-    const items = base.map((r, idx) => {
-      const offer = getOffer(r);
-      const paid  = getPaid(r);
-      const prog  = getProgress(r);
-
+    active.forEach(r => {
+      const offer = num(r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"]);
+      const paid  = num(r.Gezahlt ?? r.Zahlungen ?? r.Zahlungen_bisher ?? r["Zahlungen (€)"]);
+      const prog  = num(r.Baufortschritt ?? r.Baufortschritt_prozent ?? r["Baufortschritt %"]);
       totalOffer += offer;
-      totalPaid  += paid;
-      weightedProg += prog * offer;
-
-      const payPct = offer > 0 ? (paid / offer * 100) : 0;
-      const risk = payPct - prog;
-      if(risk > 10) warnCount++;
-
-      return { idx, offer, paid, prog, payPct, risk, title: nameOf(r) || ("Eintrag " + (idx+1)), sub: subOf(r) };
+      totalPaid += paid;
+      weightedProg += (offer > 0 ? prog * offer : 0);
     });
 
-    const progressWeighted = totalOffer > 0 ? (weightedProg / totalOffer) : 0;
-    const payQuote = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
-    const open = Math.max(0, totalOffer - totalPaid);
+    const progOverall = totalOffer > 0 ? (weightedProg / totalOffer) : 0;
+    const payPct = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
 
-    let riskScore = 0;
-    if(totalOffer > 0){
-      for(const it of items){
-        const w = it.offer / totalOffer;
-        riskScore += Math.max(0, it.risk) * w;
-      }
-    }
+    // Risiko-Index: (Zahlungsquote - Fortschritt) => positiv = kritisch
+    const risk = payPct - progOverall;
 
-    // header
-    const projectName = String(pick(base[0] || {}, ["Projekt"]) ?? "").trim();
-    qs(root, "[data-ggm-title]").textContent = projectName ? ("Gesamtübersicht · " + projectName) : "Gesamtübersicht";
-    qs(root, "[data-ggm-sub]").textContent = items.length ? ("Auswertung über " + items.length + " Gewerke") : "Keine Daten gefunden.";
+    if (elBudget) elBudget.textContent = formatEuro(totalOffer);
+    if (elPaid) elPaid.textContent = formatEuro(totalPaid);
+    if (elProg) elProg.textContent = formatPercent(progOverall);
+    if (elRisk) elRisk.textContent = (risk >= 0 ? "+" : "") + formatPercent(risk);
 
-    qs(root, "[data-ggm-chip-count]").textContent = "Gewerke: " + items.length;
-    qs(root, "[data-ggm-chip-active]").textContent = "Aktiv: " + (activeRows.length ? activeRows.length : items.length);
+    if (ggSub) ggSub.textContent = `Aktive Gewerke: ${active.length} · Aggregation: Angebot/ Zahlungen/ gewichteter Fortschritt`;
 
-    const chipWarn = qs(root, "[data-ggm-chip-warn]");
-    if(chipWarn){
-      if(warnCount > 0){
-        chipWarn.style.display = "";
-        chipWarn.textContent = "Warnungen: " + warnCount;
-      }else{
-        chipWarn.style.display = "none";
-      }
-    }
+    const payClamped = clamp(payPct, 0, 100);
+    const progClamped = clamp(progOverall, 0, 100);
 
-    // KPIs
-    qs(root, "[data-ggm-budget]").textContent = formatEuro(totalOffer);
-    qs(root, "[data-ggm-paid]").textContent   = formatEuro(totalPaid);
-    qs(root, "[data-ggm-open]").textContent   = formatEuro(open);
+    if (payLabel) payLabel.textContent = `${formatPercent(payPct)} · ${formatEuro(totalPaid)} / ${formatEuro(totalOffer)}`;
+    if (progLabel) progLabel.textContent = `${formatPercent(progOverall)} · gewichteter Fortschritt`;
 
-    qs(root, "[data-ggm-progress]").textContent = formatPct(progressWeighted);
-    qs(root, "[data-ggm-risk]").textContent     = formatPct(riskScore);
-
-    // Meta / notes
-    qs(root, "[data-ggm-budget-meta]").textContent =
-      totalOffer > 0 ? ("Zahlungen " + formatEuro(totalPaid) + " von " + formatEuro(totalOffer)) : "Kein Budget vorhanden.";
-
-    qs(root, "[data-ggm-progress-meta]").textContent = "Gewichteter Fortschritt nach Angebotsvolumen.";
-
-    const delta = totalPaid - totalOffer;
-    qs(root, "[data-ggm-paynote]").textContent =
-      totalOffer > 0
-        ? ("Abweichung: " + (delta >= 0 ? "+" : "") + formatEuro(delta) + " · Offen: " + formatEuro(open))
-        : "Bitte Angebotswerte je Gewerk pflegen.";
-
-    qs(root, "[data-ggm-prognote]").textContent =
-      "Risikowert = Überzahlung gegenüber Fortschritt (gewichteter Mittelwert).";
-
-    // Bars
-    const payW = clamp(payQuote, 0, 100);
-    const progW = clamp(progressWeighted, 0, 100);
-
-    qs(root, "[data-ggm-payquote]").textContent = formatPct(payW);
-    qs(root, "[data-ggm-proglabel]").textContent = formatPct(progW);
-
-    const paybar = qs(root, "[data-ggm-paybar]");
-    const progbar = qs(root, "[data-ggm-progbar]");
+    // animate
+    if (payBar) payBar.style.width = "0%";
+    if (progBar) progBar.style.width = "0%";
+    if (payBarTxt) payBarTxt.textContent = formatPercent(payPct);
+    if (progBarTxt) progBarTxt.textContent = formatPercent(progOverall);
 
     requestAnimationFrame(() => {
-      if(paybar) paybar.style.width = payW + "%";
-      if(progbar) progbar.style.width = progW + "%";
+      if (payBar) payBar.style.width = payClamped + "%";
+      if (progBar) progBar.style.width = progClamped + "%";
     });
+
+    // Note
+    const msg = [];
+    if (risk > 10) msg.push("Auffällig: Zahlungsquote deutlich über Fortschritt (bitte OP/Abschläge prüfen).");
+    if (progOverall < 30) msg.push("Frühe Phase: Abhängigkeiten/Terminplan eng beobachten.");
+    if (totalOffer > 0 && totalPaid > totalOffer) msg.push("Über Budget gezahlt – bitte Budget/NA prüfen.");
+
+    if (note){
+      if (msg.length){
+        note.style.display = "block";
+        note.textContent = msg.join(" ");
+      } else {
+        note.style.display = "none";
+        note.textContent = "";
+      }
+    }
+
+    function setEmpty(text){
+      if (note){
+        note.style.display = "block";
+        note.textContent = text;
+      }
+      if (elBudget) elBudget.textContent = "—";
+      if (elPaid) elPaid.textContent = "—";
+      if (elProg) elProg.textContent = "—";
+      if (elRisk) elRisk.textContent = "—";
+      if (payBar) payBar.style.width = "0%";
+      if (progBar) progBar.style.width = "0%";
+      if (payLabel) payLabel.textContent = "—";
+      if (progLabel) progLabel.textContent = "—";
+    }
   }
 
-  // ✅ EXACT export your view expects:
-  window.GewerkGesamtModul = { render };
+  function num(v){
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+    if (v === null || v === undefined) return 0;
+    const s0 = String(v).trim();
+    if (!s0) return 0;
+
+    let s = s0.replace(/\s/g,"").replace(/€/g,"");
+    const hasComma = s.includes(",");
+    const hasDot = s.includes(".");
+    if (hasComma && hasDot) {
+      const lc = s.lastIndexOf(",");
+      const ld = s.lastIndexOf(".");
+      if (lc > ld) s = s.replace(/\./g,"").replace(",",".");
+      else s = s.replace(/,/g,"");
+    } else if (hasComma && !hasDot) {
+      s = s.replace(",",".");
+    }
+    s = s.replace(/[^0-9.\-]/g,"");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function formatEuro(value){
+    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(Number(value)||0);
+  }
+
+  function formatPercent(value){
+    const v = Number(value)||0;
+    return (Math.round(v*10)/10).toFixed(1).replace(".",",") + " %";
+  }
+
+  function clamp(x, a, b){
+    return Math.max(a, Math.min(b, x));
+  }
+
+  window.addEventListener("immo:data-ready", () => {
+    const host = document.getElementById("gesamtHost") || document.querySelector(".gewerk-gesamt-modul");
+    if (host) render(host);
+  });
 })();
