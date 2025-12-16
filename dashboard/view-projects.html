@@ -3,211 +3,281 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Projekte / Bau · Dashboard</title>
+  <title>Dashboard · Projekte</title>
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./shell.css" />
+  <script>window.__VER="20251216-Projects-1";</script>
 
-  <script src="./auth.js"></script>
-  <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
+  <link rel="stylesheet" href="./shell.css?v=20251216-Projects-1" />
 
-  <script src="./shell.js"></script>
-  <script src="./excel-loader.js"></script>
+  <link rel="stylesheet" href="./gewerk-gesamt-modul.css?v=20251216-Projects-1" />
+  <link rel="stylesheet" href="./gewerk-modul.css?v=20251216-Projects-1" />
 
   <style>
-    html,body{ overflow-x:hidden !important; }
-    .proj-grid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); min-width:0; }
-    .span12{ grid-column:span 12; min-width:0; }
-    .span6{ grid-column:span 6; min-width:0; }
-    @media (max-width:900px){ .span6{ grid-column:span 12; } }
-    .module-slot{ width:100%; min-width:0; }
+    html, body { overflow-x: hidden; }
 
-    .alert{
-      border-radius:14px;
-      border:1px solid rgba(248,113,113,.35);
-      background: rgba(248,113,113,.08);
-      padding:12px 14px;
-      color: rgba(226,232,240,.92);
-      font-size:12px;
-      line-height:1.35;
-      white-space: pre-wrap;
-      overflow-wrap:anywhere;
+    .projects-wrap{
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+      min-width:0;
     }
-    .alert strong{ font-weight:950; }
-    .okbox{
-      border:1px solid rgba(34,197,94,.25);
-      background: rgba(34,197,94,.06);
+
+    /* oben breit (wie 2 Module nebeneinander) */
+    .projects-top{
+      width:100%;
+      min-width:0;
+    }
+
+    /* darunter: iPad/desktop 2 Spalten, mobile 1 Spalte */
+    .projects-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 14px;
+      min-width:0;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .projects-grid{
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .module-host{
+      min-width:0;
+      overflow:hidden;
+    }
+
+    .module-error{
+      font-size:12px;
+      color: rgba(226,232,240,.78);
+      line-height:1.35;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(239,68,68,.25);
+      background: rgba(239,68,68,.08);
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(15,23,42,.45);
+      color: rgba(226,232,240,.82);
+      font-size:11px;
+      white-space:nowrap;
+      max-width:56vw;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
   </style>
 </head>
 
 <body>
-  <div id="app"></div>
+<div class="app">
 
-  <template id="pageTpl">
-    <section class="proj-grid">
+  <!-- Sidebar (identisch) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-title">Bücking Dashboard</div>
+        <div class="brand-sub">Immobilien · Projekte · KPIs</div>
+      </div>
+    </div>
 
-      <section class="span12">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Gesamtübersicht</div>
-              <div class="card-sub">Budget · Zahlungen · Fortschritt</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="module-slot" id="slotProjGesamt"></div>
-          </div>
+    <nav class="nav">
+      <a href="./view-home.html">
+        <div class="nav-ic">⌂</div>
+        <div class="nav-txt">
+          <div class="nav-title">Home</div>
+          <div class="nav-sub">Übersicht</div>
         </div>
-      </section>
+      </a>
 
-      <div id="gewerkCards" style="display:contents;"></div>
-    </section>
-  </template>
+      <div class="nav-label">Projekte</div>
 
-  <script>
-    (async function(){
-      Shell.mount({ active:"./view-projects.html", title:"Projekte / Bau", sub:"Gesamt + Gewerke" });
+      <a href="./view-projects.html" class="active">
+        <div class="nav-ic">🏗</div>
+        <div class="nav-txt">
+          <div class="nav-title">Projekte / Bau</div>
+          <div class="nav-sub">Gesamt + Gewerke</div>
+        </div>
+      </a>
 
-      const V = new URLSearchParams(location.search).get("v") || String(Date.now());
-      const withV = (p)=> p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(V);
+      <a href="./view-finance.html">
+        <div class="nav-ic">€</div>
+        <div class="nav-txt">
+          <div class="nav-title">Finanzen</div>
+          <div class="nav-sub">Cashflow, Budget</div>
+        </div>
+      </a>
 
-      function show(el, title, msg, ok){
-        el.innerHTML = "";
-        const box = document.createElement("div");
-        box.className = "alert" + (ok ? " okbox" : "");
-        box.innerHTML = `<strong>${title}</strong>\n${msg}`;
-        el.appendChild(box);
-      }
+      <div class="nav-label">Tools</div>
+      <a href="./admin-data.html">
+        <div class="nav-ic">✎</div>
+        <div class="nav-txt">
+          <div class="nav-title">Admin Daten</div>
+          <div class="nav-sub">Pflege Master</div>
+        </div>
+      </a>
+    </nav>
 
-      function loadCssOnce(href){
-        const key = withV(href);
-        if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
-        return new Promise((resolve,reject)=>{
-          const l=document.createElement("link");
-          l.rel="stylesheet"; l.href=key; l.dataset.href=href;
-          l.onload=resolve;
-          l.onerror=()=>reject(new Error("CSS nicht geladen (404?): " + href));
-          document.head.appendChild(l);
-        });
-      }
+    <div class="sidebar-footer">
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
 
-      function loadJsOnce(src){
-        const key = withV(src);
-        if(document.querySelector('script[data-src="'+src+'"]')) return Promise.resolve();
-        return new Promise((resolve,reject)=>{
-          const s=document.createElement("script");
-          s.src=key; s.defer=true; s.dataset.src=src;
-          s.onload=resolve;
-          s.onerror=()=>reject(new Error("JS nicht geladen (404?): " + src));
-          document.head.appendChild(s);
-        });
-      }
+  <!-- Main -->
+  <section class="main">
+    <header class="topbar">
+      <div class="page-title">
+        <h1>Projekte / Bau</h1>
+        <div>Gesamtübersicht + 10 Gewerke</div>
+      </div>
+      <div class="top-right">
+        <span class="chip" id="clockTop">—</span>
+        <span class="chip" id="dataChip">Daten: —</span>
+      </div>
+    </header>
 
-      async function loadHtmlInto(url, el){
-        const r = await fetch(withV(url), { cache:"no-store" });
-        if(!r.ok) throw new Error("HTML nicht geladen (404?): " + url + " (HTTP " + r.status + ")");
-        el.innerHTML = await r.text();
-      }
+    <main class="content">
+      <div class="container" style="max-width:1400px;">
+        <div class="projects-wrap">
 
-      async function mountModuleIntoSlot({slotEl, html, css, js, globalName, data}){
-        await loadHtmlInto(html, slotEl);
-        await loadCssOnce(css);
-        await loadJsOnce(js);
-
-        const mod = window[globalName];
-        if(!mod) throw new Error("Global fehlt: window." + globalName);
-        if(typeof mod.render !== "function") throw new Error("render() fehlt: window." + globalName + ".render");
-
-        mod.render(slotEl, data);
-      }
-
-      // 1) Excel laden
-      const slotGesamt = document.getElementById("slotProjGesamt");
-      try{
-        await ExcelLoader.load(withV("./Dashboard.xlsx"));
-      }catch(e){
-        show(slotGesamt, "Daten konnten nicht geladen werden.", (e && e.message) ? e.message : String(e), false);
-        return;
-      }
-
-      const projectGesamt = window.IMMO_DATA?.projects?.gesamt || {};
-      const gewerke = Array.isArray(window.IMMO_DATA?.projects?.gewerke) ? window.IMMO_DATA.projects.gewerke : [];
-
-      // harte Checks (damit keine „0“ Silent-Fails)
-      if(!gewerke.length){
-        show(slotGesamt, "Keine Gewerke-Daten.", "Sheet 'Projects_Gewerke' ist leer oder wird nicht gemappt.", false);
-        return;
-      }
-
-      // 2) Gesamtmodul erwartet ARRAY (du hattest genau diesen Fehler)
-      try{
-        await mountModuleIntoSlot({
-          slotEl: slotGesamt,
-          html: "./gewerk-gesamt-modul.html",
-          css:  "./gewerk-gesamt-modul.css",
-          js:   "./gewerk-gesamt-modul.js",
-          globalName: "GewerkGesamtModul",
-          data: gewerke
-        });
-      }catch(e){
-        show(slotGesamt, "Gesamtmodul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e), false);
-        return;
-      }
-
-      // 3) 10x Gewerk
-      const wrap = document.getElementById("gewerkCards");
-      wrap.innerHTML = "";
-
-      // Assets einmal vorladen
-      try{
-        await loadCssOnce("./gewerk-modul.css");
-        await loadJsOnce("./gewerk-modul.js");
-      }catch(e){
-        const sec = document.createElement("section");
-        sec.className = "span12";
-        sec.innerHTML = `<div class="card"><div class="card-body"><div class="alert"><strong>Gewerk-Modul Assets fehlen.</strong>\n${(e && e.message) ? e.message : String(e)}</div></div></div>`;
-        wrap.appendChild(sec);
-        return;
-      }
-
-      for(let i=0;i<10;i++){
-        const g = gewerke[i];
-
-        const sec = document.createElement("section");
-        sec.className = "span6";
-        sec.innerHTML = `
-          <div class="card">
+          <!-- TOP: Gesamtmodul -->
+          <section class="card projects-top">
             <div class="card-header">
               <div>
-                <div class="card-title">${g?.Gewerk || ("Gewerk " + (i+1))}</div>
-                <div class="card-sub">${g?.Projekt || projectGesamt?.Projekt || ""}</div>
+                <div class="card-title">Gesamtübersicht</div>
+                <div class="card-sub">gewerk-gesamt-modul</div>
               </div>
             </div>
-            <div class="card-body"><div class="module-slot" id="slotG${i}"></div></div>
-          </div>
-        `;
-        wrap.appendChild(sec);
+            <div class="card-body module-host" id="gesamtHost"></div>
+          </section>
 
-        const slot = sec.querySelector(".module-slot");
+          <!-- GRID: 10x Gewerk-Modul -->
+          <section class="projects-grid" id="gewerkeGrid">
+            <!-- Module injected per JS -->
+          </section>
 
-        if(!g){
-          show(slot, "Keine Daten.", "Es gibt weniger als 10 Zeilen in 'Projects_Gewerke'.", false);
-          continue;
-        }
+        </div>
+      </div>
+    </main>
+  </section>
+</div>
 
-        try{
-          await loadHtmlInto("./gewerk-modul.html", slot);
-          const mod = window.GewerkModul;
-          if(!mod) throw new Error("Global fehlt: window.GewerkModul");
-          if(typeof mod.render !== "function") throw new Error("render() fehlt: window.GewerkModul.render");
-          mod.render(slot, g);
-        }catch(e){
-          show(slot, "Gewerk-Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e), false);
-        }
-      }
-    })();
-  </script>
+<!-- DataLoader (loads master-data.js automatically if missing) -->
+<script src="./data-loader.js?v=20251216-Projects-1"></script>
+
+<!-- Module scripts -->
+<script src="./gewerk-gesamt-modul.js?v=20251216-Projects-1"></script>
+<script src="./gewerk-modul.js?v=20251216-Projects-1"></script>
+
+<script>
+(async function(){
+
+  // Clock
+  const clockTop = document.getElementById("clockTop");
+  function tick(){
+    const d = new Date();
+    clockTop.textContent = d.toLocaleString("de-DE",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+  }
+  tick(); setInterval(tick,15000);
+
+  // Logout
+  document.getElementById("logoutBtn").onclick = () => {
+    try { localStorage.clear(); } catch {}
+    location.href = "./index.html";
+  };
+
+  // Inject helper
+  async function inject(hostEl, fragmentPath){
+    const url = fragmentPath + "?v=" + encodeURIComponent(window.__VER);
+    try{
+      const res = await fetch(url, { cache:"no-store" });
+      if(!res.ok) throw new Error(res.status + " " + res.statusText);
+      hostEl.innerHTML = await res.text();
+    }catch(e){
+      hostEl.innerHTML = `
+        <div class="module-error">
+          <b>Modul konnte nicht geladen werden:</b><br/>
+          ${fragmentPath}<br/>
+          ${String(e && e.message ? e.message : e)}
+        </div>`;
+    }
+  }
+
+  // 1) Inject Gesamtmodul
+  const gesamtHost = document.getElementById("gesamtHost");
+  await inject(gesamtHost, "./gewerk-gesamt-modul.html");
+
+  // 2) Prepare 10 containers for Gewerk modules (HTML injected per tile)
+  const grid = document.getElementById("gewerkeGrid");
+  grid.innerHTML = "";
+  const tiles = [];
+  for (let i=0;i<10;i++){
+    const tile = document.createElement("section");
+    tile.className = "card module-host";
+    tile.innerHTML = `
+      <div class="card-header">
+        <div>
+          <div class="card-title">Gewerk</div>
+          <div class="card-sub">gewerk-modul</div>
+        </div>
+      </div>
+      <div class="card-body module-host" data-idx="${i}"></div>
+    `;
+    grid.appendChild(tile);
+    tiles.push(tile.querySelector(".card-body"));
+  }
+
+  // 3) Inject Gewerk-Modul HTML into each tile (same file, reused)
+  for (const host of tiles){
+    await inject(host, "./gewerk-modul.html");
+  }
+
+  // 4) Load data
+  await DataLoader.load();
+
+  // 5) Data chip
+  const chip = document.getElementById("dataChip");
+  const meta = window.IMMO_DATA_META || {};
+  const hasMaster = !!window.IMMO_MASTER_DATA;
+  const gewerkeCount = Array.isArray(window.IMMO_DATA?.projects?.gewerke) ? window.IMMO_DATA.projects.gewerke.length : 0;
+
+  if (meta.ok && hasMaster){
+    chip.textContent = `Master:OK · Loader:OK · Gewerke:${gewerkeCount} · v ${meta.version || "—"}`;
+  } else {
+    chip.textContent = `Master:FAIL · Loader:OK · Gewerke:${gewerkeCount} · ${meta.reason || ""}`;
+  }
+
+  // 6) Render Gesamt
+  if (window.GewerkGesamtModul?.render) {
+    window.GewerkGesamtModul.render(gesamtHost);
+  }
+
+  // 7) Render Einzelmodule: jede Kachel bekommt Index → entsprechendes Gewerk
+  tiles.forEach((host, idx) => {
+    if (window.GewerkModul?.render) {
+      window.GewerkModul.render(host, { index: idx });
+    }
+  });
+
+  // iPad retry
+  setTimeout(() => {
+    if (window.GewerkGesamtModul?.render) window.GewerkGesamtModul.render(gesamtHost);
+    tiles.forEach((host, idx) => {
+      if (window.GewerkModul?.render) window.GewerkModul.render(host, { index: idx });
+    });
+  }, 250);
+
+})();
+</script>
+
 </body>
 </html>
