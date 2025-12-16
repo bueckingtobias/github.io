@@ -45,7 +45,6 @@
   gap: 10px;
   min-width:0;
 }
-
 @media (max-width: 1100px){
   .gg-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
@@ -64,9 +63,7 @@
   letter-spacing:.08em;
   color: rgba(226,232,240,.58);
 }
-
 .gg-v{ margin-top: 6px; font-size: 18px; font-weight: 950; }
-
 .gg-h{
   margin-top: 6px;
   font-size: 11px;
@@ -80,7 +77,6 @@
   gap: 12px;
   min-width:0;
 }
-
 @media (max-width: 900px){
   .gg-bars{ grid-template-columns: 1fr; }
 }
@@ -124,7 +120,6 @@
   white-space:nowrap;
   padding: 0 8px;
 }
-
 .gg-pay{ background: linear-gradient(90deg, rgba(249,115,22,1), rgba(251,146,60,1)); }
 .gg-prog{ background: linear-gradient(90deg, rgba(34,197,94,1), rgba(74,222,128,1)); }
 
@@ -148,7 +143,6 @@
 }
 
 .gg-panel-title{ font-size: 12px; font-weight: 950; }
-
 .gg-panel-sub{
   margin-top: 3px;
   font-size: 11px;
@@ -166,7 +160,7 @@
   white-space:nowrap;
 }
 
-/* Stacked bar */
+/* ✅ Stacked bar – robust (absolute segments, iPad-safe) */
 .gg-stack{ display:flex; flex-direction:column; gap: 10px; }
 
 .gg-stack-track{
@@ -174,29 +168,28 @@
   border-radius: 999px;
   background: rgba(15,23,42,.65);
   overflow:hidden;
-  display:flex;
   position:relative;
   min-width:0;
   border: 1px solid rgba(148,163,184,.10);
 }
 
-/* ✅ SAFARI FIX: segments must not shrink */
+/* segments are absolute; JS sets left/width */
 .gg-seg{
-  height:100%;
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:0%;
   width:0%;
-  flex: 0 0 auto;          /* critical */
-  flex-basis: 0%;          /* will be animated via JS */
-  min-width: 2px;          /* so tiny shares remain visible */
   display:block;
-  transition: flex-basis .9s cubic-bezier(0.16, 1, 0.3, 1), width .9s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: left .9s cubic-bezier(0.16, 1, 0.3, 1), width .9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Legend */
 .gg-stack-legend{
   display:grid;
   grid-template-columns: repeat(3, minmax(0,1fr));
   gap: 8px;
 }
-
 @media (max-width: 900px){
   .gg-stack-legend{ grid-template-columns: 1fr; }
 }
@@ -248,7 +241,6 @@
   gap: 12px;
   min-width:0;
 }
-
 @media (max-width: 1100px){
   .gg-two{ grid-template-columns: 1fr; }
 }
