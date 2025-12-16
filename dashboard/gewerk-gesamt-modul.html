@@ -1,104 +1,146 @@
-<div class="ggm-root" data-ggm-root>
-  <div class="ggm-top">
-    <div class="ggm-title-wrap">
-      <div class="ggm-title" data-ggm-title>Gesamtübersicht</div>
-      <div class="ggm-sub" data-ggm-sub>—</div>
-    </div>
+.gewerk-gesamt-modul{
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+  min-width:0;
+}
 
-    <div class="ggm-chips">
-      <div class="ggm-chip" title="Anzahl Gewerke" data-ggm-chip-count>—</div>
-      <div class="ggm-chip" title="Aktive Gewerke" data-ggm-chip-active>—</div>
-      <div class="ggm-chip ggm-chip-warn" title="Warnungen" data-ggm-chip-warn style="display:none;">—</div>
-    </div>
-  </div>
+.gg-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap: 12px;
+}
 
-  <div class="ggm-grid">
-    <!-- Budget / Zahlungen -->
-    <div class="ggm-panel">
-      <div class="ggm-panel-head">
-        <div class="ggm-panel-title">Budget & Zahlungen</div>
-        <div class="ggm-panel-meta" data-ggm-budget-meta>—</div>
-      </div>
+.gg-title{
+  font-size: 15px;
+  font-weight: 950;
+}
 
-      <div class="ggm-kpi-row">
-        <div class="ggm-kpi">
-          <div class="ggm-k">Gesamtbudget</div>
-          <div class="ggm-v" data-ggm-budget>—</div>
-        </div>
-        <div class="ggm-kpi">
-          <div class="ggm-k">Gezahlt</div>
-          <div class="ggm-v" data-ggm-paid>—</div>
-        </div>
-        <div class="ggm-kpi">
-          <div class="ggm-k">Offen</div>
-          <div class="ggm-v" data-ggm-open>—</div>
-        </div>
-      </div>
+.gg-sub{
+  margin-top: 4px;
+  font-size: 11px;
+  color: rgba(226,232,240,.70);
+}
 
-      <div class="ggm-bar">
-        <div class="ggm-bar-label">
-          <span>Zahlungsquote</span>
-          <span data-ggm-payquote>—</span>
-        </div>
-        <div class="ggm-track">
-          <div class="ggm-fill ggm-fill-blue" data-ggm-paybar style="width:0%"></div>
-        </div>
-      </div>
+.gg-badges{
+  display:flex;
+  gap: 8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
 
-      <div class="ggm-mini" data-ggm-paynote>—</div>
-    </div>
+.gg-badge{
+  display:inline-flex;
+  align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.35);
+  color: rgba(226,232,240,.82);
+  font-size: 11px;
+  white-space:nowrap;
+}
 
-    <!-- Fortschritt -->
-    <div class="ggm-panel">
-      <div class="ggm-panel-head">
-        <div class="ggm-panel-title">Baufortschritt</div>
-        <div class="ggm-panel-meta" data-ggm-progress-meta>—</div>
-      </div>
+.gg-grid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 10px;
+  min-width:0;
+}
 
-      <div class="ggm-kpi-row">
-        <div class="ggm-kpi">
-          <div class="ggm-k">Ø Fortschritt (gewichtet)</div>
-          <div class="ggm-v" data-ggm-progress>—</div>
-        </div>
-        <div class="ggm-kpi">
-          <div class="ggm-k">Überzahlung vs. Fortschritt</div>
-          <div class="ggm-v" data-ggm-risk>—</div>
-        </div>
-      </div>
+@media (max-width: 1100px){
+  .gg-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
 
-      <div class="ggm-bar">
-        <div class="ggm-bar-label">
-          <span>Fortschritt gesamt</span>
-          <span data-ggm-proglabel>—</span>
-        </div>
-        <div class="ggm-track">
-          <div class="ggm-fill ggm-fill-green" data-ggm-progbar style="width:0%"></div>
-        </div>
-      </div>
+.gg-kpi{
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.22);
+  padding: 12px;
+  min-width:0;
+}
 
-      <div class="ggm-mini" data-ggm-prognote>—</div>
-    </div>
+.gg-k{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color: rgba(226,232,240,.58);
+}
 
-    <!-- Top-Listen -->
-    <div class="ggm-panel ggm-panel-wide">
-      <div class="ggm-panel-head">
-        <div class="ggm-panel-title">Highlights</div>
-        <div class="ggm-panel-meta">Top 3 nach Budget & Top 3 nach Risiko</div>
-      </div>
+.gg-v{
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 950;
+}
 
-      <div class="ggm-lists">
-        <div class="ggm-list">
-          <div class="ggm-list-head">Größte Budgets</div>
-          <div class="ggm-list-body" data-ggm-top-budget></div>
-        </div>
+.gg-h{
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(226,232,240,.70);
+  line-height:1.25;
+}
 
-        <div class="ggm-list">
-          <div class="ggm-list-head">Höchstes Risiko</div>
-          <div class="ggm-list-body" data-ggm-top-risk></div>
-        </div>
-      </div>
+.gg-bars{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-width:0;
+}
 
-      <div class="ggm-footer-hint" data-ggm-hint>—</div>
-    </div>
-  </div>
-</div>
+@media (max-width: 900px){
+  .gg-bars{ grid-template-columns: 1fr; }
+}
+
+.gg-barblock{
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  padding: 10px;
+  min-width:0;
+}
+
+.gg-barlabel{
+  display:flex;
+  justify-content:space-between;
+  gap: 10px;
+  font-size: 11px;
+  color: rgba(226,232,240,.72);
+  margin-bottom: 8px;
+}
+
+.gg-track{
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(15,23,42,.65);
+  overflow:hidden;
+  position:relative;
+}
+
+.gg-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255,255,255,.95);
+  transition: width .9s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space:nowrap;
+  padding: 0 8px;
+}
+
+.gg-pay{ background: linear-gradient(90deg, rgba(249,115,22,1), rgba(251,146,60,1)); }
+.gg-prog{ background: linear-gradient(90deg, rgba(34,197,94,1), rgba(74,222,128,1)); }
+
+.gg-note{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  color: rgba(226,232,240,.72);
+  font-size: 12px;
+  line-height:1.35;
+}
