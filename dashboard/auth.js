@@ -10,7 +10,7 @@
   };
 
   function login(password){
-    const MASTER_PASSWORD = "dashboard2025";
+    const MASTER_PASSWORD = "@bashboard";
     if(String(password || "") === MASTER_PASSWORD){
       localStorage.setItem(KEY, JSON.stringify({ ok:true, ts: Date.now() }));
       return true;
