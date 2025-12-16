@@ -5,7 +5,6 @@
     const roots = document.querySelectorAll(".gewerk-modul");
     if (!roots.length) return;
 
-    // Prefer master
     let rows =
       window.IMMO_MASTER_DATA?.projects?.gewerke ||
       window.IMMO_DATA?.projects?.gewerke ||
@@ -13,16 +12,14 @@
 
     if (!Array.isArray(rows)) rows = [];
 
-    // Normalize + filter active + sort
     const list = rows
       .map((r, i) => normalizeRow(r, i))
       .filter(r => String(r.Aktiv || "Ja").toLowerCase().startsWith("j"))
       .sort((a, b) => (num(a.Sortierung) || 9999) - (num(b.Sortierung) || 9999));
 
-    // Fill modules in order
     roots.forEach((root, idx) => {
       const r = list[idx];
-      if (!r) return; // keep placeholders if fewer rows than modules
+      if (!r) return;
 
       const offer = num(r.Angebot);
       const paid = num(r.Gezahlt);
@@ -51,7 +48,12 @@
       if (elPayLabel) elPayLabel.textContent = `${eur(paid)} / ${eur(offer)}`;
       if (elProgLabel) elProgLabel.textContent = pct(prog);
 
-      if (badge) badge.textContent = (payPct > prog) ? "Kosten > Fortschritt" : "OK";
+      const isWarn = payPct > prog;
+
+      if (badge) badge.textContent = isWarn ? "Kosten > Fortschritt" : "OK";
+
+      // ✅ add/remove warn class for red highlight
+      root.classList.toggle("is-warn", isWarn);
 
       if (payBar) payBar.style.width = "0%";
       if (progBar) progBar.style.width = "0%";
@@ -64,7 +66,6 @@
   }
 
   function normalizeRow(r, i) {
-    // accept multiple key variants (robust)
     const offer = num(
       r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"] ?? r.Angebot_EUR
     );
@@ -96,7 +97,6 @@
     const hasDot = s.includes(".");
 
     if (hasComma && hasDot) {
-      // "1.234,56" -> "1234.56"
       const lc = s.lastIndexOf(",");
       const ld = s.lastIndexOf(".");
       if (lc > ld) s = s.replace(/\./g, "").replace(",", ".");
