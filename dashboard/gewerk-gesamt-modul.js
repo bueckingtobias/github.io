@@ -56,7 +56,8 @@
     if (ggTitle) ggTitle.textContent = projectName;
 
     if (badgeProject) badgeProject.textContent = `Projekt: ${projectName}`;
-    if (badgeUpdate) badgeUpdate.textContent = `Update: ${gesamt.Letztes_Update || gesamt.updatedAt || (window.IMMO_MASTER_DATA?.updatedAt ? String(window.IMMO_MASTER_DATA.updatedAt).slice(0,10) : "—")}`;
+    if (badgeUpdate) badgeUpdate.textContent =
+      `Update: ${gesamt.Letztes_Update || gesamt.updatedAt || (window.IMMO_MASTER_DATA?.updatedAt ? String(window.IMMO_MASTER_DATA.updatedAt).slice(0,10) : "—")}`;
 
     // Normalize + active
     const normalized = (Array.isArray(rows) ? rows : []).map((r, i) => normalizeRow(r, i, projectName, gesamt.Adresse || gesamt.Objekt || ""));
@@ -110,7 +111,7 @@
       if (progBar) progBar.style.width = progClamped + "%";
     });
 
-    // ---------- Budgetverteilung: gestapelter Balken + Legend ----------
+    // ---------- Budgetverteilung: gestapelter Balken + Legend (Safari-safe) ----------
     const palette = [
       "#2563eb","#22c55e","#f97316","#a855f7","#06b6d4",
       "#ef4444","#eab308","#10b981","#3b82f6","#f43f5e",
@@ -118,7 +119,6 @@
     ];
 
     if (stackTrack && stackLegend){
-      // Use all active, but keep legend clean: show all if <=10, else top 10 + Rest
       const sorted = [...active].sort((a,b)=> num(b.Angebot) - num(a.Angebot));
       const limit = 10;
 
@@ -143,18 +143,25 @@
         segments.push({ name: "Rest", val: restVal, color: "rgba(148,163,184,.55)" });
       }
 
-      segments.forEach((seg, idx)=>{
+      segments.forEach((seg)=>{
         const pct = totalOffer > 0 ? (seg.val / totalOffer * 100) : 0;
+
         const el = document.createElement("div");
         el.className = "gg-seg";
         el.style.background = seg.color;
         el.style.width = "0%";
+        el.style.flexBasis = "0%";
+        el.style.flex = "0 0 auto";
         el.title = `${seg.name}: ${formatEuro(seg.val)} (${formatPercent(pct)})`;
         stackTrack.appendChild(el);
 
-        requestAnimationFrame(()=>{ el.style.width = clamp(pct,0,100) + "%"; });
+        // ✅ Safari: animate via flex-basis (and keep width in sync)
+        requestAnimationFrame(()=> {
+          const p = clamp(pct, 0, 100);
+          el.style.flexBasis = p + "%";
+          el.style.width = p + "%";
+        });
 
-        // legend card
         const leg = document.createElement("div");
         leg.className = "gg-leg";
         leg.innerHTML = `
@@ -168,9 +175,9 @@
       });
 
       if (distMeta){
-        const top10 = segments.filter(s=>s.name!=="Rest").reduce((s,x)=> s + x.val, 0);
+        const topSum = segments.filter(s=>s.name!=="Rest").reduce((s,x)=> s + x.val, 0);
         distMeta.textContent = segments.some(s=>s.name==="Rest")
-          ? `Top 10: ${formatPercent(totalOffer>0 ? (top10/totalOffer*100) : 0)}`
+          ? `Top 10: ${formatPercent(totalOffer>0 ? (topSum/totalOffer*100) : 0)}`
           : `Anteile: ${segments.length}`;
       }
     }
@@ -182,14 +189,14 @@
         const paid  = num(r.Gezahlt);
         const prog  = clamp(num(r.Baufortschritt),0,100);
         const payP  = offer > 0 ? (paid/offer*100) : 0;
-        const delta = payP - prog;                 // >0 kritisch
-        const score = delta * (offer > 0 ? offer : 1); // gewichtet
+        const delta = payP - prog;
+        const score = delta * (offer > 0 ? offer : 1);
         return { r, offer, paid, prog, payP, delta, score };
       }).sort((a,b)=> b.score - a.score);
 
       const top3 = riskRows.slice(0,3);
-
       risksEl.innerHTML = "";
+
       top3.forEach(x=>{
         const badge = (x.delta >= 0 ? "+" : "") + formatPercent(x.delta);
         const title = `${x.r.Gewerk || "Gewerk"} · ${x.r.Handwerker || "Handwerker"}`;
