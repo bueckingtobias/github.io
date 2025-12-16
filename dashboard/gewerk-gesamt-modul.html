@@ -10,6 +10,7 @@
     </div>
   </div>
 
+  <!-- KPIs -->
   <div class="gg-grid">
     <div class="gg-kpi">
       <div class="gg-k">Gesamtbudget</div>
@@ -36,6 +37,7 @@
     </div>
   </div>
 
+  <!-- Bars -->
   <div class="gg-bars">
     <div class="gg-barblock">
       <div class="gg-barlabel">
@@ -54,6 +56,51 @@
       </div>
       <div class="gg-track">
         <div class="gg-fill gg-prog" id="ggProgBar"><span id="ggProgBarTxt"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW: Budgetverteilung + Top Listen -->
+  <div class="gg-splits">
+    <!-- Budget distribution -->
+    <div class="gg-panel">
+      <div class="gg-panel-head">
+        <div>
+          <div class="gg-panel-title">Budgetverteilung</div>
+          <div class="gg-panel-sub">Top-Gewerke nach Angebot (Rest zusammengefasst)</div>
+        </div>
+        <div class="gg-panel-chip" id="ggBudgetShareMeta">—</div>
+      </div>
+      <div class="gg-dist" id="ggDist">
+        <!-- JS injects rows -->
+      </div>
+    </div>
+
+    <!-- Top Risks -->
+    <div class="gg-panel">
+      <div class="gg-panel-head">
+        <div>
+          <div class="gg-panel-title">Top Risiken</div>
+          <div class="gg-panel-sub">größte Abweichung: Zahlungsquote − Fortschritt</div>
+        </div>
+        <div class="gg-panel-chip" id="ggRiskMeta">—</div>
+      </div>
+      <div class="gg-list" id="ggRisks">
+        <!-- JS injects items -->
+      </div>
+    </div>
+
+    <!-- Top Sums -->
+    <div class="gg-panel">
+      <div class="gg-panel-head">
+        <div>
+          <div class="gg-panel-title">Top Summen</div>
+          <div class="gg-panel-sub">größte Angebote</div>
+        </div>
+        <div class="gg-panel-chip" id="ggTopSumMeta">—</div>
+      </div>
+      <div class="gg-list" id="ggTopSums">
+        <!-- JS injects items -->
       </div>
     </div>
   </div>
