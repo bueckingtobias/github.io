@@ -1,6 +1,5 @@
 (function(){
   "use strict";
-
   window.GewerkGesamtModul = { render, renderAll };
 
   function render(mountEl){
@@ -40,37 +39,31 @@
 
     const note = root.querySelector("#ggNote");
 
-    // Data sources
-    const dataGesamt = window.IMMO_DATA?.projects?.gesamt || {};
-    const dataGewerke = window.IMMO_DATA?.projects?.gewerke;
+    const master = window.IMMO_MASTER_DATA;
+    const data = window.IMMO_DATA;
 
-    const masterGesamt = window.IMMO_MASTER_DATA?.projects?.gesamt || {};
-    const masterGewerke = window.IMMO_MASTER_DATA?.projects?.gewerke;
+    const gesamt = (master?.projects?.gesamt && Object.keys(master.projects.gesamt).length)
+      ? master.projects.gesamt
+      : (data?.projects?.gesamt || {});
 
-    let rows = Array.isArray(dataGewerke) ? dataGewerke : [];
-    if ((!rows || !rows.length) && Array.isArray(masterGewerke)) rows = masterGewerke;
-
-    const gesamt = Object.keys(dataGesamt || {}).length ? dataGesamt : masterGesamt;
+    let rows = Array.isArray(master?.projects?.gewerke) ? master.projects.gewerke
+      : (Array.isArray(data?.projects?.gewerke) ? data.projects.gewerke : []);
 
     const projectName = gesamt.Projekt || gesamt.Adresse || gesamt.Objekt || "Projekt";
     if (ggTitle) ggTitle.textContent = projectName;
-
     if (badgeProject) badgeProject.textContent = `Projekt: ${projectName}`;
-    if (badgeUpdate) badgeUpdate.textContent =
-      `Update: ${gesamt.Letztes_Update || gesamt.updatedAt || (window.IMMO_MASTER_DATA?.updatedAt ? String(window.IMMO_MASTER_DATA.updatedAt).slice(0,10) : "—")}`;
+    if (badgeUpdate) badgeUpdate.textContent = `Update: ${String(gesamt.Letztes_Update || master?.updatedAt || "—").slice(0,10)}`;
 
-    // Normalize + active
-    const normalized = (Array.isArray(rows) ? rows : []).map((r, i) => normalizeRow(r, i, projectName, gesamt.Adresse || gesamt.Objekt || ""));
+    const normalized = rows.map((r,i)=> normalizeRow(r,i,projectName,gesamt.Adresse||gesamt.Objekt||""));
     const active = normalized
       .filter(r => String(r.Aktiv || "Ja").toLowerCase().startsWith("j"))
-      .sort((a,b)=> num(a.Sortierung) - num(b.Sortierung));
+      .sort((a,b)=> (num(a.Sortierung)||9999) - (num(b.Sortierung)||9999));
 
     if (!active.length){
-      setEmpty("Keine Gewerke gefunden. Prüfe projects.gewerke im Master.");
+      setEmpty("Keine Gewerke gefunden. Prüfe IMMO_MASTER_DATA.projects.gewerke.");
       return;
     }
 
-    // Aggregate
     let totalOffer = 0, totalPaid = 0, weightedProg = 0;
     active.forEach(r=>{
       const offer = num(r.Angebot);
@@ -85,7 +78,6 @@
     const payPct = totalOffer > 0 ? (totalPaid / totalOffer * 100) : 0;
     const riskIndex = payPct - overallProg;
 
-    // KPIs
     if (elBudget) elBudget.textContent = formatEuro(totalOffer);
     if (elPaid) elPaid.textContent = formatEuro(totalPaid);
     if (elProg) elProg.textContent = formatPercent(overallProg);
@@ -93,7 +85,6 @@
 
     if (ggSub) ggSub.textContent = `Aktive Gewerke: ${active.length} · Angebot/ Zahlungen/ gewichteter Fortschritt`;
 
-    // Bars
     const payClamped = clamp(payPct, 0, 100);
     const progClamped = clamp(overallProg, 0, 100);
 
@@ -111,82 +102,46 @@
       if (progBar) progBar.style.width = progClamped + "%";
     });
 
-    // ---------- Budgetverteilung: 100% garantiert (absolute segments) ----------
-    const palette = [
-      "#2563eb","#22c55e","#f97316","#a855f7","#06b6d4",
-      "#ef4444","#eab308","#10b981","#3b82f6","#f43f5e",
-      "#84cc16","#0ea5e9"
-    ];
+    // Stacked budget bar (always full 100%)
+    const palette = ["#2563eb","#22c55e","#f97316","#a855f7","#06b6d4","#ef4444","#eab308","#10b981","#3b82f6","#f43f5e","#84cc16","#0ea5e9"];
 
     if (stackTrack && stackLegend){
       const sorted = [...active].sort((a,b)=> num(b.Angebot) - num(a.Angebot));
 
-      // (Optional) top 10 + Rest, but if already <=10, show all
-      const limit = 10;
-      let shown = sorted;
-      let restVal = 0;
-
-      if (sorted.length > limit){
-        shown = sorted.slice(0, limit);
-        restVal = sorted.slice(limit).reduce((s,r)=> s + num(r.Angebot), 0);
-      }
-
-      const segs = shown.map((r, idx) => ({
+      const segs = sorted.map((r, idx) => ({
         name: r.Gewerk || r.Handwerker || `Gewerk ${idx+1}`,
         val: num(r.Angebot),
         color: palette[idx % palette.length]
       }));
 
-      if (restVal > 0){
-        segs.push({ name: "Rest", val: restVal, color: "rgba(148,163,184,.55)" });
-      }
+      const total = segs.reduce((s,x)=> s + x.val, 0) || 1;
 
-      // Compute fractions and normalize (robust against any parsing drift)
-      const totalForStack = segs.reduce((s,x)=> s + (Number.isFinite(x.val) ? x.val : 0), 0);
-      const safeTotal = totalForStack > 0 ? totalForStack : 1;
+      const widths = segs.map(s => (s.val / total) * 100);
 
-      const fracs = segs.map(s => clamp((s.val || 0) / safeTotal, 0, 1));
-      const fracSum = fracs.reduce((s,f)=> s + f, 0) || 1;
-
-      // Widths in %; last one gets remainder to guarantee 100%
-      const widths = fracs.map(f => (f / fracSum) * 100);
-
-      // Clear + build DOM
       stackTrack.innerHTML = "";
       stackLegend.innerHTML = "";
 
-      const domSegs = [];
       let left = 0;
+      const dom = [];
 
-      for (let i=0; i<segs.length; i++){
+      for (let i=0;i<segs.length;i++){
         const seg = segs[i];
+        const pct = (seg.val/total)*100;
 
-        // last segment fills remainder
-        const wRaw = widths[i];
-        const w = (i === segs.length - 1) ? (100 - left) : wRaw;
-
-        const wClamped = clamp(w, 0, 100);
-        const leftClamped = clamp(left, 0, 100);
+        const w = (i === segs.length-1) ? (100-left) : widths[i];
+        const wC = clamp(w,0,100);
 
         const el = document.createElement("div");
         el.className = "gg-seg";
         el.style.background = seg.color;
-
-        // start collapsed (but keep correct left)
-        el.style.left = leftClamped.toFixed(4) + "%";
+        el.style.left = left.toFixed(4) + "%";
         el.style.width = "0%";
-
-        el.dataset.left = leftClamped.toFixed(4);
-        el.dataset.width = wClamped.toFixed(4);
-
-        // Tooltip uses real % (based on value vs safeTotal)
-        const pctReal = (seg.val || 0) / safeTotal * 100;
-        el.title = `${seg.name}: ${formatEuro(seg.val)} (${formatPercent(pctReal)})`;
+        el.dataset.width = wC.toFixed(4);
+        el.title = `${seg.name}: ${formatEuro(seg.val)} (${formatPercent(pct)})`;
 
         stackTrack.appendChild(el);
-        domSegs.push(el);
+        dom.push(el);
 
-        // Legend
         const leg = document.createElement("div");
         leg.className = "gg-leg";
         leg.innerHTML = `
@@ -194,45 +149,36 @@
             <span class="gg-dot" style="background:${seg.color}"></span>
             <span class="gg-leg-name">${escapeHtml(seg.name)}</span>
           </div>
-          <div class="gg-leg-val">${formatPercent(pctReal)} · ${formatEuro(seg.val)}</div>
+          <div class="gg-leg-val">${formatPercent(pct)} · ${formatEuro(seg.val)}</div>
         `;
         stackLegend.appendChild(leg);
 
-        left += wClamped;
+        left += wC;
       }
 
-      // Animate after layout (iPad/WebKit-safe)
-      setTimeout(() => {
-        domSegs.forEach(el => {
-          const l = el.dataset.left || "0";
-          const w = el.dataset.width || "0";
-          el.style.left = l + "%";
-          el.style.width = w + "%";
-        });
+      setTimeout(()=> {
+        dom.forEach(el => el.style.width = (el.dataset.width || "0") + "%");
       }, 80);
 
-      if (distMeta){
-        distMeta.textContent = segs.length > 10 ? "Top 10 + Rest" : `Anteile: ${segs.length}`;
-      }
+      if (distMeta) distMeta.textContent = `Anteile: ${segs.length}`;
     }
 
-    // ---------- Top Risiken (Top 3) ----------
+    // Risks (Top 3)
     if (risksEl){
       const riskRows = active.map(r=>{
         const offer = num(r.Angebot);
         const paid  = num(r.Gezahlt);
         const prog  = clamp(num(r.Baufortschritt),0,100);
-        const payP  = offer > 0 ? (paid/offer*100) : 0;
+        const payP  = offer>0 ? (paid/offer*100) : 0;
         const delta = payP - prog;
-        const score = delta * (offer > 0 ? offer : 1);
+        const score = delta * (offer>0?offer:1);
         return { r, offer, paid, prog, payP, delta, score };
       }).sort((a,b)=> b.score - a.score);
 
       const top3 = riskRows.slice(0,3);
       risksEl.innerHTML = "";
-
       top3.forEach(x=>{
-        const badge = (x.delta >= 0 ? "+" : "") + formatPercent(x.delta);
+        const badge = (x.delta>=0?"+":"") + formatPercent(x.delta);
         const title = `${x.r.Gewerk || "Gewerk"} · ${x.r.Handwerker || "Handwerker"}`;
         const sub = `Angebot ${formatEuro(x.offer)} · Gezahlt ${formatEuro(x.paid)} · Fortschritt ${formatPercent(x.prog)} · Quote ${formatPercent(x.payP)}`;
 
@@ -254,15 +200,15 @@
       }
     }
 
-    // ---------- Top Summen (Top 3 Angebote) ----------
+    // Top sums (Top 3)
     if (topSumsEl){
-      const topOfferRows = [...active]
-        .map(r => ({ r, offer: num(r.Angebot), paid: num(r.Gezahlt), prog: clamp(num(r.Baufortschritt),0,100) }))
+      const topRows = [...active]
+        .map(r=>({ r, offer:num(r.Angebot), paid:num(r.Gezahlt), prog:clamp(num(r.Baufortschritt),0,100) }))
         .sort((a,b)=> b.offer - a.offer)
         .slice(0,3);
 
       topSumsEl.innerHTML = "";
-      topOfferRows.forEach(x=>{
+      topRows.forEach(x=>{
         const title = `${x.r.Gewerk || "Gewerk"} · ${x.r.Handwerker || "Handwerker"}`;
         const badge = formatEuro(x.offer);
         const sub = `Gezahlt ${formatEuro(x.paid)} · Fortschritt ${formatPercent(x.prog)}`;
@@ -280,44 +226,23 @@
       });
 
       if (topSumMeta){
-        const top3Sum = topOfferRows.reduce((s,x)=> s + x.offer, 0);
-        topSumMeta.textContent = `Top 3: ${formatPercent(totalOffer>0 ? (top3Sum/totalOffer*100) : 0)}`;
+        const topSum = topRows.reduce((s,x)=> s + x.offer, 0);
+        topSumMeta.textContent = `Top 3: ${formatPercent(totalOffer>0 ? (topSum/totalOffer*100) : 0)}`;
       }
     }
 
-    // Note
     const msgs = [];
     if (riskIndex > 10) msgs.push("Auffällig: Zahlungsquote deutlich über Fortschritt (OP/Abschläge prüfen).");
     if (overallProg < 30) msgs.push("Frühe Phase: Terminplan/Abhängigkeiten eng monitoren.");
     if (totalOffer > 0 && totalPaid > totalOffer) msgs.push("Über Budget gezahlt – Budget/NA prüfen.");
 
     if (note){
-      if (msgs.length){
-        note.style.display = "block";
-        note.textContent = msgs.join(" ");
-      } else {
-        note.style.display = "none";
-        note.textContent = "";
-      }
+      if (msgs.length){ note.style.display="block"; note.textContent=msgs.join(" "); }
+      else { note.style.display="none"; note.textContent=""; }
     }
 
     function setEmpty(text){
-      if (elBudget) elBudget.textContent = "—";
-      if (elPaid) elPaid.textContent = "—";
-      if (elProg) elProg.textContent = "—";
-      if (elRisk) elRisk.textContent = "—";
-      if (payLabel) payLabel.textContent = "—";
-      if (progLabel) progLabel.textContent = "—";
-      if (payBar) payBar.style.width = "0%";
-      if (progBar) progBar.style.width = "0%";
-      if (stackTrack) stackTrack.innerHTML = "";
-      if (stackLegend) stackLegend.innerHTML = "";
-      if (risksEl) risksEl.innerHTML = "";
-      if (topSumsEl) topSumsEl.innerHTML = "";
-      if (note){
-        note.style.display = "block";
-        note.textContent = text || "Keine Daten.";
-      }
+      if (note){ note.style.display="block"; note.textContent=text||"Keine Daten."; }
     }
   }
 
@@ -326,58 +251,45 @@
   }
 
   function normalizeRow(r, i, projektName, objekt){
-    const offer = num(r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"] ?? r.Angebot_EUR);
-    const paid  = num(r.Gezahlt ?? r.Zahlungen ?? r.Zahlungen_bisher ?? r["Zahlungen (€)"] ?? r["Zahlungen bisher"] ?? r.Gezahlt_EUR);
+    const offer = num(r.Angebot ?? r.Angebotssumme ?? r["Angebot (€)"]);
+    const paid  = num(r.Gezahlt ?? r.Zahlungen ?? r.Zahlungen_bisher ?? r["Zahlungen (€)"] ?? r["Zahlungen bisher"]);
     const prog  = clamp(num(r.Baufortschritt ?? r.Baufortschritt_prozent ?? r["Baufortschritt %"] ?? r.Fortschritt), 0, 100);
 
     return {
+      ...r,
       Projekt: r.Projekt || projektName || "",
       Objekt: r.Objekt || objekt || "",
       Aktiv: r.Aktiv || "Ja",
-      Sortierung: num(r.Sortierung) || (i + 1),
-      Gewerk: r.Gewerk || "",
-      Handwerker: r.Handwerker || "",
+      Sortierung: r.Sortierung ?? (i + 1),
       Angebot: offer,
       Gezahlt: paid,
-      Baufortschritt: prog,
-      ...r
+      Baufortschritt: prog
     };
   }
 
   function num(v){
     if (typeof v === "number" && Number.isFinite(v)) return v;
     if (v === null || v === undefined) return 0;
-    const s0 = String(v).trim();
-    if (!s0) return 0;
-
-    let s = s0.replace(/\s/g,"").replace(/€/g,"");
+    let s = String(v).trim().replace(/\s/g,"").replace(/€/g,"");
     const hasComma = s.includes(",");
     const hasDot = s.includes(".");
-    if (hasComma && hasDot) {
-      const lc = s.lastIndexOf(",");
-      const ld = s.lastIndexOf(".");
-      if (lc > ld) s = s.replace(/\./g,"").replace(",",".");
-      else s = s.replace(/,/g,"");
-    } else if (hasComma && !hasDot) {
-      s = s.replace(",",".");
-    }
+    if (hasComma && hasDot){ s = s.replace(/\./g,"").replace(",","."); }
+    else if (hasComma && !hasDot){ s = s.replace(",","."); }
     s = s.replace(/[^0-9.\-]/g,"");
     const n = Number(s);
     return Number.isFinite(n) ? n : 0;
   }
 
-  function formatEuro(value){
-    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(Number(value)||0);
+  function formatEuro(v){
+    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(Number(v)||0);
   }
 
-  function formatPercent(value){
-    const v = Number(value)||0;
-    return (Math.round(v*10)/10).toFixed(1).replace(".",",") + " %";
+  function formatPercent(v){
+    const x = Number(v)||0;
+    return (Math.round(x*10)/10).toFixed(1).replace(".",",") + " %";
   }
 
-  function clamp(x, a, b){
-    return Math.max(a, Math.min(b, x));
-  }
+  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
 
   function escapeHtml(s){
     return String(s ?? "")
@@ -388,15 +300,10 @@
       .replace(/'/g,"&#039;");
   }
 
+  document.addEventListener("DOMContentLoaded", renderAll);
   window.addEventListener("immo:data-ready", () => {
     renderAll();
     setTimeout(renderAll, 120);
     setTimeout(renderAll, 420);
   });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    renderAll();
-    setTimeout(renderAll, 120);
-  });
-
 })();
