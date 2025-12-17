@@ -7,11 +7,14 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
+  <!-- ✅ Menüband/Shell (wie gestern) -->
   <link rel="stylesheet" href="./shell.css" />
 
+  <!-- ✅ Auth -->
   <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
 
+  <!-- ✅ Shell JS -->
   <script src="./shell.js"></script>
 
   <!-- Vermietung-Module -->
@@ -20,8 +23,10 @@
 </head>
 
 <body>
+  <!-- ✅ Shell mountet hier Sidebar + Topbar + Main -->
   <div id="app"></div>
 
+  <!-- ✅ Dein Page-Content (unverändert) -->
   <template id="pageTpl">
     <section class="grid">
       <section class="card" style="grid-column: span 12;">
@@ -40,11 +45,19 @@
 
   <script>
     (function(){
-      Shell.mount({ active:"./view-vermietung.html", title:"Vermietung", sub:"Auslastung · Mieten · Anfragen" });
+      // ✅ Menüband + Layout mounten
+      Shell.mount({
+        active: "./view-vermietung.html",
+        title: "Vermietung",
+        sub: "Auslastung · Mieten · Anfragen"
+      });
 
-      const v = document.querySelector(".vermietung-root");
-      if(v && window.VermietungModul && typeof VermietungModul.render === "function"){
-        VermietungModul.render(v, {});
+      // ✅ WICHTIG: erst NACH dem Mount in den Content rendern
+      const root = document.getElementById("app");
+      const v = root ? root.querySelector(".vermietung-root") : null;
+
+      if(v && window.VermietungModul && typeof window.VermietungModul.render === "function"){
+        window.VermietungModul.render(v, {});
       } else if(v){
         v.textContent = "VermietungModul fehlt (JS nicht gefunden).";
       }
