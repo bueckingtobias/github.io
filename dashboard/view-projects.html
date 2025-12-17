@@ -80,7 +80,7 @@
 <body>
 <div class="app">
 
-  <!-- Sidebar (identisch) -->
+  <!-- ✅ Sidebar (1:1 wie in deinem Home-Code) -->
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-dot"></div>
@@ -99,16 +99,36 @@
         </div>
       </a>
 
+      <div class="nav-label">Vermietung</div>
+      <a href="./view-vermietung.html">
+        <div class="nav-ic">🏠</div>
+        <div class="nav-txt">
+          <div class="nav-title">Vermietung</div>
+          <div class="nav-sub">Objekte · Anfragen</div>
+        </div>
+      </a>
+
       <div class="nav-label">Projekte</div>
 
+      <!-- ✅ Umbenannt: Projekte / Bau -> Baumstraße (Link + Sub wie Home-Standard) -->
       <a href="./view-projects.html" class="active">
         <div class="nav-ic">🏗</div>
         <div class="nav-txt">
-          <div class="nav-title">Projekte / Bau</div>
+          <div class="nav-title">Baumstraße</div>
           <div class="nav-sub">Gesamt + Gewerke</div>
         </div>
       </a>
 
+      <!-- ➕ Platzhalter: Am Hünenberg -->
+      <a href="./view-project-am-huenenberg.html">
+        <div class="nav-ic">🏗</div>
+        <div class="nav-txt">
+          <div class="nav-title">Am Hünenberg</div>
+          <div class="nav-sub">Projekt (Platzhalter)</div>
+        </div>
+      </a>
+
+      <div class="nav-label">Finanzen</div>
       <a href="./view-finance.html">
         <div class="nav-ic">€</div>
         <div class="nav-txt">
@@ -136,7 +156,7 @@
   <section class="main">
     <header class="topbar">
       <div class="page-title">
-        <h1>Projekte / Bau</h1>
+        <h1>Baumstraße</h1>
         <div>Gesamtübersicht + 10 Gewerke</div>
       </div>
       <div class="top-right">
