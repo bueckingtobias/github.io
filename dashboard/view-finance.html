@@ -7,16 +7,21 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <!-- Shell (Sidebar/Topbar) -->
-  <link rel="stylesheet" href="./shell.css" />
+  <!-- ✅ Version / Cachebuster -->
+  <script>window.__VER="20251216-Finance-1";</script>
 
-  <!-- Auth -->
+  <!-- ✅ Shell (Sidebar/Topbar Styles) -->
+  <link rel="stylesheet" href="./shell.css?v=20251216-Finance-1" />
+
+  <!-- ✅ Auth -->
   <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
 
-  <!-- Shell + Excel Loader -->
-  <script src="./shell.js"></script>
-  <script src="./excel-loader.js"></script>
+  <!-- ✅ DataLoader (master-data) -->
+  <script src="./data-loader.js?v=20251216-Finance-1"></script>
+
+  <!-- Finance-Module CSS (optional: werden auch per JS geladen; hier bleibt es wie gehabt) -->
+  <!-- Wenn du keine doppelten Loads willst, kannst du diese Links entfernen – ich lasse sie bewusst weg. -->
 
   <style>
     /* No horizontal scroll – ever */
@@ -75,240 +80,385 @@
       overflow-wrap:anywhere;
     }
     .alert strong{ font-weight:950; }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(15,23,42,.45);
+      color: rgba(226,232,240,.82);
+      font-size:11px;
+      white-space:nowrap;
+      max-width:56vw;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
   </style>
 </head>
 
 <body>
-  <div id="app"></div>
+<div class="app">
 
-  <template id="pageTpl">
-    <section class="fin-grid">
+  <!-- ✅ Sidebar (1:1 wie Home / Projects / Vermietung) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-title">Bücking Dashboard</div>
+        <div class="brand-sub">Immobilien · Projekte · KPIs</div>
+      </div>
+    </div>
 
-      <!-- 1) Gesamtübersicht oben -->
-      <section class="span12">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Gesamtübersicht</div>
-              <div class="card-sub">Cashflow, Mieten, OP & Reserven – kompakt und Apple-clean.</div>
-            </div>
-          </div>
-          <div class="card-body" style="padding:14px;">
-            <div class="slot" id="slotGesamt"></div>
-          </div>
+    <nav class="nav">
+      <a href="./view-home.html">
+        <div class="nav-ic">⌂</div>
+        <div class="nav-txt">
+          <div class="nav-title">Home</div>
+          <div class="nav-sub">Übersicht</div>
         </div>
-      </section>
+      </a>
 
-      <!-- 2) Cashflow + Mieten (gleich hoch) -->
-      <section class="span6 row-equal">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Cashflow</div>
-              <div class="card-sub">6M Rückblick · 3M Forecast</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="slot" id="slotCashflow"></div>
-          </div>
+      <div class="nav-label">Vermietung</div>
+      <a href="./view-vermietung.html">
+        <div class="nav-ic">🏠</div>
+        <div class="nav-txt">
+          <div class="nav-title">Vermietung</div>
+          <div class="nav-sub">Objekte · Anfragen</div>
         </div>
-      </section>
+      </a>
 
-      <section class="span6 row-equal">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Mieten & Pacht</div>
-              <div class="card-sub">Einnahmen, Auslastung, nächste Fälligkeit</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="slot" id="slotMieten"></div>
-          </div>
+      <div class="nav-label">Projekte</div>
+      <a href="./view-projects.html">
+        <div class="nav-ic">🏗</div>
+        <div class="nav-txt">
+          <div class="nav-title">Baumstraße</div>
+          <div class="nav-sub">Gesamt + Gewerke</div>
         </div>
-      </section>
+      </a>
 
-      <!-- 3) OP + Reserven (gleich hoch wie Reihe 2) -->
-      <section class="span6 row-equal">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">OP – Offene Posten</div>
-              <div class="card-sub">Fälligkeiten, überfällig, Priorität</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="slot" id="slotOP"></div>
-          </div>
+      <a href="./view-project-am-huenenberg.html">
+        <div class="nav-ic">🏗</div>
+        <div class="nav-txt">
+          <div class="nav-title">Am Hünenberg</div>
+          <div class="nav-sub">Projekt (Platzhalter)</div>
         </div>
-      </section>
+      </a>
 
-      <section class="span6 row-equal">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Reserven</div>
-              <div class="card-sub">Puffer, Runway, Zielkorridor</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="slot" id="slotReserven"></div>
-          </div>
+      <div class="nav-label">Finanzen</div>
+      <a href="./view-finance.html" class="active">
+        <div class="nav-ic">€</div>
+        <div class="nav-txt">
+          <div class="nav-title">Finanzen</div>
+          <div class="nav-sub">Cashflow, Budget</div>
         </div>
-      </section>
+      </a>
 
-      <!-- 4) Budget unten (full width & größer) -->
-      <section class="span12 budget-big">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Budget</div>
-              <div class="card-sub">Kategorien, Plan/Ist, Abweichung, Restbudget – full width.</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="slot" id="slotBudget"></div>
-          </div>
+      <div class="nav-label">Tools</div>
+      <a href="./admin-data.html">
+        <div class="nav-ic">✎</div>
+        <div class="nav-txt">
+          <div class="nav-title">Admin Daten</div>
+          <div class="nav-sub">Pflege Master</div>
         </div>
-      </section>
+      </a>
+    </nav>
 
-    </section>
-  </template>
+    <div class="sidebar-footer">
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
 
-  <script>
-    (async function(){
-      // Sidebar/Topbar mount (Shell bleibt immer sichtbar)
-      Shell.mount({ active:"./view-finance.html", title:"Finanzen", sub:"Gesamt · Cashflow · Mieten · OP · Reserven · Budget" });
+  <!-- ✅ Main -->
+  <section class="main">
+    <header class="topbar">
+      <div class="page-title">
+        <h1>Finanzen</h1>
+        <div>Gesamt · Cashflow · Mieten · OP · Reserven · Budget</div>
+      </div>
+      <div class="top-right">
+        <span class="chip" id="clockTop">—</span>
+        <span class="chip" id="dataChip">Daten: —</span>
+      </div>
+    </header>
 
-      // Cache-bust for GitHub Pages / iPad Safari
-      const V = new URLSearchParams(location.search).get("v") || String(Date.now());
-      const withV = (p)=> p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(V);
+    <main class="content">
+      <div class="container" style="max-width:1400px;">
+        <section class="fin-grid">
 
-      function showError(el, title, msg){
-        el.innerHTML = "";
-        const box = document.createElement("div");
-        box.className = "alert";
-        box.innerHTML = `<strong>${title}</strong>\n${msg}`;
-        el.appendChild(box);
-      }
+          <!-- 1) Gesamtübersicht oben -->
+          <section class="span12">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Gesamtübersicht</div>
+                  <div class="card-sub">Cashflow, Mieten, OP & Reserven – kompakt und Apple-clean.</div>
+                </div>
+              </div>
+              <div class="card-body" style="padding:14px;">
+                <div class="slot" id="slotGesamt"></div>
+              </div>
+            </div>
+          </section>
 
-      function loadCssOnce(href){
-        const key = withV(href);
-        if(document.querySelector('link[data-href="'+href+'"]')) return Promise.resolve();
-        return new Promise((resolve,reject)=>{
-          const l=document.createElement("link");
-          l.rel="stylesheet"; l.href=key; l.dataset.href=href;
-          l.onload=resolve;
-          l.onerror=()=>reject(new Error("CSS nicht geladen (404?): " + href));
-          document.head.appendChild(l);
-        });
-      }
+          <!-- 2) Cashflow + Mieten (gleich hoch) -->
+          <section class="span6 row-equal">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Cashflow</div>
+                  <div class="card-sub">6M Rückblick · 3M Forecast</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="slot" id="slotCashflow"></div>
+              </div>
+            </div>
+          </section>
 
-      function loadJsOnce(src){
-        const key = withV(src);
-        if(document.querySelector('script[data-src="'+src+'"]')) return Promise.resolve();
-        return new Promise((resolve,reject)=>{
-          const s=document.createElement("script");
-          s.src=key; s.defer=true; s.dataset.src=src;
-          s.onload=resolve;
-          s.onerror=()=>reject(new Error("JS nicht geladen (404?): " + src));
-          document.head.appendChild(s);
-        });
-      }
+          <section class="span6 row-equal">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Mieten & Pacht</div>
+                  <div class="card-sub">Einnahmen, Auslastung, nächste Fälligkeit</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="slot" id="slotMieten"></div>
+              </div>
+            </div>
+          </section>
 
-      async function loadHtmlInto(url, el){
-        const r = await fetch(withV(url), { cache:"no-store" });
-        if(!r.ok) throw new Error("HTML nicht geladen (404?): " + url + " (HTTP " + r.status + ")");
-        el.innerHTML = await r.text();
-      }
+          <!-- 3) OP + Reserven (gleich hoch wie Reihe 2) -->
+          <section class="span6 row-equal">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">OP – Offene Posten</div>
+                  <div class="card-sub">Fälligkeiten, überfällig, Priorität</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="slot" id="slotOP"></div>
+              </div>
+            </div>
+          </section>
 
-      async function mountModule({slotId, html, css, js, globalName, data}){
-        const slot = document.getElementById(slotId);
-        try{
-          await loadHtmlInto(html, slot);
-          await loadCssOnce(css);
-          await loadJsOnce(js);
+          <section class="span6 row-equal">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Reserven</div>
+                  <div class="card-sub">Puffer, Runway, Zielkorridor</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="slot" id="slotReserven"></div>
+              </div>
+            </div>
+          </section>
 
-          const mod = window[globalName];
-          if(!mod) throw new Error("Global fehlt: window." + globalName);
-          if(typeof mod.render !== "function") throw new Error("render() fehlt: window." + globalName + ".render");
+          <!-- 4) Budget unten (full width & größer) -->
+          <section class="span12 budget-big">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Budget</div>
+                  <div class="card-sub">Kategorien, Plan/Ist, Abweichung, Restbudget – full width.</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="slot" id="slotBudget"></div>
+              </div>
+            </div>
+          </section>
 
-          mod.render(slot, data);
-        }catch(e){
-          showError(slot, "Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e));
+        </section>
+
+        <div class="debugline" id="debugLine" style="
+          margin-top:10px;
+          padding:10px 12px;
+          border-radius:14px;
+          border:1px solid rgba(148,163,184,.14);
+          background: rgba(2,6,23,.22);
+          color: rgba(226,232,240,.72);
+          font-size: 12px;
+          line-height:1.35;
+          word-break: break-word;
+        ">Debug: —</div>
+
+      </div>
+    </main>
+  </section>
+</div>
+
+<!-- Module scripts (globals müssen exakt so heißen) -->
+<script src="./finance-gesamt-modul.js?v=20251216-Finance-1"></script>
+<script src="./finance-cashflow-modul.js?v=20251216-Finance-1"></script>
+<script src="./finance-mieten-modul.js?v=20251216-Finance-1"></script>
+<script src="./finance-op-modul.js?v=20251216-Finance-1"></script>
+<script src="./finance-reserven-modul.js?v=20251216-Finance-1"></script>
+<script src="./finance-budget-modul.js?v=20251216-Finance-1"></script>
+
+<script>
+(async function(){
+
+  // Clock
+  const clockTop = document.getElementById("clockTop");
+  function tick(){
+    const d = new Date();
+    clockTop.textContent = d.toLocaleString("de-DE",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+  }
+  tick(); setInterval(tick,15000);
+
+  // Logout
+  document.getElementById("logoutBtn").onclick = () => {
+    try { localStorage.clear(); } catch {}
+    location.href = "./index.html";
+  };
+
+  // Cache-bust helper
+  const V = new URLSearchParams(location.search).get("v") || String(Date.now());
+  const withV = (p)=> p + (p.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(V);
+
+  function showError(el, title, msg){
+    el.innerHTML = "";
+    const box = document.createElement("div");
+    box.className = "alert";
+    box.innerHTML = `<strong>${title}</strong>\n${msg}`;
+    el.appendChild(box);
+  }
+
+  async function loadHtmlInto(url, el){
+    const r = await fetch(withV(url), { cache:"no-store" });
+    if(!r.ok) throw new Error("HTML nicht geladen (404?): " + url + " (HTTP " + r.status + ")");
+    el.innerHTML = await r.text();
+  }
+
+  async function mountModule({slotId, html, css, globalName, data}){
+    const slot = document.getElementById(slotId);
+    try{
+      await loadHtmlInto(html, slot);
+
+      // CSS einmal laden (wie Projects/Home Pattern)
+      if(css){
+        const href = withV(css);
+        const exists = document.querySelector('link[data-href="'+css+'"]');
+        if(!exists){
+          await new Promise((resolve,reject)=>{
+            const l=document.createElement("link");
+            l.rel="stylesheet"; l.href=href; l.dataset.href=css;
+            l.onload=resolve;
+            l.onerror=()=>reject(new Error("CSS nicht geladen (404?): " + css));
+            document.head.appendChild(l);
+          });
         }
       }
 
-      // Excel laden
-      try{
-        await ExcelLoader.load(withV("./Dashboard.xlsx"));
-      }catch(e){
-        console.warn("Excel load failed:", e);
-      }
+      const mod = window[globalName];
+      if(!mod) throw new Error("Global fehlt: window." + globalName);
+      if(typeof mod.render !== "function") throw new Error("render() fehlt: window." + globalName + ".render");
 
-      // Datenbereiche (müssen im Loader so gesetzt sein)
-      const financeRows  = Array.isArray(window.IMMO_DATA?.finance) ? window.IMMO_DATA.finance : [];
-      const opRows       = Array.isArray(window.IMMO_DATA?.op) ? window.IMMO_DATA.op : [];
-      const reservesRows = Array.isArray(window.IMMO_DATA?.reserven) ? window.IMMO_DATA.reserven : [];
-      const budgetRows   = Array.isArray(window.IMMO_DATA?.budget) ? window.IMMO_DATA.budget : [];
-      const homeRows     = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
+      mod.render(slot, data);
+    }catch(e){
+      showError(slot, "Modul konnte nicht geladen werden.", (e && e.message) ? e.message : String(e));
+    }
+  }
 
-      // Module: NAMES GENAU wie in deinem Ordner
-      await mountModule({
-        slotId:"slotGesamt",
-        html:"./finance-gesamt-modul.html",
-        css:"./finance-gesamt-modul.css",
-        js:"./finance-gesamt-modul.js",
-        globalName:"FinanceGesamtModul",
-        data:{ financeRows, opRows, reservesRows, budgetRows, homeRows }
-      });
+  // ✅ DataLoader laden (MASTER -> IMMO_DATA)
+  await DataLoader.load();
 
-      await mountModule({
-        slotId:"slotCashflow",
-        html:"./finance-cashflow-modul.html",
-        css:"./finance-cashflow-modul.css",
-        js:"./finance-cashflow-modul.js",
-        globalName:"FinanceCashflowModul",
-        data:{ financeRows }
-      });
+  const meta = window.IMMO_DATA_META || {};
+  const dbg = document.getElementById("debugLine");
+  const chip = document.getElementById("dataChip");
 
-      await mountModule({
-        slotId:"slotMieten",
-        html:"./finance-mieten-modul.html",
-        css:"./finance-mieten-modul.css",
-        js:"./finance-mieten-modul.js",
-        globalName:"FinanceMietenModul",
-        data:{ financeRows, homeRows }
-      });
+  const hasMaster = !!window.IMMO_MASTER_DATA;
+  const hasData = !!window.IMMO_DATA;
 
-      await mountModule({
-        slotId:"slotOP",
-        html:"./finance-op-modul.html",
-        css:"./finance-op-modul.css",
-        js:"./finance-op-modul.js",
-        globalName:"FinanceOPModul",
-        data:{ opRows }
-      });
+  // Finance Daten aus Master-Map (wie in master-data.js)
+  const finance = window.IMMO_DATA?.finance || {};
+  const financeGesamtRows = Array.isArray(finance.gesamt) ? finance.gesamt : [];
+  const financeCashflowRows = Array.isArray(finance.cashflow) ? finance.cashflow : [];
+  const financeMietenRows = Array.isArray(finance.mieten) ? finance.mieten : [];
+  const financeOPRows = Array.isArray(finance.op) ? finance.op : [];
+  const financeReservenRows = Array.isArray(finance.reserven) ? finance.reserven : [];
+  const financeBudgetRows = Array.isArray(finance.budget) ? finance.budget : [];
 
-      await mountModule({
-        slotId:"slotReserven",
-        html:"./finance-reserven-modul.html",
-        css:"./finance-reserven-modul.css",
-        js:"./finance-reserven-modul.js",
-        globalName:"FinanceReservenModul",
-        data:{ reservesRows, financeRows }
-      });
+  if (meta.ok && hasMaster){
+    chip.textContent = `Master:OK · Loader:OK · v ${meta.version || "—"}`;
+  } else {
+    chip.textContent = `Master:FAIL · Loader:OK`;
+  }
 
-      await mountModule({
-        slotId:"slotBudget",
-        html:"./finance-budget-modul.html",
-        css:"./finance-budget-modul.css",
-        js:"./finance-budget-modul.js",
-        globalName:"FinanceBudgetModul",
-        data:{ budgetRows }
-      });
+  dbg.textContent =
+    `Debug: expected master url = ${meta.expectedUrl || "(unknown)"} | reason = ${meta.reason || "(none)"} | ` +
+    `has IMMO_MASTER_DATA = ${hasMaster} | has IMMO_DATA = ${hasData}`;
 
-    })();
-  </script>
+  // ✅ Module mounten (Dateinamen bleiben exakt wie vorher)
+  await mountModule({
+    slotId:"slotGesamt",
+    html:"./finance-gesamt-modul.html",
+    css:"./finance-gesamt-modul.css",
+    globalName:"FinanceGesamtModul",
+    data:{ financeGesamtRows, financeCashflowRows, financeMietenRows, financeOPRows, financeReservenRows, financeBudgetRows }
+  });
+
+  await mountModule({
+    slotId:"slotCashflow",
+    html:"./finance-cashflow-modul.html",
+    css:"./finance-cashflow-modul.css",
+    globalName:"FinanceCashflowModul",
+    data:{ financeCashflowRows }
+  });
+
+  await mountModule({
+    slotId:"slotMieten",
+    html:"./finance-mieten-modul.html",
+    css:"./finance-mieten-modul.css",
+    globalName:"FinanceMietenModul",
+    data:{ financeMietenRows }
+  });
+
+  await mountModule({
+    slotId:"slotOP",
+    html:"./finance-op-modul.html",
+    css:"./finance-op-modul.css",
+    globalName:"FinanceOPModul",
+    data:{ financeOPRows }
+  });
+
+  await mountModule({
+    slotId:"slotReserven",
+    html:"./finance-reserven-modul.html",
+    css:"./finance-reserven-modul.css",
+    globalName:"FinanceReservenModul",
+    data:{ financeReservenRows, financeGesamtRows }
+  });
+
+  await mountModule({
+    slotId:"slotBudget",
+    html:"./finance-budget-modul.html",
+    css:"./finance-budget-modul.css",
+    globalName:"FinanceBudgetModul",
+    data:{ financeBudgetRows }
+  });
+
+  // iPad retry
+  setTimeout(() => {
+    try{
+      window.FinanceGesamtModul?.render && FinanceGesamtModul.render(document.getElementById("slotGesamt"), { financeGesamtRows, financeCashflowRows, financeMietenRows, financeOPRows, financeReservenRows, financeBudgetRows });
+      window.FinanceCashflowModul?.render && FinanceCashflowModul.render(document.getElementById("slotCashflow"), { financeCashflowRows });
+      window.FinanceMietenModul?.render && FinanceMietenModul.render(document.getElementById("slotMieten"), { financeMietenRows });
+      window.FinanceOPModul?.render && FinanceOPModul.render(document.getElementById("slotOP"), { financeOPRows });
+      window.FinanceReservenModul?.render && FinanceReservenModul.render(document.getElementById("slotReserven"), { financeReservenRows, financeGesamtRows });
+      window.FinanceBudgetModul?.render && FinanceBudgetModul.render(document.getElementById("slotBudget"), { financeBudgetRows });
+    }catch(_){}
+  }, 250);
+
+})();
+</script>
 </body>
 </html>
