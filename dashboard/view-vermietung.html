@@ -7,61 +7,198 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <!-- ✅ Menüband/Shell (wie gestern) -->
-  <link rel="stylesheet" href="./shell.css" />
+  <!-- ✅ Version / Cachebuster (optional, aber identisch zur Home-Architektur) -->
+  <script>window.__VER="20251214-Vermietung-1";</script>
+
+  <!-- ✅ Shell (enthält Sidebar/Topbar Styles wie in Home) -->
+  <link rel="stylesheet" href="./shell.css?v=20251214-Vermietung-1" />
 
   <!-- ✅ Auth -->
   <script src="./auth.js"></script>
   <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
 
-  <!-- ✅ Shell JS -->
-  <script src="./shell.js"></script>
-
   <!-- Vermietung-Module -->
-  <link rel="stylesheet" href="./vermietung-modul.css" />
-  <script src="./vermietung-modul.js"></script>
+  <link rel="stylesheet" href="./vermietung-modul.css?v=20251214-Vermietung-1" />
 </head>
 
 <body>
-  <!-- ✅ Shell mountet hier Sidebar + Topbar + Main -->
-  <div id="app"></div>
+<div class="app">
 
-  <!-- ✅ Dein Page-Content (unverändert) -->
-  <template id="pageTpl">
-    <section class="grid">
-      <section class="card" style="grid-column: span 12;">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Vermietung</div>
-            <div class="card-sub">Auslastung · Mieten · Pipeline.</div>
-          </div>
+  <!-- ✅ 1:1 DIE LINKE SEITE AUS DEINER HOME-DATEI -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-title">Bücking Dashboard</div>
+        <div class="brand-sub">Immobilien · Projekte · KPIs</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="./view-home.html">
+        <div class="nav-ic">⌂</div>
+        <div class="nav-txt">
+          <div class="nav-title">Home</div>
+          <div class="nav-sub">Übersicht</div>
         </div>
-        <div class="card-body">
-          <div class="vermietung-root"></div>
+      </a>
+
+      <div class="nav-label">Vermietung</div>
+      <a href="./view-vermietung.html" class="active">
+        <div class="nav-ic">🏠</div>
+        <div class="nav-txt">
+          <div class="nav-title">Vermietung</div>
+          <div class="nav-sub">Objekte · Anfragen</div>
         </div>
-      </section>
-    </section>
-  </template>
+      </a>
 
-  <script>
-    (function(){
-      // ✅ Menüband + Layout mounten
-      Shell.mount({
-        active: "./view-vermietung.html",
-        title: "Vermietung",
-        sub: "Auslastung · Mieten · Anfragen"
-      });
+      <div class="nav-label">Projekte</div>
 
-      // ✅ WICHTIG: erst NACH dem Mount in den Content rendern
-      const root = document.getElementById("app");
-      const v = root ? root.querySelector(".vermietung-root") : null;
+      <!-- ✅ Umbenannt: Projekte / Bau -> Baumstraße (Link + Sub unverändert) -->
+      <a href="./view-projects.html">
+        <div class="nav-ic">🏗</div>
+        <div class="nav-txt">
+          <div class="nav-title">Baumstraße</div>
+          <div class="nav-sub">Gesamt + Gewerke</div>
+        </div>
+      </a>
 
-      if(v && window.VermietungModul && typeof window.VermietungModul.render === "function"){
-        window.VermietungModul.render(v, {});
-      } else if(v){
-        v.textContent = "VermietungModul fehlt (JS nicht gefunden).";
-      }
-    })();
-  </script>
+      <!-- ➕ Platzhalter: Am Hünenberg -->
+      <a href="./view-project-am-huenenberg.html">
+        <div class="nav-ic">🏗</div>
+        <div class="nav-txt">
+          <div class="nav-title">Am Hünenberg</div>
+          <div class="nav-sub">Projekt (Platzhalter)</div>
+        </div>
+      </a>
+
+      <div class="nav-label">Finanzen</div>
+      <a href="./view-finance.html">
+        <div class="nav-ic">€</div>
+        <div class="nav-txt">
+          <div class="nav-title">Finanzen</div>
+          <div class="nav-sub">Cashflow, Budget</div>
+        </div>
+      </a>
+
+      <div class="nav-label">Tools</div>
+      <a href="./admin-data.html">
+        <div class="nav-ic">✎</div>
+        <div class="nav-txt">
+          <div class="nav-title">Admin Daten</div>
+          <div class="nav-sub">Pflege Master</div>
+        </div>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
+
+  <!-- ✅ Main Bereich (Content deiner Vermietung-Seite bleibt inhaltlich gleich) -->
+  <section class="main">
+    <header class="topbar">
+      <div class="page-title">
+        <h1>Vermietung</h1>
+        <div>Auslastung · Mieten · Pipeline</div>
+      </div>
+      <div class="top-right">
+        <span class="chip" id="clockTop">—</span>
+        <span class="chip" id="dataChip">Daten: —</span>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="container" style="max-width:1400px;">
+        <section class="grid">
+          <section class="card" style="grid-column: span 12;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Vermietung</div>
+                <div class="card-sub">Auslastung · Mieten · Pipeline.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="vermietung-root" id="vermietungRoot"></div>
+            </div>
+          </section>
+        </section>
+
+        <div class="debugline" id="debugLine" style="
+          margin-top:10px;
+          padding:10px 12px;
+          border-radius:14px;
+          border:1px solid rgba(148,163,184,.14);
+          background: rgba(2,6,23,.22);
+          color: rgba(226,232,240,.72);
+          font-size: 12px;
+          line-height:1.35;
+          word-break: break-word;
+        ">Debug: —</div>
+      </div>
+    </main>
+  </section>
+</div>
+
+<!-- ✅ DataLoader (wie Home) -->
+<script src="./data-loader.js?v=20251214-Vermietung-1"></script>
+
+<!-- ✅ Vermietung-Modul JS -->
+<script src="./vermietung-modul.js?v=20251214-Vermietung-1"></script>
+
+<script>
+(async function(){
+
+  // Clock (wie Home)
+  const clockTop = document.getElementById("clockTop");
+  function tick(){
+    const d = new Date();
+    clockTop.textContent = d.toLocaleString("de-DE",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+  }
+  tick(); setInterval(tick,15000);
+
+  // Logout (wie Home)
+  document.getElementById("logoutBtn").onclick = () => {
+    try { localStorage.clear(); } catch {}
+    location.href = "./index.html";
+  };
+
+  // Load master data (wie Home)
+  await DataLoader.load();
+
+  // Status Chips (wie Home)
+  const chip = document.getElementById("dataChip");
+  const dbg = document.getElementById("debugLine");
+  const meta = window.IMMO_DATA_META || {};
+
+  const hasMaster = !!window.IMMO_MASTER_DATA;
+  const hasData = !!window.IMMO_DATA;
+
+  if (meta.ok) {
+    chip.textContent = `Master:OK · Loader:OK · v ${meta.version || "—"}`;
+  } else {
+    chip.textContent = `Master:FAIL · Loader:OK`;
+  }
+
+  dbg.textContent =
+    `Debug: expected master url = ${meta.expectedUrl || "(unknown)"} | reason = ${meta.reason || "(none)"} | ` +
+    `has IMMO_MASTER_DATA = ${hasMaster} | has IMMO_DATA = ${hasData}`;
+
+  // Render Vermietung Modul
+  const host = document.getElementById("vermietungRoot");
+  if (host && window.VermietungModul?.render) {
+    window.VermietungModul.render(host, {});
+    setTimeout(() => window.VermietungModul?.render && window.VermietungModul.render(host, {}), 250);
+  } else if (host) {
+    host.innerHTML = `<div class="module-error" style="
+      font-size:12px;color:rgba(226,232,240,.78);line-height:1.35;padding:12px;border-radius:14px;
+      border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.08);
+    "><b>VermietungModul fehlt (JS nicht gefunden).</b></div>`;
+  }
+
+})();
+</script>
+
 </body>
 </html>
