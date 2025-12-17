@@ -3,710 +3,227 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mieter-Service – Kontakt</title>
-  <meta name="description" content="Mieter-Service: Kontaktformular für Anliegen wie Verträge, Beschwerden, Änderungen, Schadenmeldungen, Abrechnungen und allgemeine Anfragen." />
-  <meta name="robots" content="index,follow" />
+  <title>Gym Tracker – Push/Pull/Legs</title>
 
-  <!-- Optional: Brand color -->
-  <meta name="theme-color" content="#0b5cff" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="./styles.css" />
 
-  <style>
-    :root{
-      --bg0:#070a10;
-      --bg1:#0b0f17;
-      --card: rgba(255,255,255,.08);
-      --card2: rgba(255,255,255,.12);
-      --stroke: rgba(255,255,255,.14);
-      --text: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.62);
-      --accent:#0a84ff;
-      --good:#34C759;
-      --warn:#FF9F0A;
-      --bad:#FF3B30;
-      --shadow: 0 18px 60px rgba(0,0,0,.45);
-      --radius: 18px;
-    }
+  <!-- Chart.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    *{ box-sizing:border-box; }
-    html, body{ height:100%; }
-    body{
-      margin:0;
-      color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,Helvetica,Arial;
-      background:
-        radial-gradient(1200px 800px at 20% 10%, #1b2a55 0%, transparent 55%),
-        radial-gradient(900px 700px at 80% 30%, #1f4a3c 0%, transparent 60%),
-        linear-gradient(180deg,var(--bg0) 0%, var(--bg1) 100%);
-    }
+  <!-- html2pdf (für PDF Export) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
-    a{ color:inherit; text-decoration:none; }
-    .wrap{
-      width:min(1120px, calc(100vw - 24px));
-      margin: 0 auto;
-      padding: 28px 0 42px;
-    }
-
-    /* Top */
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding: 14px 16px;
-      border:1px solid var(--stroke);
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width: 0;
-    }
-    .logo{
-      width:36px; height:36px; border-radius:12px;
-      border:1px solid rgba(255,255,255,.18);
-      background: radial-gradient(16px 16px at 30% 30%, rgba(10,132,255,.6), rgba(10,132,255,.05));
-      box-shadow: 0 10px 30px rgba(10,132,255,.18);
-      flex:0 0 auto;
-    }
-    .brand h1{
-      margin:0;
-      font-size:15px;
-      letter-spacing:.2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .brand .sub{
-      margin-top:2px;
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .actions{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .pill{
-      font-size:12px;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.86);
-      white-space:nowrap;
-    }
-    .btn{
-      font-size:12px;
-      padding:9px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      cursor:pointer;
-      transition: transform .12s ease, background .12s ease;
-    }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); }
-    .btn.primary{
-      background: rgba(10,132,255,.22);
-      border-color: rgba(10,132,255,.35);
-    }
-
-    /* Hero */
-    .hero{
-      margin-top: 14px;
-      display:grid;
-      grid-template-columns: 1.25fr .9fr;
-      gap:12px;
-    }
-    @media (max-width: 980px){
-      .hero{ grid-template-columns: 1fr; }
-    }
-    .card{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      border-radius: var(--radius);
-      overflow:hidden;
-    }
-    .card .h{
-      padding:14px 14px 10px;
-      border-bottom:1px solid rgba(255,255,255,.10);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-    }
-    .card .h .t{
-      font-weight:700;
-      letter-spacing:.2px;
-      font-size:14px;
-      margin:0;
-    }
-    .card .h .m{
-      margin-top:4px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
-    }
-    .card .b{ padding:14px; }
-
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    @media (max-width: 720px){
-      .grid2{ grid-template-columns: 1fr; }
-    }
-
-    /* Form */
-    form{ margin:0; }
-    label{
-      display:block;
-      font-size:12px;
-      color: rgba(255,255,255,.78);
-      margin: 0 0 6px;
-    }
-    .field{
-      margin-bottom: 12px;
-    }
-    input, select, textarea{
-      width:100%;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      outline:none;
-      font-size:13px;
-    }
-    textarea{ min-height: 110px; resize: vertical; }
-    input::placeholder, textarea::placeholder{ color: rgba(255,255,255,.45); }
-    input:focus, select:focus, textarea:focus{
-      border-color: rgba(10,132,255,.55);
-      box-shadow: 0 0 0 4px rgba(10,132,255,.12);
-    }
-
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .row > .col{ flex:1 1 220px; }
-
-    .prio{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top: 6px;
-    }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      border-radius: 999px;
-      padding: 8px 10px;
-      font-size:12px;
-      cursor:pointer;
-      user-select:none;
-    }
-    .chip input{ width:auto; margin:0; accent-color: var(--accent); }
-    .hint{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
-      margin-top:6px;
-    }
-
-    .notice{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      border-radius: 14px;
-      padding: 12px 12px;
-      margin-top: 12px;
-    }
-    .notice .badge{
-      width:28px; height:28px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(10,132,255,.18);
-      display:grid; place-items:center;
-      flex: 0 0 auto;
-      font-size:14px;
-    }
-    .notice .txt{
-      font-size:12px;
-      color: rgba(255,255,255,.78);
-      line-height:1.5;
-    }
-
-    .form-actions{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-top: 10px;
-    }
-
-    .ok, .err{
-      display:none;
-      padding:12px 12px;
-      border-radius:14px;
-      font-size:13px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-      margin-top: 12px;
-    }
-    .ok{ border-color: rgba(52,199,89,.35); background: rgba(52,199,89,.10); }
-    .err{ border-color: rgba(255,59,48,.35); background: rgba(255,59,48,.10); }
-
-    /* Right side quick tiles */
-    .tiles{
-      display:grid;
-      gap:10px;
-    }
-    .tile{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      border-radius: 16px;
-      padding: 12px 12px;
-    }
-    .tile .k{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-    .tile .v{
-      font-weight:700;
-      font-size:13px;
-      line-height:1.3;
-    }
-    .tile .s{
-      margin-top:6px;
-      font-size:12px;
-      color: rgba(255,255,255,.70);
-      line-height:1.5;
-    }
-    .tile a.inline{
-      display:inline-block;
-      margin-top:8px;
-      color: rgba(255,255,255,.86);
-      border-bottom: 1px solid rgba(255,255,255,.28);
-    }
-
-    /* Footer */
-    footer{
-      margin-top: 14px;
-      padding: 14px 16px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      border-radius: var(--radius);
-      color: var(--muted);
-      font-size:12px;
-      line-height:1.6;
-    }
-    .smalllink{ border-bottom: 1px solid rgba(255,255,255,.22); }
-
-    /* Print */
-    @media print{
-      body{ background:#fff; color:#000; }
-      .topbar, .btn{ display:none !important; }
-      .card, footer{ border:1px solid #ccc; background:#fff; box-shadow:none; }
-    }
-  </style>
+  <script defer src="./app.js"></script>
 </head>
 
 <body>
-  <div class="wrap">
-
+  <div class="app">
     <header class="topbar">
       <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div style="min-width:0">
-          <h1>Bücking Immobilien – Mieter-Service</h1>
-          <div class="sub">Kontakt für Verträge, Beschwerden, Änderungen, Schäden, Abrechnung & allgemeine Anliegen</div>
+        <div class="logo">TG</div>
+        <div class="brand-text">
+          <div class="brand-title">Gym Dashboard</div>
+          <div class="brand-sub">Push · Pull · Legs — lokal gespeichert</div>
         </div>
       </div>
 
-      <div class="actions">
-        <span class="pill" id="statusPill">Erreichbar: Mo–Fr • 09:00–17:00</span>
-        <button class="btn primary" type="button" onclick="document.getElementById('anliegen').scrollIntoView({behavior:'smooth'})">Anliegen senden</button>
+      <div class="top-actions">
+        <button class="btn btn-ghost" id="btnExportJson" title="Backup exportieren">Export</button>
+        <label class="btn btn-ghost filelike" title="Backup importieren">
+          Import
+          <input id="fileImportJson" type="file" accept="application/json" hidden />
+        </label>
+        <button class="btn btn-danger" id="btnResetAll" title="Alle Daten löschen">Reset</button>
       </div>
     </header>
 
-    <section class="hero">
+    <main class="grid">
+      <!-- Left: Session + Workout -->
+      <section class="card card-session" id="cardSession">
+        <div class="card-head">
+          <h2>Training Session</h2>
+          <div class="pill" id="pillStorage">Storage: …</div>
+        </div>
 
-      <!-- Left: Form -->
-      <div class="card">
-        <div class="h">
-          <div>
-            <p class="t" style="margin:0">Kontaktformular</p>
-            <div class="m">Je vollständiger die Angaben, desto schneller können wir helfen. In Notfällen bitte immer zusätzlich telefonisch handeln.</div>
+        <div class="session-row">
+          <div class="field">
+            <label>Split</label>
+            <div class="segmented" role="tablist" aria-label="Split Auswahl">
+              <button class="seg" data-split="push" id="tabPush">Push</button>
+              <button class="seg" data-split="pull" id="tabPull">Pull</button>
+              <button class="seg" data-split="legs" id="tabLegs">Beine</button>
+            </div>
           </div>
-          <span class="pill">ID: <span id="ticketId">—</span></span>
+
+          <div class="field">
+            <label>Körpergewicht (kg)</label>
+            <input id="inputBodyweight" type="number" step="0.1" min="0" placeholder="z.B. 86.4" />
+          </div>
         </div>
 
-        <div class="b" id="anliegen">
-          <!--
-            WICHTIG (statische Website):
-            - Dieses Formular sendet standardmäßig NICHT an einen Server.
-            - Es erstellt eine Mailto-Nachricht als "schnellste" Variante für GitHub Pages.
-            - Wenn du echtes Form-Submission willst, setze FORM_ENDPOINT unten z.B. auf Formspree / eigener Endpoint.
-          -->
-          <form id="contactForm" autocomplete="on" novalidate>
-            <div class="row">
-              <div class="col field">
-                <label for="name">Name *</label>
-                <input id="name" name="name" type="text" placeholder="Vor- und Nachname" required />
+        <div class="session-row">
+          <div class="field">
+            <label>Start / Ende (Stempeln)</label>
+            <div class="stamp">
+              <button class="btn btn-primary" id="btnStampStart">Start</button>
+              <button class="btn btn-ghost" id="btnStampEnd">Ende</button>
+            </div>
+            <div class="stamp-meta">
+              <div class="meta">
+                <div class="meta-k">Start</div>
+                <div class="meta-v" id="metaStart">—</div>
               </div>
-              <div class="col field">
-                <label for="wohnung">Objekt / Wohnung *</label>
-                <input id="wohnung" name="wohnung" type="text" placeholder="z.B. Adresse, Einheit, Etage" required />
+              <div class="meta">
+                <div class="meta-k">Ende</div>
+                <div class="meta-v" id="metaEnd">—</div>
+              </div>
+              <div class="meta">
+                <div class="meta-k">Dauer</div>
+                <div class="meta-v" id="metaDuration">—</div>
               </div>
             </div>
+          </div>
 
-            <div class="row">
-              <div class="col field">
-                <label for="email">E-Mail *</label>
-                <input id="email" name="email" type="email" placeholder="name@beispiel.de" required />
-              </div>
-              <div class="col field">
-                <label for="phone">Telefon</label>
-                <input id="phone" name="phone" type="tel" placeholder="+49 …" />
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col field">
-                <label for="category">Thema *</label>
-                <select id="category" name="category" required>
-                  <option value="" selected disabled>Bitte auswählen…</option>
-                  <option>Verträge & Dokumente (Mietvertrag, Nachträge, Unterlagen)</option>
-                  <option>Änderungen (Bankverbindung, Name, Mitbewohner, Haustier, KFZ)</option>
-                  <option>Beschwerde / Störung (Lärm, Nachbarn, Hausordnung)</option>
-                  <option>Schadenmeldung (Wasser, Heizung, Elektrik, Fenster, Türen)</option>
-                  <option>Abrechnung & Zahlungen (Nebenkosten, Miete, Kaution)</option>
-                  <option>Termin / Besichtigung / Übergabe</option>
-                  <option>Schlüssel / Zugang / Sicherheit</option>
-                  <option>Sonstiges</option>
-                </select>
-                <div class="hint">Tipp: Bei Schäden bitte „Schadenmeldung“ wählen und unten Fotos/Details angeben.</div>
-              </div>
-
-              <div class="col field">
-                <label>Priorität</label>
-                <div class="prio" role="group" aria-label="Priorität">
-                  <label class="chip"><input type="radio" name="prio" value="Normal" checked> Normal</label>
-                  <label class="chip"><input type="radio" name="prio" value="Dringend"> Dringend</label>
-                  <label class="chip"><input type="radio" name="prio" value="Notfall"> Notfall</label>
-                </div>
-                <div class="hint">Notfall = Gefahr für Personen/Objekt (Wasserrohrbruch, Brandgeruch, Strom/Heizung Totalausfall im Winter).</div>
-              </div>
-            </div>
-
-            <div class="field">
-              <label for="message">Beschreibung *</label>
-              <textarea id="message" name="message" placeholder="Was ist passiert? Seit wann? Wo genau? Was wurde bereits versucht? (z.B. Sicherung geprüft, Thermostat etc.)" required></textarea>
-              <div class="hint">Je konkreter (Ort, Datum/Uhrzeit, betroffene Räume, ggf. Zählerstände), desto schneller.</div>
-            </div>
-
-            <div class="row">
-              <div class="col field">
-                <label for="when">Wunschtermin / Erreichbarkeit</label>
-                <input id="when" name="when" type="text" placeholder="z.B. Mo–Fr ab 16:00 / Sa Vormittag" />
-              </div>
-              <div class="col field">
-                <label for="access">Zutritt</label>
-                <select id="access" name="access">
-                  <option value="Nur nach Termin" selected>Nur nach Termin</option>
-                  <option value="Mit Erlaubnis (Schlüssel vorhanden)">Mit Erlaubnis (Schlüssel vorhanden)</option>
-                  <option value="Hausmeister/Verwaltung darf betreten (nach Info)">Darf betreten (nach Info)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col field">
-                <label for="files">Anhänge (optional)</label>
-                <input id="files" name="files" type="file" multiple />
-                <div class="hint">Hinweis: Bei statischem Hosting werden Dateien nicht automatisch hochgeladen. Bitte ggf. per Antwortmail nachreichen.</div>
-              </div>
-              <div class="col field">
-                <label for="consent">Datenschutz *</label>
-                <select id="consent" name="consent" required>
-                  <option value="" selected disabled>Bitte auswählen…</option>
-                  <option value="Ja">Ja, ich bin einverstanden, dass meine Angaben zur Bearbeitung gespeichert werden.</option>
-                </select>
-                <div class="hint">Wir nutzen die Daten ausschließlich zur Bearbeitung deines Anliegens.</div>
-              </div>
-            </div>
-
-            <div class="notice" style="margin-top:2px">
-              <div class="badge">i</div>
-              <div class="txt">
-                <b>Wichtig:</b> Bei <b>Brand</b>, <b>Gasgeruch</b> oder akuter Gefahr bitte sofort <b>112</b> anrufen.
-                Bei Wasserschaden: wenn möglich Hauptwasserhahn schließen.
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button class="btn primary" type="submit">Anliegen senden</button>
-              <button class="btn" type="button" id="copyBtn">Text kopieren</button>
-              <span class="pill" id="sendMode">Senden: Mail-Entwurf</span>
-            </div>
-
-            <div class="ok" id="okBox">✅ Entwurf erstellt. Falls sich dein Mailprogramm nicht öffnet, nutze „Text kopieren“ und sende per E-Mail.</div>
-            <div class="err" id="errBox">❌ Bitte prüfe die Pflichtfelder.</div>
-          </form>
+          <div class="field">
+            <label>Notiz (optional)</label>
+            <input id="inputNote" type="text" placeholder="z.B. guter Pump / wenig Schlaf / Deload …" />
+          </div>
         </div>
+
+        <div class="divider"></div>
+
+        <div class="workout-head">
+          <h3 id="workoutTitle">Push</h3>
+          <div class="workout-actions">
+            <button class="btn btn-ghost" id="btnAddExercise">Übung +</button>
+            <button class="btn btn-ghost" id="btnResetCurrent">Session leeren</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="workout-table" id="workoutTable" aria-label="Workout Tabelle">
+            <thead>
+              <tr>
+                <th class="col-ex">Übung</th>
+                <th class="col-sets">Sätze</th>
+                <th class="col-tonnage">Bewegte Masse</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="workoutTbody"></tbody>
+          </table>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi">
+            <div class="kpi-k">Gesamt Sätze</div>
+            <div class="kpi-v" id="kpiSets">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-k">Gesamt Reps</div>
+            <div class="kpi-v" id="kpiReps">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-k">Gesamt Masse (kg)</div>
+            <div class="kpi-v" id="kpiTonnage">0</div>
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <button class="btn btn-primary" id="btnSaveSession">Training speichern</button>
+          <button class="btn btn-ghost" id="btnPdf">PDF Download</button>
+        </div>
+
+        <!-- PDF Bereich -->
+        <div class="pdf-area" id="pdfArea" aria-hidden="true">
+          <div class="pdf-header">
+            <div>
+              <div class="pdf-title">Gym Training Report</div>
+              <div class="pdf-sub" id="pdfSub">—</div>
+            </div>
+            <div class="pdf-badge">TG</div>
+          </div>
+
+          <div class="pdf-grid">
+            <div class="pdf-box">
+              <div class="pdf-k">Split</div>
+              <div class="pdf-v" id="pdfSplit">—</div>
+            </div>
+            <div class="pdf-box">
+              <div class="pdf-k">Körpergewicht</div>
+              <div class="pdf-v" id="pdfBw">—</div>
+            </div>
+            <div class="pdf-box">
+              <div class="pdf-k">Start</div>
+              <div class="pdf-v" id="pdfStart">—</div>
+            </div>
+            <div class="pdf-box">
+              <div class="pdf-k">Ende</div>
+              <div class="pdf-v" id="pdfEnd">—</div>
+            </div>
+            <div class="pdf-box">
+              <div class="pdf-k">Dauer</div>
+              <div class="pdf-v" id="pdfDur">—</div>
+            </div>
+            <div class="pdf-box">
+              <div class="pdf-k">Gesamt Masse</div>
+              <div class="pdf-v" id="pdfTon">—</div>
+            </div>
+          </div>
+
+          <div class="pdf-note" id="pdfNote"> </div>
+
+          <table class="pdf-table" id="pdfTable">
+            <thead>
+              <tr>
+                <th>Übung</th>
+                <th>Satz</th>
+                <th>Reps</th>
+                <th>Gewicht (kg)</th>
+                <th>Masse (kg)</th>
+              </tr>
+            </thead>
+            <tbody id="pdfTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Right: Chart + History -->
+      <section class="card card-analytics">
+        <div class="card-head">
+          <h2>Progress</h2>
+          <div class="pill" id="pillSessions">Sessions: 0</div>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas id="chartTonnage" height="140"></canvas>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="history-head">
+          <h3>Historie</h3>
+          <div class="history-actions">
+            <button class="btn btn-ghost" id="btnFilterAll">Alle</button>
+            <button class="btn btn-ghost" id="btnFilterPush">Push</button>
+            <button class="btn btn-ghost" id="btnFilterPull">Pull</button>
+            <button class="btn btn-ghost" id="btnFilterLegs">Beine</button>
+          </div>
+        </div>
+
+        <div class="history" id="historyList" aria-label="Session Historie"></div>
+      </section>
+    </main>
+
+    <footer class="bottombar">
+      <div class="muted">
+        Lokal gespeichert im Browser (localStorage). Optionaler JSON-Export als Backup.
       </div>
-
-      <!-- Right: Quick info -->
-      <aside class="tiles">
-        <div class="tile">
-          <div class="k">Direktkontakt</div>
-          <div class="v">Verwaltung / Service</div>
-          <div class="s">
-            E-Mail: <a class="inline" href="mailto:service@buecking-immobilien.de">service@buecking-immobilien.de</a><br>
-            Telefon: <span class="sub">(hier Nummer eintragen)</span><br>
-            Notfälle: <b>112</b>
-          </div>
-        </div>
-
-        <div class="tile">
-          <div class="k">Typische Anliegen</div>
-          <div class="s">
-            • Mietvertrag / Nachtrag / Untervermietung<br>
-            • Mängel & Schäden (Heizung, Wasser, Elektrik)<br>
-            • Beschwerden / Hausordnung / Lärm<br>
-            • Namens-/Kontodaten ändern<br>
-            • Nebenkosten / Kaution / Zahlungen<br>
-            • Terminwünsche (Handwerker/Übergabe)
-          </div>
-        </div>
-
-        <div class="tile">
-          <div class="k">Für schnelle Bearbeitung bitte angeben</div>
-          <div class="s">
-            • Objekt + Einheit (z.B. „1. OG links“)<br>
-            • Seit wann besteht das Problem?<br>
-            • Fotos/Videos (wenn sinnvoll)<br>
-            • Erreichbarkeit + Zutritt geregelt?<br>
-            • Bei Technik: was wurde bereits geprüft?
-          </div>
-        </div>
-
-        <div class="tile">
-          <div class="k">Status</div>
-          <div class="v" id="liveStatus">Bereit</div>
-          <div class="s">Ticket-ID wird automatisch generiert, damit wir zuordnen können.</div>
-        </div>
-      </aside>
-
-    </section>
-
-    <footer>
-      <b>Hinweis zur Verarbeitung:</b> Diese Seite ist als schnelle Kontaktmöglichkeit gedacht. Wenn du diese Seite auf GitHub Pages hostest,
-      ist das Formular standardmäßig als <span class="smalllink">Mail-Entwurf</span> umgesetzt (kein Server nötig).
-      Für echtes Online-Absenden kannst du später einen Endpoint (z.B. Formspree oder eigenes Backend) einbauen – siehe Code-Kommentar.
+      <div class="muted">
+        Design: TechnoGym-inspiriert · Dark · Neon · Clean
+      </div>
     </footer>
-
   </div>
-
-  <script>
-    (() => {
-      // =========================
-      // KONFIG
-      // =========================
-      // 1) Ziel-Mailadresse (für Mail-Entwurf / Mailto)
-      const SUPPORT_EMAIL = "service@buecking-immobilien.de";
-
-      // 2) Optional: echter Endpoint (z.B. Formspree). Wenn gesetzt -> POST.
-      // Beispiel: const FORM_ENDPOINT = "https://formspree.io/f/xxxxxxx";
-      const FORM_ENDPOINT = ""; // leer lassen = Mailto-Entwurf (statisch)
-
-      // =========================
-      // Helpers
-      // =========================
-      const $ = (id) => document.getElementById(id);
-
-      function makeTicketId(){
-        const d = new Date();
-        const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}-${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}`;
-        const rand = Math.random().toString(36).slice(2,6).toUpperCase();
-        return `BI-${stamp}-${rand}`;
-      }
-
-      function getRadio(name){
-        const el = document.querySelector(`input[name="${name}"]:checked`);
-        return el ? el.value : "";
-      }
-
-      function validate(){
-        const requiredIds = ["name","wohnung","email","category","message","consent"];
-        for (const id of requiredIds){
-          const el = $(id);
-          if (!el || !String(el.value||"").trim()) return false;
-        }
-        // simple email check
-        const email = $("email").value.trim();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
-        return true;
-      }
-
-      function buildPayload(ticketId){
-        const payload = {
-          ticketId,
-          name: $("name").value.trim(),
-          wohnung: $("wohnung").value.trim(),
-          email: $("email").value.trim(),
-          phone: $("phone").value.trim(),
-          category: $("category").value,
-          prio: getRadio("prio"),
-          message: $("message").value.trim(),
-          when: $("when").value.trim(),
-          access: $("access").value,
-          createdAt: new Date().toISOString()
-        };
-        return payload;
-      }
-
-      function buildEmailText(p){
-        return [
-          `Ticket: ${p.ticketId}`,
-          `Name: ${p.name}`,
-          `Objekt/Wohnung: ${p.wohnung}`,
-          `E-Mail: ${p.email}`,
-          `Telefon: ${p.phone || "-"}`,
-          `Thema: ${p.category}`,
-          `Priorität: ${p.prio}`,
-          `Erreichbarkeit: ${p.when || "-"}`,
-          `Zutritt: ${p.access}`,
-          ``,
-          `Beschreibung:`,
-          `${p.message}`,
-          ``,
-          `Zeitstempel: ${new Date().toLocaleString()}`
-        ].join("\n");
-      }
-
-      function setSendMode(){
-        $("sendMode").textContent = FORM_ENDPOINT ? "Senden: Online (POST)" : "Senden: Mail-Entwurf";
-      }
-
-      async function postPayload(payload){
-        const res = await fetch(FORM_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      }
-
-      function openMailDraft(subject, body){
-        const url =
-          `mailto:${encodeURIComponent(SUPPORT_EMAIL)}` +
-          `?subject=${encodeURIComponent(subject)}` +
-          `&body=${encodeURIComponent(body)}`;
-        window.location.href = url;
-      }
-
-      async function copyToClipboard(text){
-        try{
-          await navigator.clipboard.writeText(text);
-          $("liveStatus").textContent = "Text kopiert";
-        }catch{
-          // fallback: create textarea
-          const ta = document.createElement("textarea");
-          ta.value = text;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          document.body.removeChild(ta);
-          $("liveStatus").textContent = "Text kopiert";
-        }
-      }
-
-      // =========================
-      // Init
-      // =========================
-      const ticketId = makeTicketId();
-      $("ticketId").textContent = ticketId;
-      setSendMode();
-
-      // Highlight emergency priority
-      document.querySelectorAll('input[name="prio"]').forEach(r => {
-        r.addEventListener("change", () => {
-          const v = getRadio("prio");
-          const pill = $("statusPill");
-          if (v === "Notfall") pill.textContent = "Notfall: bitte zusätzlich telefonisch handeln";
-          else if (v === "Dringend") pill.textContent = "Dringend: wir melden uns schnellstmöglich";
-          else pill.textContent = "Erreichbar: Mo–Fr • 09:00–17:00";
-        });
-      });
-
-      // Copy button
-      $("copyBtn").addEventListener("click", async () => {
-        if (!validate()){
-          $("errBox").style.display = "block";
-          $("okBox").style.display = "none";
-          $("liveStatus").textContent = "Bitte Pflichtfelder prüfen";
-          return;
-        }
-        const payload = buildPayload(ticketId);
-        const body = buildEmailText(payload);
-        await copyToClipboard(body);
-      });
-
-      // Submit
-      $("contactForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        $("errBox").style.display = "none";
-        $("okBox").style.display = "none";
-
-        if (!validate()){
-          $("errBox").style.display = "block";
-          $("liveStatus").textContent = "Pflichtfelder fehlen";
-          return;
-        }
-
-        const payload = buildPayload(ticketId);
-        const subject = `[Mieter-Anliegen] ${payload.category} • ${payload.wohnung} • ${payload.ticketId}`;
-        const body = buildEmailText(payload);
-
-        try{
-          if (FORM_ENDPOINT){
-            await postPayload(payload);
-            $("okBox").textContent = "✅ Gesendet. Wir melden uns schnellstmöglich.";
-            $("okBox").style.display = "block";
-            $("liveStatus").textContent = "Online gesendet";
-          } else {
-            openMailDraft(subject, body);
-            $("okBox").style.display = "block";
-            $("liveStatus").textContent = "Mail-Entwurf geöffnet";
-          }
-        } catch(err){
-          $("errBox").textContent = "❌ Senden fehlgeschlagen. Bitte per E-Mail senden oder später erneut versuchen. (" + err.message + ")";
-          $("errBox").style.display = "block";
-          $("liveStatus").textContent = "Fehler beim Senden";
-        }
-      });
-
-    })();
-  </script>
 </body>
 </html>
