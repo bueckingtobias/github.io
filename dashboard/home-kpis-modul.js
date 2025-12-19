@@ -1,6 +1,7 @@
 /* home-kpis-modul.js
    Reads: window.IMMO_DATA.home
    Exposes: window.HomeKpisModul.render(host)
+   Window: 6 past + current + 3 forecast = 10
 */
 (function(){
   window.HomeKpisModul = { render };
@@ -8,7 +9,7 @@
   function render(host){
     if(!host) return;
 
-    const rows = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
+    const raw = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
     const grid = host.querySelector("#hkpiGrid");
     const note = host.querySelector("#hkpiNote");
 
@@ -17,81 +18,51 @@
       return;
     }
 
-    // Expect at least a few months; we display exactly 10 bars:
-    // 6 back + current + 3 forecast = 10
-    const series = normalizeHomeRows(rows);
+    const series = normalizeHomeRows(raw); // sorted by Monat
     if(series.length === 0){
       grid.innerHTML = "";
       if(note) note.textContent = "Keine KPI-Daten gefunden (window.IMMO_DATA.home ist leer).";
       return;
     }
 
-    const view = buildWindow(series, 10); // last 10 months (should be 6 back + current + 3 ahead from master)
+    // Build exact window: 6 past + current + 3 future
+    const window10 = buildWindowWithForecast(series);
     const nowYM = getCurrentYM();
 
     const kpis = [
-      {
-        key: "Cashflow",
-        label: "Monats-Cashflow",
-        unit: "€",
-        valueFn: r => num(r.Cashflow),
-        fmt: v => fmtEUR(v),
-        isPercent: false
-      },
-      {
-        key: "JahresCashflow",
-        label: "Jahres-Cashflow",
-        unit: "€",
+      { label:"Monats-Cashflow",      unit:"€",  key:"Cashflow",         isPercent:false,
+        valueFn: r => num(r.Cashflow), fmt: v => fmtEUR(v) },
+
+      { label:"Jahres-Cashflow",      unit:"€",  key:"JahresCashflow",   isPercent:false,
         valueFn: (_, idx, arr) => {
-          // rolling 12 (use whatever exists up to 12)
           const start = Math.max(0, idx - 11);
           let sum = 0;
           for(let i=start;i<=idx;i++) sum += num(arr[i].Cashflow);
           return sum;
-        },
-        fmt: v => fmtEUR(v),
-        isPercent: false
-      },
-      {
-        key: "Mieteinnahmen",
-        label: "Mieteinnahmen pro Monat",
-        unit: "€",
-        valueFn: r => num(r.Mieteinnahmen),
-        fmt: v => fmtEUR(v),
-        isPercent: false
-      },
-      {
-        key: "Pachteinnahmen",
-        label: "Pachteinnahmen pro Monat",
-        unit: "€",
-        valueFn: r => num(r.Pachteinnahmen),
-        fmt: v => fmtEUR(v),
-        isPercent: false
-      },
-      {
-        key: "Auslastung",
-        label: "Auslastung Wohnungen",
-        unit: "%",
-        valueFn: r => num(r["Auslastung_%"]),
-        fmt: v => fmtPct(v),
-        isPercent: true
-      },
-      {
-        key: "ROI",
-        label: "Portfolio ROI",
-        unit: "%",
+        }, fmt: v => fmtEUR(v) },
+
+      { label:"Mieteinnahmen pro Monat", unit:"€", key:"Mieteinnahmen",  isPercent:false,
+        valueFn: r => num(r.Mieteinnahmen), fmt: v => fmtEUR(v) },
+
+      { label:"Pachteinnahmen pro Monat", unit:"€", key:"Pachteinnahmen", isPercent:false,
+        valueFn: r => num(r.Pachteinnahmen), fmt: v => fmtEUR(v) },
+
+      { label:"Auslastung Wohnungen", unit:"%", key:"Auslastung",        isPercent:true,
+        valueFn: r => num(r["Auslastung_%"]), fmt: v => fmtPct(v) },
+
+      { label:"Portfolio ROI",        unit:"%", key:"ROI",               isPercent:true,
         valueFn: r => {
           const wert = num(r.Portfolio_Wert);
           const inv  = num(r.Investiertes_Kapital);
           if(inv <= 0) return 0;
           return (wert - inv) / inv * 100;
-        },
-        fmt: v => fmtPct(v),
-        isPercent: true
-      }
+        }, fmt: v => fmtPct(v) },
     ];
 
     grid.innerHTML = "";
+
+    // For each KPI we forecast its own series for last 3 bars (if future rows are synthetic, values already there;
+    // still we compute direction from current -> last forecast)
     kpis.forEach(k => {
       const card = document.createElement("div");
       card.className = "hkpi-card";
@@ -101,7 +72,7 @@
             <div class="hkpi-name">${escapeHtml(k.label)}</div>
             <div class="hkpi-delta" data-delta></div>
           </div>
-          <div class="hkpi-meta">${escapeHtml(view[view.length-1].Monat)}</div>
+          <div class="hkpi-meta">${escapeHtml(window10[window10.length-1].Monat)}</div>
         </div>
 
         <div class="hkpi-value" data-value>—</div>
@@ -119,38 +90,41 @@
       const xEl     = card.querySelector("[data-x]");
       const trendEl = card.querySelector("[data-trend]");
 
-      // Values across window
-      const values = view.map((r, idx) => k.valueFn(r, idx, view));
+      const values = window10.map((r, idx) => k.valueFn(r, idx, window10));
 
-      // Current value is last non-empty (usually last month in window)
+      // current month index in window (should be 6)
+      const idxCurrent = window10.findIndex(r => r.Monat === nowYM);
+      const currentIdx = (idxCurrent >= 0) ? idxCurrent : 6;
+
       const lastIdx = values.length - 1;
       const lastVal = values[lastIdx];
-
-      // Delta vs previous bar (month-to-month)
       const prevVal = values.length >= 2 ? values[lastIdx - 1] : 0;
       const delta = lastVal - prevVal;
 
-      valEl.textContent = k.fmt(lastVal);
+      valEl.textContent = k.fmt(values[currentIdx] ?? values[values.length-4] ?? lastVal);
       deltaEl.textContent = `Δ zum Vormonat: ${k.isPercent ? fmtPct(delta) : fmtEUR(delta)}`;
 
-      // Determine forecast trend direction using last 4 points (current+3 forecast)
-      // If forecast is rising -> up else down
-      const tail = values.slice(-4);
-      const trendDir = (tail[tail.length-1] >= tail[0]) ? "up" : "down";
+      // Forecast direction from current -> last forecast (3 months)
+      const currentVal = values[currentIdx] ?? 0;
+      const lastFcVal  = values[lastIdx] ?? 0;
+      const dir = (lastFcVal > currentVal + tinyEps(currentVal)) ? "up"
+                : (lastFcVal < currentVal - tinyEps(currentVal)) ? "down"
+                : "flat";
 
-      // Build bars
-      const minMax = getMinMax(values, k.isPercent);
-      const scale = makeScaler(minMax.min, minMax.max);
+      // scaling
+      const mm = getMinMax(values, k.isPercent);
+      const scale = makeScaler(mm.min, mm.max);
 
+      // bars
       barsEl.innerHTML = "";
       xEl.innerHTML = "";
-
       const barNodes = [];
-      for(let i=0;i<view.length;i++){
-        const ym = view[i].Monat;
-        const v = values[i];
 
-        const cls = barClassForMonth(ym, nowYM, i, view.length, trendDir);
+      for(let i=0;i<window10.length;i++){
+        const ym = window10[i].Monat;
+        const v  = values[i];
+
+        const cls = barClass(ym, nowYM, dir);
         const bar = document.createElement("div");
         bar.className = `hkpi-bar ${cls}`;
         bar.innerHTML = `<i></i><div class="hkpi-barlabel">${k.isPercent ? fmtPct(v) : shortEUR(v)}</div>`;
@@ -162,62 +136,165 @@
         xEl.appendChild(lbl);
       }
 
-      // Animate fill heights after DOM paint
       requestAnimationFrame(() => {
         for(let i=0;i<barNodes.length;i++){
-          const v = values[i];
-          const h = clamp(scale(v) * 100, 0, 100);
-          const fill = barNodes[i].querySelector("i");
-          fill.style.height = h.toFixed(2) + "%";
+          const h = clamp(scale(values[i]) * 100, 0, 100);
+          barNodes[i].querySelector("i").style.height = h.toFixed(2) + "%";
         }
       });
 
-      // ✅ Trendline confined + ends exactly at last bar center (no overhang)
+      // Trendline only across these 10 bars, clipped (no overhang)
       renderTrendline(trendEl, values, k.isPercent);
 
       grid.appendChild(card);
     });
 
     if(note){
-      const shownFrom = view[0].Monat;
-      const shownTo = view[view.length-1].Monat;
-      note.textContent = `Zeitraum: ${shownFrom} → ${shownTo} (10 Balken).`;
+      const from = window10[0].Monat;
+      const to   = window10[window10.length-1].Monat;
+      note.textContent = `Zeitraum: ${from} → ${to} (6 Rückblick + aktuell + 3 Forecast).`;
     }
   }
 
-  /* ---------- helpers ---------- */
+  /* ---------------- Window builder with 3M forecast ---------------- */
 
-  function normalizeHomeRows(rows){
-    // Ensure shape: [{Monat:"YYYY-MM", ...}]
-    const out = rows
-      .map(r => ({
-        ...r,
-        Monat: String(r.Monat || r["Monat"] || "").slice(0,7)
-      }))
-      .filter(r => /^\d{4}-\d{2}$/.test(r.Monat))
-      .sort((a,b)=> a.Monat.localeCompare(b.Monat));
+  function buildWindowWithForecast(series){
+    // We take last 7 actual months ending at current month (if present).
+    // Then create 3 synthetic future months with per-field forecast (simple linear regression on last 6 actual points).
+    const nowYM = getCurrentYM();
 
+    // Ensure we have an anchor "current" point:
+    // - if series contains nowYM, use it
+    // - else use last month in series as "current"
+    let anchorIdx = series.findIndex(r => r.Monat === nowYM);
+    if(anchorIdx < 0) anchorIdx = series.length - 1;
+
+    const endActual = series.slice(0, anchorIdx + 1);
+    // Need 7 points: 6 past + current
+    const actual7 = endActual.length >= 7 ? endActual.slice(endActual.length - 7) : padLeftTo7(endActual);
+
+    const lastActualYM = actual7[actual7.length - 1].Monat;
+    const ymsFuture = nextMonths(lastActualYM, 3);
+
+    // Forecast each numeric field we need
+    const fields = ["Cashflow","Mieteinnahmen","Pachteinnahmen","Auslastung_%","Portfolio_Wert","Investiertes_Kapital"];
+
+    const forecastRows = ymsFuture.map((ym, step) => {
+      const base = { Monat: ym };
+
+      fields.forEach(f => {
+        const xs = [];
+        const ys = [];
+        // regression on last up to 6 actual points (exclude padding empties)
+        const points = actual7.filter(r => r && r.__pad !== true).slice(-6);
+        points.forEach((r,i) => {
+          xs.push(i+1);
+          ys.push(num(r[f]));
+        });
+
+        const predicted = (xs.length >= 2)
+          ? linRegPredict(xs, ys, xs.length + (step+1))
+          : (ys.length ? ys[ys.length-1] : 0);
+
+        // clamp for percent field
+        base[f] = (f === "Auslastung_%") ? clamp(predicted, 0, 100) : predicted;
+      });
+
+      return base;
+    });
+
+    // Merge to 10 bars
+    const window10 = actual7.map(stripPad).concat(forecastRows);
+    // Force length 10
+    return window10.slice(window10.length - 10);
+  }
+
+  function padLeftTo7(arr){
+    // if fewer than 7 months, pad at left with synthetic months at same values (so layout stable)
+    const out = arr.slice();
+    while(out.length < 7){
+      const first = out[0] || { Monat: getCurrentYM() };
+      const prevYM = prevMonth(first.Monat);
+      out.unshift({ ...cloneRow(first), Monat: prevYM, __pad:true });
+    }
     return out;
   }
 
-  function buildWindow(series, n){
-    if(series.length <= n) return series.slice();
-    return series.slice(series.length - n);
+  function stripPad(r){
+    if(!r) return r;
+    const c = cloneRow(r);
+    delete c.__pad;
+    return c;
+  }
+
+  function cloneRow(r){
+    return JSON.parse(JSON.stringify(r || {}));
+  }
+
+  function nextMonths(ym, n){
+    const out = [];
+    let cur = ym;
+    for(let i=0;i<n;i++){
+      cur = addMonths(cur, 1);
+      out.push(cur);
+    }
+    return out;
+  }
+
+  function prevMonth(ym){
+    return addMonths(ym, -1);
+  }
+
+  function addMonths(ym, delta){
+    const [y,m] = ym.split("-").map(Number);
+    const d = new Date(y, (m-1) + delta, 1);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+  }
+
+  function linRegPredict(xs, ys, xPred){
+    // simple least squares
+    const n = xs.length;
+    let sumX=0,sumY=0,sumXY=0,sumXX=0;
+    for(let i=0;i<n;i++){
+      const x=xs[i], y=ys[i];
+      sumX += x; sumY += y; sumXY += x*y; sumXX += x*x;
+    }
+    const denom = (n*sumXX - sumX*sumX);
+    if(Math.abs(denom) < 1e-9) return ys[ys.length-1] || 0;
+    const a = (n*sumXY - sumX*sumY) / denom;
+    const b = (sumY - a*sumX) / n;
+    return a*xPred + b;
+  }
+
+  /* ---------------- Rendering helpers ---------------- */
+
+  function normalizeHomeRows(rows){
+    const out = rows
+      .map(r => ({
+        ...r,
+        Monat: String(r.Monat || r["Monat"] || "").slice(0,7),
+        Cashflow: num(r.Cashflow),
+        Mieteinnahmen: num(r.Mieteinnahmen),
+        Pachteinnahmen: num(r.Pachteinnahmen),
+        "Auslastung_%": num(r["Auslastung_%"]),
+        Portfolio_Wert: num(r.Portfolio_Wert),
+        Investiertes_Kapital: num(r.Investiertes_Kapital),
+      }))
+      .filter(r => /^\d{4}-\d{2}$/.test(r.Monat))
+      .sort((a,b)=> a.Monat.localeCompare(b.Monat));
+    return out;
   }
 
   function getCurrentYM(){
     const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    return `${y}-${m}`;
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
   }
 
-  function barClassForMonth(ym, nowYM, idx, len, trendDir){
-    // Determine "past/current/future" vs nowYM
+  function barClass(ym, nowYM, forecastDir){
     if(ym === nowYM) return "current";
     if(ym < nowYM) return "past";
-    // Future
-    return `future ${trendDir}`;
+    // future bars
+    return `future ${forecastDir}`;
   }
 
   function getMinMax(values, isPercent){
@@ -228,13 +305,11 @@
       if(x > max) max = x;
     });
 
-    // Percent charts: keep 0..100 for readability (but still respect min/max inside)
     if(isPercent){
       min = Math.min(min, 0);
       max = Math.max(max, 100);
     }
 
-    // If flat line, widen a bit so bars visible
     if(!isFinite(min) || !isFinite(max)){
       min = 0; max = 1;
     }
@@ -242,14 +317,10 @@
       const pad = (Math.abs(min) || 1) * 0.15;
       min -= pad; max += pad;
     }
-
-    // For cashflow, allow negatives; baseline handled by scaler
     return { min, max };
   }
 
   function makeScaler(min, max){
-    // Map value -> 0..1 (relative height)
-    // If min<0<max, we still map heights on full range for simplicity
     return (v) => {
       const x = num(v);
       const t = (x - min) / (max - min);
@@ -258,15 +329,12 @@
   }
 
   function renderTrendline(trendEl, values, isPercent){
-    // values length is exactly number of bars; we draw points at bar centers
     const n = values.length;
     trendEl.innerHTML = "";
 
-    // Normalize Y to 0..1 (same min/max logic as bars so the curve matches)
     const mm = getMinMax(values, isPercent);
     const scale = makeScaler(mm.min, mm.max);
 
-    // Build SVG with clipPath so nothing can ever overflow
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("viewBox", "0 0 1000 300");
@@ -284,29 +352,25 @@
     defs.appendChild(clip);
     svg.appendChild(defs);
 
-    // Compute polyline points: x from 0..1000 across n bars at centers
     const pts = [];
     for(let i=0;i<n;i++){
-      const cx = (i + 0.5) / n * 1000;              // center of bar
-      const ny = 1 - scale(values[i]);              // invert
-      const cy = 20 + ny * 260;                     // padding top/bottom
+      const cx = (i + 0.5) / n * 1000;     // EXACT bar center
+      const ny = 1 - scale(values[i]);
+      const cy = 18 + ny * 264;
       pts.push([cx, cy]);
     }
 
-    // Smooth-ish path using simple quadratic segments (still clipped)
     const path = document.createElementNS(svgNS, "path");
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "rgba(226,232,240,.85)");
+    path.setAttribute("stroke", "rgba(226,232,240,.92)");
     path.setAttribute("stroke-width", "3");
     path.setAttribute("stroke-linecap", "round");
     path.setAttribute("stroke-linejoin", "round");
     path.setAttribute("clip-path", "url(#hkpiClip)");
-
     path.setAttribute("d", buildSmoothPath(pts));
 
-    // Dots on points
-    const gDots = document.createElementNS(svgNS, "g");
-    gDots.setAttribute("clip-path", "url(#hkpiClip)");
+    const dots = document.createElementNS(svgNS, "g");
+    dots.setAttribute("clip-path", "url(#hkpiClip)");
     pts.forEach(p => {
       const c = document.createElementNS(svgNS, "circle");
       c.setAttribute("cx", String(p[0]));
@@ -314,25 +378,23 @@
       c.setAttribute("r", "4");
       c.setAttribute("fill", "rgba(226,232,240,.95)");
       c.setAttribute("opacity", "0.9");
-      gDots.appendChild(c);
+      dots.appendChild(c);
     });
 
     svg.appendChild(path);
-    svg.appendChild(gDots);
+    svg.appendChild(dots);
     trendEl.appendChild(svg);
   }
 
   function buildSmoothPath(pts){
     if(pts.length === 0) return "";
     if(pts.length === 1) return `M ${pts[0][0]} ${pts[0][1]}`;
-
     let d = `M ${pts[0][0]} ${pts[0][1]}`;
     for(let i=1;i<pts.length;i++){
       const p0 = pts[i-1];
       const p1 = pts[i];
       const mx = (p0[0] + p1[0]) / 2;
       const my = (p0[1] + p1[1]) / 2;
-      // Quadratic curve: control at p0, end at mid; then line to p1 via another quad
       d += ` Q ${p0[0]} ${p0[1]} ${mx} ${my}`;
       if(i === pts.length - 1){
         d += ` Q ${p1[0]} ${p1[1]} ${p1[0]} ${p1[1]}`;
@@ -342,7 +404,6 @@
   }
 
   function formatYMShort(ym){
-    // "2025-12" -> "Dez"
     const [y,m] = ym.split("-");
     const d = new Date(Number(y), Number(m)-1, 1);
     return d.toLocaleDateString("de-DE", { month:"short" }).replace(".","");
@@ -355,7 +416,6 @@
 
   function shortEUR(v){
     const n = num(v);
-    // show compact value inside bar label
     const abs = Math.abs(n);
     if(abs >= 1000000) return (n/1000000).toFixed(1).replace(".",",") + " Mio";
     if(abs >= 1000) return (n/1000).toFixed(0) + "k";
@@ -379,6 +439,11 @@
   }
 
   function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+  function tinyEps(v){
+    const a = Math.abs(v);
+    return Math.max(0.0001, a * 0.002); // 0.2% threshold
+  }
 
   function escapeHtml(str){
     return String(str ?? "")
