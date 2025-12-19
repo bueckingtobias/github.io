@@ -1,5 +1,9 @@
 /* dashboard/master-data.js
    Single source of truth for the whole dashboard.
+
+   ✅ Änderung (nur Pflege):
+   - HOME KPIs werden jetzt MANUELL gepflegt.
+   - Forecast wird weiterhin im KPI-Modul aus Trend berechnet (keine Änderung an Modulen nötig).
 */
 (function () {
   "use strict";
@@ -21,25 +25,62 @@
     months.push(ym(d.getFullYear(), d.getMonth() + 1));
   }
 
-  // HOME KPIs (12 Monate)
+  /* =========================================================
+     HOME KPIs (MANUELL PFLEGEN)
+     =========================================================
+     👉 HIER trägst du die echten Werte ein.
+     - Du pflegst 12 Monate (entsprechend `months` oben).
+     - Der Forecast (3 Monate) wird NICHT hier gepflegt, sondern im KPI-Modul automatisch berechnet.
+     - Keys bitte exakt so lassen, damit alle Module sauber lesen:
+       Monat (YYYY-MM)
+       Cashflow (EUR)
+       Mieteinnahmen (EUR)
+       Pachteinnahmen (EUR)
+       Auslastung_pct (0-100)
+       Portfolio_Wert (EUR)
+       Investiertes_Kapital (EUR)
+
+     💡 Tipp:
+     - Nur Zahlen eintragen (ohne € / Punkte / Kommas).
+  */
+
+  // ✅ Template: wird gegen die 12 dynamischen months gemappt (du änderst NUR die Zahlen unten)
+  const HOME_MANUAL = [
+    // Monat wird unten automatisch gesetzt → du pflegst nur die Werte
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -11
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -10
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -9
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -8
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -7
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -6
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -5
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -4
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -3
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -2
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -1
+    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, //  0 (aktueller Monat)
+  ];
+
+  // 🔒 Nicht ändern: Normalisierung/Schutz
+  function n(v) {
+    if (typeof v === "number") return isFinite(v) ? v : 0;
+    if (v == null) return 0;
+    const s = String(v).trim().replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+    const num = Number(s);
+    return isFinite(num) ? num : 0;
+  }
+
+  // HOME KPIs (12 Monate) – final, aus months + HOME_MANUAL
   const home = months.map((month, idx) => {
-    const baseRent = 14200 + idx * 80;
-    const baseLease = 1200 + (idx % 3) * 50;
-    const costs = 5200 + (idx % 4) * 180;
-    const cashflow = (baseRent + baseLease) - costs;
-
-    const occupancy = Math.max(88, Math.min(100, 92 + Math.sin(idx / 2) * 4));
-    const portfolioValue = 2450000 + idx * 15000;
-    const invested = 1750000;
-
+    const r = HOME_MANUAL[idx] || {};
     return {
       Monat: month,
-      Cashflow: Math.round(cashflow),
-      Mieteinnahmen: Math.round(baseRent),
-      Pachteinnahmen: Math.round(baseLease),
-      Auslastung_pct: Math.round(occupancy * 10) / 10, // ✅ gültiger Key
-      Portfolio_Wert: Math.round(portfolioValue),
-      Investiertes_Kapital: Math.round(invested),
+      Cashflow: Math.round(n(r.Cashflow)),
+      Mieteinnahmen: Math.round(n(r.Mieteinnahmen)),
+      Pachteinnahmen: Math.round(n(r.Pachteinnahmen)),
+      Auslastung_pct: Math.round(n(r.Auslastung_pct) * 10) / 10,
+      Portfolio_Wert: Math.round(n(r.Portfolio_Wert)),
+      Investiertes_Kapital: Math.round(n(r.Investiertes_Kapital)),
     };
   });
 
@@ -52,7 +93,7 @@
     Notizen: "Gesamtübersicht über alle Gewerke.",
   };
 
-  // ✅ 10 Gewerke/Handwerker (WICHTIG: gültige Keys!)
+  // 10 Gewerke/Handwerker
   const projectsGewerke = [
     { Aktiv: "Ja", Sortierung: 1,  Gewerk: "Rohbau",         Handwerker: "Bauunternehmen Meyer", Angebot: 320000, Gezahlt: 210000, Baufortschritt: 70 },
     { Aktiv: "Ja", Sortierung: 2,  Gewerk: "Elektro",        Handwerker: "Elektro Schröder",     Angebot:  95000, Gezahlt:  25000, Baufortschritt: 30 },
@@ -84,7 +125,7 @@
     "Baufortschritt %": r.Baufortschritt,
   }));
 
-  // FINANCE (deine Struktur beibehalten)
+  // FINANCE (Struktur beibehalten)
   const finance = {
     gesamt: [
       {
