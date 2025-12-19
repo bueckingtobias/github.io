@@ -1,14 +1,30 @@
 /* dashboard/master-data.js
    Single source of truth for the whole dashboard.
-   Pflege:
-   - HOME_KPIS_MANUAL: hier trägst du die KPI-Werte ein (12 Zeilen).
-   - Monat optional (YYYY-MM). Wenn leer, wird automatisch ein 12-Monats-Fenster bis inkl. aktuellem Monat gesetzt.
+
+   ✅ Pflegehinweise (Deutsch):
+   ===========================================================
+   1) HOME KPIs
+      - Unten in HOME_KPIS_MANUAL trägst du 12 Zeilen ein.
+      - Monat (YYYY-MM) kannst du leer lassen → wird automatisch gesetzt.
+      - Cashflow, Mieteinnahmen, Pachteinnahmen, Portfolio_Wert, Investiertes_Kapital: als Zahl.
+      - Auslastung_pct: Prozent 0–100 (z.B. 94.2)
+
+   2) Projekte (Baumstraße 35)
+      - projectsGesamt: Stammdaten/Notizen
+      - PROJECTS_GEWERKE_INPUT: hier pflegst du 10 Gewerke:
+          Angebot (EUR), Gezahlt (EUR), Baufortschritt (0–100)
+      - Wichtig: Du pflegst NUR die INPUT Keys (Angebot, Gezahlt, Baufortschritt).
+        Der Rest wird automatisch für alle Module normalisiert.
+
+   3) Finance
+      - Struktur bleibt wie gehabt.
+      - cashflow/mieten leiten wir automatisch aus HOME ab.
 */
 
 (function () {
   "use strict";
 
-  const VERSION = "2025-12-19-MASTER-STABLE-1";
+  const VERSION = "2025-12-19-MASTER-STABLE-2";
 
   function ym(y, m) {
     return `${y}-${String(m).padStart(2, "0")}`;
@@ -27,7 +43,7 @@
     return Math.max(a, Math.min(b, x));
   }
 
-  // 12 Monate bis inkl. aktueller Monat als Fallback
+  // 12 Monate bis inkl. aktueller Monat (Fallback)
   const now = new Date();
   const Y = now.getFullYear();
   const M = now.getMonth() + 1;
@@ -67,9 +83,10 @@
       Cashflow: Math.round(n(r.Cashflow)),
       Mieteinnahmen: Math.round(n(r.Mieteinnahmen)),
       Pachteinnahmen: Math.round(n(r.Pachteinnahmen)),
-      Auslastung_pct: occ,
 
-      // Legacy keys für Module, die noch "Auslastung_%" erwarten
+      // ✅ Standard-Key
+      Auslastung_pct: occ,
+      // ✅ Legacy-Key für ältere Module (mit % im Key)
       "Auslastung_%": occ,
 
       Portfolio_Wert: Math.round(n(r.Portfolio_Wert)),
@@ -78,7 +95,7 @@
   });
 
   /* =========================
-     PROJECTS
+     PROJECTS (Baumstraße 35)
      ========================= */
   const projectsGesamt = {
     Projekt: "Baumstraße 35",
@@ -88,7 +105,12 @@
     Notizen: "Gesamtübersicht über alle Gewerke.",
   };
 
-  const projectsGewerke = [
+  /* ✅ HIER PFLEGST DU DIE 10 GEWERKE
+     - Angebot: EUR
+     - Gezahlt: EUR
+     - Baufortschritt: 0–100
+  */
+  const PROJECTS_GEWERKE_INPUT = [
     { Aktiv: "Ja", Sortierung: 1,  Gewerk: "Rohbau",         Handwerker: "Bauunternehmen Meyer", Angebot: 320000, Gezahlt: 210000, Baufortschritt: 70 },
     { Aktiv: "Ja", Sortierung: 2,  Gewerk: "Elektro",        Handwerker: "Elektro Schröder",     Angebot:  95000, Gezahlt:  25000, Baufortschritt: 30 },
     { Aktiv: "Ja", Sortierung: 3,  Gewerk: "Sanitär",        Handwerker: "Haustechnik Müller",   Angebot: 145000, Gezahlt:  60000, Baufortschritt: 40 },
@@ -99,29 +121,44 @@
     { Aktiv: "Ja", Sortierung: 8,  Gewerk: "Fliesen",        Handwerker: "Fliesen Schulte",      Angebot:  42000, Gezahlt:  21000, Baufortschritt: 50 },
     { Aktiv: "Ja", Sortierung: 9,  Gewerk: "Außenanlagen",   Handwerker: "Gartenbau Grünwerk",   Angebot:  60000, Gezahlt:  12000, Baufortschritt: 20 },
     { Aktiv: "Ja", Sortierung: 10, Gewerk: "Photovoltaik",   Handwerker: "Solartechnik Bremen",  Angebot:  98000, Gezahlt:  49000, Baufortschritt: 45 },
-  ].map(r => ({
-    Projekt: projectsGesamt.Projekt,
-    Objekt: projectsGesamt.Adresse,
+  ];
 
-    Aktiv: r.Aktiv,
-    Sortierung: r.Sortierung,
-    Gewerk: r.Gewerk,
-    Handwerker: r.Handwerker,
+  /* ✅ Zentrale Normalisierung
+     -> JEDES Gewerk hat danach alle Key-Varianten, die irgendein Modul erwarten könnte.
+  */
+  const projectsGewerke = PROJECTS_GEWERKE_INPUT.map(r => {
+    const angebot = Math.round(n(r.Angebot));
+    const gezahlt = Math.round(n(r.Gezahlt));
+    const fort = Math.round(clamp(r.Baufortschritt, 0, 100) * 10) / 10;
 
-    Angebot: r.Angebot,
-    Angebotssumme: r.Angebot,
-    "Angebot (€)": r.Angebot,
+    return {
+      Projekt: projectsGesamt.Projekt,
+      Objekt: projectsGesamt.Adresse,
 
-    Gezahlt: r.Gezahlt,
-    Zahlungen: r.Gezahlt,
-    Zahlungen_bisher: r.Gezahlt,
-    "Zahlungen (€)": r.Gezahlt,
-    "Zahlungen bisher": r.Gezahlt,
+      Aktiv: (r.Aktiv && String(r.Aktiv).trim()) ? String(r.Aktiv).trim() : "Ja",
+      Sortierung: n(r.Sortierung) || 9999,
+      Gewerk: r.Gewerk || "",
+      Handwerker: r.Handwerker || "",
 
-    Baufortschritt: r.Baufortschritt,
-    Baufortschritt_prozent: r.Baufortschritt,
-    "Baufortschritt %": r.Baufortschritt,
-  }));
+      // ✅ Angebot (alle Varianten)
+      Angebot: angebot,
+      Angebotssumme: angebot,
+      "Angebot (€)": angebot,
+
+      // ✅ Gezahlt / Zahlungen (alle Varianten)
+      Gezahlt: gezahlt,
+      Zahlungen: gezahlt,
+      Zahlungen_bisher: gezahlt,
+      "Zahlungen (€)": gezahlt,
+      "Zahlungen bisher": gezahlt,
+
+      // ✅ Fortschritt (alle Varianten)
+      Baufortschritt: fort,
+      Baufortschritt_prozent: fort,
+      "Baufortschritt %": fort,
+      Fortschritt_pct: fort,
+    };
+  });
 
   /* =========================
      FINANCE (Struktur beibehalten)
@@ -172,7 +209,10 @@
     version: VERSION,
     updatedAt: new Date().toISOString(),
     home,
-    projects: { gesamt: projectsGesamt, gewerke: projectsGewerke },
+    projects: {
+      gesamt: projectsGesamt,
+      gewerke: projectsGewerke
+    },
     finance
   };
 
