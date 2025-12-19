@@ -1,299 +1,392 @@
+/* home-kpis-modul.js
+   Reads: window.IMMO_DATA.home
+   Exposes: window.HomeKpisModul.render(host)
+*/
 (function(){
-  "use strict";
-
   window.HomeKpisModul = { render };
 
-  function render(mountEl){
-    const root =
-      (mountEl && mountEl.querySelector && mountEl.querySelector(".home-kpis-modul")) ||
-      mountEl ||
-      document.getElementById("homeKpisModul") ||
-      document.querySelector(".home-kpis-modul");
-
-    if (!root) return;
-
-    const badgeEl  = root.querySelector("#hkpiBadge");
-    const statusEl = root.querySelector("#hkpiStatus");
-    const emptyEl  = root.querySelector("#hkpiEmpty");
-    const gridEl   = root.querySelector("#hkpiGrid");
+  function render(host){
+    if(!host) return;
 
     const rows = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
+    const grid = host.querySelector("#hkpiGrid");
+    const note = host.querySelector("#hkpiNote");
 
-    if (badgeEl) badgeEl.textContent = `HOME KPIs: ${rows.length}`;
-
-    if (!rows.length){
-      if (gridEl) gridEl.innerHTML = "";
-      if (emptyEl) emptyEl.style.display = "block";
-      if (statusEl) statusEl.textContent =
-        "Keine Home KPI Daten gefunden (DataLoader → window.IMMO_DATA.home).";
+    if(!grid){
+      host.innerHTML = `<div style="padding:12px;font-size:12px;color:rgba(226,232,240,.78)">home-kpis-modul: #hkpiGrid fehlt in HTML.</div>`;
       return;
     }
 
-    const parsed = rows.map(r => ({
-      Monat: parseMonthKey(r.Monat),
-      Cashflow: num(r.Cashflow),
-      Mieteinnahmen: num(r.Mieteinnahmen),
-      Pachteinnahmen: num(r.Pachteinnahmen),
-      Auslastung: clampPercent(r.Auslastung_pct ?? r["Auslastung_%"]),
-      PortfolioWert: num(r.Portfolio_Wert),
-      InvestiertesKapital: num(r.Investiertes_Kapital)
-    })).filter(r => r.Monat).sort((a,b)=>a.Monat.localeCompare(b.Monat));
-
-    if (!parsed.length){
-      if (gridEl) gridEl.innerHTML = "";
-      if (emptyEl) emptyEl.style.display = "block";
-      if (statusEl) statusEl.textContent =
-        "Home KPIs vorhanden, aber Feld 'Monat' ist ungültig (erwartet YYYY-MM).";
+    // Expect at least a few months; we display exactly 10 bars:
+    // 6 back + current + 3 forecast = 10
+    const series = normalizeHomeRows(rows);
+    if(series.length === 0){
+      grid.innerHTML = "";
+      if(note) note.textContent = "Keine KPI-Daten gefunden (window.IMMO_DATA.home ist leer).";
       return;
     }
 
-    if (emptyEl) emptyEl.style.display = "none";
+    const view = buildWindow(series, 10); // last 10 months (should be 6 back + current + 3 ahead from master)
+    const nowYM = getCurrentYM();
 
-    const nowKey = monthKeyFromDate(new Date());
-    let curIdx = parsed.findIndex(x => x.Monat === nowKey);
-    if (curIdx < 0) curIdx = parsed.length - 1;
-
-    const cur = parsed[curIdx];
-    const start = Math.max(0, curIdx - 5);
-    const hist = parsed.slice(start, curIdx + 1);
-
-    if (statusEl){
-      statusEl.textContent =
-        `Quelle: master-data · Monate: ${parsed.length} · Aktuell: ${cur.Monat} · ` +
-        `CF ${formatEuro(cur.Cashflow)} · Miete ${formatEuro(cur.Mieteinnahmen)} · Pacht ${formatEuro(cur.Pachteinnahmen)}`;
-    }
-
-    const seriesCash  = buildSeries(hist, cur.Monat, "Cashflow");
-    const seriesRent  = buildSeries(hist, cur.Monat, "Mieteinnahmen");
-    const seriesLease = buildSeries(hist, cur.Monat, "Pachteinnahmen");
-    const seriesOcc   = buildSeries(hist, cur.Monat, "Auslastung");
-
-    const year = new Date().getFullYear();
-    const yearCash = sumYear(parsed, year, "Cashflow");
-    const roi = (cur.InvestiertesKapital > 0) ? (yearCash / cur.InvestiertesKapital * 100) : 0;
-
-    const cards = [
-      card("Monats-Cashflow", `${cur.Monat} · 6M + 3M`, formatEuro(cur.Cashflow), trendTextEuro(seriesCash), seriesCash, "euro"),
-      card("Jahres-Cashflow", `YTD ${year}`, formatEuro(yearCash), `Ø/Monat: ${formatEuro(yearCash / Math.max(1,(new Date().getMonth()+1)))}`, seriesCash, "euro"),
-
-      card("Mieteinnahmen / Monat", cur.Monat, formatEuro(cur.Mieteinnahmen), `Ø 6M: ${formatEuro(avg(hist,"Mieteinnahmen"))}`, seriesRent, "euro"),
-      card("Pachteinnahmen / Monat", cur.Monat, formatEuro(cur.Pachteinnahmen), `Ø 6M: ${formatEuro(avg(hist,"Pachteinnahmen"))}`, seriesLease, "euro"),
-
-      card("Auslastung", cur.Monat, formatPercent(cur.Auslastung), `Ø 6M: ${formatPercent(avg(hist,"Auslastung"))}`, seriesOcc, "pct"),
-      card("Portfolio ROI", `${year} (approx)`, formatPercent(roi), "Jahres-CF / invest. Kapital", seriesCash, "pct"),
+    const kpis = [
+      {
+        key: "Cashflow",
+        label: "Monats-Cashflow",
+        unit: "€",
+        valueFn: r => num(r.Cashflow),
+        fmt: v => fmtEUR(v),
+        isPercent: false
+      },
+      {
+        key: "JahresCashflow",
+        label: "Jahres-Cashflow",
+        unit: "€",
+        valueFn: (_, idx, arr) => {
+          // rolling 12 (use whatever exists up to 12)
+          const start = Math.max(0, idx - 11);
+          let sum = 0;
+          for(let i=start;i<=idx;i++) sum += num(arr[i].Cashflow);
+          return sum;
+        },
+        fmt: v => fmtEUR(v),
+        isPercent: false
+      },
+      {
+        key: "Mieteinnahmen",
+        label: "Mieteinnahmen pro Monat",
+        unit: "€",
+        valueFn: r => num(r.Mieteinnahmen),
+        fmt: v => fmtEUR(v),
+        isPercent: false
+      },
+      {
+        key: "Pachteinnahmen",
+        label: "Pachteinnahmen pro Monat",
+        unit: "€",
+        valueFn: r => num(r.Pachteinnahmen),
+        fmt: v => fmtEUR(v),
+        isPercent: false
+      },
+      {
+        key: "Auslastung",
+        label: "Auslastung Wohnungen",
+        unit: "%",
+        valueFn: r => num(r["Auslastung_%"]),
+        fmt: v => fmtPct(v),
+        isPercent: true
+      },
+      {
+        key: "ROI",
+        label: "Portfolio ROI",
+        unit: "%",
+        valueFn: r => {
+          const wert = num(r.Portfolio_Wert);
+          const inv  = num(r.Investiertes_Kapital);
+          if(inv <= 0) return 0;
+          return (wert - inv) / inv * 100;
+        },
+        fmt: v => fmtPct(v),
+        isPercent: true
+      }
     ];
 
-    gridEl.innerHTML = cards.map(c => `
-      <div class="hkpi-tile">
-        <div class="hkpi-top">
-          <div style="min-width:0;">
-            <div class="hkpi-name">${esc(c.title)}</div>
-            <div class="hkpi-desc">${esc(c.sub)}</div>
+    grid.innerHTML = "";
+    kpis.forEach(k => {
+      const card = document.createElement("div");
+      card.className = "hkpi-card";
+      card.innerHTML = `
+        <div class="hkpi-cardhead">
+          <div style="min-width:0">
+            <div class="hkpi-name">${escapeHtml(k.label)}</div>
+            <div class="hkpi-delta" data-delta></div>
           </div>
-          <div class="hkpi-val">
-            <div class="v">${esc(c.value)}</div>
-            <div class="d">${esc(c.delta)}</div>
-          </div>
+          <div class="hkpi-meta">${escapeHtml(view[view.length-1].Monat)}</div>
         </div>
+
+        <div class="hkpi-value" data-value>—</div>
 
         <div class="hkpi-chart">
-          <svg class="hkpi-trend" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path d="${esc(trendPath(c.series))}" fill="none" stroke="rgba(226,232,240,.55)" stroke-width="2" />
-          </svg>
-
-          <div class="hkpi-bars">
-            ${barsHTML(c.series, c.unit)}
-          </div>
-
-          <div class="hkpi-labels">
-            <span>${esc(c.series.points[0]?.month || "")}</span>
-            <span>${esc(c.series.points[c.series.points.length-1]?.month || "")}</span>
-          </div>
+          <div class="hkpi-trend" data-trend></div>
+          <div class="hkpi-bars" data-bars></div>
+          <div class="hkpi-xlabels" data-x></div>
         </div>
-      </div>
-    `).join("");
-  }
+      `;
 
-  /* ===== helpers ===== */
+      const valEl   = card.querySelector("[data-value]");
+      const deltaEl = card.querySelector("[data-delta]");
+      const barsEl  = card.querySelector("[data-bars]");
+      const xEl     = card.querySelector("[data-x]");
+      const trendEl = card.querySelector("[data-trend]");
 
-  function esc(s){
-    return String(s ?? "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-  }
+      // Values across window
+      const values = view.map((r, idx) => k.valueFn(r, idx, view));
 
-  function num(v){
-    if (typeof v === "number" && Number.isFinite(v)) return v;
-    if (v === null || v === undefined) return 0;
-    const s0 = String(v).trim();
-    if (!s0) return 0;
+      // Current value is last non-empty (usually last month in window)
+      const lastIdx = values.length - 1;
+      const lastVal = values[lastIdx];
 
-    let s = s0.replace(/\s/g,"").replace(/€/g,"");
-    const hasComma = s.includes(",");
-    const hasDot = s.includes(".");
-    if (hasComma && hasDot) {
-      const lc = s.lastIndexOf(",");
-      const ld = s.lastIndexOf(".");
-      if (lc > ld) s = s.replace(/\./g,"").replace(",",".");
-      else s = s.replace(/,/g,"");
-    } else if (hasComma && !hasDot) {
-      s = s.replace(",",".");
+      // Delta vs previous bar (month-to-month)
+      const prevVal = values.length >= 2 ? values[lastIdx - 1] : 0;
+      const delta = lastVal - prevVal;
+
+      valEl.textContent = k.fmt(lastVal);
+      deltaEl.textContent = `Δ zum Vormonat: ${k.isPercent ? fmtPct(delta) : fmtEUR(delta)}`;
+
+      // Determine forecast trend direction using last 4 points (current+3 forecast)
+      // If forecast is rising -> up else down
+      const tail = values.slice(-4);
+      const trendDir = (tail[tail.length-1] >= tail[0]) ? "up" : "down";
+
+      // Build bars
+      const minMax = getMinMax(values, k.isPercent);
+      const scale = makeScaler(minMax.min, minMax.max);
+
+      barsEl.innerHTML = "";
+      xEl.innerHTML = "";
+
+      const barNodes = [];
+      for(let i=0;i<view.length;i++){
+        const ym = view[i].Monat;
+        const v = values[i];
+
+        const cls = barClassForMonth(ym, nowYM, i, view.length, trendDir);
+        const bar = document.createElement("div");
+        bar.className = `hkpi-bar ${cls}`;
+        bar.innerHTML = `<i></i><div class="hkpi-barlabel">${k.isPercent ? fmtPct(v) : shortEUR(v)}</div>`;
+        barsEl.appendChild(bar);
+        barNodes.push(bar);
+
+        const lbl = document.createElement("span");
+        lbl.textContent = formatYMShort(ym);
+        xEl.appendChild(lbl);
+      }
+
+      // Animate fill heights after DOM paint
+      requestAnimationFrame(() => {
+        for(let i=0;i<barNodes.length;i++){
+          const v = values[i];
+          const h = clamp(scale(v) * 100, 0, 100);
+          const fill = barNodes[i].querySelector("i");
+          fill.style.height = h.toFixed(2) + "%";
+        }
+      });
+
+      // ✅ Trendline confined + ends exactly at last bar center (no overhang)
+      renderTrendline(trendEl, values, k.isPercent);
+
+      grid.appendChild(card);
+    });
+
+    if(note){
+      const shownFrom = view[0].Monat;
+      const shownTo = view[view.length-1].Monat;
+      note.textContent = `Zeitraum: ${shownFrom} → ${shownTo} (10 Balken).`;
     }
-    s = s.replace(/[^0-9.\-]/g,"");
-    const n = Number(s);
-    return Number.isFinite(n) ? n : 0;
   }
 
-  function clampPercent(v){
-    let x = num(v);
-    if (x > 0 && x <= 1) x *= 100;
-    return Math.max(0, Math.min(100, x));
+  /* ---------- helpers ---------- */
+
+  function normalizeHomeRows(rows){
+    // Ensure shape: [{Monat:"YYYY-MM", ...}]
+    const out = rows
+      .map(r => ({
+        ...r,
+        Monat: String(r.Monat || r["Monat"] || "").slice(0,7)
+      }))
+      .filter(r => /^\d{4}-\d{2}$/.test(r.Monat))
+      .sort((a,b)=> a.Monat.localeCompare(b.Monat));
+
+    return out;
   }
 
-  function formatEuro(n){
-    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(Number(n)||0);
-  }
-  function formatPercent(n){
-    const v = Number(n)||0;
-    return (Math.round(v*10)/10).toFixed(1).replace(".",",") + " %";
+  function buildWindow(series, n){
+    if(series.length <= n) return series.slice();
+    return series.slice(series.length - n);
   }
 
-  function formatShortEuro(n){
-    const v = Number(n)||0;
-    const abs = Math.abs(v);
-    const sign = v < 0 ? "−" : "";
-    if (abs >= 1000000) return sign + (abs/1000000).toFixed(1).replace(".",",") + "M";
-    if (abs >= 1000) return sign + Math.round(abs/1000) + "k";
-    return sign + Math.round(abs).toString();
-  }
-
-  function formatShortPct(n){
-    const v = Number(n)||0;
-    return v.toFixed(0) + "%";
-  }
-
-  function monthKeyFromDate(d){
+  function getCurrentYM(){
+    const d = new Date();
     const y = d.getFullYear();
     const m = String(d.getMonth()+1).padStart(2,"0");
     return `${y}-${m}`;
   }
 
-  function parseMonthKey(v){
-    const s = String(v||"").trim();
-    if (/^\d{4}-\d{2}$/.test(s)) return s;
-    return "";
+  function barClassForMonth(ym, nowYM, idx, len, trendDir){
+    // Determine "past/current/future" vs nowYM
+    if(ym === nowYM) return "current";
+    if(ym < nowYM) return "past";
+    // Future
+    return `future ${trendDir}`;
   }
 
-  function addMonths(ym, add){
-    const y = Number(ym.slice(0,4));
-    const m = Number(ym.slice(5,7));
-    const d = new Date(y, (m-1)+add, 1);
-    return monthKeyFromDate(d);
-  }
-
-  function linearForecast(vals, steps){
-    const v = vals.map(x=>Number(x)||0);
-    if (v.length < 2) return Array.from({length:steps}, ()=>v[v.length-1]||0);
-    const use = v.slice(-3);
-    const slope = (use[use.length-1] - use[0]) / Math.max(1, use.length-1);
-    const base = use[use.length-1];
-    return Array.from({length:steps}, (_,i)=>base + slope*(i+1));
-  }
-
-  function buildSeries(histRows, baseMonth, field){
-    const hist = histRows.map(r => ({ month: r.Monat, value: Number(r[field])||0 }));
-    const histVals = hist.map(x=>x.value);
-    const f = linearForecast(histVals.slice(-3), 3);
-
-    const points = hist.map(x=>({ month:x.month, value:x.value, kind:"past" }));
-    for (let i=1;i<=3;i++){
-      points.push({ month:addMonths(baseMonth,i), value:f[i-1]||0, kind:"future" });
-    }
-
-    const currentVal = points.find(p=>p.month===baseMonth)?.value ?? 0;
-    const lastVal = points[points.length-1]?.value ?? currentVal;
-    const trendUp = lastVal >= currentVal;
-
-    return { points, currentMonth: baseMonth, trendUp };
-  }
-
-  function barsHTML(series, unit){
-    const values = series.points.map(p => Number(p.value)||0);
-    const abs = values.map(v => Math.abs(v));
-    const max = Math.max(1, ...abs);
-
-    return series.points.map(p=>{
-      const v = Number(p.value)||0;
-      const h = Math.max(8, Math.round((Math.abs(v)/max)*100)); // min height
-
-      let state = "past";
-      if (p.month === series.currentMonth) state = "current";
-      else if (p.month > series.currentMonth) state = series.trendUp ? "future_up" : "future_down";
-
-      const label = unit === "pct" ? formatShortPct(v) : formatShortEuro(v);
-
-      return `<div class="hkpi-col" data-state="${state}" title="${esc(p.month)}">
-        <span class="hkpi-num">${esc(label)}</span>
-        <i style="height:${h}%;"></i>
-      </div>`;
-    }).join("");
-  }
-
-  function trendPath(series){
-    const pts = series.points.map(p => Number(p.value)||0);
-    const abs = pts.map(v => Math.abs(v));
-    const max = Math.max(1, ...abs);
-
-    const n = series.points.length;
-    const stepX = n <= 1 ? 100 : (100 / (n - 1));
-
-    const coords = series.points.map((p, i) => {
-      const v = Number(p.value)||0;
-      const y = 100 - Math.round((Math.abs(v)/max)*90) - 5; // 5..95
-      const x = Math.round(i * stepX);
-      return { x, y };
+  function getMinMax(values, isPercent){
+    let min = Infinity, max = -Infinity;
+    values.forEach(v => {
+      const x = num(v);
+      if(x < min) min = x;
+      if(x > max) max = x;
     });
 
-    if (!coords.length) return "";
+    // Percent charts: keep 0..100 for readability (but still respect min/max inside)
+    if(isPercent){
+      min = Math.min(min, 0);
+      max = Math.max(max, 100);
+    }
 
-    // Smooth-ish path (quadratic)
-    let d = `M ${coords[0].x} ${coords[0].y}`;
-    for (let i = 1; i < coords.length; i++) {
-      const prev = coords[i - 1];
-      const cur = coords[i];
-      const cx = Math.round((prev.x + cur.x) / 2);
-      d += ` Q ${cx} ${prev.y} ${cur.x} ${cur.y}`;
+    // If flat line, widen a bit so bars visible
+    if(!isFinite(min) || !isFinite(max)){
+      min = 0; max = 1;
+    }
+    if(min === max){
+      const pad = (Math.abs(min) || 1) * 0.15;
+      min -= pad; max += pad;
+    }
+
+    // For cashflow, allow negatives; baseline handled by scaler
+    return { min, max };
+  }
+
+  function makeScaler(min, max){
+    // Map value -> 0..1 (relative height)
+    // If min<0<max, we still map heights on full range for simplicity
+    return (v) => {
+      const x = num(v);
+      const t = (x - min) / (max - min);
+      return clamp(t, 0, 1);
+    };
+  }
+
+  function renderTrendline(trendEl, values, isPercent){
+    // values length is exactly number of bars; we draw points at bar centers
+    const n = values.length;
+    trendEl.innerHTML = "";
+
+    // Normalize Y to 0..1 (same min/max logic as bars so the curve matches)
+    const mm = getMinMax(values, isPercent);
+    const scale = makeScaler(mm.min, mm.max);
+
+    // Build SVG with clipPath so nothing can ever overflow
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 1000 300");
+    svg.setAttribute("preserveAspectRatio", "none");
+
+    const defs = document.createElementNS(svgNS, "defs");
+    const clip = document.createElementNS(svgNS, "clipPath");
+    clip.setAttribute("id", "hkpiClip");
+    const rect = document.createElementNS(svgNS, "rect");
+    rect.setAttribute("x", "0");
+    rect.setAttribute("y", "0");
+    rect.setAttribute("width", "1000");
+    rect.setAttribute("height", "300");
+    clip.appendChild(rect);
+    defs.appendChild(clip);
+    svg.appendChild(defs);
+
+    // Compute polyline points: x from 0..1000 across n bars at centers
+    const pts = [];
+    for(let i=0;i<n;i++){
+      const cx = (i + 0.5) / n * 1000;              // center of bar
+      const ny = 1 - scale(values[i]);              // invert
+      const cy = 20 + ny * 260;                     // padding top/bottom
+      pts.push([cx, cy]);
+    }
+
+    // Smooth-ish path using simple quadratic segments (still clipped)
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "rgba(226,232,240,.85)");
+    path.setAttribute("stroke-width", "3");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute("clip-path", "url(#hkpiClip)");
+
+    path.setAttribute("d", buildSmoothPath(pts));
+
+    // Dots on points
+    const gDots = document.createElementNS(svgNS, "g");
+    gDots.setAttribute("clip-path", "url(#hkpiClip)");
+    pts.forEach(p => {
+      const c = document.createElementNS(svgNS, "circle");
+      c.setAttribute("cx", String(p[0]));
+      c.setAttribute("cy", String(p[1]));
+      c.setAttribute("r", "4");
+      c.setAttribute("fill", "rgba(226,232,240,.95)");
+      c.setAttribute("opacity", "0.9");
+      gDots.appendChild(c);
+    });
+
+    svg.appendChild(path);
+    svg.appendChild(gDots);
+    trendEl.appendChild(svg);
+  }
+
+  function buildSmoothPath(pts){
+    if(pts.length === 0) return "";
+    if(pts.length === 1) return `M ${pts[0][0]} ${pts[0][1]}`;
+
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for(let i=1;i<pts.length;i++){
+      const p0 = pts[i-1];
+      const p1 = pts[i];
+      const mx = (p0[0] + p1[0]) / 2;
+      const my = (p0[1] + p1[1]) / 2;
+      // Quadratic curve: control at p0, end at mid; then line to p1 via another quad
+      d += ` Q ${p0[0]} ${p0[1]} ${mx} ${my}`;
+      if(i === pts.length - 1){
+        d += ` Q ${p1[0]} ${p1[1]} ${p1[0]} ${p1[1]}`;
+      }
     }
     return d;
   }
 
-  function trendTextEuro(series){
-    const cur = series.points.find(p=>p.month===series.currentMonth)?.value ?? 0;
-    const last = series.points[series.points.length-1]?.value ?? cur;
-    const diff = last - cur;
-    const sign = diff >= 0 ? "+" : "";
-    return `Forecast: ${sign}${formatEuro(diff)} ${series.trendUp ? "↑" : "↓"}`;
+  function formatYMShort(ym){
+    // "2025-12" -> "Dez"
+    const [y,m] = ym.split("-");
+    const d = new Date(Number(y), Number(m)-1, 1);
+    return d.toLocaleDateString("de-DE", { month:"short" }).replace(".","");
   }
 
-  function sumYear(rows, year, field){
-    const y = String(year);
-    return rows.reduce((acc,r)=>{
-      if (r.Monat && r.Monat.startsWith(y+"-")) return acc + (Number(r[field])||0);
-      return acc;
-    }, 0);
+  function fmtEUR(v){
+    const n = num(v);
+    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(n);
   }
 
-  function avg(rows, field){
-    if (!rows.length) return 0;
-    return rows.reduce((a,r)=>a+(Number(r[field])||0),0) / rows.length;
+  function shortEUR(v){
+    const n = num(v);
+    // show compact value inside bar label
+    const abs = Math.abs(n);
+    if(abs >= 1000000) return (n/1000000).toFixed(1).replace(".",",") + " Mio";
+    if(abs >= 1000) return (n/1000).toFixed(0) + "k";
+    return String(Math.round(n));
   }
 
-  function card(title, sub, value, delta, series, unit){
-    return { title, sub, value, delta, series, unit };
+  function fmtPct(v){
+    const n = num(v);
+    return n.toFixed(1).replace(".",",") + " %";
   }
 
-  window.addEventListener("immo:data-ready", () => {
-    const host = document.getElementById("kpisHost") || document.getElementById("homeKpisModul");
-    if (host) render(host);
-  });
+  function num(v){
+    if(typeof v === "number") return v;
+    if(v == null || v === "") return 0;
+    const s = String(v).trim()
+      .replace(/\s/g,"")
+      .replace(/\./g,"")
+      .replace(",",".");
+    const n = Number(s);
+    return isFinite(n) ? n : 0;
+  }
+
+  function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
 })();
