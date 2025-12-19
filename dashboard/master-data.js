@@ -1,90 +1,109 @@
 /* dashboard/master-data.js
    Single source of truth for the whole dashboard.
 
-   ✅ Änderung (nur Pflege):
-   - HOME KPIs werden jetzt MANUELL gepflegt.
-   - Forecast wird weiterhin im KPI-Modul aus Trend berechnet (keine Änderung an Modulen nötig).
+   WICHTIG (Pflege):
+   - HOME KPIs: du pflegst die Werte manuell in HOME_KPIS_MANUAL
+   - Monat immer im Format YYYY-MM (z.B. 2025-12)
+   - Forecast wird im KPI-Modul berechnet (nicht hier)
+
+   Kompatibilität:
+   - Home enthält Auslastung_pct UND Auslastung_% (Legacy)
+   - Projects enthält Angebot/Gezahlt/Zahlungen_bisher/... (Legacy)
 */
+
 (function () {
   "use strict";
 
-  const VERSION = "2025-12-16-MASTER-PROJECTS-FIX-1";
+  const VERSION = "2025-12-19-MASTER-HOME-KPI-FIX-1";
 
   function ym(y, m) {
     return `${y}-${String(m).padStart(2, "0")}`;
   }
 
+  function num(v) {
+    if (typeof v === "number") return isFinite(v) ? v : 0;
+    if (v == null) return 0;
+    const s = String(v).trim();
+    if (!s) return 0;
+    return Number(s.replace(/\./g, "").replace(",", ".")) || 0;
+  }
+
+  function clamp(n, a, b) {
+    n = num(n);
+    return Math.max(a, Math.min(b, n));
+  }
+
+  // 12 Monate bis inkl. aktuellem Monat (Fallback, falls Monat nicht gepflegt)
   const now = new Date();
   const Y = now.getFullYear();
   const M = now.getMonth() + 1;
 
-  // 12 months ending at current month (inclusive)
-  const months = [];
+  const fallbackMonths = [];
   for (let i = 11; i >= 0; i--) {
     const d = new Date(Y, M - 1 - i, 1);
-    months.push(ym(d.getFullYear(), d.getMonth() + 1));
+    fallbackMonths.push(ym(d.getFullYear(), d.getMonth() + 1));
   }
 
-  /* =========================================================
-     HOME KPIs (MANUELL PFLEGEN)
-     =========================================================
-     👉 HIER trägst du die echten Werte ein.
-     - Du pflegst 12 Monate (entsprechend `months` oben).
-     - Der Forecast (3 Monate) wird NICHT hier gepflegt, sondern im KPI-Modul automatisch berechnet.
-     - Keys bitte exakt so lassen, damit alle Module sauber lesen:
-       Monat (YYYY-MM)
-       Cashflow (EUR)
-       Mieteinnahmen (EUR)
-       Pachteinnahmen (EUR)
-       Auslastung_pct (0-100)
-       Portfolio_Wert (EUR)
-       Investiertes_Kapital (EUR)
+  /* ============================================================
+     HOME KPIs – HIER PFLEGST DU MANUELL
+     - 12 Zeilen (Vergangenheit + aktueller Monat)
+     - Monat: YYYY-MM (optional; wenn leer => auto)
+     - Alle Werte als Zahl (ohne €)
+     ============================================================ */
 
-     💡 Tipp:
-     - Nur Zahlen eintragen (ohne € / Punkte / Kommas).
-  */
+  const HOME_KPIS_MANUAL = [
+    // Ältester Monat (12 Monate zurück)
+    { Monat: "", Cashflow: 8600, Mieteinnahmen: 14200, Pachteinnahmen: 1200, Auslastung_pct: 93.5, Portfolio_Wert: 2450000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 8900, Mieteinnahmen: 14280, Pachteinnahmen: 1250, Auslastung_pct: 94.0, Portfolio_Wert: 2465000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 9100, Mieteinnahmen: 14360, Pachteinnahmen: 1200, Auslastung_pct: 94.2, Portfolio_Wert: 2480000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 8700, Mieteinnahmen: 14440, Pachteinnahmen: 1300, Auslastung_pct: 92.8, Portfolio_Wert: 2495000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 9400, Mieteinnahmen: 14520, Pachteinnahmen: 1200, Auslastung_pct: 95.1, Portfolio_Wert: 2510000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 9650, Mieteinnahmen: 14600, Pachteinnahmen: 1250, Auslastung_pct: 95.6, Portfolio_Wert: 2525000, Investiertes_Kapital: 1750000 },
 
-  // ✅ Template: wird gegen die 12 dynamischen months gemappt (du änderst NUR die Zahlen unten)
-  const HOME_MANUAL = [
-    // Monat wird unten automatisch gesetzt → du pflegst nur die Werte
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -11
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -10
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -9
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -8
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -7
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -6
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -5
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -4
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -3
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -2
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, // -1
-    { Cashflow: 0, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, Portfolio_Wert: 0, Investiertes_Kapital: 0 }, //  0 (aktueller Monat)
+    // Letzte 6 Monate (Rückblickbereich fürs KPI-Modul)
+    { Monat: "", Cashflow: 9900, Mieteinnahmen: 14680, Pachteinnahmen: 1200, Auslastung_pct: 96.2, Portfolio_Wert: 2540000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 10100, Mieteinnahmen: 14760, Pachteinnahmen: 1300, Auslastung_pct: 96.0, Portfolio_Wert: 2555000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 10350, Mieteinnahmen: 14840, Pachteinnahmen: 1200, Auslastung_pct: 96.8, Portfolio_Wert: 2570000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 9850, Mieteinnahmen: 14920, Pachteinnahmen: 1250, Auslastung_pct: 95.9, Portfolio_Wert: 2585000, Investiertes_Kapital: 1750000 },
+    { Monat: "", Cashflow: 10700, Mieteinnahmen: 15000, Pachteinnahmen: 1200, Auslastung_pct: 97.1, Portfolio_Wert: 2600000, Investiertes_Kapital: 1750000 },
+
+    // Aktueller Monat (wird im KPI-Modul blau markiert)
+    { Monat: "", Cashflow: 10950, Mieteinnahmen: 15080, Pachteinnahmen: 1300, Auslastung_pct: 97.3, Portfolio_Wert: 2615000, Investiertes_Kapital: 1750000 },
   ];
 
-  // 🔒 Nicht ändern: Normalisierung/Schutz
-  function n(v) {
-    if (typeof v === "number") return isFinite(v) ? v : 0;
-    if (v == null) return 0;
-    const s = String(v).trim().replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
-    const num = Number(s);
-    return isFinite(num) ? num : 0;
-  }
+  // Normalisieren: genau 12 Einträge erzwingen
+  const home = fallbackMonths.map((m, idx) => {
+    const r = HOME_KPIS_MANUAL[idx] || {};
+    const month = (r.Monat && String(r.Monat).trim()) ? String(r.Monat).trim() : m;
 
-  // HOME KPIs (12 Monate) – final, aus months + HOME_MANUAL
-  const home = months.map((month, idx) => {
-    const r = HOME_MANUAL[idx] || {};
+    const cashflow = Math.round(num(r.Cashflow));
+    const rent = Math.round(num(r.Mieteinnahmen));
+    const lease = Math.round(num(r.Pachteinnahmen));
+    const occ = Math.round(clamp(r.Auslastung_pct, 0, 100) * 10) / 10;
+
+    const port = Math.round(num(r.Portfolio_Wert));
+    const invested = Math.round(num(r.Investiertes_Kapital));
+
     return {
+      // ✅ Primär
       Monat: month,
-      Cashflow: Math.round(n(r.Cashflow)),
-      Mieteinnahmen: Math.round(n(r.Mieteinnahmen)),
-      Pachteinnahmen: Math.round(n(r.Pachteinnahmen)),
-      Auslastung_pct: Math.round(n(r.Auslastung_pct) * 10) / 10,
-      Portfolio_Wert: Math.round(n(r.Portfolio_Wert)),
-      Investiertes_Kapital: Math.round(n(r.Investiertes_Kapital)),
+      Cashflow: cashflow,
+      Mieteinnahmen: rent,
+      Pachteinnahmen: lease,
+      Auslastung_pct: occ,
+      Portfolio_Wert: port,
+      Investiertes_Kapital: invested,
+
+      // ✅ Legacy / Kompatibilität (damit ältere Module NICHT 0 zeigen)
+      "Auslastung_%": occ,
+      Auslastung_%: occ,
     };
   });
 
-  // PROJECTS
+  /* ============================================================
+     PROJECTS
+     ============================================================ */
+
   const projectsGesamt = {
     Projekt: "Baumstraße 35",
     Adresse: "Baumstraße 35",
@@ -93,7 +112,6 @@
     Notizen: "Gesamtübersicht über alle Gewerke.",
   };
 
-  // 10 Gewerke/Handwerker
   const projectsGewerke = [
     { Aktiv: "Ja", Sortierung: 1,  Gewerk: "Rohbau",         Handwerker: "Bauunternehmen Meyer", Angebot: 320000, Gezahlt: 210000, Baufortschritt: 70 },
     { Aktiv: "Ja", Sortierung: 2,  Gewerk: "Elektro",        Handwerker: "Elektro Schröder",     Angebot:  95000, Gezahlt:  25000, Baufortschritt: 30 },
@@ -112,24 +130,30 @@
     Sortierung: r.Sortierung,
     Gewerk: r.Gewerk,
     Handwerker: r.Handwerker,
+
     Angebot: r.Angebot,
     Angebotssumme: r.Angebot,
     "Angebot (€)": r.Angebot,
+
     Gezahlt: r.Gezahlt,
     Zahlungen: r.Gezahlt,
     Zahlungen_bisher: r.Gezahlt,
     "Zahlungen (€)": r.Gezahlt,
     "Zahlungen bisher": r.Gezahlt,
+
     Baufortschritt: r.Baufortschritt,
     Baufortschritt_prozent: r.Baufortschritt,
     "Baufortschritt %": r.Baufortschritt,
   }));
 
-  // FINANCE (Struktur beibehalten)
+  /* ============================================================
+     FINANCE (Struktur wie gehabt)
+     ============================================================ */
+
   const finance = {
     gesamt: [
       {
-        Monat: months[months.length - 1],
+        Monat: home[home.length - 1].Monat,
         Kontostand: 185000,
         Liquide_Mittel: 132000,
         Verbindlichkeiten_kurzfristig: 28000,
@@ -148,7 +172,10 @@
       Mieteinnahmen: r.Mieteinnahmen,
       Pachteinnahmen: r.Pachteinnahmen,
       Summe: r.Mieteinnahmen + r.Pachteinnahmen,
-      Auslastung_pct: r.Auslastung_pct
+      Auslastung_pct: r.Auslastung_pct,
+
+      // Legacy
+      "Auslastung_%": r.Auslastung_pct
     })),
     op: [
       { Titel: "Offene Posten (OP)", Betrag: 8400, Faellig_am: new Date(Y, M, 10).toISOString().slice(0,10), Status: "offen", Kommentar: "Handwerkerrechnung" },
@@ -167,6 +194,10 @@
     ]
   };
 
+  /* ============================================================
+     EXPORT
+     ============================================================ */
+
   window.IMMO_MASTER_DATA = {
     version: VERSION,
     updatedAt: new Date().toISOString(),
@@ -177,4 +208,5 @@
     },
     finance
   };
+
 })();
