@@ -1,92 +1,187 @@
-/* finance-mieten-modul.css
-   Robust: Diagramm/SVG bekommt IMMER Höhe + aligned zum Cashflow-Modul.
-*/
+/* finance-mieten-modul.css – gleiche Chart-Höhe/Position wie Cashflow */
 
-:root{
-  --finance-chart-height: 360px;
-}
-
-.finance-mieten-root,
-.fm-root,
-#financeMieten,
-[data-module="finance-mieten"]{
+.finance-mieten-root{
   display:flex;
   flex-direction:column;
   gap:12px;
   min-width:0;
-
   height:100%;
   min-height:0;
 }
 
-/* Header/Footer */
-.fm-head,
-.finance-mieten-root .fm-head,
-.finance-mieten-root .head{
-  flex:0 0 auto;
+.fm-head{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
   gap:12px;
-  min-height:0;
-}
-
-.fm-foot,
-.finance-mieten-root .fm-foot,
-.finance-mieten-root .foot{
-  flex:0 0 auto;
-  min-height:0;
-}
-
-/* Chart Slot – mehrere mögliche Wrapper-Namen */
-.fm-chart,
-.fm-plot,
-.fm-viz,
-.finance-mieten-root .fm-chart,
-.finance-mieten-root .fm-plot,
-.finance-mieten-root .fm-viz,
-.finance-mieten-root .chart,
-.finance-mieten-root .plot,
-.finance-mieten-root [data-chart],
-.finance-mieten-root [data-plot]{
-  flex:1 1 auto;
   min-width:0;
+}
+
+.fm-title{ font-size:14px; font-weight:950; letter-spacing:.01em; }
+.fm-sub{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.72); }
+
+.fm-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:flex-end;
+  min-width:0;
+}
+
+.fm-pill{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.35);
+  color: rgba(226,232,240,.88);
+  font-size:11px;
+  white-space:nowrap;
+  min-width:0;
+}
+.fm-pill .k{ color: rgba(226,232,240,.60); }
+.fm-pill .v{ font-weight:950; }
+
+.fm-chart{
+  display:grid;
+  grid-template-columns: 70px 1fr;
+  gap:10px;
+  min-width:0;
+  /* exakt wie Cashflow */
+  height: 320px;
+  min-height: 320px;
+}
+
+.fm-yaxis{
   position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding: 6px 0;
+  color: rgba(226,232,240,.70);
+  font-size:11px;
+  min-width:0;
+}
+.fm-yaxis > div{ line-height:1; }
 
-  height:var(--finance-chart-height);
-  min-height:var(--finance-chart-height);
+.fm-plot{
+  position:relative;
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.22);
+  overflow:hidden;
+  min-width:0;
 }
 
-/* SVG direkt im Root (Fallback) */
-.finance-mieten-root > svg{
-  width:100%;
-  height:var(--finance-chart-height);
-  display:block;
+.fm-bars{
+  position:absolute;
+  inset: 12px 12px 12px 12px;
+  display:grid;
+  grid-template-columns: repeat(9, minmax(0,1fr));
+  gap:8px;
+  align-items:stretch;
+  min-width:0;
 }
 
-/* SVG im Chart Slot */
-.fm-chart svg,
-.fm-plot svg,
-.fm-viz svg,
-.finance-mieten-root .chart svg,
-.finance-mieten-root .plot svg,
-.finance-mieten-root [data-chart] svg,
-.finance-mieten-root [data-plot] svg{
-  width:100%;
+.fm-bar{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+
+.fm-bar-stack{
+  position:relative;
   height:100%;
-  display:block;
+  border-radius:12px;
+  background: rgba(15,23,42,.35);
+  border:1px solid rgba(148,163,184,.10);
+  overflow:hidden;
 }
 
-/* Farben für gestapelte Balken (nur wenn Klassen so existieren) */
-.fm-bar-rent{ fill:rgba(34,197,94,.85); }     /* Miete */
-.fm-bar-lease{ fill:rgba(14,165,233,.85); }   /* Pacht */
+/* Gestapelte Segmente */
+.fm-seg{
+  position:absolute;
+  left:0; right:0;
+  bottom:0;
+  height:0%;
+}
 
-/* Axis */
-.fm-axis text{
-  fill:rgba(226,232,240,.65);
+.fm-seg.rent{
+  background: rgba(34,197,94,.85);
+  border-top-left-radius:10px;
+  border-top-right-radius:10px;
+}
+.fm-seg.lease{
+  background: rgba(14,165,233,.85);
+}
+
+.fm-bar.is-now .fm-seg.rent{ background: rgba(59,130,246,.85); } /* blau für aktuellen Monat */
+.fm-bar.is-now .fm-seg.lease{ background: rgba(59,130,246,.65); } /* blau abgestuft */
+
+.fm-bar.is-forecast.up .fm-seg.rent{ background: rgba(34,197,94,.85); }
+.fm-bar.is-forecast.up .fm-seg.lease{ background: rgba(14,165,233,.75); }
+
+.fm-bar.is-forecast.down .fm-seg.rent{ background: rgba(239,68,68,.85); } /* rot nur bei sinkendem Trend */
+.fm-bar.is-forecast.down .fm-seg.lease{ background: rgba(239,68,68,.65); }
+
+.fm-val{
+  position:absolute;
+  left:50%;
+  transform: translateX(-50%);
+  top: -2px;
   font-size:10px;
+  font-weight:950;
+  color: rgba(226,232,240,.92);
+  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  white-space:nowrap;
+  pointer-events:none;
 }
-.fm-axis line,
-.fm-axis path{
-  stroke:rgba(148,163,184,.2);
+
+.fm-mon{
+  margin-top:8px;
+  text-align:center;
+  font-size:10px;
+  color: rgba(226,232,240,.72);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Legend */
+.fm-legend{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+}
+.fm-leg{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.fm-leg::before{
+  content:"";
+  width:12px;
+  height:10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(148,163,184,.35);
+}
+.fm-leg-rent::before{ background: rgba(34,197,94,.85); }
+.fm-leg-lease::before{ background: rgba(14,165,233,.85); }
+.fm-leg-now::before{ background: rgba(59,130,246,.85); }
+.fm-leg-forecast::before{ background: rgba(34,197,94,.85); }
+
+.fm-foot{
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+  line-height:1.35;
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  padding: 10px 12px;
 }
