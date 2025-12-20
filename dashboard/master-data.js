@@ -1,98 +1,76 @@
 /* dashboard/master-data.js
    Single source of truth for the whole dashboard.
 
-   ✅ Pflegehinweise (Deutsch):
+   ✅ Pflege (Deutsch – wo trägst du was ein?)
    ===========================================================
-   1) HOME KPIs
-      - HOME_KPIS_MANUAL: hier 12 Zeilen pflegen.
-      - Monat (YYYY-MM) kann leer bleiben → wird automatisch gesetzt.
-      - Werte als Zahlen eintragen.
-      - Auslastung_pct: Prozent 0–100 (z.B. 94.2)
+   1) HOME KPIs (home)
+      - Du pflegst die Werte NICHT direkt pro Monat, die Monate werden automatisch gebaut.
+      - Werte entstehen aktuell aus den Formeln im home.map(...) Block:
+        baseRent / baseLease / costs / occupancy / portfolioValue / invested
+      - Wenn du echte Werte pflegen willst: sag Bescheid, dann bauen wir eine MANUAL-Liste,
+        aber OHNE dass Module/Loader brechen.
 
-   2) Projekte (Baumstraße 35)
-      - PROJECTS_GEWERKE_INPUT: hier pflegst du die 10 Gewerke:
-          Angebot (EUR), Gezahlt (EUR), Baufortschritt (0–100)
-      - Alles andere sind Aliase für Module (nicht anfassen).
+   2) Projekte Gesamt (projectsGesamt)
+      - Projekt/Adresse/Objekt/Notizen kannst du hier pflegen.
 
-   3) Finance
-      - bleibt in der vorhandenen Struktur.
+   3) Projekte Gewerke (projectsGewerke Input)
+      - Hier pflegst du die 10 Gewerke:
+        Aktiv, Sortierung, Gewerk, Handwerker, Angebot, Gezahlt, Baufortschritt
+      - WICHTIG: Angebot/Gezahlt als Zahl (EUR), Baufortschritt 0–100.
+
+   4) Finance
+      - bleibt wie gehabt (wird aus home abgeleitet + manuelle Tabellen op/reserven/budget)
 */
 
 (function () {
   "use strict";
 
-  const VERSION = "2025-12-20-MASTER-ALIAS-FIX-1";
+  const VERSION = "2025-12-16-MASTER-PROJECTS-FIX-1";
 
   function ym(y, m) {
     return `${y}-${String(m).padStart(2, "0")}`;
   }
 
-  function n(v) {
-    if (typeof v === "number") return isFinite(v) ? v : 0;
-    if (v == null) return 0;
-    const s = String(v).trim();
-    if (!s) return 0;
-    return Number(s.replace(/\./g, "").replace(",", ".")) || 0;
-  }
-
-  function clamp(v, a, b) {
-    const x = n(v);
-    return Math.max(a, Math.min(b, x));
-  }
-
-  // 12 Monate bis inkl. aktueller Monat (Fallback)
   const now = new Date();
   const Y = now.getFullYear();
   const M = now.getMonth() + 1;
 
+  // 12 months ending at current month (inclusive)
   const months = [];
   for (let i = 11; i >= 0; i--) {
     const d = new Date(Y, M - 1 - i, 1);
     months.push(ym(d.getFullYear(), d.getMonth() + 1));
   }
 
-  /* =========================
-     HOME KPIs – HIER PFLEGST DU
-     ========================= */
-  const HOME_KPIS_MANUAL = [
-    { Monat: "", Cashflow: 8600,  Mieteinnahmen: 14200, Pachteinnahmen: 1200, Auslastung_pct: 93.5, Portfolio_Wert: 2450000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 8900,  Mieteinnahmen: 14280, Pachteinnahmen: 1250, Auslastung_pct: 94.0, Portfolio_Wert: 2465000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 9100,  Mieteinnahmen: 14360, Pachteinnahmen: 1200, Auslastung_pct: 94.2, Portfolio_Wert: 2480000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 8700,  Mieteinnahmen: 14440, Pachteinnahmen: 1300, Auslastung_pct: 92.8, Portfolio_Wert: 2495000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 9400,  Mieteinnahmen: 14520, Pachteinnahmen: 1200, Auslastung_pct: 95.1, Portfolio_Wert: 2510000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 9650,  Mieteinnahmen: 14600, Pachteinnahmen: 1250, Auslastung_pct: 95.6, Portfolio_Wert: 2525000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 9900,  Mieteinnahmen: 14680, Pachteinnahmen: 1200, Auslastung_pct: 96.2, Portfolio_Wert: 2540000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 10100, Mieteinnahmen: 14760, Pachteinnahmen: 1300, Auslastung_pct: 96.0, Portfolio_Wert: 2555000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 10350, Mieteinnahmen: 14840, Pachteinnahmen: 1200, Auslastung_pct: 96.8, Portfolio_Wert: 2570000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 9850,  Mieteinnahmen: 14920, Pachteinnahmen: 1250, Auslastung_pct: 95.9, Portfolio_Wert: 2585000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 10700, Mieteinnahmen: 15000, Pachteinnahmen: 1200, Auslastung_pct: 97.1, Portfolio_Wert: 2600000, Investiertes_Kapital: 1750000 },
-    { Monat: "", Cashflow: 10950, Mieteinnahmen: 15080, Pachteinnahmen: 1300, Auslastung_pct: 97.3, Portfolio_Wert: 2615000, Investiertes_Kapital: 1750000 },
-  ];
-
+  // HOME KPIs (12 Monate)
   const home = months.map((month, idx) => {
-    const r = HOME_KPIS_MANUAL[idx] || {};
-    const m = (r.Monat && String(r.Monat).trim()) ? String(r.Monat).trim() : month;
+    const baseRent = 14200 + idx * 80;
+    const baseLease = 1200 + (idx % 3) * 50;
+    const costs = 5200 + (idx % 4) * 180;
+    const cashflow = (baseRent + baseLease) - costs;
 
-    const occ = Math.round(clamp(r.Auslastung_pct, 0, 100) * 10) / 10;
+    const occupancy = Math.max(88, Math.min(100, 92 + Math.sin(idx / 2) * 4));
+    const portfolioValue = 2450000 + idx * 15000;
+    const invested = 1750000;
 
     return {
-      Monat: m,
-      Cashflow: Math.round(n(r.Cashflow)),
-      Mieteinnahmen: Math.round(n(r.Mieteinnahmen)),
-      Pachteinnahmen: Math.round(n(r.Pachteinnahmen)),
+      Monat: month,
+      Cashflow: Math.round(cashflow),
+      Mieteinnahmen: Math.round(baseRent),
+      Pachteinnahmen: Math.round(baseLease),
 
-      // ✅ Standard + Legacy
-      Auslastung_pct: occ,
-      "Auslastung_%": occ,
+      // ✅ gültiger Key (neu)
+      Auslastung_pct: Math.round(occupancy * 10) / 10,
 
-      Portfolio_Wert: Math.round(n(r.Portfolio_Wert)),
-      Investiertes_Kapital: Math.round(n(r.Investiertes_Kapital)),
+      // ✅ Legacy-Key für Module, die noch "Auslastung_%" erwarten
+      "Auslastung_%": Math.round(occupancy * 10) / 10,
+
+      Portfolio_Wert: Math.round(portfolioValue),
+      Investiertes_Kapital: Math.round(invested),
     };
   });
 
-  /* =========================
-     PROJECTS (Baumstraße 35)
-     ========================= */
+  // PROJECTS
   const projectsGesamt = {
     Projekt: "Baumstraße 35",
     Adresse: "Baumstraße 35",
@@ -101,8 +79,8 @@
     Notizen: "Gesamtübersicht über alle Gewerke.",
   };
 
-  /* ✅ HIER PFLEGST DU DIE 10 GEWERKE */
-  const PROJECTS_GEWERKE_INPUT = [
+  // ✅ 10 Gewerke/Handwerker (WICHTIG: gültige Keys!)
+  const projectsGewerke = [
     { Aktiv: "Ja", Sortierung: 1,  Gewerk: "Rohbau",         Handwerker: "Bauunternehmen Meyer", Angebot: 320000, Gezahlt: 210000, Baufortschritt: 70 },
     { Aktiv: "Ja", Sortierung: 2,  Gewerk: "Elektro",        Handwerker: "Elektro Schröder",     Angebot:  95000, Gezahlt:  25000, Baufortschritt: 30 },
     { Aktiv: "Ja", Sortierung: 3,  Gewerk: "Sanitär",        Handwerker: "Haustechnik Müller",   Angebot: 145000, Gezahlt:  60000, Baufortschritt: 40 },
@@ -113,62 +91,49 @@
     { Aktiv: "Ja", Sortierung: 8,  Gewerk: "Fliesen",        Handwerker: "Fliesen Schulte",      Angebot:  42000, Gezahlt:  21000, Baufortschritt: 50 },
     { Aktiv: "Ja", Sortierung: 9,  Gewerk: "Außenanlagen",   Handwerker: "Gartenbau Grünwerk",   Angebot:  60000, Gezahlt:  12000, Baufortschritt: 20 },
     { Aktiv: "Ja", Sortierung: 10, Gewerk: "Photovoltaik",   Handwerker: "Solartechnik Bremen",  Angebot:  98000, Gezahlt:  49000, Baufortschritt: 45 },
-  ];
+  ].map(r => ({
+    Projekt: projectsGesamt.Projekt,
+    Objekt: projectsGesamt.Adresse,
 
-  /* ✅ Zentrale Normalisierung + ALIASE (wichtig!)
-     -> Damit egal welches Modul welchen Key erwartet: Zahlen sind da.
-  */
-  const projectsGewerke = PROJECTS_GEWERKE_INPUT.map(r => {
-    const aktiv = (r.Aktiv && String(r.Aktiv).trim()) ? String(r.Aktiv).trim() : "Ja";
-    const angebot = Math.round(n(r.Angebot));
-    const gezahlt = Math.round(n(r.Gezahlt));
-    const fort = Math.round(clamp(r.Baufortschritt, 0, 100) * 10) / 10;
+    // Aktiv (neu + Legacy)
+    Aktiv: r.Aktiv,
+    "Aktiv (Ja/Nein)": r.Aktiv,
 
-    return {
-      Projekt: projectsGesamt.Projekt,
-      Objekt: projectsGesamt.Adresse,
+    Sortierung: r.Sortierung,
+    Gewerk: r.Gewerk,
+    Handwerker: r.Handwerker,
 
-      // Aktiv – alle Varianten (Excel/Alt-Module)
-      Aktiv: aktiv,
-      "Aktiv (Ja/Nein)": aktiv,
+    // Angebot (alle Varianten)
+    Angebot: r.Angebot,
+    Angebotssumme: r.Angebot,
+    "Angebot (€)": r.Angebot,
 
-      Sortierung: n(r.Sortierung) || 9999,
-      Gewerk: r.Gewerk || "",
-      Handwerker: r.Handwerker || "",
+    // Gezahlt / Zahlungen (alle Varianten)
+    Gezahlt: r.Gezahlt,
+    Zahlungen: r.Gezahlt,
+    Zahlungen_bisher: r.Gezahlt,
+    "Zahlungen (€)": r.Gezahlt,
+    "Zahlungen bisher": r.Gezahlt,
 
-      // Angebot – alle Varianten
-      Angebot: angebot,
-      Angebotssumme: angebot,
-      "Angebot (€)": angebot,
+    // ✅ sichere Legacy-Aliase (wichtig für alte Module/Filter)
+    "Gezahl t": r.Gezahlt,      // <-- ALLES GEQUOTET, KEIN SYNTAX-RISIKO
+    "Gezahl_t": r.Gezahlt,
 
-      // Gezahlt/Zahlungen – alle Varianten
-      Gezahlt: gezahlt,
-      Gezahl t: gezahlt,        // falls irgendwo der alte Tippfehler drin ist
-      Gezahl_t: gezahlt,        // dito
-      Zahlungen: gezahlt,
-      Zahlungen_bisher: gezahlt,
-      "Zahlungen (€)": gezahlt,
-      "Zahlungen bisher": gezahlt,
+    // Baufortschritt (alle Varianten)
+    Baufortschritt: r.Baufortschritt,
+    Baufortschritt_prozent: r.Baufortschritt,
+    "Baufortschritt %": r.Baufortschritt,
 
-      // Fortschritt – alle Varianten
-      Baufortschritt: fort,
-      Baufortschritt_prozent: fort,
-      "Baufortschritt %": fort,
+    // weitere mögliche Legacy-Keys aus eurer Historie
+    "Fortschritt_%": r.Baufortschritt,
+    "Fortschritt %": r.Baufortschritt,
+  }));
 
-      // Legacy/Alt: Fortschritt_% (kam bei euch schon vor)
-      Fortschritt_pct: fort,
-      "Fortschritt_%": fort,
-      "Fortschritt %": fort
-    };
-  });
-
-  /* =========================
-     FINANCE (Struktur beibehalten)
-     ========================= */
+  // FINANCE (deine Struktur beibehalten)
   const finance = {
     gesamt: [
       {
-        Monat: home[home.length - 1].Monat,
+        Monat: months[months.length - 1],
         Kontostand: 185000,
         Liquide_Mittel: 132000,
         Verbindlichkeiten_kurzfristig: 28000,
@@ -187,6 +152,8 @@
       Mieteinnahmen: r.Mieteinnahmen,
       Pachteinnahmen: r.Pachteinnahmen,
       Summe: r.Mieteinnahmen + r.Pachteinnahmen,
+
+      // ✅ Standard + Legacy
       Auslastung_pct: r.Auslastung_pct,
       "Auslastung_%": r.Auslastung_pct
     })),
@@ -217,5 +184,4 @@
     },
     finance
   };
-
 })();
