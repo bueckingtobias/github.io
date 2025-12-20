@@ -1,103 +1,217 @@
-/* finance-cashflow-modul.css
-   Robust: sorgt dafür, dass Diagramm/SVG IMMER Höhe bekommt,
-   und dass Header/Chart/Footer im Modul sauber gestapelt sind.
-*/
+/* finance-cashflow-modul.css – Apple-clean, höherer Chart, stabil in 2-Spalten-Layout */
 
-:root{
-  --finance-chart-height: 360px;
-}
-
-/* Root (so heißt es bei dir vermutlich – plus Fallbacks) */
-.finance-cashflow-root,
-.fc-root,
-#financeCashflow,
-[data-module="finance-cashflow"]{
+.finance-cashflow-root{
   display:flex;
   flex-direction:column;
   gap:12px;
   min-width:0;
-
-  /* wichtig für Equal-Height in der View */
   height:100%;
   min-height:0;
 }
 
-/* Header (Fallback-freundlich) */
-.fc-head,
-.finance-cashflow-root .fc-head,
-.finance-cashflow-root .head{
-  flex:0 0 auto;
+.fc-head{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
   gap:12px;
-  min-height:0;
-}
-
-/* Footer (Fallback-freundlich) */
-.fc-foot,
-.finance-cashflow-root .fc-foot,
-.finance-cashflow-root .foot{
-  flex:0 0 auto;
-  min-height:0;
-}
-
-/* --- CHART SLOT: der wichtigste Teil --- */
-/* Wir targeten mehrere mögliche Wrapper-Namen */
-.fc-chart,
-.fc-plot,
-.fc-viz,
-.finance-cashflow-root .fc-chart,
-.finance-cashflow-root .fc-plot,
-.finance-cashflow-root .fc-viz,
-.finance-cashflow-root .chart,
-.finance-cashflow-root .plot,
-.finance-cashflow-root [data-chart],
-.finance-cashflow-root [data-plot]{
-  flex:1 1 auto;
   min-width:0;
+}
+
+.fc-title{ font-size:14px; font-weight:950; letter-spacing:.01em; }
+.fc-sub{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.72); }
+
+.fc-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:flex-end;
+  min-width:0;
+}
+
+.fc-pill{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(15,23,42,.35);
+  color: rgba(226,232,240,.88);
+  font-size:11px;
+  white-space:nowrap;
+  min-width:0;
+}
+.fc-pill .k{ color: rgba(226,232,240,.60); }
+.fc-pill .v{ font-weight:950; }
+
+.fc-chart{
+  display:grid;
+  grid-template-columns: 70px 1fr;
+  gap:10px;
+  min-width:0;
+  /* Wichtig: gleiche Chart-Höhe wie Mieten */
+  height: 320px;
+  min-height: 320px;
+}
+
+.fc-yaxis{
   position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding: 6px 0;
+  color: rgba(226,232,240,.70);
+  font-size:11px;
+  min-width:0;
+}
+.fc-yaxis > div{ line-height:1; }
 
-  /* Höhe fix */
-  height:var(--finance-chart-height);
-  min-height:var(--finance-chart-height);
+.fc-plot{
+  position:relative;
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.22);
+  overflow:hidden;
+  min-width:0;
 }
 
-/* Wenn das SVG direkt im Root sitzt (kein Wrapper), bekommt es auch Höhe */
-.finance-cashflow-root > svg{
-  width:100%;
-  height:var(--finance-chart-height);
-  display:block;
+.fc-zeroline{
+  position:absolute;
+  left:0;
+  right:0;
+  top:50%;
+  height:1px;
+  background: rgba(148,163,184,.22);
+  pointer-events:none;
 }
 
-/* Allgemein: jedes SVG im Chart-Slot füllt den Slot */
-.fc-chart svg,
-.fc-plot svg,
-.fc-viz svg,
-.finance-cashflow-root .chart svg,
-.finance-cashflow-root .plot svg,
-.finance-cashflow-root [data-chart] svg,
-.finance-cashflow-root [data-plot] svg{
-  width:100%;
+.fc-bars{
+  position:absolute;
+  inset: 12px 12px 12px 12px;
+  display:grid;
+  grid-template-columns: repeat(9, minmax(0,1fr));
+  gap:8px;
+  align-items:stretch;
+  min-width:0;
+}
+
+/* Jede Bar hat ein 0-Mitte-System: pos nach oben, neg nach unten */
+.fc-bar{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width:0;
+}
+
+.fc-bar-stack{
+  position:relative;
   height:100%;
+  border-radius:12px;
+  background: rgba(15,23,42,.35);
+  border:1px solid rgba(148,163,184,.10);
+  overflow:hidden;
+}
+
+.fc-bar-pos,
+.fc-bar-neg{
+  position:absolute;
+  left:0; right:0;
   display:block;
 }
 
-/* Bars/Trend/Achsen – nur falls du Klassen so nutzt (optional, harmless) */
-.fc-bar{ fill:rgba(59,130,246,.75); }
-.fc-bar.neg{ fill:rgba(239,68,68,.75); }
-
-.fc-trend{
-  stroke:rgba(226,232,240,.85);
-  stroke-width:2;
-  fill:none;
+.fc-bar-pos{
+  bottom:50%;
+  height:0%;
+  border-radius:10px 10px 0 0;
+  background: rgba(148,163,184,.35); /* past default */
 }
 
-.fc-axis text{
-  fill:rgba(226,232,240,.65);
+.fc-bar-neg{
+  top:50%;
+  height:0%;
+  border-radius:0 0 10px 10px;
+  background: rgba(148,163,184,.35); /* past default */
+}
+
+.fc-bar.is-now .fc-bar-pos,
+.fc-bar.is-now .fc-bar-neg{
+  background: rgba(59,130,246,.85); /* blau */
+}
+
+.fc-bar.is-forecast.up .fc-bar-pos,
+.fc-bar.is-forecast.up .fc-bar-neg{
+  background: rgba(34,197,94,.85); /* grün */
+}
+
+.fc-bar.is-forecast.down .fc-bar-pos,
+.fc-bar.is-forecast.down .fc-bar-neg{
+  background: rgba(239,68,68,.85); /* rot */
+}
+
+/* Value label */
+.fc-val{
+  position:absolute;
+  left:50%;
+  transform: translateX(-50%);
+  top: -2px;
   font-size:10px;
+  font-weight:950;
+  color: rgba(226,232,240,.92);
+  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  white-space:nowrap;
+  pointer-events:none;
 }
-.fc-axis line,
-.fc-axis path{
-  stroke:rgba(148,163,184,.2);
+
+/* Month label */
+.fc-mon{
+  margin-top:8px;
+  text-align:center;
+  font-size:10px;
+  color: rgba(226,232,240,.72);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Trendline container (drawn via absolute positioned dots/segments in JS) */
+.fc-trendline{
+  position:absolute;
+  inset: 12px 12px 12px 12px;
+  pointer-events:none;
+}
+
+/* Legend */
+.fc-legend{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+}
+
+.fc-leg{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.fc-leg::before{
+  content:"";
+  width:12px;
+  height:10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(148,163,184,.35);
+}
+.fc-leg-now::before{ background: rgba(59,130,246,.85); }
+.fc-leg-forecast::before{ background: rgba(34,197,94,.85); } /* JS ändert Text, Farbe bleibt ok */
+
+.fc-foot{
+  font-size:11px;
+  color: rgba(226,232,240,.72);
+  line-height:1.35;
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.18);
+  padding: 10px 12px;
 }
