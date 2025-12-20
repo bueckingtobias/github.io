@@ -1,86 +1,82 @@
-(function(){
-  function n(x){
-    if(x == null || x === "") return 0;
-    if(typeof x === "number" && isFinite(x)) return x;
-    const s = String(x).replace(/\s/g,"").replace(/€/g,"").replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,"");
-    const v = Number(s);
-    return isFinite(v) ? v : 0;
-  }
-  function eur(v){
-    return new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n(v));
-  }
-  function pct(v){
-    const x = Number(v);
-    if(!isFinite(x)) return "—";
-    return (Math.round(x*10)/10).toFixed(1).replace(".",",") + " %";
-  }
-  function last(arr){ return (arr && arr.length) ? arr[arr.length-1] : null; }
-
-  function pickHome(homeRows, key){
-    const r = (homeRows||[]).find(x => String(x.KPI||"").trim() === key);
-    return r ? n(r.Wert) : null;
-  }
-
-  function render(container, data){
-    const root = container.querySelector("[data-fg-root]") || container;
-
-    const financeRows  = Array.isArray(data?.financeRows) ? data.financeRows : [];
-    const opRows       = Array.isArray(data?.opRows) ? data.opRows : [];
-    const reservesRows = Array.isArray(data?.reservesRows) ? data.reservesRows : [];
-    const budgetRows   = Array.isArray(data?.budgetRows) ? data.budgetRows : [];
-    const homeRows     = Array.isArray(data?.homeRows) ? data.homeRows : [];
-
-    const elSub   = root.querySelector("[data-fg-sub]");
-    const elKpis  = root.querySelector("[data-fg-kpis]");
-    const elFazit = root.querySelector("[data-fg-fazit]");
-    const elNext  = root.querySelector("[data-fg-next]");
-
-    const now = new Date();
-    elSub.textContent = "Stand: " + now.toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
-
-    const cur = last(financeRows);
-    const cashM  = cur ? n(cur.Cashflow) : null;
-    const mieteM = cur ? n(cur.Mieteinnahmen) : null;
-    const pachtM = cur ? n(cur.Pachteinnahmen) : null;
-
-    const opTotal = opRows.reduce((a,r)=> a + n(r.Betrag ?? r.Amount ?? r.Summe), 0);
-    const reservesTotal = reservesRows.reduce((a,r)=> a + n(r.Betrag ?? r.Amount ?? r.Summe), 0);
-
-    const budgetTotal = budgetRows.reduce((a,r)=> a + n(r.Budget), 0);
-    const istTotal    = budgetRows.reduce((a,r)=> a + n(r.Ist), 0);
-    const restBudget  = budgetTotal - istTotal;
-
-    const auslast = pickHome(homeRows, "Auslastung der Wohnungen");
-    const roi     = pickHome(homeRows, "Portfolio ROI");
-
-    const tiles = [
-      { k:"Cashflow (Monat)", v: cashM==null ? "—" : eur(cashM), m:"letzte Finance-Zeile" },
-      { k:"Miete (Monat)", v: mieteM==null ? "—" : eur(mieteM), m:"Eingang/Plan" },
-      { k:"Pacht (Monat)", v: pachtM==null ? "—" : eur(pachtM), m:"Eingang/Plan" },
-      { k:"OP gesamt", v: eur(opTotal), m:"offene Posten" },
-      { k:"Reserven", v: eur(reservesTotal), m:"Puffer" },
-      { k:"Restbudget", v: (budgetTotal>0 ? eur(restBudget) : "—"), m:"Budget - Ist" },
-    ];
-
-    elKpis.innerHTML = "";
-    tiles.forEach(t=>{
-      const d = document.createElement("div");
-      d.className = "fg-tile";
-      d.innerHTML = `<div class="fg-k">${t.k}</div><div class="fg-v">${t.v}</div><div class="fg-m">${t.m}</div>`;
-      elKpis.appendChild(d);
-    });
-
-    const cashTxt = (cashM==null) ? "Cashflow-Daten prüfen" : (cashM >= 0 ? "Cashflow positiv" : "Cashflow negativ");
-    const opTxt   = opTotal > 0 ? ("OP offen: " + eur(opTotal)) : "OP sauber";
-    const extraA  = (auslast!=null) ? (" · Auslastung: " + pct(auslast)) : "";
-    const extraR  = (roi!=null) ? (" · ROI: " + pct(roi)) : "";
-    elFazit.textContent = cashTxt + " · " + opTxt + extraA + extraR;
-
-    const next = (opTotal > 0) ? "OP priorisieren & Fälligkeiten sichern"
-              : (restBudget < 0) ? "Budget-Überzug prüfen & korrigieren"
-              : "Forecast / Planwerte fortschreiben";
-    elNext.textContent = next;
-  }
-
+(function () {
+  "use strict";
   window.FinanceGesamtModul = { render };
+
+  function render(host) {
+    const data = window.IMMO_DATA || {};
+    const finance = data.finance || {};
+    const home = Array.isArray(data.home) ? data.home : [];
+
+    const gesamt = (Array.isArray(finance.gesamt) ? finance.gesamt : [])[0] || {};
+    const cashflowRows = Array.isArray(finance.cashflow) ? finance.cashflow : [];
+    const mietenRows = Array.isArray(finance.mieten) ? finance.mieten : [];
+    const opRows = Array.isArray(finance.op) ? finance.op : [];
+    const reservesRows = Array.isArray(finance.reserven) ? finance.reserven : [];
+    const budgetRows = Array.isArray(finance.budget) ? finance.budget : [];
+
+    const lastCash = cashflowRows[cashflowRows.length - 1] || {};
+    const lastM = mietenRows[mietenRows.length - 1] || {};
+
+    const kontostand = num(gesamt.Kontostand);
+    const liquide = num(gesamt.Liquide_Mittel);
+    const verbindl = num(gesamt.Verbindlichkeiten_kurzfristig);
+    const ruecklagen = num(gesamt.Ruecklagen);
+
+    const cf = num(lastCash.Cashflow);
+    const einnahmen = num(lastCash.Einnahmen || (lastM.Summe));
+    const ausgaben = num(lastCash.Ausgaben || (einnahmen - cf));
+
+    const opOffen = opRows.filter(r => String(r.Status || "").toLowerCase().includes("off"));
+    const opSum = opOffen.reduce((a, r) => a + num(r.Betrag), 0);
+
+    const reserveSum = reservesRows.reduce((a, r) => a + num(r.Betrag), 0);
+    const reserveZiel = reservesRows.reduce((a, r) => a + num(r.Ziel), 0);
+
+    const budgetIst = budgetRows.reduce((a, r) => a + num(r.Ist), 0);
+    const budgetForecast = budgetRows.reduce((a, r) => a + num(r.Forecast), 0);
+    const budgetBudget = budgetRows.reduce((a, r) => a + num(r.Budget), 0);
+
+    host.innerHTML = `
+      <div class="fg-root">
+        <div class="fg-grid">
+          ${tile("Kontostand", eur(kontostand), "Aktueller Bank-/Kontostand")}
+          ${tile("Liquide Mittel", eur(liquide), "Sofort verfügbar")}
+          ${tile("Kurzfr. Verbindl.", eur(verbindl), "Innerhalb 30–60 Tage")}
+          ${tile("Rücklagen", eur(ruecklagen), "Ziel: Reserve stabil")}
+          ${tile("Monats-Cashflow", eur(cf), "Letzter Monat")}
+          ${tile("Einnahmen", eur(einnahmen), "Miete + Pacht")}
+          ${tile("Ausgaben", eur(ausgaben), "Einnahmen − Cashflow")}
+          ${tile("OP offen", eur(opSum), `${opOffen.length} Position(en)`)}
+          ${tile("Reserven", eur(reserveSum), `Ziel: ${eur(reserveZiel)}`)}
+          ${tile("Budget Ist", eur(budgetIst), `Plan: ${eur(budgetBudget)}`)}
+          ${tile("Budget Forecast", eur(budgetForecast), `Delta: ${eur(budgetForecast - budgetBudget)}`)}
+          ${tile("Daten", String((window.IMMO_DATA_META && window.IMMO_DATA_META.version) || (window.IMMO_MASTER_DATA && window.IMMO_MASTER_DATA.version) || "—"), "Master-Version")}
+        </div>
+        <div class="fg-note">${escapeHtml(String(gesamt.Notiz || "Gesamtübersicht aus Master Data. Module nutzen window.IMMO_DATA.finance.*"))}</div>
+      </div>
+    `;
+  }
+
+  function tile(k, v, h) {
+    return `
+      <div class="fg-tile">
+        <div class="fg-k">${escapeHtml(k)}</div>
+        <div class="fg-v">${escapeHtml(v)}</div>
+        <div class="fg-h">${escapeHtml(h)}</div>
+      </div>
+    `;
+  }
+
+  function num(v) {
+    if (typeof v === "number") return v;
+    if (!v) return 0;
+    return Number(String(v).replace(/\./g, "").replace(",", ".")) || 0;
+  }
+  function eur(n) {
+    const x = num(n);
+    return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(x);
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  }
 })();
