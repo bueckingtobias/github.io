@@ -1,247 +1,93 @@
-(function(){
-  window.FinanceCashflowModul = window.FinanceCashflowModul || {};
-  window.FinanceCashflowModul.rootClass = "fin-cash-root";
-  window.FinanceCashflowModul.render = render;
+(function () {
+  "use strict";
+  window.FinanceCashflowModul = { render };
 
-  function euro(n){
-    return (Number(n)||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
-  }
-  function pct1(n){
-    return (Number(n)||0).toFixed(1).replace(".",",") + " %";
-  }
-  function sum(arr, fn){
-    return (arr||[]).reduce((a,x)=>a + (fn?fn(x):Number(x||0)), 0);
-  }
+  function render(host) {
+    const finance = (window.IMMO_DATA && window.IMMO_DATA.finance) || {};
+    const rows = Array.isArray(finance.cashflow) ? finance.cashflow : [];
 
-  function computeSeries(startCash, cashflow){
-    let cash = Number(startCash||0);
-    return (cashflow||[]).map(r=>{
-      const inflow = Number(r.inflow||0);
-      const outflow = Number(r.outflow||0);
-      const net = inflow - outflow;
-      cash += net;
-      return { ...r, inflow, outflow, net, cash };
-    });
-  }
+    // 6M Rückblick + 3M Forecast (aus Master vorhanden oder aus Trend ableiten)
+    const series = lastN(rows, 9).map(r => ({
+      Monat: r.Monat,
+      Cashflow: num(r.Cashflow),
+      Einnahmen: num(r.Einnahmen),
+      Ausgaben: num(r.Ausgaben)
+    }));
 
-  function monthLabel(yyyyMM){
-    const s = String(yyyyMM||"");
-    const p = s.split("-");
-    return p.length===2 ? p[1] : s.slice(-2);
-  }
-
-  function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
-
-  function draw(canvas, series){
-    const ctx = canvas.getContext("2d");
-    if(!ctx) return;
-
-    const cssW = canvas.clientWidth || 800;
-    const cssH = canvas.clientHeight || 260;
-    const dpr  = window.devicePixelRatio || 1;
-
-    canvas.width  = Math.floor(cssW * dpr);
-    canvas.height = Math.floor(cssH * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-
-    const W = cssW, H = cssH;
-    ctx.clearRect(0,0,W,H);
-
-    const padL=46, padR=12, padT=12, padB=26;
-    const plotW = W - padL - padR;
-    const plotH = H - padT - padB;
-
-    const n = Math.max(1, series.length);
-    const inflows = series.map(x=>x.inflow);
-    const outflows = series.map(x=>x.outflow);
-    const cash = series.map(x=>x.cash);
-
-    const maxBar = Math.max(...inflows, ...outflows, 1);
-    const minCash = Math.min(...cash, 0);
-    const maxCash = Math.max(...cash, 1);
-
-    // grid
-    ctx.strokeStyle = "rgba(148,163,184,.14)";
-    ctx.lineWidth = 1;
-    for(let i=0;i<=4;i++){
-      const y = padT + plotH*(i/4);
-      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
-    }
-
-    // y labels
-    ctx.fillStyle = "rgba(226,232,240,.62)";
-    ctx.font = "11px system-ui,-apple-system";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.fillText(euro(maxCash), padL-8, padT);
-    ctx.fillText(euro(minCash), padL-8, padT+plotH);
-
-    const slot = plotW / n;
-    const barW = clamp(slot*0.16, 10, 22);
-    const barMaxH = plotH * 0.55;
-
-    // bars
-    for(let i=0;i<n;i++){
-      const m = series[i] || { inflow:0, outflow:0, cash:0, month:"" };
-      const x = padL + slot*i + slot/2;
-      const inH  = (m.inflow/maxBar) * barMaxH;
-      const outH = (m.outflow/maxBar) * barMaxH;
-
-      ctx.fillStyle = "rgba(34,197,94,.55)";
-      ctx.fillRect(x - barW - 2, padT + plotH - inH, barW, inH);
-
-      ctx.fillStyle = "rgba(249,115,22,.55)";
-      ctx.fillRect(x + 2, padT + plotH - outH, barW, outH);
-    }
-
-    function yCash(v){
-      const t = (v - minCash) / Math.max(1, (maxCash - minCash));
-      return padT + plotH - (t * plotH);
-    }
-
-    // area under cash
-    ctx.beginPath();
-    for(let i=0;i<n;i++){
-      const m = series[i] || { cash:0 };
-      const x = padL + slot*i + slot/2;
-      const y = yCash(m.cash);
-      if(i===0) ctx.moveTo(x,y);
-      else ctx.lineTo(x,y);
-    }
-    ctx.lineTo(padL + slot*(n-1) + slot/2, padT + plotH);
-    ctx.lineTo(padL + slot*0 + slot/2, padT + plotH);
-    ctx.closePath();
-    ctx.fillStyle = "rgba(59,130,246,.10)";
-    ctx.fill();
-
-    // cash line
-    ctx.strokeStyle = "rgba(59,130,246,.92)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for(let i=0;i<n;i++){
-      const m = series[i] || { cash:0 };
-      const x = padL + slot*i + slot/2;
-      const y = yCash(m.cash);
-      if(i===0) ctx.moveTo(x,y);
-      else ctx.lineTo(x,y);
-    }
-    ctx.stroke();
-
-    // dots
-    ctx.fillStyle = "rgba(59,130,246,.92)";
-    for(let i=0;i<n;i++){
-      const m = series[i] || { cash:0 };
-      const x = padL + slot*i + slot/2;
-      const y = yCash(m.cash);
-      ctx.beginPath(); ctx.arc(x,y,2.6,0,Math.PI*2); ctx.fill();
-    }
-
-    // x labels
-    ctx.fillStyle = "rgba(226,232,240,.62)";
-    ctx.font = "11px system-ui,-apple-system";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    for(let i=0;i<n;i++){
-      const m = series[i] || { month:"" };
-      const x = padL + slot*i + slot/2;
-      ctx.fillText(monthLabel(m.month), x, padT + plotH + 8);
-    }
-  }
-
-  function render(rootEl, data, cashflowSliced, opts){
-    opts = opts || {};
-    const horizon = opts.horizon || (cashflowSliced ? cashflowSliced.length : 0);
-
-    // Build module HTML INSIDE root (same architecture as Gesamtmodul)
-    rootEl.innerHTML = `
-      <div class="fc-head">
-        <div class="fc-left">
+    host.innerHTML = `
+      <div class="fc-root">
+        <div class="fc-head">
           <div class="fc-title">Cashflow</div>
-          <div class="fc-sub">Ein-/Ausgänge & Kontostand · Zeitraum ${horizon} Monate</div>
+          <div class="fc-sub">Letzte Monate + Forecast (aus Master)</div>
         </div>
-        <div class="fc-right" id="fcPills"></div>
-      </div>
 
-      <div class="fc-body">
-        <div class="fc-kpis" id="fcKpis"></div>
-
-        <div class="fc-chartWrap">
-          <canvas class="fc-canvas" id="fcCanvas"></canvas>
+        <div class="fc-chart" aria-label="Cashflow Verlauf">
+          ${renderBars(series)}
         </div>
 
         <div class="fc-legend">
-          <div class="fc-li"><span class="fc-dot in"></span>Inflow</div>
-          <div class="fc-li"><span class="fc-dot out"></span>Outflow</div>
-          <div class="fc-li"><span class="fc-dot cash"></span>Cash (EOM)</div>
-        </div>
-
-        <div class="fc-note" id="fcNote">
-          Keine horizontale Scrollbar · Canvas füllt die Kachel vollständig.
+          <span class="fc-pill">Cashflow</span>
+          <span class="fc-pill">Einnahmen</span>
+          <span class="fc-pill">Ausgaben</span>
         </div>
       </div>
     `;
+  }
 
-    const series = computeSeries(data.startCash, cashflowSliced || []);
-    const inflowSum = sum(series, x=>x.inflow);
-    const outflowSum = sum(series, x=>x.outflow);
-    const netSum = sum(series, x=>x.net);
+  function renderBars(series) {
+    if (!series.length) return `<div class="fc-empty">Keine Cashflow-Daten gefunden (IMMO_DATA.finance.cashflow).</div>`;
 
-    const start = Number(data.startCash||0);
-    const end   = series.length ? Number(series[series.length-1].cash||0) : start;
-    const trend = end - start;
-    const avgNet = series.length ? (netSum/series.length) : 0;
+    const maxAbs = Math.max(1, ...series.map(s => Math.abs(s.Cashflow)));
+    return series.map((s, i) => {
+      const pct = Math.round(Math.min(100, (Math.abs(s.Cashflow) / maxAbs) * 100));
+      const isNeg = s.Cashflow < 0;
+      const cls = i >= 6 ? "fc-bar fc-forecast" : "fc-bar"; // letzten 3 = forecast
+      const dir = trendDir(series);
+      const trendCls = (i >= 6) ? (dir >= 0 ? "fc-up" : "fc-down") : "";
+      return `
+        <div class="${cls} ${trendCls}">
+          <div class="fc-m">${escapeHtml(shortMonth(s.Monat))}</div>
+          <div class="fc-track">
+            <div class="fc-fill ${isNeg ? "fc-neg" : "fc-pos"}" style="width:${pct}%">
+              <span>${escapeHtml(eur(s.Cashflow))}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
 
-    const stability = (inflowSum + outflowSum) > 0
-      ? (Math.abs(netSum) / Math.max(1, (inflowSum + outflowSum)) * 100)
-      : 0;
+  function trendDir(series) {
+    // simple slope on last 6 months cashflow
+    const last6 = series.slice(0, 6);
+    if (last6.length < 2) return 0;
+    const a = last6[0].Cashflow;
+    const b = last6[last6.length - 1].Cashflow;
+    return (b - a);
+  }
 
-    const pills = rootEl.querySelector("#fcPills");
-    const kpis  = rootEl.querySelector("#fcKpis");
-    const canvas = rootEl.querySelector("#fcCanvas");
-    const wrap   = rootEl.querySelector(".fc-chartWrap");
+  function lastN(arr, n) {
+    if (!Array.isArray(arr)) return [];
+    return arr.slice(Math.max(0, arr.length - n));
+  }
 
-    pills.innerHTML = `
-      <span class="fc-pill">Ø Net: <strong>${euro(avgNet)}</strong></span>
-      <span class="fc-pill">Trend: <strong>${(trend>=0?"↗ ":"↘ ")+euro(trend)}</strong></span>
-      <span class="fc-pill">Ende: <strong>${euro(end)}</strong></span>
-    `;
+  function shortMonth(ym) {
+    const [y, m] = String(ym || "").split("-");
+    if (!y || !m) return "—";
+    const d = new Date(Number(y), Number(m) - 1, 1);
+    return d.toLocaleDateString("de-DE", { month: "short" });
+  }
 
-    kpis.innerHTML = `
-      <div class="fc-kpi">
-        <div class="fc-k">Inflow</div>
-        <div class="fc-v">${euro(inflowSum)}</div>
-        <div class="fc-h">Summe im Zeitraum</div>
-      </div>
-      <div class="fc-kpi">
-        <div class="fc-k">Outflow</div>
-        <div class="fc-v">${euro(outflowSum)}</div>
-        <div class="fc-h">Summe im Zeitraum</div>
-      </div>
-      <div class="fc-kpi">
-        <div class="fc-k">Netto</div>
-        <div class="fc-v">${euro(netSum)}</div>
-        <div class="fc-h">${netSum>=0 ? "positiv" : "negativ"}</div>
-      </div>
-      <div class="fc-kpi">
-        <div class="fc-k">Volatilität</div>
-        <div class="fc-v">${pct1(stability)}</div>
-        <div class="fc-h">|Netto| relativ zum Volumen</div>
-      </div>
-    `;
-
-    // Draw AFTER DOM is definitely there (iPad/Safari safe)
-    const doDraw = ()=>{ try{ draw(canvas, series); }catch(_){ } };
-
-    // first draw
-    requestAnimationFrame(doDraw);
-
-    // redraw on resize of wrapper (best)
-    if(wrap && "ResizeObserver" in window){
-      const ro = new ResizeObserver(()=>{ requestAnimationFrame(doDraw); });
-      ro.observe(wrap);
-      canvas._ro = ro;
-    } else {
-      window.addEventListener("resize", ()=>{ requestAnimationFrame(doDraw); }, { passive:true });
-    }
+  function num(v) {
+    if (typeof v === "number") return v;
+    if (!v) return 0;
+    return Number(String(v).replace(/\./g, "").replace(",", ".")) || 0;
+  }
+  function eur(n) {
+    const x = num(n);
+    return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(x);
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
   }
 })();
