@@ -1,85 +1,38 @@
-<div class="fm-root" aria-label="Finance Mieten & Pacht Modul">
+<div class="finance-mieten-root">
   <div class="fm-head">
     <div class="fm-titleblock">
       <div class="fm-title">Mieten & Pacht</div>
       <div class="fm-sub">6M Rückblick · aktueller Monat blau · 3M Forecast (Trend grün/rot)</div>
     </div>
-    <div class="fm-badges" id="fmBadges"></div>
-  </div>
 
-  <div class="fm-grid">
-    <div class="fm-card">
-      <div class="fm-k">Zeitraum</div>
-      <div class="fm-v" id="fmRange">—</div>
-      <div class="fm-h" id="fmNextRent">Nächste Fälligkeit: —</div>
-    </div>
-
-    <div class="fm-card">
-      <div class="fm-k">Aktuell</div>
-      <div class="fm-v" id="fmNowSum">—</div>
-      <div class="fm-h" id="fmNowSplit">Miete — · Pacht —</div>
-    </div>
-
-    <div class="fm-card">
-      <div class="fm-k">Ø 6M</div>
-      <div class="fm-v" id="fmAvgSum">—</div>
-      <div class="fm-h" id="fmOcc">Auslastung: —</div>
+    <div class="fm-meta">
+      <div class="fm-pill"><span class="k">Zeitraum</span><span class="v" id="fmRange">—</span></div>
+      <div class="fm-pill"><span class="k">Nächste Fälligkeit</span><span class="v" id="fmDue">—</span></div>
+      <div class="fm-pill"><span class="k">Aktuell</span><span class="v" id="fmNow">—</span></div>
+      <div class="fm-pill"><span class="k">Ø 6M</span><span class="v" id="fmAvg">—</span></div>
+      <div class="fm-pill"><span class="k">Auslastung</span><span class="v" id="fmOcc">—</span></div>
     </div>
   </div>
 
-  <div class="fm-chartcard">
-    <div class="fm-chartmeta">
-      <div class="fm-meta-left">
-        <div class="fm-k">Einnahmen (gestapelt)</div>
-        <div class="fm-v" id="fmTrend">—</div>
-      </div>
-      <div class="fm-meta-right">
-        <div class="fm-mini">
-          <div class="fm-k">Miete</div>
-          <div class="fm-v" id="fmNowRent">—</div>
-        </div>
-        <div class="fm-mini">
-          <div class="fm-k">Pacht</div>
-          <div class="fm-v" id="fmNowLease">—</div>
-        </div>
-        <div class="fm-mini">
-          <div class="fm-k">Forecast</div>
-          <div class="fm-v" id="fmForeTag">—</div>
-        </div>
-      </div>
+  <div class="fm-chart" aria-label="Mieten & Pacht Chart">
+    <div class="fm-yaxis">
+      <div class="fm-ymax" id="fmYMax">—</div>
+      <div class="fm-ymin" id="fmYMin">0</div>
     </div>
 
-    <div class="fm-chartwrap">
-      <div class="fm-ylabels">
-        <div class="fm-yl" id="fmYMax">—</div>
-        <div class="fm-yl fm-yl-mid">0</div>
-      </div>
-
-      <div class="fm-plot" id="fmPlot" role="img" aria-label="Einnahmen Balkendiagramm (Miete+Pacht, gestapelt)">
-        <div class="fm-gridline fm-gridline-top"></div>
-        <div class="fm-gridline fm-gridline-mid"></div>
-        <div class="fm-gridline fm-gridline-bot"></div>
-
-        <div class="fm-bars" id="fmBars"></div>
-
-        <!-- Trend line (SVG overlay) -->
-        <svg class="fm-line" id="fmLine" viewBox="0 0 1000 360" preserveAspectRatio="none" aria-hidden="true">
-          <polyline id="fmLinePath" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points=""></polyline>
-          <g id="fmLineDots"></g>
-        </svg>
-      </div>
-    </div>
-
-    <div class="fm-legend">
-      <div class="fm-leg"><span class="fm-dot fm-dot-past"></span> Vergangenheit</div>
-      <div class="fm-leg"><span class="fm-dot fm-dot-now"></span> Aktueller Monat</div>
-      <div class="fm-leg"><span class="fm-dot fm-dot-fore"></span> Forecast (3M)</div>
-      <div class="fm-leg fm-leg-split"><span class="fm-dot fm-dot-rent"></span> Miete</div>
-      <div class="fm-leg fm-leg-split"><span class="fm-dot fm-dot-lease"></span> Pacht</div>
+    <div class="fm-plot">
+      <div class="fm-bars" id="fmBars"></div>
     </div>
   </div>
 
-  <div class="fm-foot">
-    <div class="fm-footnote" id="fmNote">—</div>
+  <div class="fm-legend">
+    <span class="fm-leg fm-leg-rent">Miete</span>
+    <span class="fm-leg fm-leg-lease">Pacht</span>
+    <span class="fm-leg fm-leg-now">Aktueller Monat</span>
+    <span class="fm-leg fm-leg-forecast" id="fmLegForecast">Forecast (3M)</span>
+  </div>
+
+  <div class="fm-foot" id="fmFootnote">
+    Forecast (3M) wird als Trend aus den letzten 6 Monaten berechnet.
   </div>
 </div>
