@@ -1,4 +1,4 @@
-/* finance-mieten-modul.css – gleiche Chart-Höhe/Position wie Cashflow */
+/* finance-mieten-modul.css – Visual polish, stacked bars, gleiche Höhe wie Cashflow */
 
 .finance-mieten-root{
   display:flex;
@@ -18,8 +18,9 @@
 }
 
 .fm-title{ font-size:14px; font-weight:950; letter-spacing:.01em; }
-.fm-sub{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.72); }
+.fm-sub{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.68); }
 
+/* Meta chips */
 .fm-meta{
   display:flex;
   flex-wrap:wrap;
@@ -29,58 +30,73 @@
 }
 
 .fm-pill{
-  display:flex;
+  display:inline-flex;
   align-items:center;
   gap:8px;
   padding:6px 10px;
   border-radius:999px;
-  border:1px solid rgba(148,163,184,.18);
-  background: rgba(15,23,42,.35);
-  color: rgba(226,232,240,.88);
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.28);
+  color: rgba(226,232,240,.86);
   font-size:11px;
   white-space:nowrap;
   min-width:0;
 }
-.fm-pill .k{ color: rgba(226,232,240,.60); }
-.fm-pill .v{ font-weight:950; }
+.fm-pill .k{ color: rgba(226,232,240,.55); }
+.fm-pill .v{ font-weight:900; }
 
+/* Chart */
 .fm-chart{
   display:grid;
-  grid-template-columns: 70px 1fr;
+  grid-template-columns: 54px 1fr;
   gap:10px;
   min-width:0;
-  /* exakt wie Cashflow */
   height: 320px;
   min-height: 320px;
 }
 
 .fm-yaxis{
-  position:relative;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  padding: 6px 0;
-  color: rgba(226,232,240,.70);
-  font-size:11px;
+  padding: 10px 0;
+  color: rgba(226,232,240,.55);
+  font-size:10px;
   min-width:0;
 }
-.fm-yaxis > div{ line-height:1; }
 
 .fm-plot{
   position:relative;
-  border-radius:16px;
-  border:1px solid rgba(148,163,184,.14);
-  background: rgba(2,6,23,.22);
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,.12);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(14,165,233,.10), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(34,197,94,.08), transparent 45%),
+    rgba(2,6,23,.25);
   overflow:hidden;
   min-width:0;
 }
 
+/* Soft grid */
+.fm-plot::before{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border-radius:14px;
+  background:
+    linear-gradient(to bottom, rgba(148,163,184,.10) 1px, transparent 1px) 0 0/100% 25%,
+    linear-gradient(to right,  rgba(148,163,184,.06) 1px, transparent 1px) 0 0/25% 100%;
+  opacity:.55;
+  pointer-events:none;
+}
+
+/* Bars */
 .fm-bars{
   position:absolute;
-  inset: 12px 12px 12px 12px;
+  inset: 14px 14px 14px 14px;
   display:grid;
   grid-template-columns: repeat(9, minmax(0,1fr));
-  gap:8px;
+  gap:10px;
   align-items:stretch;
   min-width:0;
 }
@@ -95,13 +111,14 @@
 .fm-bar-stack{
   position:relative;
   height:100%;
-  border-radius:12px;
-  background: rgba(15,23,42,.35);
+  border-radius:14px;
+  background: rgba(15,23,42,.30);
   border:1px solid rgba(148,163,184,.10);
   overflow:hidden;
+  backdrop-filter: blur(6px);
 }
 
-/* Gestapelte Segmente */
+/* Stacked segments */
 .fm-seg{
   position:absolute;
   left:0; right:0;
@@ -109,42 +126,59 @@
   height:0%;
 }
 
+/* Miete (unten) – green */
 .fm-seg.rent{
-  background: rgba(34,197,94,.85);
-  border-top-left-radius:10px;
-  border-top-right-radius:10px;
+  background: linear-gradient(180deg, rgba(34,197,94,.92), rgba(16,185,129,.78));
 }
+
+/* Pacht (oben) – cyan */
 .fm-seg.lease{
-  background: rgba(14,165,233,.85);
+  background: linear-gradient(180deg, rgba(14,165,233,.90), rgba(56,189,248,.70));
 }
 
-.fm-bar.is-now .fm-seg.rent{ background: rgba(59,130,246,.85); } /* blau für aktuellen Monat */
-.fm-bar.is-now .fm-seg.lease{ background: rgba(59,130,246,.65); } /* blau abgestuft */
+/* Current month – blue theme */
+.fm-bar.is-now .fm-seg.rent{
+  background: linear-gradient(180deg, rgba(59,130,246,.95), rgba(37,99,235,.85));
+}
+.fm-bar.is-now .fm-seg.lease{
+  background: linear-gradient(180deg, rgba(59,130,246,.70), rgba(37,99,235,.55));
+}
 
-.fm-bar.is-forecast.up .fm-seg.rent{ background: rgba(34,197,94,.85); }
-.fm-bar.is-forecast.up .fm-seg.lease{ background: rgba(14,165,233,.75); }
+/* Forecast down – red */
+.fm-bar.is-forecast.down .fm-seg.rent{
+  background: linear-gradient(180deg, rgba(239,68,68,.92), rgba(248,113,113,.72));
+}
+.fm-bar.is-forecast.down .fm-seg.lease{
+  background: linear-gradient(180deg, rgba(239,68,68,.70), rgba(248,113,113,.55));
+}
 
-.fm-bar.is-forecast.down .fm-seg.rent{ background: rgba(239,68,68,.85); } /* rot nur bei sinkendem Trend */
-.fm-bar.is-forecast.down .fm-seg.lease{ background: rgba(239,68,68,.65); }
-
+/* Value label – minimal */
 .fm-val{
   position:absolute;
   left:50%;
   transform: translateX(-50%);
-  top: -2px;
+  top: 6px;
   font-size:10px;
   font-weight:950;
-  color: rgba(226,232,240,.92);
-  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  color: rgba(226,232,240,.0);
+  text-shadow: 0 2px 10px rgba(0,0,0,.55);
   white-space:nowrap;
   pointer-events:none;
+  transition: color .15s ease;
+}
+.fm-bar.is-now .fm-val,
+.fm-bar.is-forecast .fm-val{
+  color: rgba(226,232,240,.92);
+}
+.fm-bar:hover .fm-val{
+  color: rgba(226,232,240,.92);
 }
 
 .fm-mon{
   margin-top:8px;
   text-align:center;
   font-size:10px;
-  color: rgba(226,232,240,.72);
+  color: rgba(226,232,240,.62);
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -156,7 +190,7 @@
   gap:10px;
   flex-wrap:wrap;
   font-size:11px;
-  color: rgba(226,232,240,.72);
+  color: rgba(226,232,240,.68);
 }
 .fm-leg{
   display:inline-flex;
@@ -168,20 +202,32 @@
   width:12px;
   height:10px;
   border-radius:999px;
-  border:1px solid rgba(148,163,184,.18);
-  background: rgba(148,163,184,.35);
+  border:1px solid rgba(148,163,184,.16);
+  background: rgba(148,163,184,.28);
 }
-.fm-leg-rent::before{ background: rgba(34,197,94,.85); }
-.fm-leg-lease::before{ background: rgba(14,165,233,.85); }
-.fm-leg-now::before{ background: rgba(59,130,246,.85); }
-.fm-leg-forecast::before{ background: rgba(34,197,94,.85); }
+.fm-leg-rent::before{
+  background: linear-gradient(180deg, rgba(34,197,94,.92), rgba(16,185,129,.78));
+  border-color: rgba(34,197,94,.22);
+}
+.fm-leg-lease::before{
+  background: linear-gradient(180deg, rgba(14,165,233,.90), rgba(56,189,248,.70));
+  border-color: rgba(14,165,233,.22);
+}
+.fm-leg-now::before{
+  background: linear-gradient(180deg, rgba(59,130,246,.95), rgba(37,99,235,.85));
+  border-color: rgba(59,130,246,.25);
+}
+.fm-leg-forecast::before{
+  background: linear-gradient(180deg, rgba(34,197,94,.92), rgba(16,185,129,.78));
+  border-color: rgba(34,197,94,.22);
+}
 
 .fm-foot{
   font-size:11px;
-  color: rgba(226,232,240,.72);
+  color: rgba(226,232,240,.68);
   line-height:1.35;
   border-radius:14px;
-  border:1px solid rgba(148,163,184,.14);
+  border:1px solid rgba(148,163,184,.12);
   background: rgba(2,6,23,.18);
   padding: 10px 12px;
 }
