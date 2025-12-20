@@ -1,4 +1,10 @@
-/* finance-mieten-modul.js */
+/* finance-mieten-modul.js
+   - No negatives (axis from 0)
+   - Each monthly bar stacked: Miete (top) + Pacht (bottom)
+   - 6 months history (incl current) + 3 months forecast
+   - Forecast color green/red depending on trend direction
+   - Trend line stays inside the 9 bars only
+*/
 (function(){
   "use strict";
 
@@ -7,7 +13,6 @@
   function render(host, data){
     if(!host) return;
 
-    // Resolve rows: prefer IMMO_DATA.finance.mieten; fallback to data.homeRows or IMMO_DATA.home
     const mietenRows =
       (Array.isArray(window.IMMO_DATA?.finance?.mieten) && window.IMMO_DATA.finance.mieten) ||
       (Array.isArray(data?.mietenRows) && data.mietenRows) ||
@@ -28,15 +33,19 @@
       return;
     }
 
-    // Build normalized series from mietenRows
     const series = mietenRows
-      .map(r => ({
-        Monat: String(r.Monat || "").trim(),
-        Mieteinnahmen: toNum(r.Mieteinnahmen),
-        Pachteinnahmen: toNum(r.Pachteinnahmen),
-        Summe: toNum(r.Summe) || (toNum(r.Mieteinnahmen) + toNum(r.Pachteinnahmen)),
-        Auslastung_pct: pickOcc(r, homeRows)
-      }))
+      .map(r => {
+        const rent = toNum(r.Mieteinnahmen);
+        const lease = toNum(r.Pachteinnahmen);
+        const sum = toNum(r.Summe) || (rent + lease);
+        return {
+          Monat: String(r.Monat || "").trim(),
+          Mieteinnahmen: rent,
+          Pachteinnahmen: lease,
+          Summe: Math.max(0, sum), // ✅ never negative
+          Auslastung_pct: pickOcc(r, homeRows)
+        };
+      })
       .filter(r => isYM(r.Monat))
       .sort((a,b)=> a.Monat.localeCompare(b.Monat));
 
@@ -45,13 +54,11 @@
       return;
     }
 
-    // Current = last element
     const current = series[series.length - 1];
     const past6 = series.slice(Math.max(0, series.length - 6)); // incl current
 
-    // Forecast 3 months using trend from past6 Summe
-    const forecast = buildForecast(past6, 3);
-
+    // Forecast 3 months by trend of Summe, and split rent/lease by last actual shares
+    const forecast = buildForecastStacked(past6, 3);
     const combined = past6.concat(forecast);
 
     const slope = trendSlope(past6.map(x => x.Summe));
@@ -60,7 +67,7 @@
     // Next rent date: next 01.
     const nextRent = nextRentDate();
 
-    // UI meta
+    // UI nodes
     const rangeEl = root.querySelector("#fmRange");
     const nextEl  = root.querySelector("#fmNextRent");
     const nowSum  = root.querySelector("#fmNowSum");
@@ -72,7 +79,6 @@
     const nowLease= root.querySelector("#fmNowLease");
     const foreTag = root.querySelector("#fmForeTag");
     const yMaxEl  = root.querySelector("#fmYMax");
-    const yMinEl  = root.querySelector("#fmYMin");
     const noteEl  = root.querySelector("#fmNote");
     const linePath= root.querySelector("#fmLinePath");
     const lineDots= root.querySelector("#fmLineDots");
@@ -113,15 +119,14 @@
       badgesEl.appendChild(badge(`Forecast: ${trendUp ? "grün" : "rot"} (3M)`));
     }
 
-    // Scale
+    // Scale (0..max)
     const vals = combined.map(x => x.Summe);
-    const maxAbs = Math.max(1, ...vals.map(v => Math.abs(v)));
-    const scaleMax = maxAbs * 1.12;
+    const maxVal = Math.max(1, ...vals);
+    const scaleMax = maxVal * 1.12;
 
     if(yMaxEl) yMaxEl.textContent = fmtEuro(Math.round(scaleMax));
-    if(yMinEl) yMinEl.textContent = fmtEuro(-Math.round(scaleMax));
 
-    // Render bars (Summe), with split indicators for rent vs lease on past months only
+    // Render stacked bars
     barsEl.innerHTML = "";
 
     const points = []; // for trend line
@@ -136,59 +141,42 @@
       const wrap = document.createElement("div");
       wrap.className = "fm-barwrap";
 
-      const zero = document.createElement("div");
-      zero.className = "fm-zero";
-      wrap.appendChild(zero);
-
       const bar = document.createElement("div");
       bar.className = "fm-bar";
-
       if(isNow) bar.classList.add("now");
       else if(isForecast) bar.classList.add(trendUp ? "fore-up" : "fore-down");
       else bar.classList.add("past");
 
-      const v = r.Summe;
-      const pct = Math.min(1, Math.abs(v) / scaleMax);
-      const half = 50;
-      const hPct = pct * half;
+      const sum = Math.max(0, r.Summe);
+      const hPct = clamp((sum / scaleMax) * 100, 0, 100);
+      bar.style.height = hPct.toFixed(2) + "%";
 
-      if(v >= 0){
-        bar.style.bottom = "50%";
-        bar.style.top = (50 - hPct) + "%";
-      } else {
-        bar.style.top = "50%";
-        bar.style.bottom = (50 - hPct) + "%";
-      }
+      // Split heights inside the bar (rent+lease = sum)
+      const rent = Math.max(0, toNum(r.Mieteinnahmen));
+      const lease = Math.max(0, toNum(r.Pachteinnahmen));
+      const denom = Math.max(1, rent + lease);
 
-      // Value label (sum)
+      const rentShare = clamp(rent / denom, 0, 1);
+      const leaseShare = clamp(lease / denom, 0, 1);
+
+      // Top segment (rent)
+      const segRent = document.createElement("div");
+      segRent.className = "fm-seg fm-seg-rent";
+      segRent.style.flex = String(Math.max(0.05, rentShare));
+
+      // Put value label on the top segment (visually best)
       const val = document.createElement("div");
       val.className = "fm-val";
-      val.textContent = fmtEuro(v);
-      bar.appendChild(val);
+      val.textContent = fmtEuro(sum);
+      segRent.appendChild(val);
 
-      // Split indicator (rent vs lease) only if we have actual components (not forecast)
-      if(!isForecast){
-        const rent = toNum(r.Mieteinnahmen);
-        const lease= toNum(r.Pachteinnahmen);
-        const sum = Math.max(1, rent + lease);
-        const rentShare = clamp(rent / sum, 0, 1);
-        const leaseShare= clamp(lease / sum, 0, 1);
+      // Bottom segment (lease)
+      const segLease = document.createElement("div");
+      segLease.className = "fm-seg fm-seg-lease";
+      segLease.style.flex = String(Math.max(0.05, leaseShare));
 
-        const split = document.createElement("div");
-        split.className = "fm-split";
-
-        const sRent = document.createElement("div");
-        sRent.className = "fm-s rent";
-        sRent.style.flex = String(Math.max(0.05, rentShare));
-
-        const sLease = document.createElement("div");
-        sLease.className = "fm-s lease";
-        sLease.style.flex = String(Math.max(0.05, leaseShare));
-
-        split.appendChild(sRent);
-        split.appendChild(sLease);
-        bar.appendChild(split);
-      }
+      bar.appendChild(segRent);
+      bar.appendChild(segLease);
 
       wrap.appendChild(bar);
 
@@ -200,17 +188,18 @@
       col.appendChild(m);
       barsEl.appendChild(col);
 
-      points.push({ value: v, idx });
+      points.push({ value: sum, idx });
     });
 
-    // Trend line (only across 9 bars)
+    // Trend line (only across 9 bars) within the SVG viewBox
     if(linePath && lineDots){
       const W = 1000;
       const H = 360;
 
       const y = (v) => {
-        const t = v / scaleMax;
-        return (H/2) - (t * (H/2));
+        // map 0..scaleMax to bottom..top inside plot
+        const t = clamp(v / scaleMax, 0, 1);
+        return (H - (t * H));
       };
 
       const n = points.length;
@@ -244,7 +233,7 @@
     if(noteEl){
       const next = forecast[0]?.Summe;
       noteEl.textContent =
-        `Forecast wird als Trend aus den letzten 6 Monaten berechnet. Nächster Monat (Forecast): ${fmtEuro(next)}.`;
+        `Forecast (3M) wird als Trend aus den letzten 6 Monaten berechnet. Nächster Monat (Forecast): ${fmtEuro(next)}.`;
     }
   }
 
@@ -265,15 +254,35 @@
     }
   }
 
-  function buildForecast(past, n){
+  function buildForecastStacked(past, n){
     if(!past || past.length === 0) return [];
     const last = past[past.length - 1];
+
     const slope = trendSlope(past.map(x=>x.Summe));
+
+    const lastRent = Math.max(0, toNum(last.Mieteinnahmen));
+    const lastLease= Math.max(0, toNum(last.Pachteinnahmen));
+    const lastDen  = Math.max(1, lastRent + lastLease);
+
+    const rentShare = clamp(lastRent / lastDen, 0, 1);
+    const leaseShare= clamp(lastLease / lastDen, 0, 1);
+
     const out = [];
     for(let i=1;i<=n;i++){
       const month = addMonths(last.Monat, i);
-      const val = Math.round(last.Summe + slope*i);
-      out.push({ Monat: month, Summe: val, Mieteinnahmen: 0, Pachteinnahmen: 0, Auslastung_pct: 0, __forecast:true });
+      const total = Math.max(0, Math.round(last.Summe + slope*i));
+
+      const rent = Math.round(total * rentShare);
+      const lease = Math.max(0, total - rent);
+
+      out.push({
+        Monat: month,
+        Summe: total,
+        Mieteinnahmen: rent,
+        Pachteinnahmen: lease,
+        Auslastung_pct: 0,
+        __forecast:true
+      });
     }
     return out;
   }
@@ -341,12 +350,9 @@
   function clamp(x,min,max){ return Math.max(min, Math.min(max, x)); }
 
   function pickOcc(r, homeRows){
-    // prefer row occ keys
-    const direct =
-      pickNum(r, ["Auslastung_pct", "Auslastung_%", "Auslastung", "AuslastungProzent"]);
+    const direct = pickNum(r, ["Auslastung_pct", "Auslastung_%", "Auslastung", "AuslastungProzent"]);
     if(direct > 0) return direct;
 
-    // fallback: match in home rows by month
     if(Array.isArray(homeRows)){
       const m = String(r.Monat || "").trim();
       const hr = homeRows.find(x => String(x.Monat || "").trim() === m);
@@ -369,9 +375,7 @@
     const y = d.getFullYear();
     const m = d.getMonth();
     const firstThis = new Date(y, m, 1);
-    if(d < firstThis){
-      return firstThis;
-    }
+    if(d < firstThis) return firstThis;
     return new Date(y, m + 1, 1);
   }
 
