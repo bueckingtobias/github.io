@@ -81,16 +81,16 @@
 
   // ✅ 10 Gewerke/Handwerker (WICHTIG: gültige Keys!)
   const projectsGewerke = [
-    { Aktiv: "Ja", Sortierung: 1,  Gewerk: "Rohbau",         Handwerker: "Bauunternehmen Meyer", Angebot: 320000, Gezahlt: 210000, Baufortschritt: 70 },
-    { Aktiv: "Ja", Sortierung: 2,  Gewerk: "Elektro",        Handwerker: "Elektro Schröder",     Angebot:  95000, Gezahlt:  25000, Baufortschritt: 30 },
-    { Aktiv: "Ja", Sortierung: 3,  Gewerk: "Sanitär",        Handwerker: "Haustechnik Müller",   Angebot: 145000, Gezahlt:  60000, Baufortschritt: 40 },
-    { Aktiv: "Ja", Sortierung: 4,  Gewerk: "Fenster/Türen",  Handwerker: "Tischlerei Becker",    Angebot:  78000, Gezahlt:  52000, Baufortschritt: 85 },
-    { Aktiv: "Ja", Sortierung: 5,  Gewerk: "Dach",           Handwerker: "Dachdecker Hofmann",   Angebot: 112000, Gezahlt:  90000, Baufortschritt: 90 },
-    { Aktiv: "Ja", Sortierung: 6,  Gewerk: "Innenputz",      Handwerker: "Malerbetrieb König",   Angebot:  54000, Gezahlt:  15000, Baufortschritt: 25 },
-    { Aktiv: "Ja", Sortierung: 7,  Gewerk: "Bodenbeläge",    Handwerker: "Bodenstudio Nord",     Angebot:  68000, Gezahlt:  10000, Baufortschritt: 15 },
-    { Aktiv: "Ja", Sortierung: 8,  Gewerk: "Fliesen",        Handwerker: "Fliesen Schulte",      Angebot:  42000, Gezahlt:  21000, Baufortschritt: 50 },
-    { Aktiv: "Ja", Sortierung: 9,  Gewerk: "Außenanlagen",   Handwerker: "Gartenbau Grünwerk",   Angebot:  60000, Gezahlt:  12000, Baufortschritt: 20 },
-    { Aktiv: "Ja", Sortierung: 10, Gewerk: "Photovoltaik",   Handwerker: "Solartechnik Bremen",  Angebot:  98000, Gezahlt:  49000, Baufortschritt: 45 },
+    { Aktiv: "Ja", Sortierung: 1,  Gewerk: "Rohbau",         Handwerker: "Bauunternehmen Mahlstedt GmbH & Co. KG", Angebot: 532509,42, Gezahlt: 193970, Baufortschritt: 70 },
+    { Aktiv: "Ja", Sortierung: 2,  Gewerk: "Zimmerei",        Handwerker: "Meyer's Zimmerei GmbH",  Angebot:  258265,33, Gezahlt:  119000,00, Baufortschritt: 80 },
+    { Aktiv: "Ja", Sortierung: 3,  Gewerk: "Dach",        Handwerker: "Warrelmann GmbH Bedachungen",   Angebot: 70226,00, Gezahlt:  23324,00, Baufortschritt: 80 },
+    { Aktiv: "Ja", Sortierung: 4,  Gewerk: "Fenster / Türen",  Handwerker: "Tischlerei Warrelmann GmbH",    Angebot:  55542,00, Gezahlt:  0, Baufortschritt: 95 },
+    { Aktiv: "Ja", Sortierung: 5,  Gewerk: "Sanitär / Heizung",           Handwerker: "Fortmann Haustechnik GmbH & Co. KG",   Angebot: 177206,35, Gezahlt:  0, Baufortschritt: 0 },
+    { Aktiv: "Ja", Sortierung: 6,  Gewerk: "Elektro",      Handwerker: "Elektro-Technik Hoffmann GmbH",   Angebot:  70385,79, Gezahlt:  0, Baufortschritt: 0 },
+    { Aktiv: "Ja", Sortierung: 7,  Gewerk: "Gerüstbau",    Handwerker: "Torsten Schreiber Gerüstbau",     Angebot:  9103,50, Gezahlt:  10287,56, Baufortschritt: 100 },
+    { Aktiv: "Ja", Sortierung: 8,  Gewerk: "Erdwärme",         Handwerker: "Hartmann Brunnenbau GmbH",  Angebot:  19417,23, Gezahlt:  19417,23, Baufortschritt: 100 },
+    { Aktiv: "Ja", Sortierung: 9,  Gewerk: "Anschlüsse / Kanal",   Handwerker: "OOWV",   Angebot:  25186,31, Gezahlt:  3121,84, Baufortschritt: 30 },
+    { Aktiv: "Ja", Sortierung: 10, Gewerk: "Sonstiges",   Handwerker: "Sonstiges",  Angebot:  20000, Gezahlt:  20000, Baufortschritt: 50 },
   ].map(r => ({
     Projekt: projectsGesamt.Projekt,
     Objekt: projectsGesamt.Adresse,
