@@ -7,24 +7,75 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <script>window.__VER="20251220-Finance-Align-1";</script>
+  <!-- Version / Cache bust (einheitlich) -->
+  <script>window.__VER="20251220-Finance-1";</script>
 
-  <!-- Shell Styles (wie Home) -->
-  <link rel="stylesheet" href="./shell.css?v=20251220-Finance-Align-1" />
+  <!-- Shell (Basis-Design, Buttons, Sidebar, Cards) -->
+  <link rel="stylesheet" href="./shell.css?v=20251220-Finance-1" />
 
-  <!-- Module CSS (werden zusätzlich dynamisch geladen, aber so ist es direkt stabil) -->
-  <link rel="stylesheet" href="./finance-gesamt-modul.css?v=20251220-Finance-Align-1" />
-  <link rel="stylesheet" href="./finance-cashflow-modul.css?v=20251220-Finance-Align-1" />
-  <link rel="stylesheet" href="./finance-mieten-modul.css?v=20251220-Finance-Align-1" />
-  <link rel="stylesheet" href="./finance-op-modul.css?v=20251220-Finance-Align-1" />
-  <link rel="stylesheet" href="./finance-reserven-modul.css?v=20251220-Finance-Align-1" />
-  <link rel="stylesheet" href="./finance-budget-modul.css?v=20251220-Finance-Align-1" />
+  <!-- Module CSS (WICHTIG: direkt im Head laden, nicht dynamisch) -->
+  <link rel="stylesheet" href="./finance-gesamt-modul.css?v=20251220-Finance-1" />
+  <link rel="stylesheet" href="./finance-cashflow-modul.css?v=20251220-Finance-1" />
+  <link rel="stylesheet" href="./finance-mieten-modul.css?v=20251220-Finance-1" />
+  <link rel="stylesheet" href="./finance-op-modul.css?v=20251220-Finance-1" />
+  <link rel="stylesheet" href="./finance-reserven-modul.css?v=20251220-Finance-1" />
+  <link rel="stylesheet" href="./finance-budget-modul.css?v=20251220-Finance-1" />
 
   <style>
+    /* No horizontal scroll – ever */
     html,body{ overflow-x:hidden !important; }
 
-    :root{
-      --finGap:14px;
+    .fin-grid{
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap: 14px;
+      min-width:0;
+      align-items: stretch;
+    }
+    .span12{ grid-column: span 12; min-width:0; }
+    .span6{ grid-column: span 6; min-width:0; }
+    @media (max-width: 900px){
+      .span6{ grid-column: span 12; }
+    }
+
+    /* Equal-height rows (pairs) */
+    .row-equal .card{
+      height: 100%;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .row-equal .card-body{
+      flex:1 1 auto;
+      min-height:0;
+      padding: 12px 14px 14px;
+      overflow:hidden; /* verhindert seitlichen overflow im Modul */
+    }
+
+    .slot{
+      width:100%;
+      min-width:0;
+    }
+
+    .budget-big .card-body{
+      padding: 16px 16px 18px;
+    }
+
+    .module-host{
+      min-width:0;
+      overflow:hidden;
+    }
+
+    .module-error{
+      font-size:12px;
+      color: rgba(226,232,240,.78);
+      line-height:1.35;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(239,68,68,.25);
+      background: rgba(239,68,68,.08);
+      white-space: pre-wrap;
+      overflow-wrap:anywhere;
     }
 
     .chip{
@@ -42,98 +93,17 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-
-    /* Finance Layout */
-    .fin-wrap{
-      display:flex;
-      flex-direction:column;
-      gap: var(--finGap);
-      min-width:0;
-    }
-
-    .fin-grid{
-      display:grid;
-      grid-template-columns: repeat(12, minmax(0,1fr));
-      gap: var(--finGap);
-      min-width:0;
-      align-items:stretch;
-    }
-
-    .span12{ grid-column: span 12; min-width:0; }
-    .span6{ grid-column: span 6; min-width:0; }
-
-    @media (max-width: 900px){
-      .span6{ grid-column: span 12; }
-    }
-
-    /* Equal height pairs (iPad/desktop) */
-    .card.equal{
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      min-height:0;
-    }
-    .card.equal .card-body{
-      flex:1 1 auto;
-      min-height:0;
-      overflow:hidden;
-      display:flex;
-      padding: 12px 14px 14px;
-    }
-
-    /* Full-width blocks */
-    .card.full .card-body{
-      padding: 14px;
-    }
-
-    /* Budget bigger */
-    .card.budget .card-body{
-      padding: 16px 16px 18px;
-    }
-
-    .module-host{
-      width:100%;
-      min-width:0;
-      flex:1 1 auto;
-      min-height:0;
-      overflow:hidden;
-    }
-
-    .module-error{
-      font-size:12px;
-      color: rgba(226,232,240,.78);
-      line-height:1.35;
-      padding: 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(239,68,68,.25);
-      background: rgba(239,68,68,.08);
-      overflow-wrap:anywhere;
-      white-space: pre-wrap;
-    }
-
-    /* Kleine Debugline unten optional */
-    .debugline{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(148,163,184,.14);
-      background: rgba(2,6,23,.22);
-      color: rgba(226,232,240,.72);
-      font-size: 12px;
-      line-height:1.35;
-      word-break: break-word;
-    }
   </style>
 
   <!-- Auth -->
-  <script src="./auth.js"></script>
-  <script>Auth.requireAuth({ loginUrl: "./login.html" });</script>
+  <script src="./auth.js?v=20251220-Finance-1"></script>
+  <script>Auth.requireAuth({ loginUrl:"./login.html" });</script>
 </head>
 
 <body>
 <div class="app">
 
-  <!-- Sidebar (1:1 wie Home) -->
+  <!-- Sidebar 1:1 wie Home (mit Logout Button) -->
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-dot"></div>
@@ -206,7 +176,7 @@
     <header class="topbar">
       <div class="page-title">
         <h1>Finanzen</h1>
-        <div>Gesamt · Cashflow · Mieten/Pacht · OP · Reserven · Budget</div>
+        <div>Gesamt · Cashflow · Mieten · Reserven · Budget</div>
       </div>
       <div class="top-right">
         <span class="chip" id="clockTop">—</span>
@@ -216,118 +186,112 @@
 
     <main class="content">
       <div class="container" style="max-width:1400px;">
-        <div class="fin-wrap">
+        <section class="fin-grid">
 
-          <section class="fin-grid">
-
-            <!-- Gesamtübersicht -->
-            <section class="span12">
-              <section class="card full">
-                <div class="card-header">
-                  <div>
-                    <div class="card-title">Gesamtübersicht</div>
-                    <div class="card-sub">finance-gesamt-modul</div>
-                  </div>
+          <!-- 1) Gesamtübersicht -->
+          <section class="span12">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Gesamtübersicht</div>
+                  <div class="card-sub">finance-gesamt-modul</div>
                 </div>
-                <div class="card-body">
-                  <div class="module-host" id="hostGesamt"></div>
-                </div>
-              </section>
-            </section>
-
-            <!-- Cashflow + Mieten/Pacht -->
-            <section class="span6">
-              <section class="card equal">
-                <div class="card-header">
-                  <div>
-                    <div class="card-title">Cashflow</div>
-                    <div class="card-sub">finance-cashflow-modul</div>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div class="module-host" id="hostCashflow"></div>
-                </div>
-              </section>
-            </section>
-
-            <section class="span6">
-              <section class="card equal">
-                <div class="card-header">
-                  <div>
-                    <div class="card-title">Mieten & Pacht</div>
-                    <div class="card-sub">finance-mieten-modul</div>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div class="module-host" id="hostMieten"></div>
-                </div>
-              </section>
-            </section>
-
-            <!-- OP + Reserven -->
-            <section class="span6">
-              <section class="card equal">
-                <div class="card-header">
-                  <div>
-                    <div class="card-title">OP – Offene Posten</div>
-                    <div class="card-sub">finance-op-modul</div>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div class="module-host" id="hostOP"></div>
-                </div>
-              </section>
-            </section>
-
-            <section class="span6">
-              <section class="card equal">
-                <div class="card-header">
-                  <div>
-                    <div class="card-title">Reserven</div>
-                    <div class="card-sub">finance-reserven-modul</div>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div class="module-host" id="hostReserven"></div>
-                </div>
-              </section>
-            </section>
-
-            <!-- Budget -->
-            <section class="span12">
-              <section class="card budget">
-                <div class="card-header">
-                  <div>
-                    <div class="card-title">Budget</div>
-                    <div class="card-sub">finance-budget-modul</div>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div class="module-host" id="hostBudget"></div>
-                </div>
-              </section>
-            </section>
-
+              </div>
+              <div class="card-body module-host">
+                <div class="slot" id="slotGesamt"></div>
+              </div>
+            </div>
           </section>
 
-          <div class="debugline" id="debugLine">Debug: —</div>
+          <!-- 2) Cashflow + Mieten -->
+          <section class="span6 row-equal">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Cashflow</div>
+                  <div class="card-sub">finance-cashflow-modul</div>
+                </div>
+              </div>
+              <div class="card-body module-host">
+                <div class="slot" id="slotCashflow"></div>
+              </div>
+            </div>
+          </section>
 
-        </div>
+          <section class="span6 row-equal">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Mieten & Pacht</div>
+                  <div class="card-sub">finance-mieten-modul</div>
+                </div>
+              </div>
+              <div class="card-body module-host">
+                <div class="slot" id="slotMieten"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3) OP + Reserven -->
+          <section class="span6 row-equal">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">OP – Offene Posten</div>
+                  <div class="card-sub">finance-op-modul</div>
+                </div>
+              </div>
+              <div class="card-body module-host">
+                <div class="slot" id="slotOP"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="span6 row-equal">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Reserven</div>
+                  <div class="card-sub">finance-reserven-modul</div>
+                </div>
+              </div>
+              <div class="card-body module-host">
+                <div class="slot" id="slotReserven"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4) Budget -->
+          <section class="span12 budget-big">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Budget</div>
+                  <div class="card-sub">finance-budget-modul</div>
+                </div>
+              </div>
+              <div class="card-body module-host">
+                <div class="slot" id="slotBudget"></div>
+              </div>
+            </div>
+          </section>
+
+        </section>
       </div>
     </main>
   </section>
 </div>
 
 <!-- DataLoader (Master) -->
-<script src="./data-loader.js?v=20251220-Finance-Align-1"></script>
+<script src="./data-loader.js?v=20251220-Finance-1"></script>
 
-<!-- Module scripts (render globals) -->
-<script src="./finance-gesamt-modul.js?v=20251220-Finance-Align-1"></script>
-<script src="./finance-cashflow-modul.js?v=20251220-Finance-Align-1"></script>
-<script src="./finance-mieten-modul.js?v=20251220-Finance-Align-1"></script>
-<script src="./finance-op-modul.js?v=20251220-Finance-Align-1"></script>
-<script src="./finance-reserven-modul.js?v=20251220-Finance-Align-1"></script>
-<script src="./finance-budget-modul.js?v=20251220-Finance-Align-1"></script>
+<!-- Module JS (WICHTIG: direkt laden, nicht dynamisch) -->
+<script src="./finance-gesamt-modul.js?v=20251220-Finance-1"></script>
+<script src="./finance-cashflow-modul.js?v=20251220-Finance-1"></script>
+<script src="./finance-mieten-modul.js?v=20251220-Finance-1"></script>
+<script src="./finance-op-modul.js?v=20251220-Finance-1"></script>
+<script src="./finance-reserven-modul.js?v=20251220-Finance-1"></script>
+<script src="./finance-budget-modul.js?v=20251220-Finance-1"></script>
 
 <script>
 (async function(){
@@ -346,118 +310,87 @@
     location.href = "./index.html";
   };
 
-  // Inject helper (wie Home)
-  async function injectFragment(hostId, fragmentPath){
-    const host = document.getElementById(hostId);
-    if (!host) return;
+  // Inject helper
+  async function inject(slotId, fragmentPath){
+    const slot = document.getElementById(slotId);
+    if(!slot) return;
 
     const url = fragmentPath + "?v=" + encodeURIComponent(window.__VER);
     try{
       const res = await fetch(url, { cache:"no-store" });
       if(!res.ok) throw new Error(res.status + " " + res.statusText);
-      host.innerHTML = await res.text();
+      slot.innerHTML = await res.text();
     }catch(e){
-      host.innerHTML = `<div class="module-error"><b>Modul konnte nicht geladen werden:</b><br/>${fragmentPath}<br/>${String(e && e.message ? e.message : e)}</div>`;
+      slot.innerHTML =
+        `<div class="module-error"><b>Modul konnte nicht geladen werden:</b>\n${fragmentPath}\n${String(e && e.message ? e.message : e)}</div>`;
     }
   }
 
-  // 1) Inject all module HTML shells
-  await injectFragment("hostGesamt", "./finance-gesamt-modul.html");
-  await injectFragment("hostCashflow","./finance-cashflow-modul.html");
-  await injectFragment("hostMieten","./finance-mieten-modul.html");
-  await injectFragment("hostOP","./finance-op-modul.html");
-  await injectFragment("hostReserven","./finance-reserven-modul.html");
-  await injectFragment("hostBudget","./finance-budget-modul.html");
+  // 1) Inject module HTML
+  await inject("slotGesamt","./finance-gesamt-modul.html");
+  await inject("slotCashflow","./finance-cashflow-modul.html");
+  await inject("slotMieten","./finance-mieten-modul.html");
+  await inject("slotOP","./finance-op-modul.html");
+  await inject("slotReserven","./finance-reserven-modul.html");
+  await inject("slotBudget","./finance-budget-modul.html");
 
-  // 2) Load master data
+  // 2) Load data (Master -> IMMO_DATA)
   await DataLoader.load();
 
-  // 3) Data chip + debug
+  // 3) Chip
+  const chip = document.getElementById("dataChip");
   const meta = window.IMMO_DATA_META || {};
   const hasMaster = !!window.IMMO_MASTER_DATA;
-  const f = window.IMMO_DATA && window.IMMO_DATA.finance ? window.IMMO_DATA.finance : {};
-  const counts = {
-    gesamt: Array.isArray(f.gesamt) ? f.gesamt.length : 0,
-    cashflow: Array.isArray(f.cashflow) ? f.cashflow.length : 0,
-    mieten: Array.isArray(f.mieten) ? f.mieten.length : 0,
-    op: Array.isArray(f.op) ? f.op.length : 0,
-    reserven: Array.isArray(f.reserven) ? f.reserven.length : 0,
-    budget: Array.isArray(f.budget) ? f.budget.length : 0
-  };
 
-  const chip = document.getElementById("dataChip");
-  if (meta.ok && hasMaster){
-    chip.textContent = `Master:OK · Loader:OK · Finance: G${counts.gesamt}/C${counts.cashflow}/M${counts.mieten}/OP${counts.op}/R${counts.reserven}/B${counts.budget} · v ${meta.version || "—"}`;
+  const fin = window.IMMO_DATA?.finance || {};
+  const counts = [
+    Array.isArray(fin.gesamt) ? fin.gesamt.length : 0,
+    Array.isArray(fin.cashflow) ? fin.cashflow.length : 0,
+    Array.isArray(fin.mieten) ? fin.mieten.length : 0,
+    Array.isArray(fin.op) ? fin.op.length : 0,
+    Array.isArray(fin.reserven) ? fin.reserven.length : 0,
+    Array.isArray(fin.budget) ? fin.budget.length : 0
+  ];
+
+  if(meta.ok && hasMaster){
+    chip.textContent = `Master:OK · Loader:OK · Finance:${counts.join("/") } · v ${meta.version || "—"}`;
   } else {
-    chip.textContent = `Master:FAIL · Loader:OK · Finance: G${counts.gesamt}/C${counts.cashflow}/M${counts.mieten}/OP${counts.op}/R${counts.reserven}/B${counts.budget} · ${meta.reason || ""}`;
+    chip.textContent = `Master:FAIL · Loader:OK · Finance:${counts.join("/") } · ${meta.reason || ""}`;
   }
 
-  const dbg = document.getElementById("debugLine");
-  dbg.textContent =
-    `Debug: source=${meta.source || "—"} | hasMaster=${!!window.IMMO_MASTER_DATA} | hasIMMO_DATA=${!!window.IMMO_DATA} | ` +
-    `financeKeys=${Object.keys(f||{}).join(",") || "(none)"}`;
+  // 4) Render modules
+  const slotGesamt = document.getElementById("slotGesamt");
+  const slotCashflow = document.getElementById("slotCashflow");
+  const slotMieten = document.getElementById("slotMieten");
+  const slotOP = document.getElementById("slotOP");
+  const slotReserven = document.getElementById("slotReserven");
+  const slotBudget = document.getElementById("slotBudget");
 
-  // 4) Render modules with consistent data mapping (Master → Module)
-  const homeRows = Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : [];
-
-  const dataGesamt = {
-    financeRows: Array.isArray(f.gesamt) ? f.gesamt : [],
-    opRows: Array.isArray(f.op) ? f.op : [],
-    reservesRows: Array.isArray(f.reserven) ? f.reserven : [],
-    budgetRows: Array.isArray(f.budget) ? f.budget : [],
-    homeRows
+  // Data packages (falls Module data erwarten)
+  const pkgGesamt = {
+    finance: fin,
+    financeRows: fin.gesamt || [],
+    opRows: fin.op || [],
+    reservesRows: fin.reserven || [],
+    budgetRows: fin.budget || [],
+    homeRows: Array.isArray(window.IMMO_DATA?.home) ? window.IMMO_DATA.home : []
   };
 
-  const dataCashflow = {
-    financeRows: Array.isArray(f.cashflow) ? f.cashflow : (Array.isArray(f.gesamt) ? f.gesamt : []),
-    homeRows
-  };
+  if(window.FinanceGesamtModul?.render) window.FinanceGesamtModul.render(slotGesamt, pkgGesamt);
+  if(window.FinanceCashflowModul?.render) window.FinanceCashflowModul.render(slotCashflow, { finance: fin, financeRows: fin.cashflow || [] });
+  if(window.FinanceMietenModul?.render) window.FinanceMietenModul.render(slotMieten, { finance: fin, homeRows: pkgGesamt.homeRows, financeRows: fin.mieten || [] });
+  if(window.FinanceOPModul?.render) window.FinanceOPModul.render(slotOP, { opRows: fin.op || [] });
+  if(window.FinanceReservenModul?.render) window.FinanceReservenModul.render(slotReserven, { reservesRows: fin.reserven || [], financeRows: fin.gesamt || [] });
+  if(window.FinanceBudgetModul?.render) window.FinanceBudgetModul.render(slotBudget, { budgetRows: fin.budget || [] });
 
-  const dataMieten = {
-    financeRows: Array.isArray(f.mieten) ? f.mieten : (Array.isArray(f.gesamt) ? f.gesamt : []),
-    homeRows
-  };
-
-  const dataOP = { opRows: Array.isArray(f.op) ? f.op : [] };
-  const dataRes = { reservesRows: Array.isArray(f.reserven) ? f.reserven : [], financeRows: Array.isArray(f.gesamt) ? f.gesamt : [] };
-  const dataBudget = { budgetRows: Array.isArray(f.budget) ? f.budget : [] };
-
-  const hGesamt   = document.getElementById("hostGesamt");
-  const hCashflow = document.getElementById("hostCashflow");
-  const hMieten   = document.getElementById("hostMieten");
-  const hOP       = document.getElementById("hostOP");
-  const hRes      = document.getElementById("hostReserven");
-  const hBudget   = document.getElementById("hostBudget");
-
-  function safeRender(globalName, host, data){
-    const mod = window[globalName];
-    if (!host) return;
-    if (!mod || typeof mod.render !== "function"){
-      host.innerHTML = `<div class="module-error"><b>Modul fehlt:</b> window.${globalName}.render</div>`;
-      return;
-    }
-    try{
-      mod.render(host, data || {});
-    }catch(e){
-      host.innerHTML = `<div class="module-error"><b>Render-Fehler:</b> window.${globalName}.render<br/>${String(e && e.message ? e.message : e)}</div>`;
-    }
-  }
-
-  safeRender("FinanceGesamtModul", hGesamt, dataGesamt);
-  safeRender("FinanceCashflowModul", hCashflow, dataCashflow);
-  safeRender("FinanceMietenModul", hMieten, dataMieten);
-  safeRender("FinanceOPModul", hOP, dataOP);
-  safeRender("FinanceReservenModul", hRes, dataRes);
-  safeRender("FinanceBudgetModul", hBudget, dataBudget);
-
-  // iPad Safari retry (wie Home)
+  // iPad retry
   setTimeout(() => {
-    safeRender("FinanceGesamtModul", hGesamt, dataGesamt);
-    safeRender("FinanceCashflowModul", hCashflow, dataCashflow);
-    safeRender("FinanceMietenModul", hMieten, dataMieten);
-    safeRender("FinanceOPModul", hOP, dataOP);
-    safeRender("FinanceReservenModul", hRes, dataRes);
-    safeRender("FinanceBudgetModul", hBudget, dataBudget);
+    if(window.FinanceGesamtModul?.render) window.FinanceGesamtModul.render(slotGesamt, pkgGesamt);
+    if(window.FinanceCashflowModul?.render) window.FinanceCashflowModul.render(slotCashflow, { finance: fin, financeRows: fin.cashflow || [] });
+    if(window.FinanceMietenModul?.render) window.FinanceMietenModul.render(slotMieten, { finance: fin, homeRows: pkgGesamt.homeRows, financeRows: fin.mieten || [] });
+    if(window.FinanceOPModul?.render) window.FinanceOPModul.render(slotOP, { opRows: fin.op || [] });
+    if(window.FinanceReservenModul?.render) window.FinanceReservenModul.render(slotReserven, { reservesRows: fin.reserven || [], financeRows: fin.gesamt || [] });
+    if(window.FinanceBudgetModul?.render) window.FinanceBudgetModul.render(slotBudget, { budgetRows: fin.budget || [] });
   }, 250);
 
 })();
