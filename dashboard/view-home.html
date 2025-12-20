@@ -7,25 +7,94 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#0b1220" />
 
-  <script>window.__VER="20251214-Home-7";</script>
+  <script>window.__VER="20251220-Home-KPIs-Top-Grid-1";</script>
 
-  <link rel="stylesheet" href="./shell.css?v=20251214-Home-7" />
-  <link rel="stylesheet" href="./home-weather-modul.css?v=20251214-Home-7" />
-  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251214-Home-7" />
-  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251214-Home-7" />
+  <link rel="stylesheet" href="./shell.css?v=20251220-Home-KPIs-Top-Grid-1" />
+  <link rel="stylesheet" href="./home-weather-modul.css?v=20251220-Home-KPIs-Top-Grid-1" />
+  <link rel="stylesheet" href="./home-calendar-modul.css?v=20251220-Home-KPIs-Top-Grid-1" />
+  <link rel="stylesheet" href="./home-kpis-modul.css?v=20251220-Home-KPIs-Top-Grid-1" />
 
   <style>
-    :root{ --homeGap:14px; --homeTopH:720px; }
     html,body{ overflow-x:hidden; }
-    .home-grid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--homeGap); min-width:0; }
-    .col-6{ grid-column:span 6; min-width:0; }
+
+    :root{
+      --homeGap:14px;
+
+      /* KPI-Bereich: soll auf iPad "above the fold" passen */
+      --kpiTopMinH: 740px;   /* iPad: so dass 2 Reihen sichtbar sind */
+      --kpiTopMinHSm: auto;  /* Mobile: auto */
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.18);
+      background:rgba(15,23,42,.45);
+      color:rgba(226,232,240,.82);
+      font-size:11px;
+      white-space:nowrap;
+      max-width:56vw;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .home-grid{
+      display:grid;
+      grid-template-columns:repeat(12,minmax(0,1fr));
+      gap:var(--homeGap);
+      min-width:0;
+      align-items:stretch;
+    }
+
     .col-12{ grid-column:span 12; min-width:0; }
-    @media (max-width:900px){ .col-6{ grid-column:span 12; } }
-    .home-top{ height:var(--homeTopH); display:flex; flex-direction:column; min-height:0; }
-    @media (max-width:900px){ .home-top{ height:auto; } }
-    .module-host{ flex:1 1 auto; min-height:0; overflow:hidden; }
-    .module-error{ font-size:12px; color:rgba(226,232,240,.78); line-height:1.35; padding:12px; border-radius:14px; border:1px solid rgba(239,68,68,.25); background:rgba(239,68,68,.08); }
-    .chip{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.45); color:rgba(226,232,240,.82); font-size:11px; white-space:nowrap; max-width:56vw; overflow:hidden; text-overflow:ellipsis; }
+    .col-6{ grid-column:span 6; min-width:0; }
+    @media (max-width: 900px){
+      .col-6{ grid-column:span 12; }
+    }
+
+    /* KPI oben: möglichst groß, kein unnötiger Scroll im Modul */
+    .kpi-top{
+      min-height: var(--kpiTopMinH);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    @media (max-width: 900px){
+      .kpi-top{ min-height: var(--kpiTopMinHSm); }
+    }
+
+    /* Hosts */
+    .module-host{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:hidden; /* wichtig: kein horizontal scroll */
+    }
+
+    /* Wetter/Kalender: gleich hoch, aber erst beim Scroll sichtbar (stehen unter KPI) */
+    .home-bottom{
+      height: 520px; /* kannst du später feinjustieren */
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    @media (max-width: 900px){
+      .home-bottom{ height:auto; }
+      .module-host{ overflow:visible; }
+    }
+
+    .module-error{
+      font-size:12px;
+      color:rgba(226,232,240,.78);
+      line-height:1.35;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(239,68,68,.25);
+      background:rgba(239,68,68,.08);
+    }
+
     .debugline{
       margin-top:10px;
       padding:10px 12px;
@@ -37,6 +106,35 @@
       line-height:1.35;
       word-break: break-word;
     }
+
+    /* ✅ KPI-Modul intern: 3 nebeneinander / 2 untereinander (ohne Modul-Datei zu ändern)
+       Wir steuern das über Wrapper-Klassen, die das KPI-Modul optional nutzen kann.
+       Falls dein home-kpis-modul.js bereits ein Grid ausgibt, greifen diese Regeln "sanft".
+    */
+    #kpisHost .kpis-grid,
+    #kpisHost [data-kpis-grid]{
+      display:grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 12px !important;
+      align-items: stretch !important;
+    }
+
+    /* Tablet kleiner -> 2 Spalten */
+    @media (max-width: 1100px){
+      #kpisHost .kpis-grid,
+      #kpisHost [data-kpis-grid]{
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+    }
+
+    /* Mobile -> 1 Spalte */
+    @media (max-width: 700px){
+      #kpisHost .kpis-grid,
+      #kpisHost [data-kpis-grid]{
+        grid-template-columns: 1fr !important;
+      }
+    }
+
   </style>
 </head>
 
@@ -65,11 +163,7 @@
       <a href="./view-vermietung.html"><div class="nav-ic">🏠</div><div class="nav-txt"><div class="nav-title">Vermietung</div><div class="nav-sub">Objekte · Anfragen</div></div></a>
 
       <div class="nav-label">Projekte</div>
-
-      <!-- ✅ Umbenannt: Projekte / Bau -> Baumstraße (Link + Sub unverändert) -->
       <a href="./view-projects.html"><div class="nav-ic">🏗</div><div class="nav-txt"><div class="nav-title">Baumstraße</div><div class="nav-sub">Gesamt + Gewerke</div></div></a>
-
-      <!-- ➕ Platzhalter: Am Hünenberg -->
       <a href="./view-project-am-huenenberg.html"><div class="nav-ic">🏗</div><div class="nav-txt"><div class="nav-title">Am Hünenberg</div><div class="nav-sub">Projekt (Platzhalter)</div></div></a>
 
       <div class="nav-label">Finanzen</div>
@@ -88,7 +182,7 @@
     <header class="topbar">
       <div class="page-title">
         <h1>Home</h1>
-        <div>Wetter · Kalender · KPIs</div>
+        <div>KPIs (oben) · Wetter & Kalender (unten)</div>
       </div>
       <div class="top-right">
         <span class="chip" id="clockTop">—</span>
@@ -98,21 +192,29 @@
 
     <main class="content">
       <div class="container" style="max-width:1400px;">
+
         <section class="home-grid">
 
-          <section class="card col-6 home-top">
+          <!-- ✅ KPI Top: full width, so dass 6 KPIs (3x2) ohne Scroll sichtbar sind -->
+          <section class="card col-12 kpi-top">
+            <div class="card-header">
+              <div>
+                <div class="card-title">KPIs</div>
+                <div class="card-sub">home-kpis-modul · 6 Monate Rückblick · 3 Monate Forecast</div>
+              </div>
+            </div>
+            <div class="card-body module-host" id="kpisHost"></div>
+          </section>
+
+          <!-- Wetter & Kalender erst darunter -->
+          <section class="card col-6 home-bottom">
             <div class="card-header"><div><div class="card-title">Wetter</div><div class="card-sub">home-weather-modul</div></div></div>
             <div class="card-body module-host" id="weatherHost"></div>
           </section>
 
-          <section class="card col-6 home-top">
+          <section class="card col-6 home-bottom">
             <div class="card-header"><div><div class="card-title">Kalender</div><div class="card-sub">home-calendar-modul</div></div></div>
             <div class="card-body module-host" id="calendarHost"></div>
-          </section>
-
-          <section class="card col-12">
-            <div class="card-header"><div><div class="card-title">KPIs</div><div class="card-sub">home-kpis-modul</div></div></div>
-            <div class="card-body module-host" id="kpisHost"></div>
           </section>
 
         </section>
@@ -123,17 +225,18 @@
   </section>
 </div>
 
-<!-- DataLoader (loads master-data.js automatically) -->
-<script src="./data-loader.js?v=20251214-Home-7"></script>
+<!-- DataLoader -->
+<script src="./data-loader.js?v=20251220-Home-KPIs-Top-Grid-1"></script>
 
 <!-- Module scripts -->
-<script src="./home-weather-modul.js?v=20251214-Home-7"></script>
-<script src="./home-calendar-modul.js?v=20251214-Home-7"></script>
-<script src="./home-kpis-modul.js?v=20251214-Home-7"></script>
+<script src="./home-weather-modul.js?v=20251220-Home-KPIs-Top-Grid-1"></script>
+<script src="./home-calendar-modul.js?v=20251220-Home-KPIs-Top-Grid-1"></script>
+<script src="./home-kpis-modul.js?v=20251220-Home-KPIs-Top-Grid-1"></script>
 
 <script>
 (async function(){
 
+  // Clock
   const clockTop = document.getElementById("clockTop");
   function tick(){
     const d = new Date();
@@ -141,6 +244,7 @@
   }
   tick(); setInterval(tick,15000);
 
+  // Logout
   document.getElementById("logoutBtn").onclick = () => {
     try { localStorage.clear(); } catch {}
     location.href = "./index.html";
@@ -160,12 +264,15 @@
     }
   }
 
+  // Inject: KPI first
+  await injectFragment("kpisHost","./home-kpis-modul.html");
   await injectFragment("weatherHost","./home-weather-modul.html");
   await injectFragment("calendarHost","./home-calendar-modul.html");
-  await injectFragment("kpisHost","./home-kpis-modul.html");
 
+  // Load data
   await DataLoader.load();
 
+  // Data chip + debug
   const chip = document.getElementById("dataChip");
   const dbg = document.getElementById("debugLine");
   const meta = window.IMMO_DATA_META || {};
@@ -181,18 +288,20 @@
     `Debug: expected master url = ${meta.expectedUrl || "(unknown)"} | reason = ${meta.reason || "(none)"} | ` +
     `has IMMO_MASTER_DATA = ${!!window.IMMO_MASTER_DATA} | has IMMO_DATA = ${!!window.IMMO_DATA}`;
 
+  // Render
   const wHost = document.getElementById("weatherHost");
   const cHost = document.getElementById("calendarHost");
   const kHost = document.getElementById("kpisHost");
 
+  if (window.HomeKpisModul?.render) HomeKpisModul.render(kHost);
   if (window.HomeWeatherModul?.render) HomeWeatherModul.render(wHost);
   if (window.HomeCalendarModul?.render) HomeCalendarModul.render(cHost);
-  if (window.HomeKpisModul?.render) HomeKpisModul.render(kHost);
 
+  // iPad retry
   setTimeout(() => {
+    if (window.HomeKpisModul?.render) HomeKpisModul.render(kHost);
     if (window.HomeWeatherModul?.render) HomeWeatherModul.render(wHost);
     if (window.HomeCalendarModul?.render) HomeCalendarModul.render(cHost);
-    if (window.HomeKpisModul?.render) HomeKpisModul.render(kHost);
   }, 250);
 
 })();
