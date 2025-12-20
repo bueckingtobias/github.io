@@ -1,4 +1,86 @@
 <div class="finance-gesamt-modul" id="financeGesamtModule">
-  <!-- Root container(s) – JS kann sich den passenden greifen -->
-  <div class="finance-gesamt-root" id="financeGesamtRoot"></div>
+  <div class="fg-head">
+    <div>
+      <div class="fg-title">Finanzen – Gesamt</div>
+      <div class="fg-sub" id="fgSub">Kompaktübersicht: Liquidität, Cashflow, Rücklagen, Budgetstatus</div>
+    </div>
+
+    <div class="fg-badges">
+      <span class="fg-badge" id="fgBadgePeriod">Zeitraum: —</span>
+      <span class="fg-badge" id="fgBadgeRunway">Runway: —</span>
+      <span class="fg-badge" id="fgBadgeNextRent">Nächste Miete: —</span>
+    </div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="fg-grid">
+    <div class="fg-kpi">
+      <div class="fg-k">Kontostand</div>
+      <div class="fg-v" id="fgKontostand">—</div>
+      <div class="fg-h" id="fgKontostandH">Liquidität inkl. laufender Zahlungen</div>
+    </div>
+
+    <div class="fg-kpi">
+      <div class="fg-k">Liquide Mittel</div>
+      <div class="fg-v" id="fgLiquide">—</div>
+      <div class="fg-h" id="fgLiquideH">Sofort verfügbar / Cash</div>
+    </div>
+
+    <div class="fg-kpi">
+      <div class="fg-k">Rücklagen</div>
+      <div class="fg-v" id="fgRuecklagen">—</div>
+      <div class="fg-h" id="fgRuecklagenH">Reserven laut Finanz-Setup</div>
+    </div>
+
+    <div class="fg-kpi">
+      <div class="fg-k">Kurzfr. Verbindlichkeiten</div>
+      <div class="fg-v" id="fgVerbind">—</div>
+      <div class="fg-h" id="fgVerbindH">≤ 30 Tage / kurzfristig</div>
+    </div>
+  </div>
+
+  <!-- Bars (Budget / Ist / Forecast) -->
+  <div class="fg-bars">
+    <div class="fg-barblock">
+      <div class="fg-barlabel">
+        <span>Budget-Status gesamt</span>
+        <span id="fgBudgetLabel">—</span>
+      </div>
+      <div class="fg-track">
+        <div class="fg-fill fg-budget" id="fgBudgetFill"><span id="fgBudgetFillTxt"></span></div>
+      </div>
+      <div class="fg-meta" id="fgBudgetMeta">—</div>
+    </div>
+
+    <div class="fg-barblock">
+      <div class="fg-barlabel">
+        <span>Cashflow Trend (letzte 6M)</span>
+        <span id="fgTrendLabel">—</span>
+      </div>
+      <div class="fg-spark" id="fgSpark"></div>
+      <div class="fg-meta" id="fgTrendMeta">—</div>
+    </div>
+  </div>
+
+  <!-- Two columns (Risiken / Top Summen) -->
+  <div class="fg-two">
+    <div class="fg-box">
+      <div class="fg-box-head">
+        <div class="fg-box-title">Top Risiken</div>
+        <div class="fg-box-sub">Budgetabweichung (Forecast vs Budget)</div>
+      </div>
+      <div class="fg-list" id="fgRisksList"></div>
+    </div>
+
+    <div class="fg-box">
+      <div class="fg-box-head">
+        <div class="fg-box-title">Top Kostenblöcke</div>
+        <div class="fg-box-sub">Größte Budgets (Plan) – Fokusbereiche</div>
+      </div>
+      <div class="fg-list" id="fgTopList"></div>
+    </div>
+  </div>
+
+  <!-- Note -->
+  <div class="fg-note" id="fgNote">—</div>
 </div>
