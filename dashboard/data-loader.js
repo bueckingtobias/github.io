@@ -174,16 +174,9 @@
     const gesamt = projects.gesamt || {};
     const gewerke = Array.isArray(projects.gewerke) ? projects.gewerke.map(normalizeGewerkRow) : [];
 
-    const finance = master.finance || {};
-    // keep same structure (modules read finance.* directly in some cases)
-    const outFinance = {
-      gesamt: Array.isArray(finance.gesamt) ? finance.gesamt : [],
-      cashflow: Array.isArray(finance.cashflow) ? finance.cashflow : [],
-      mieten: Array.isArray(finance.mieten) ? finance.mieten : [],
-      op: Array.isArray(finance.op) ? finance.op : [],
-      reserven: Array.isArray(finance.reserven) ? finance.reserven : [],
-      budget: Array.isArray(finance.budget) ? finance.budget : []
-    };
+    // ✅ FINANCE PATCH: finance kann (sollte) Objekt sein, aber wir machen es robust,
+    // falls irgendein Master/Override/Altbestand finance als Array liefert.
+    const outFinance = normalizeFinanceAny(master.finance);
 
     return {
       home,
@@ -199,18 +192,62 @@
 
   function normalizeIMMOData(data) {
     // already in IMMO_DATA shape, but ensure arrays exist
+    // ✅ FINANCE PATCH: data.finance kann Objekt ODER Array sein -> immer auf Objekt normalisieren
+    const outFinance = normalizeFinanceAny(data.finance);
+
     const out = {
       home: Array.isArray(data.home) ? data.home.map(normalizeHomeRow) : [],
       projects: {
         gesamt: (data.projects && data.projects.gesamt) ? data.projects.gesamt : {},
         gewerke: (data.projects && Array.isArray(data.projects.gewerke)) ? data.projects.gewerke.map(normalizeGewerkRow) : []
       },
-      finance: data.finance || { gesamt: [], cashflow: [], mieten: [], op: [], reserven: [], budget: [] },
-      op: Array.isArray(data.op) ? data.op : (data.finance && Array.isArray(data.finance.op) ? data.finance.op : []),
-      reserven: Array.isArray(data.reserven) ? data.reserven : (data.finance && Array.isArray(data.finance.reserven) ? data.finance.reserven : []),
-      budget: Array.isArray(data.budget) ? data.budget : (data.finance && Array.isArray(data.finance.budget) ? data.finance.budget : [])
+      finance: outFinance,
+
+      // mirrors: bevorzugt top-level, sonst finance.*
+      op: Array.isArray(data.op) ? data.op : outFinance.op,
+      reserven: Array.isArray(data.reserven) ? data.reserven : outFinance.reserven,
+      budget: Array.isArray(data.budget) ? data.budget : outFinance.budget
     };
     return out;
+  }
+
+  // ✅ FINANCE PATCH (einziger neuer Helper):
+  // akzeptiert:
+  // - Objekt: {gesamt,cashflow,mieten,op,reserven,budget}
+  // - Array:  [ ... ]  (legacy "Finance"-Sheet)
+  // Ergebnis: immer Objekt mit Arrays.
+  function normalizeFinanceAny(fin) {
+    // Legacy: finance als Array (z.B. altes ExcelLoader-Format)
+    if (Array.isArray(fin)) {
+      return {
+        // Wir hängen es als "legacy" an (damit nichts verloren geht),
+        // aber die Module bekommen stabile Arrays.
+        legacy: fin,
+
+        // sinnvoller Default: gesamt kann die Legacy-Reihe(n) zeigen
+        gesamt: fin,
+        cashflow: [],
+        mieten: [],
+        op: [],
+        reserven: [],
+        budget: []
+      };
+    }
+
+    // Normal: finance als Objekt
+    const f = (fin && typeof fin === "object") ? fin : {};
+    return {
+      gesamt: Array.isArray(f.gesamt) ? f.gesamt : [],
+      cashflow: Array.isArray(f.cashflow) ? f.cashflow : [],
+      mieten: Array.isArray(f.mieten) ? f.mieten : [],
+      op: Array.isArray(f.op) ? f.op : [],
+      reserven: Array.isArray(f.reserven) ? f.reserven : [],
+      budget: Array.isArray(f.budget) ? f.budget : [],
+
+      // optional: falls irgendwo financeRows/rows existieren, behalten wir es (harmlos)
+      rows: Array.isArray(f.rows) ? f.rows : (Array.isArray(f.financeRows) ? f.financeRows : undefined),
+      financeRows: Array.isArray(f.financeRows) ? f.financeRows : undefined
+    };
   }
 
   function normalizeHomeRow(r) {
