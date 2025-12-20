@@ -1,25 +1,31 @@
 /* finance-cashflow-modul.css
-   Cashflow Modul – Charts nebeneinander sauber ausgerichtet
-   FIX: Root full-height + Chart nimmt gleichen Slot (flex:1)
+   Robust: sorgt dafür, dass Diagramm/SVG IMMER Höhe bekommt,
+   und dass Header/Chart/Footer im Modul sauber gestapelt sind.
 */
 
 :root{
   --finance-chart-height: 360px;
 }
 
-.finance-cashflow-root{
+/* Root (so heißt es bei dir vermutlich – plus Fallbacks) */
+.finance-cashflow-root,
+.fc-root,
+#financeCashflow,
+[data-module="finance-cashflow"]{
   display:flex;
   flex-direction:column;
   gap:12px;
   min-width:0;
 
-  /* 🔥 wichtig: damit flex-Kinder (Chart) wirklich Höhe bekommen */
+  /* wichtig für Equal-Height in der View */
   height:100%;
   min-height:0;
 }
 
-/* Header */
-.fc-head{
+/* Header (Fallback-freundlich) */
+.fc-head,
+.finance-cashflow-root .fc-head,
+.finance-cashflow-root .head{
   flex:0 0 auto;
   display:flex;
   justify-content:space-between;
@@ -28,46 +34,65 @@
   min-height:0;
 }
 
-.fc-title{
-  font-size:14px;
-  font-weight:950;
+/* Footer (Fallback-freundlich) */
+.fc-foot,
+.finance-cashflow-root .fc-foot,
+.finance-cashflow-root .foot{
+  flex:0 0 auto;
+  min-height:0;
 }
 
-.fc-sub{
-  font-size:11px;
-  color:rgba(226,232,240,.7);
-  margin-top:4px;
-}
-
-/* 🔥 Chart nimmt immer den gleichen vertikalen Bereich ein */
-.fc-chart{
+/* --- CHART SLOT: der wichtigste Teil --- */
+/* Wir targeten mehrere mögliche Wrapper-Namen */
+.fc-chart,
+.fc-plot,
+.fc-viz,
+.finance-cashflow-root .fc-chart,
+.finance-cashflow-root .fc-plot,
+.finance-cashflow-root .fc-viz,
+.finance-cashflow-root .chart,
+.finance-cashflow-root .plot,
+.finance-cashflow-root [data-chart],
+.finance-cashflow-root [data-plot]{
   flex:1 1 auto;
-  min-height:var(--finance-chart-height);
-  height:var(--finance-chart-height);
-  position:relative;
-  width:100%;
   min-width:0;
+  position:relative;
+
+  /* Höhe fix */
+  height:var(--finance-chart-height);
+  min-height:var(--finance-chart-height);
 }
 
-/* SVG füllt den Chart-Slot */
-.fc-chart svg{
+/* Wenn das SVG direkt im Root sitzt (kein Wrapper), bekommt es auch Höhe */
+.finance-cashflow-root > svg{
+  width:100%;
+  height:var(--finance-chart-height);
+  display:block;
+}
+
+/* Allgemein: jedes SVG im Chart-Slot füllt den Slot */
+.fc-chart svg,
+.fc-plot svg,
+.fc-viz svg,
+.finance-cashflow-root .chart svg,
+.finance-cashflow-root .plot svg,
+.finance-cashflow-root [data-chart] svg,
+.finance-cashflow-root [data-plot] svg{
   width:100%;
   height:100%;
   display:block;
 }
 
-/* Bars */
+/* Bars/Trend/Achsen – nur falls du Klassen so nutzt (optional, harmless) */
 .fc-bar{ fill:rgba(59,130,246,.75); }
 .fc-bar.neg{ fill:rgba(239,68,68,.75); }
 
-/* Trendline */
 .fc-trend{
   stroke:rgba(226,232,240,.85);
   stroke-width:2;
   fill:none;
 }
 
-/* Axis */
 .fc-axis text{
   fill:rgba(226,232,240,.65);
   font-size:10px;
@@ -75,12 +100,4 @@
 .fc-axis line,
 .fc-axis path{
   stroke:rgba(148,163,184,.2);
-}
-
-/* Footer bleibt unten */
-.fc-foot{
-  flex:0 0 auto;
-  font-size:11px;
-  color:rgba(226,232,240,.7);
-  min-height:0;
 }
