@@ -1,21 +1,64 @@
-<div class="finance-cashflow-modul" id="financeCashflowRoot">
-  <div class="fcf-head">
-    <div>
-      <div class="fcf-title">Cashflow</div>
-      <div class="fcf-sub">6M Rückblick · aktueller Monat blau · 3M Forecast (Trend grün/rot)</div>
+<div class="fc-root" aria-label="Finance Cashflow Modul">
+  <div class="fc-head">
+    <div class="fc-titleblock">
+      <div class="fc-title">Cashflow</div>
+      <div class="fc-sub">6M Rückblick · aktueller Monat blau · 3M Forecast (Trend grün/rot)</div>
     </div>
-    <div class="fcf-badges">
-      <span class="fcf-badge" id="fcfTrend">Trend: —</span>
-      <span class="fcf-badge" id="fcfAvg">Ø 6M: —</span>
+    <div class="fc-badges" id="fcBadges"></div>
+  </div>
+
+  <div class="fc-chartcard">
+    <div class="fc-chartmeta">
+      <div class="fc-chartleft">
+        <div class="fc-k">Zeitraum</div>
+        <div class="fc-v" id="fcRange">—</div>
+      </div>
+      <div class="fc-chartright">
+        <div class="fc-mini">
+          <div class="fc-k">Trend</div>
+          <div class="fc-v" id="fcTrend">—</div>
+        </div>
+        <div class="fc-mini">
+          <div class="fc-k">Ø 6M</div>
+          <div class="fc-v" id="fcAvg">—</div>
+        </div>
+        <div class="fc-mini">
+          <div class="fc-k">Aktuell</div>
+          <div class="fc-v" id="fcNow">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fc-chartwrap">
+      <div class="fc-ylabels">
+        <div class="fc-yl" id="fcYMax">—</div>
+        <div class="fc-yl fc-yl-mid">0</div>
+        <div class="fc-yl" id="fcYMin">—</div>
+      </div>
+
+      <div class="fc-plot" id="fcPlot" role="img" aria-label="Cashflow Balkendiagramm">
+        <div class="fc-gridline fc-gridline-top"></div>
+        <div class="fc-gridline fc-gridline-mid"></div>
+        <div class="fc-gridline fc-gridline-bot"></div>
+
+        <div class="fc-bars" id="fcBars"></div>
+
+        <!-- Trend line (SVG overlay) -->
+        <svg class="fc-line" id="fcLine" viewBox="0 0 1000 360" preserveAspectRatio="none" aria-hidden="true">
+          <polyline id="fcLinePath" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points=""></polyline>
+          <g id="fcLineDots"></g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="fc-legend">
+      <div class="fc-leg"><span class="fc-dot fc-dot-past"></span> Vergangenheit</div>
+      <div class="fc-leg"><span class="fc-dot fc-dot-now"></span> Aktueller Monat</div>
+      <div class="fc-leg"><span class="fc-dot fc-dot-fore"></span> Forecast (3M)</div>
     </div>
   </div>
 
-  <div class="fcf-chart">
-    <div class="fcf-bars" id="fcfBars"></div>
-    <div class="fcf-spark" id="fcfSpark"></div>
-  </div>
-
-  <div class="fcf-foot">
-    <div class="fcf-hint" id="fcfHint">—</div>
+  <div class="fc-foot">
+    <div class="fc-footnote" id="fcNote">—</div>
   </div>
 </div>
