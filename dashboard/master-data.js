@@ -4,27 +4,24 @@
    ✅ Pflegehinweise (Deutsch):
    ===========================================================
    1) HOME KPIs
-      - Unten in HOME_KPIS_MANUAL trägst du 12 Zeilen ein.
-      - Monat (YYYY-MM) kannst du leer lassen → wird automatisch gesetzt.
-      - Cashflow, Mieteinnahmen, Pachteinnahmen, Portfolio_Wert, Investiertes_Kapital: als Zahl.
+      - HOME_KPIS_MANUAL: hier 12 Zeilen pflegen.
+      - Monat (YYYY-MM) kann leer bleiben → wird automatisch gesetzt.
+      - Werte als Zahlen eintragen.
       - Auslastung_pct: Prozent 0–100 (z.B. 94.2)
 
    2) Projekte (Baumstraße 35)
-      - projectsGesamt: Stammdaten/Notizen
-      - PROJECTS_GEWERKE_INPUT: hier pflegst du 10 Gewerke:
+      - PROJECTS_GEWERKE_INPUT: hier pflegst du die 10 Gewerke:
           Angebot (EUR), Gezahlt (EUR), Baufortschritt (0–100)
-      - Wichtig: Du pflegst NUR die INPUT Keys (Angebot, Gezahlt, Baufortschritt).
-        Der Rest wird automatisch für alle Module normalisiert.
+      - Alles andere sind Aliase für Module (nicht anfassen).
 
    3) Finance
-      - Struktur bleibt wie gehabt.
-      - cashflow/mieten leiten wir automatisch aus HOME ab.
+      - bleibt in der vorhandenen Struktur.
 */
 
 (function () {
   "use strict";
 
-  const VERSION = "2025-12-19-MASTER-STABLE-2";
+  const VERSION = "2025-12-20-MASTER-ALIAS-FIX-1";
 
   function ym(y, m) {
     return `${y}-${String(m).padStart(2, "0")}`;
@@ -84,9 +81,8 @@
       Mieteinnahmen: Math.round(n(r.Mieteinnahmen)),
       Pachteinnahmen: Math.round(n(r.Pachteinnahmen)),
 
-      // ✅ Standard-Key
+      // ✅ Standard + Legacy
       Auslastung_pct: occ,
-      // ✅ Legacy-Key für ältere Module (mit % im Key)
       "Auslastung_%": occ,
 
       Portfolio_Wert: Math.round(n(r.Portfolio_Wert)),
@@ -105,11 +101,7 @@
     Notizen: "Gesamtübersicht über alle Gewerke.",
   };
 
-  /* ✅ HIER PFLEGST DU DIE 10 GEWERKE
-     - Angebot: EUR
-     - Gezahlt: EUR
-     - Baufortschritt: 0–100
-  */
+  /* ✅ HIER PFLEGST DU DIE 10 GEWERKE */
   const PROJECTS_GEWERKE_INPUT = [
     { Aktiv: "Ja", Sortierung: 1,  Gewerk: "Rohbau",         Handwerker: "Bauunternehmen Meyer", Angebot: 320000, Gezahlt: 210000, Baufortschritt: 70 },
     { Aktiv: "Ja", Sortierung: 2,  Gewerk: "Elektro",        Handwerker: "Elektro Schröder",     Angebot:  95000, Gezahlt:  25000, Baufortschritt: 30 },
@@ -123,10 +115,11 @@
     { Aktiv: "Ja", Sortierung: 10, Gewerk: "Photovoltaik",   Handwerker: "Solartechnik Bremen",  Angebot:  98000, Gezahlt:  49000, Baufortschritt: 45 },
   ];
 
-  /* ✅ Zentrale Normalisierung
-     -> JEDES Gewerk hat danach alle Key-Varianten, die irgendein Modul erwarten könnte.
+  /* ✅ Zentrale Normalisierung + ALIASE (wichtig!)
+     -> Damit egal welches Modul welchen Key erwartet: Zahlen sind da.
   */
   const projectsGewerke = PROJECTS_GEWERKE_INPUT.map(r => {
+    const aktiv = (r.Aktiv && String(r.Aktiv).trim()) ? String(r.Aktiv).trim() : "Ja";
     const angebot = Math.round(n(r.Angebot));
     const gezahlt = Math.round(n(r.Gezahlt));
     const fort = Math.round(clamp(r.Baufortschritt, 0, 100) * 10) / 10;
@@ -135,28 +128,37 @@
       Projekt: projectsGesamt.Projekt,
       Objekt: projectsGesamt.Adresse,
 
-      Aktiv: (r.Aktiv && String(r.Aktiv).trim()) ? String(r.Aktiv).trim() : "Ja",
+      // Aktiv – alle Varianten (Excel/Alt-Module)
+      Aktiv: aktiv,
+      "Aktiv (Ja/Nein)": aktiv,
+
       Sortierung: n(r.Sortierung) || 9999,
       Gewerk: r.Gewerk || "",
       Handwerker: r.Handwerker || "",
 
-      // ✅ Angebot (alle Varianten)
+      // Angebot – alle Varianten
       Angebot: angebot,
       Angebotssumme: angebot,
       "Angebot (€)": angebot,
 
-      // ✅ Gezahlt / Zahlungen (alle Varianten)
+      // Gezahlt/Zahlungen – alle Varianten
       Gezahlt: gezahlt,
+      Gezahl t: gezahlt,        // falls irgendwo der alte Tippfehler drin ist
+      Gezahl_t: gezahlt,        // dito
       Zahlungen: gezahlt,
       Zahlungen_bisher: gezahlt,
       "Zahlungen (€)": gezahlt,
       "Zahlungen bisher": gezahlt,
 
-      // ✅ Fortschritt (alle Varianten)
+      // Fortschritt – alle Varianten
       Baufortschritt: fort,
       Baufortschritt_prozent: fort,
       "Baufortschritt %": fort,
+
+      // Legacy/Alt: Fortschritt_% (kam bei euch schon vor)
       Fortschritt_pct: fort,
+      "Fortschritt_%": fort,
+      "Fortschritt %": fort
     };
   });
 
