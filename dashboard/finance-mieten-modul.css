@@ -1,25 +1,28 @@
 /* finance-mieten-modul.css
-   Mieten & Pacht – Charts nebeneinander sauber ausgerichtet
-   FIX: Root full-height + Chart nimmt gleichen Slot (flex:1)
+   Robust: Diagramm/SVG bekommt IMMER Höhe + aligned zum Cashflow-Modul.
 */
 
 :root{
   --finance-chart-height: 360px;
 }
 
-.finance-mieten-root{
+.finance-mieten-root,
+.fm-root,
+#financeMieten,
+[data-module="finance-mieten"]{
   display:flex;
   flex-direction:column;
   gap:12px;
   min-width:0;
 
-  /* 🔥 wichtig */
   height:100%;
   min-height:0;
 }
 
-/* Header */
-.fm-head{
+/* Header/Footer */
+.fm-head,
+.finance-mieten-root .fm-head,
+.finance-mieten-root .head{
   flex:0 0 auto;
   display:flex;
   justify-content:space-between;
@@ -28,37 +31,55 @@
   min-height:0;
 }
 
-.fm-title{
-  font-size:14px;
-  font-weight:950;
+.fm-foot,
+.finance-mieten-root .fm-foot,
+.finance-mieten-root .foot{
+  flex:0 0 auto;
+  min-height:0;
 }
 
-.fm-sub{
-  font-size:11px;
-  color:rgba(226,232,240,.7);
-  margin-top:4px;
-}
-
-/* 🔥 Chart nimmt immer den gleichen vertikalen Bereich ein */
-.fm-chart{
+/* Chart Slot – mehrere mögliche Wrapper-Namen */
+.fm-chart,
+.fm-plot,
+.fm-viz,
+.finance-mieten-root .fm-chart,
+.finance-mieten-root .fm-plot,
+.finance-mieten-root .fm-viz,
+.finance-mieten-root .chart,
+.finance-mieten-root .plot,
+.finance-mieten-root [data-chart],
+.finance-mieten-root [data-plot]{
   flex:1 1 auto;
-  min-height:var(--finance-chart-height);
-  height:var(--finance-chart-height);
-  position:relative;
-  width:100%;
   min-width:0;
+  position:relative;
+
+  height:var(--finance-chart-height);
+  min-height:var(--finance-chart-height);
 }
 
-/* SVG */
-.fm-chart svg{
+/* SVG direkt im Root (Fallback) */
+.finance-mieten-root > svg{
+  width:100%;
+  height:var(--finance-chart-height);
+  display:block;
+}
+
+/* SVG im Chart Slot */
+.fm-chart svg,
+.fm-plot svg,
+.fm-viz svg,
+.finance-mieten-root .chart svg,
+.finance-mieten-root .plot svg,
+.finance-mieten-root [data-chart] svg,
+.finance-mieten-root [data-plot] svg{
   width:100%;
   height:100%;
   display:block;
 }
 
-/* Gestapelte Balken */
-.fm-bar-rent{ fill:rgba(34,197,94,.85); }   /* Miete */
-.fm-bar-lease{ fill:rgba(14,165,233,.85); } /* Pacht */
+/* Farben für gestapelte Balken (nur wenn Klassen so existieren) */
+.fm-bar-rent{ fill:rgba(34,197,94,.85); }     /* Miete */
+.fm-bar-lease{ fill:rgba(14,165,233,.85); }   /* Pacht */
 
 /* Axis */
 .fm-axis text{
@@ -68,12 +89,4 @@
 .fm-axis line,
 .fm-axis path{
   stroke:rgba(148,163,184,.2);
-}
-
-/* Footer bleibt unten */
-.fm-foot{
-  flex:0 0 auto;
-  font-size:11px;
-  color:rgba(226,232,240,.7);
-  min-height:0;
 }
