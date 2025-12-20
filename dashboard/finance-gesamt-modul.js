@@ -1,266 +1,435 @@
-/* finance-gesamt-modul.js
-   Optik/Struktur angelehnt an gewerk-gesamt-modul.
-   OP wird NICHT als Position/Kachel geführt (wie gewünscht).
-*/
 (function(){
   "use strict";
 
   window.FinanceGesamtModul = { render };
 
   function render(host, data){
-    try{
-      const root = host?.querySelector?.("#financeGesamtModule") || host;
-      if(!root) return;
+    const root = host && host.querySelector ? host.querySelector("#financeGesamtRoot") : null;
+    if(!root) return;
 
-      const source = data || {};
-      const immo = window.IMMO_DATA || {};
-      const fin = (source.financeRows || source.finance || immo.finance || {}) || {};
+    // ---- Resolve finance data robustly (View + IMMO_DATA + IMMO_MASTER_DATA) ----
+    const resolved = resolveFinance(data);
 
-      const finGesamt = pickArray(fin.gesamt) || [];
-      const finCashflow = pickArray(fin.cashflow) || [];
-      const finBudget = pickArray(fin.budget) || [];
+    const finance = resolved.finance;
+    const gesamtRows = resolved.gesamt;
+    const cashflowRows = resolved.cashflow;
+    const budgetRows = resolved.budget;
+    const homeRows = resolved.home;
 
-      const last = finGesamt[0] || finGesamt[finGesamt.length-1] || {};
-      const kontostand = num(last.Kontostand);
-      const liquide = num(last.Liquide_Mittel);
-      const ruecklagen = num(last.Ruecklagen);
-      const verbind = num(last.Verbindlichkeiten_kurzfristig);
+    // ---- Elements ----
+    const elZeitraum = root.querySelector("#fgZeitraum");
+    const elRunway = root.querySelector("#fgRunway");
+    const elNextRent = root.querySelector("#fgNextRent");
 
-      // Cashflow: last 6 months
-      const cfSorted = finCashflow.slice().filter(r => String(r.Monat||"").trim()).sort((a,b)=> String(a.Monat).localeCompare(String(b.Monat)));
-      const cfLast6 = cfSorted.slice(-6);
-      const cfVals = cfLast6.map(r => num(r.Cashflow));
+    const elKontostand = root.querySelector("#fgKontostand");
+    const elLiquide = root.querySelector("#fgLiquide");
+    const elRuecklagen = root.querySelector("#fgRuecklagen");
+    const elShortDebt = root.querySelector("#fgShortDebt");
 
-      // Period badge
-      const periodTxt = cfLast6.length ? `${fmtYM(cfLast6[0].Monat)}–${fmtYM(cfLast6[cfLast6.length-1].Monat)}` : "—";
-      setTxt(root, "fgBadgePeriod", `Zeitraum: ${periodTxt}`);
+    const elBudgetPct = root.querySelector("#fgBudgetPct");
+    const elBudgetFill = root.querySelector("#fgBudgetFill");
+    const elBudgetHint = root.querySelector("#fgBudgetHint");
+    const elBudgetRows = root.querySelector("#fgBudgetRows");
 
-      // Next rent: 01. (countdown)
-      const nextRent = nextRentDate();
-      const daysToRent = Math.max(0, Math.ceil((nextRent.getTime() - startOfDay(new Date()).getTime())/86400000));
-      setTxt(root, "fgBadgeNextRent", `Nächste Miete: ${fmtDate(nextRent)} · ${daysToRent} Tage`);
+    const elCfTrend = root.querySelector("#fgCfTrend");
+    const elCfChart = root.querySelector("#fgCfChart");
+    const elCfHint = root.querySelector("#fgCfHint");
 
-      // Runway: based on average negative cashflow or (Ausgaben) if given
-      const avgCf = cfVals.length ? (cfVals.reduce((a,b)=>a+b,0) / cfVals.length) : 0;
-      const burn = avgCf < 0 ? Math.abs(avgCf) : 0;
-      const runway = burn > 0 ? (liquide / burn) : null;
-      setTxt(root, "fgBadgeRunway", `Runway: ${runway ? runway.toFixed(1).replace(".",",") + " Monate" : "∞ (positiv)"}`);
+    const elRiskCount = root.querySelector("#fgRiskCount");
+    const elRisks = root.querySelector("#fgRisks");
+    const elRiskHint = root.querySelector("#fgRiskHint");
 
-      // KPI tiles
-      setTxt(root,"fgKontostand", eur(kontostand));
-      setTxt(root,"fgLiquide", eur(liquide));
-      setTxt(root,"fgRuecklagen", eur(ruecklagen));
-      setTxt(root,"fgVerbind", eur(verbind));
+    const elTopCount = root.querySelector("#fgTopCount");
+    const elTopBudgets = root.querySelector("#fgTopBudgets");
+    const elTopHint = root.querySelector("#fgTopHint");
 
-      // Budget status: sum Budget vs Forecast
-      const budgetRows = finBudget.slice();
-      const sumBudget = budgetRows.reduce((s,r)=> s + num(r.Budget), 0);
-      const sumForecast = budgetRows.reduce((s,r)=> s + num(r.Forecast), 0);
-      const sumIst = budgetRows.reduce((s,r)=> s + num(r.Ist), 0);
+    // ---- KPI values from finance.gesamt[0] (fallbacks) ----
+    const g0 = (Array.isArray(gesamtRows) && gesamtRows[0]) ? gesamtRows[0] : {};
 
-      const pct = sumBudget > 0 ? (sumForecast / sumBudget * 100) : 0;
-      const pctClamped = clamp(pct, 0, 150); // allow overshoot but clamp for bar
-      const pctBar = clamp(pct, 0, 100);
+    const kontostand = numPick(g0, ["Kontostand", "Kontostand_€", "Kontostand_EUR"]);
+    const liquide = numPick(g0, ["Liquide_Mittel", "Liquide Mittel", "LiquideMittel"]);
+    const ruecklagen = numPick(g0, ["Ruecklagen", "Rücklagen", "Reserven"]);
+    const shortDebt = numPick(g0, ["Verbindlichkeiten_kurzfristig", "Kurzfristige_Verbindlichkeiten", "Kurzfr_Verbindlichkeiten"]);
 
-      setTxt(root, "fgBudgetLabel", `${pct.toFixed(1).replace(".",",")} %`);
-      setTxt(root, "fgBudgetFillTxt", `${pct.toFixed(1).replace(".",",")} %`);
-      setTxt(root, "fgBudgetMeta",
-        sumBudget > 0
-          ? `Budget ${eur(sumBudget)} · Ist ${eur(sumIst)} · Forecast ${eur(sumForecast)} · Abw. ${eur(sumForecast - sumBudget)}`
-          : "Kein Budget hinterlegt."
-      );
+    elKontostand.textContent = eur(kontostand);
+    elLiquide.textContent = eur(liquide);
+    elRuecklagen.textContent = eur(ruecklagen);
+    elShortDebt.textContent = eur(shortDebt);
 
-      const fill = root.querySelector("#fgBudgetFill");
-      if(fill){
-        fill.style.width = "0%";
-        fill.dataset.w = `${pctBar}%`;
-        requestAnimationFrame(()=>{ fill.style.width = fill.dataset.w; });
-      }
+    // ---- Zeitraum: last month of cashflow/mieten or home ----
+    const months = extractMonths(cashflowRows, homeRows, budgetRows);
+    elZeitraum.textContent = months.length ? `Zeitraum: ${months[0]} – ${months[months.length-1]}` : "Zeitraum: —";
 
-      // Spark bars (cashflow 6M)
-      const spark = root.querySelector("#fgSpark");
-      if(spark){
-        spark.innerHTML = "";
-        const maxAbs = Math.max(1, ...cfVals.map(v => Math.abs(v)));
-        cfLast6.forEach((r, idx)=>{
-          const v = num(r.Cashflow);
-          const h = clamp(Math.round(Math.abs(v) / maxAbs * 100), 4, 100);
-          const bar = document.createElement("div");
-          bar.className = "fg-spbar " + (idx === cfLast6.length-1 ? "cur" : (v >= 0 ? "pos" : "neg"));
-          bar.innerHTML = `<i style="height:0%"></i>`;
-          spark.appendChild(bar);
-          requestAnimationFrame(()=>{
-            const i = bar.querySelector("i");
-            if(i) i.style.height = h + "%";
-          });
-        });
-      }
+    // ---- Next rent: fixed 01. of next month (as requested earlier) ----
+    const nextRent = nextFirstOfMonth();
+    const days = daysUntil(nextRent);
+    elNextRent.textContent = `Nächste Miete: ${fmtDate(nextRent)} · ${days} Tage`;
 
-      const trendTxt = trendLabel(cfVals);
-      setTxt(root, "fgTrendLabel", trendTxt);
-      setTxt(root, "fgTrendMeta",
-        cfVals.length
-          ? `Ø Cashflow (6M): ${eur(Math.round(avgCf))} · Letzter Monat: ${eur(Math.round(cfVals[cfVals.length-1]))}`
-          : "Keine Cashflow-Historie vorhanden."
-      );
+    // ---- Runway: if avg cashflow negative -> liquide / abs(avg) months ----
+    const last6 = lastN(cashflowRows, 6);
+    const avgCF = last6.length ? last6.reduce((s,r)=>s+numPick(r,["Cashflow"]),0)/last6.length : 0;
+    if(avgCF < -1){
+      const runway = liquide > 0 ? (liquide / Math.abs(avgCF)) : 0;
+      elRunway.textContent = `Runway: ${runway.toFixed(1)} Monate`;
+    } else {
+      elRunway.textContent = "Runway: ∞ (positiv)";
+    }
 
-      // Risks: top 3 forecast overshoot
-      const risks = budgetRows
-        .map(r=>{
-          const b = num(r.Budget);
-          const f = num(r.Forecast);
-          const diff = f - b;
-          const pct = b>0 ? diff/b*100 : 0;
-          return { Bereich: String(r.Bereich||r.Kategorie||"Unbekannt"), Budget:b, Forecast:f, Ist:num(r.Ist), Diff:diff, Pct:pct, Kommentar:String(r.Kommentar||"") };
-        })
-        .sort((a,b)=> b.Diff - a.Diff);
+    // ---- Budget status ----
+    const b = Array.isArray(budgetRows) ? budgetRows : [];
+    const budgetSum = b.reduce((s,r)=>s+numPick(r,["Budget"]),0);
+    const forecastSum = b.reduce((s,r)=>s+numPick(r,["Forecast"]),0);
+    const pct = budgetSum > 0 ? (forecastSum / budgetSum) * 100 : 0;
 
-      const topRisks = risks.filter(x=> x.Diff > 0).slice(0,3);
-      const risksList = root.querySelector("#fgRisksList");
-      if(risksList){
-        risksList.innerHTML = "";
-        if(!topRisks.length){
-          risksList.innerHTML = `<div class="fg-item"><div class="fg-item-title">Keine Budget-Überläufe erkannt</div><div class="fg-item-sub">Forecast ≤ Budget in allen Kategorien.</div></div>`;
-        } else {
-          topRisks.forEach(x=>{
-            const badge = `+${x.Pct.toFixed(1).replace(".",",")} %`;
-            const el = document.createElement("div");
-            el.className = "fg-item";
-            el.innerHTML = `
-              <div class="fg-item-top">
-                <div class="fg-item-title" title="${esc(x.Bereich)}">${esc(x.Bereich)}</div>
-                <div class="fg-item-badge bad">${badge}</div>
-              </div>
-              <div class="fg-item-sub">
-                Budget ${eur(x.Budget)} · Forecast ${eur(x.Forecast)} · Abw. ${eur(x.Diff)}
-                ${x.Kommentar ? " · " + esc(x.Kommentar) : ""}
-              </div>
-            `;
-            risksList.appendChild(el);
-          });
-        }
-      }
+    // color logic: <=100 blue, >100 red-ish
+    elBudgetPct.textContent = budgetSum > 0 ? `${pct.toFixed(1)} %` : "0,0 %";
+    elBudgetFill.style.width = clamp(pct,0,140).toFixed(1) + "%";
+    elBudgetFill.textContent = budgetSum > 0 ? `${pct.toFixed(1)}%` : "0%";
+    elBudgetFill.style.background = (budgetSum > 0 && pct > 100)
+      ? "linear-gradient(90deg, rgba(239,68,68,1), rgba(248,113,113,1))"
+      : "linear-gradient(90deg, rgba(59,130,246,1), rgba(37,99,235,1))";
 
-      // Top budgets: biggest plan
-      const top = risks.slice().sort((a,b)=> b.Budget - a.Budget).slice(0,3);
-      const topList = root.querySelector("#fgTopList");
-      if(topList){
-        topList.innerHTML = "";
-        if(!top.length){
-          topList.innerHTML = `<div class="fg-item"><div class="fg-item-title">Keine Budgetdaten</div><div class="fg-item-sub">Bitte finance.budget im Master pflegen.</div></div>`;
-        } else {
-          const sumTop = top.reduce((s,x)=> s+x.Budget,0);
-          const share = sumBudget>0 ? (sumTop/sumBudget*100) : 0;
+    if(budgetSum <= 0){
+      elBudgetHint.textContent = "Kein Budget hinterlegt. Bitte finance.budget im Master pflegen.";
+    } else {
+      elBudgetHint.textContent = `Budget gesamt ${eur(budgetSum)} · Forecast ${eur(forecastSum)} · Puffer ${eur(budgetSum - forecastSum)}`;
+    }
 
-          top.forEach(x=>{
-            const badge = eur(x.Budget);
-            const good = x.Diff <= 0;
-            const el = document.createElement("div");
-            el.className = "fg-item";
-            el.innerHTML = `
-              <div class="fg-item-top">
-                <div class="fg-item-title" title="${esc(x.Bereich)}">${esc(x.Bereich)}</div>
-                <div class="fg-item-badge ${good ? "good" : ""}">${badge}</div>
-              </div>
-              <div class="fg-item-sub">
-                Ist ${eur(x.Ist)} · Forecast ${eur(x.Forecast)} · Abw. ${eur(x.Diff)}
-              </div>
-            `;
-            topList.appendChild(el);
-          });
+    // budget rows detail (top 4 by forecast)
+    elBudgetRows.innerHTML = "";
+    const sortedB = b.slice().sort((a,b)=>numPick(b,["Forecast"]) - numPick(a,["Forecast"]));
+    const topB = sortedB.slice(0,4);
 
-          // Put the share info into note instead
-          setTxt(root, "fgNote",
-            sumBudget>0
-              ? `Fokus: Top 3 Budgetblöcke = ${share.toFixed(1).replace(".",",")} % des Gesamtbudgets. ` +
-                `OP ist bewusst NICHT in dieser Kachel enthalten (kommt separat im OP-Modul).`
-              : `Hinweis: Budget fehlt – bitte im Master unter finance.budget pflegen. OP ist bewusst NICHT in dieser Kachel enthalten.`
-          );
-        }
-      }
+    if(topB.length){
+      topB.forEach(r=>{
+        const name = String(r.Bereich || r.Kategorie || "Budget").trim() || "Budget";
+        const bud = numPick(r,["Budget"]);
+        const fc = numPick(r,["Forecast"]);
+        const diff = fc - bud;
 
-      // Sub line details
-      const note2 = (last.Notiz || last.Notiztext || last.Notiz_ || "");
-      const subtitle = [
-        (last.Monat ? `Stand: ${fmtYM(last.Monat)}` : ""),
-        (note2 ? `· ${String(note2)}` : "")
-      ].filter(Boolean).join(" ");
-      if(subtitle) setTxt(root, "fgSub", subtitle);
+        const row = document.createElement("div");
+        row.className = "fg-row" + (bud>0 && diff>0 ? " over" : "");
+        row.innerHTML = `
+          <div class="l">
+            <div class="t">${esc(name)}</div>
+            <div class="s">Budget ${eur(bud)} · Forecast ${eur(fc)}</div>
+          </div>
+          <div class="r">
+            <div class="n">${bud>0 ? ( (fc/bud*100).toFixed(1) + " %" ) : "—"}</div>
+            <div class="d">${diff>0 ? ("+"+eur(diff)) : eur(diff)}</div>
+          </div>
+        `;
+        elBudgetRows.appendChild(row);
+      });
+    }
 
-    } catch(err){
-      // Fail silently but show something minimal
-      try{
-        host.textContent = "FinanceGesamtModul Fehler: " + (err && err.message ? err.message : String(err));
-      } catch {}
+    // ---- Risks: forecast > budget ----
+    const risks = sortedB
+      .filter(r => numPick(r,["Budget"]) > 0 && numPick(r,["Forecast"]) > numPick(r,["Budget"]))
+      .map(r => {
+        const bud = numPick(r,["Budget"]);
+        const fc = numPick(r,["Forecast"]);
+        return {
+          name: String(r.Bereich || r.Kategorie || "Budget").trim() || "Budget",
+          bud, fc,
+          diff: fc - bud,
+          pct: (fc/bud)*100
+        };
+      })
+      .sort((a,b)=>b.diff - a.diff)
+      .slice(0,3);
+
+    elRisks.innerHTML = "";
+    if(risks.length){
+      elRiskCount.textContent = `kritisch: ${risks.length}/${b.length || 0}`;
+      elRiskHint.textContent = "Forecast > Budget in diesen Kategorien.";
+      risks.forEach(x=>{
+        const item = document.createElement("div");
+        item.className = "fg-item";
+        item.innerHTML = `
+          <div class="a">
+            <div class="k">${esc(x.name)}</div>
+            <div class="m">Budget ${eur(x.bud)} · Forecast ${eur(x.fc)}</div>
+          </div>
+          <div class="b">+${eur(x.diff)} · ${x.pct.toFixed(1)}%</div>
+        `;
+        elRisks.appendChild(item);
+      });
+    } else {
+      elRiskCount.textContent = "kritisch: 0";
+      elRiskHint.textContent = "Forecast ≤ Budget in allen Kategorien.";
+      elRisks.innerHTML = `<div class="fg-muted">Keine Budget-Überläufe erkannt</div>`;
+    }
+
+    // ---- Top budgets (plan) ----
+    const topBud = b
+      .map(r => ({ name: String(r.Bereich || r.Kategorie || "Budget").trim() || "Budget", bud: numPick(r,["Budget"]) }))
+      .filter(x => x.bud > 0)
+      .sort((a,b)=>b.bud - a.bud)
+      .slice(0,3);
+
+    elTopBudgets.innerHTML = "";
+    if(topBud.length){
+      const sumTop = topBud.reduce((s,x)=>s+x.bud,0);
+      elTopCount.textContent = `Top 3: ${budgetSum>0 ? ((sumTop/budgetSum)*100).toFixed(1) : "—"} %`;
+      elTopHint.textContent = `Fokusbereiche mit den größten Planbudgets (gesamt ${eur(sumTop)}).`;
+      topBud.forEach(x=>{
+        const item = document.createElement("div");
+        item.className = "fg-item";
+        item.innerHTML = `
+          <div class="a">
+            <div class="k">${esc(x.name)}</div>
+            <div class="m">Planbudget</div>
+          </div>
+          <div class="b">${eur(x.bud)}</div>
+        `;
+        elTopBudgets.appendChild(item);
+      });
+    } else {
+      elTopCount.textContent = "—";
+      elTopHint.textContent = "Keine Budgetdaten. Bitte finance.budget im Master pflegen.";
+      elTopBudgets.innerHTML = `<div class="fg-muted">Keine Budgetdaten</div>`;
+    }
+
+    // ---- Cashflow chart: last 6 months bars + trendline (bounded to 6) ----
+    renderCashflowChart(elCfChart, elCfHint, elCfTrend, cashflowRows);
+  }
+
+  // ---------------- Chart ----------------
+
+  function renderCashflowChart(host, hintEl, trendEl, rows){
+    host.innerHTML = "";
+
+    const series = lastN(Array.isArray(rows)?rows:[], 6)
+      .map(r => ({
+        m: String(r.Monat || "").trim(),
+        v: numPick(r,["Cashflow"])
+      }))
+      .filter(x => x.m && isFinite(x.v));
+
+    if(!series.length){
+      hintEl.textContent = "Keine Cashflow-Historie vorhanden.";
+      trendEl.textContent = "Trend: —";
+      host.innerHTML = `<div class="fg-muted">Keine Cashflow-Historie vorhanden.</div>`;
+      return;
+    }
+
+    // bars
+    const maxAbs = Math.max(1, ...series.map(x => Math.abs(x.v)));
+    const barsWrap = document.createElement("div");
+    barsWrap.className = "fg-bars";
+
+    series.forEach((x, idx)=>{
+      const bar = document.createElement("div");
+      bar.className = "fg-bar";
+
+      const col = document.createElement("div");
+      col.className = "col";
+
+      const fill = document.createElement("div");
+      fill.className = "fill";
+
+      // positive blue, negative red
+      fill.style.background = x.v >= 0
+        ? "linear-gradient(180deg, rgba(59,130,246,1), rgba(37,99,235,1))"
+        : "linear-gradient(180deg, rgba(239,68,68,1), rgba(248,113,113,1))";
+
+      const h = clamp((Math.abs(x.v)/maxAbs)*100, 6, 100);
+      // animate after attach
+      fill.dataset.h = h.toFixed(2);
+
+      col.appendChild(fill);
+
+      const lbl = document.createElement("div");
+      lbl.className = "lbl";
+      lbl.textContent = shortYM(x.m);
+
+      const val = document.createElement("div");
+      val.className = "val";
+      val.textContent = eurShort(x.v);
+
+      bar.appendChild(col);
+      bar.appendChild(val);
+      bar.appendChild(lbl);
+
+      barsWrap.appendChild(bar);
+    });
+
+    host.appendChild(barsWrap);
+
+    // trendline (only over the 6 months, not beyond)
+    const spark = document.createElement("div");
+    spark.className = "fg-spark";
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    svg.setAttribute("viewBox","0 0 100 42");
+    svg.setAttribute("preserveAspectRatio","none");
+
+    const values = series.map(x=>x.v);
+    const minV = Math.min(...values);
+    const maxV = Math.max(...values);
+    const range = Math.max(1, maxV - minV);
+
+    const pts = values.map((v,i)=>{
+      const x = (i/(values.length-1))*100;
+      const y = 38 - ((v - minV)/range)*34; // keep margins
+      return [x,y];
+    });
+
+    const d = "M " + pts.map(p=>`${p[0].toFixed(2)} ${p[1].toFixed(2)}`).join(" L ");
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+    path.setAttribute("d", d);
+    path.setAttribute("fill","none");
+    path.setAttribute("stroke","rgba(226,232,240,.90)");
+    path.setAttribute("stroke-width","2");
+
+    const glow = document.createElementNS("http://www.w3.org/2000/svg","path");
+    glow.setAttribute("d", d);
+    glow.setAttribute("fill","none");
+    glow.setAttribute("stroke","rgba(59,130,246,.35)");
+    glow.setAttribute("stroke-width","6");
+    glow.setAttribute("stroke-linecap","round");
+    glow.setAttribute("stroke-linejoin","round");
+
+    svg.appendChild(glow);
+    svg.appendChild(path);
+    spark.appendChild(svg);
+    host.appendChild(spark);
+
+    // animate bars
+    requestAnimationFrame(()=>{
+      host.querySelectorAll(".fill").forEach((f)=>{
+        const h = f.dataset.h || "0";
+        f.style.height = h + "%";
+      });
+    });
+
+    // Trend text based on last 2 points
+    const last = series[series.length-1].v;
+    const prev = series[series.length-2] ? series[series.length-2].v : last;
+    const delta = last - prev;
+
+    if(Math.abs(delta) < 1){
+      trendEl.textContent = "Trend: stabil";
+      hintEl.textContent = `Letzter Cashflow: ${eur(last)}.`;
+    } else if(delta > 0){
+      trendEl.textContent = "Trend: steigend";
+      hintEl.textContent = `Letzter Cashflow: ${eur(last)} (↑ ${eur(delta)} ggü. Vormonat).`;
+    } else {
+      trendEl.textContent = "Trend: fallend";
+      hintEl.textContent = `Letzter Cashflow: ${eur(last)} (↓ ${eur(Math.abs(delta))} ggü. Vormonat).`;
     }
   }
 
-  // ---------- helpers ----------
-  function pickArray(v){ return Array.isArray(v) ? v : (Array.isArray(window.IMMO_DATA?.finance?.[v]) ? window.IMMO_DATA.finance[v] : null); }
+  // ---------------- Resolve + Utils ----------------
 
-  function setTxt(root, id, txt){
-    const el = root.querySelector("#"+id);
-    if(el) el.textContent = txt;
+  function resolveFinance(data){
+    // Priority:
+    // 1) explicit data passed in
+    // 2) window.IMMO_DATA (normalized)
+    // 3) window.IMMO_MASTER_DATA (raw)
+    const d = (data && typeof data === "object") ? data : {};
+
+    const IMD = (window.IMMO_DATA && typeof window.IMMO_DATA === "object") ? window.IMMO_DATA : {};
+    const IMS = (window.IMMO_MASTER_DATA && typeof window.IMMO_MASTER_DATA === "object") ? window.IMMO_MASTER_DATA : {};
+
+    const finFromData = d.finance || d.financeData || null;
+    const finFromIMD = IMD.finance || null;
+    const finFromIMS = IMS.finance || null;
+
+    const finance = finFromData || finFromIMD || finFromIMS || {};
+
+    // Rows: accept both “finance.* arrays” and “flat rows passed”
+    const gesamt = pickArr(d, ["financeRows", "gesamtRows"]) || pickArr(finance, ["gesamt"]) || [];
+    const cashflow = pickArr(finance, ["cashflow"]) || pickArr(d, ["cashflowRows"]) || [];
+    const mieten = pickArr(finance, ["mieten"]) || pickArr(d, ["mietenRows"]) || [];
+    const budget = pickArr(finance, ["budget"]) || pickArr(d, ["budgetRows"]) || [];
+    const home = pickArr(d, ["homeRows"]) || pickArr(IMD, ["home"]) || pickArr(IMS, ["home"]) || [];
+
+    return { finance, gesamt, cashflow, mieten, budget, home };
   }
 
-  function num(v){
+  function pickArr(obj, keys){
+    if(!obj || typeof obj !== "object") return null;
+    for(const k of keys){
+      const v = obj[k];
+      if(Array.isArray(v)) return v;
+    }
+    return null;
+  }
+
+  function extractMonths(cfRows, homeRows, budgetRows){
+    const m = [];
+    if(Array.isArray(cfRows)) cfRows.forEach(r=>{ const x=String(r.Monat||"").trim(); if(x) m.push(x); });
+    if(!m.length && Array.isArray(homeRows)) homeRows.forEach(r=>{ const x=String(r.Monat||"").trim(); if(x) m.push(x); });
+    if(!m.length && Array.isArray(budgetRows)) budgetRows.forEach(r=>{ const x=String(r.Monat||"").trim(); if(x) m.push(x); });
+    const uniq = Array.from(new Set(m)).sort();
+    // show up to last 6
+    return uniq.length > 6 ? uniq.slice(uniq.length-6) : uniq;
+  }
+
+  function lastN(arr, n){
+    if(!Array.isArray(arr)) return [];
+    return arr.slice(Math.max(0, arr.length - n));
+  }
+
+  function numPick(obj, keys){
+    for(const k of keys){
+      if(obj && obj[k] != null && String(obj[k]).trim() !== "") return toNum(obj[k]);
+    }
+    return 0;
+  }
+
+  function toNum(v){
     if(typeof v === "number") return isFinite(v) ? v : 0;
-    if(v == null) return 0;
-    const s = String(v).trim();
+    const s = String(v == null ? "" : v).trim();
     if(!s) return 0;
     return Number(s.replace(/\./g,"").replace(",", ".")) || 0;
   }
 
-  function eur(v){
-    const n = Math.round(num(v));
-    return new Intl.NumberFormat("de-DE",{ style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(n);
+  function eur(n){
+    const v = toNum(n);
+    return v.toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
   }
 
-  function fmtYM(s){
-    const t = String(s||"").trim();
-    if(!t) return "—";
-    const [y,m] = t.split("-");
-    if(!y || !m) return t;
-    const months = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
-    const mi = Math.max(1, Math.min(12, parseInt(m,10))) - 1;
-    return `${months[mi]} ${y}`;
+  function eurShort(n){
+    const v = toNum(n);
+    const abs = Math.abs(v);
+    if(abs >= 1000000) return (v/1000000).toFixed(1).replace(".",",") + " Mio";
+    if(abs >= 1000) return (v/1000).toFixed(0) + "k";
+    return eur(v).replace("€","").trim() + "€";
   }
 
-  function fmtDate(d){
-    try{
-      return d.toLocaleDateString("de-DE",{ day:"2-digit", month:"2-digit", year:"numeric" });
-    }catch{ return "—"; }
-  }
-
-  function startOfDay(d){
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  }
-
-  function nextRentDate(){
-    const d = new Date();
-    const today = startOfDay(d);
-    const y = today.getFullYear();
-    const m = today.getMonth(); // 0-based
-    const firstThis = new Date(y, m, 1);
-    if(today.getTime() <= firstThis.getTime()){
-      return firstThis;
-    }
-    return new Date(y, m+1, 1);
+  function shortYM(ym){
+    // "2025-12" -> "12/25"
+    const s = String(ym || "").trim();
+    const m = s.match(/^(\d{4})-(\d{2})/);
+    if(!m) return s;
+    return `${m[2]}/${m[1].slice(2)}`;
   }
 
   function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
 
-  function trendLabel(vals){
-    if(!vals || vals.length < 2) return "Trend: —";
-    const a = vals[0], b = vals[vals.length-1];
-    const diff = b - a;
-    const dir = diff > 0 ? "↗" : diff < 0 ? "↘" : "→";
-    return `Trend: ${dir} ${eur(Math.round(diff))}`;
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
   }
 
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m => (
-      m==="&"?"&amp;":m==="<"?"&lt;":m===">"?"&gt;":m==='"'?"&quot;":"&#39;"
-    ));
+  function nextFirstOfMonth(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    // next month first day
+    return new Date(y, m+1, 1);
+  }
+
+  function fmtDate(d){
+    return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
+  }
+
+  function daysUntil(target){
+    const now = new Date();
+    const a = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const b = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+    const diff = Math.round((b - a) / (24*3600*1000));
+    return Math.max(0, diff);
   }
 })();
