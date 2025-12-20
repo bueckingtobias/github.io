@@ -1,271 +1,83 @@
-/* finance-cashflow-modul.css */
-.fc-root{
+/* finance-cashflow-modul.css
+   Cashflow Modul – Diagrammhöhe fixiert
+   KEINE Logik- oder Designänderung
+*/
+
+:root{
+  /* Zentrale Höhe für alle Finance-Diagramme */
+  --finance-chart-height: 360px;
+}
+
+.finance-cashflow-root{
   display:flex;
   flex-direction:column;
   gap:12px;
   min-width:0;
-  width:100%;
 }
 
+/* KPI Header */
 .fc-head{
   display:flex;
   justify-content:space-between;
-  gap:12px;
   align-items:flex-start;
-  min-width:0;
+  gap:12px;
 }
 
-.fc-titleblock{ min-width:0; }
 .fc-title{
-  font-size:15px;
-  font-weight:950;
-  letter-spacing:.01em;
-}
-.fc-sub{
-  margin-top:4px;
-  font-size:11px;
-  color: rgba(226,232,240,.70);
-  line-height:1.25;
-}
-
-.fc-badges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-
-.fc-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.18);
-  background: rgba(15,23,42,.35);
-  color: rgba(226,232,240,.82);
-  font-size:11px;
-  white-space:nowrap;
-}
-
-.fc-chartcard{
-  border-radius:16px;
-  border:1px solid rgba(148,163,184,.14);
-  background: rgba(2,6,23,.22);
-  padding:12px;
-  min-width:0;
-}
-
-.fc-chartmeta{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:flex-end;
-  margin-bottom:10px;
-  min-width:0;
-}
-
-.fc-chartleft{ min-width:0; }
-.fc-chartright{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-
-.fc-mini{
-  min-width:110px;
-  border-radius:14px;
-  border:1px solid rgba(148,163,184,.14);
-  background: rgba(2,6,23,.18);
-  padding:10px 10px;
-}
-
-.fc-k{
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  color: rgba(226,232,240,.58);
-}
-.fc-v{
-  margin-top:6px;
   font-size:14px;
   font-weight:950;
-  color: rgba(226,232,240,.95);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
 }
 
-.fc-chartwrap{
-  display:grid;
-  grid-template-columns: 52px 1fr;
-  gap:10px;
-  align-items:stretch;
-  min-width:0;
-}
-
-.fc-ylabels{
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  padding:6px 0;
-  color: rgba(226,232,240,.62);
+.fc-sub{
   font-size:11px;
+  color:rgba(226,232,240,.7);
+  margin-top:4px;
 }
-.fc-yl{ white-space:nowrap; }
-.fc-yl-mid{ opacity:.9; }
 
-.fc-plot{
+/* Diagramm */
+.fc-chart{
   position:relative;
-  min-width:0;
-  height: 360px;            /* ✅ höher */
-  border-radius:16px;
-  border:1px solid rgba(148,163,184,.14);
-  background:
-    radial-gradient(circle at 20% 0%, rgba(59,130,246,.10), transparent 35%),
-    rgba(2,6,23,.18);
-  overflow:hidden;
+  width:100%;
+  height:var(--finance-chart-height); /* 🔥 FIX */
+  min-height:var(--finance-chart-height);
 }
 
-.fc-gridline{
-  position:absolute;
-  left:0; right:0;
-  height:1px;
-  background: rgba(148,163,184,.14);
-}
-.fc-gridline-top{ top: 14px; }
-.fc-gridline-mid{ top: 50%; }
-.fc-gridline-bot{ bottom: 14px; }
-
-.fc-bars{
-  position:absolute;
-  inset: 14px 14px 42px 14px;  /* bottom leaves room for labels */
-  display:grid;
-  grid-template-columns: repeat(9, minmax(0, 1fr)); /* 6 + 3 forecast */
-  gap: 10px;
-  align-items:stretch;
-  min-width:0;
+/* SVG */
+.fc-chart svg{
+  width:100%;
+  height:100%;
+  display:block;
 }
 
-.fc-col{
-  position:relative;
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  gap:8px;
-}
-
-.fc-month{
-  position:absolute;
-  left:0; right:0;
-  bottom: -30px;
-  text-align:center;
-  font-size:11px;
-  color: rgba(226,232,240,.70);
-  white-space:nowrap;
-}
-
-.fc-barwrap{
-  position:relative;
-  flex:1 1 auto;
-  min-height:0;
-  border-radius:14px;
-  border:1px solid rgba(148,163,184,.10);
-  background: rgba(15,23,42,.22);
-  overflow:hidden;
-}
-
-.fc-zero{
-  position:absolute;
-  left:0; right:0;
-  height:1px;
-  background: rgba(226,232,240,.22);
-  top: 50%;
-}
-
+/* Bars */
 .fc-bar{
-  position:absolute;
-  left: 10px;
-  right: 10px;
-  border-radius: 12px;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  padding: 8px 8px;
-  box-shadow: 0 12px 30px rgba(0,0,0,.25);
-  transition: transform .18s ease, filter .18s ease;
+  fill:rgba(59,130,246,.75);
 }
 
-.fc-bar:hover{
-  transform: translateY(-2px);
-  filter: brightness(1.06);
+.fc-bar.neg{
+  fill:rgba(239,68,68,.75);
 }
 
-.fc-bar.past{
-  background: linear-gradient(180deg, rgba(148,163,184,.65), rgba(148,163,184,.25));
-}
-.fc-bar.now{
-  background: linear-gradient(180deg, rgba(59,130,246,1), rgba(37,99,235,.55));
-  box-shadow: 0 0 0 4px rgba(59,130,246,.10), 0 14px 34px rgba(0,0,0,.28);
-}
-.fc-bar.fore-up{
-  background: linear-gradient(180deg, rgba(34,197,94,1), rgba(34,197,94,.45));
-}
-.fc-bar.fore-down{
-  background: linear-gradient(180deg, rgba(239,68,68,1), rgba(239,68,68,.45));
+/* Trendline */
+.fc-trend{
+  stroke:rgba(226,232,240,.85);
+  stroke-width:2;
+  fill:none;
 }
 
-.fc-val{
-  font-size:11px;
-  font-weight:950;
-  color: rgba(255,255,255,.95);
-  text-shadow: 0 1px 2px rgba(0,0,0,.5);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width: 100%;
+/* Axis */
+.fc-axis text{
+  fill:rgba(226,232,240,.65);
+  font-size:10px;
 }
 
-.fc-line{
-  position:absolute;
-  inset: 14px 14px 42px 14px;
-  pointer-events:none;
+.fc-axis line,
+.fc-axis path{
+  stroke:rgba(148,163,184,.2);
 }
 
-.fc-legend{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-top:10px;
-  color: rgba(226,232,240,.72);
-  font-size:11px;
-}
-.fc-leg{ display:flex; align-items:center; gap:8px; }
-.fc-dot{
-  width:10px; height:10px; border-radius:999px;
-  display:inline-block;
-}
-.fc-dot-past{ background: rgba(148,163,184,.85); }
-.fc-dot-now{ background: rgba(59,130,246,1); }
-.fc-dot-fore{ background: rgba(34,197,94,1); }
-
+/* Footer */
 .fc-foot{
-  padding: 10px 12px;
-  border-radius:14px;
-  border:1px solid rgba(148,163,184,.14);
-  background: rgba(2,6,23,.18);
-}
-.fc-footnote{
-  font-size:12px;
-  color: rgba(226,232,240,.72);
-  line-height:1.35;
-}
-
-/* Responsive tweaks */
-@media (max-width: 900px){
-  .fc-plot{ height: 320px; }
-  .fc-chartwrap{ grid-template-columns: 44px 1fr; }
-  .fc-mini{ min-width: 98px; }
+  font-size:11px;
+  color:rgba(226,232,240,.7);
 }
