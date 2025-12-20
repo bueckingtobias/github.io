@@ -1,36 +1,86 @@
-<div class="fm-root" data-fm-root>
+<div class="fm-root" aria-label="Finance Mieten & Pacht Modul">
   <div class="fm-head">
-    <div>
+    <div class="fm-titleblock">
       <div class="fm-title">Mieten & Pacht</div>
-      <div class="fm-sub" data-fm-sub>—</div>
+      <div class="fm-sub">6M Rückblick · aktueller Monat blau · 3M Forecast (Trend grün/rot)</div>
     </div>
-    <div class="fm-pill">01. des Monats</div>
-  </div>
-
-  <div class="fm-main">
-    <div class="fm-big" data-fm-miete>—</div>
-    <div class="fm-small" data-fm-pacht>—</div>
+    <div class="fm-badges" id="fmBadges"></div>
   </div>
 
   <div class="fm-grid">
-    <div class="fm-tile">
-      <div class="fm-k">Auslastung</div>
-      <div class="fm-v" data-fm-auslast>—</div>
-      <div class="fm-m">Belegung</div>
+    <div class="fm-card">
+      <div class="fm-k">Zeitraum</div>
+      <div class="fm-v" id="fmRange">—</div>
+      <div class="fm-h" id="fmNextRent">Nächste Fälligkeit: —</div>
     </div>
-    <div class="fm-tile">
-      <div class="fm-k">Countdown</div>
-      <div class="fm-v" data-fm-count>—</div>
-      <div class="fm-m">Tage bis Miete (01.)</div>
+
+    <div class="fm-card">
+      <div class="fm-k">Aktuell</div>
+      <div class="fm-v" id="fmNowSum">—</div>
+      <div class="fm-h" id="fmNowSplit">Miete — · Pacht —</div>
     </div>
-    <div class="fm-tile">
-      <div class="fm-k">Ø je Einheit</div>
-      <div class="fm-v" data-fm-avg>—</div>
-      <div class="fm-m">Miete + Pacht</div>
+
+    <div class="fm-card">
+      <div class="fm-k">Ø 6M</div>
+      <div class="fm-v" id="fmAvgSum">—</div>
+      <div class="fm-h" id="fmOcc">Auslastung: —</div>
     </div>
   </div>
 
-  <div class="fm-chart" data-fm-chart></div>
+  <div class="fm-chartcard">
+    <div class="fm-chartmeta">
+      <div class="fm-meta-left">
+        <div class="fm-k">Summe Einnahmen</div>
+        <div class="fm-v" id="fmTrend">—</div>
+      </div>
+      <div class="fm-meta-right">
+        <div class="fm-mini">
+          <div class="fm-k">Miete</div>
+          <div class="fm-v" id="fmNowRent">—</div>
+        </div>
+        <div class="fm-mini">
+          <div class="fm-k">Pacht</div>
+          <div class="fm-v" id="fmNowLease">—</div>
+        </div>
+        <div class="fm-mini">
+          <div class="fm-k">Forecast</div>
+          <div class="fm-v" id="fmForeTag">—</div>
+        </div>
+      </div>
+    </div>
 
-  <div class="fm-foot"><span>Rückblick</span><span>Forecast</span></div>
+    <div class="fm-chartwrap">
+      <div class="fm-ylabels">
+        <div class="fm-yl" id="fmYMax">—</div>
+        <div class="fm-yl fm-yl-mid">0</div>
+        <div class="fm-yl" id="fmYMin">—</div>
+      </div>
+
+      <div class="fm-plot" id="fmPlot" role="img" aria-label="Einnahmen Balkendiagramm (Miete+Pacht)">
+        <div class="fm-gridline fm-gridline-top"></div>
+        <div class="fm-gridline fm-gridline-mid"></div>
+        <div class="fm-gridline fm-gridline-bot"></div>
+
+        <div class="fm-bars" id="fmBars"></div>
+
+        <!-- Trend line (SVG overlay) -->
+        <svg class="fm-line" id="fmLine" viewBox="0 0 1000 360" preserveAspectRatio="none" aria-hidden="true">
+          <polyline id="fmLinePath" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points=""></polyline>
+          <g id="fmLineDots"></g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="fm-legend">
+      <div class="fm-leg"><span class="fm-dot fm-dot-past"></span> Vergangenheit</div>
+      <div class="fm-leg"><span class="fm-dot fm-dot-now"></span> Aktueller Monat</div>
+      <div class="fm-leg"><span class="fm-dot fm-dot-fore"></span> Forecast (3M)</div>
+      <div class="fm-leg fm-leg-split"><span class="fm-dot fm-dot-rent"></span> Miete</div>
+      <div class="fm-leg fm-leg-split"><span class="fm-dot fm-dot-lease"></span> Pacht</div>
+    </div>
+  </div>
+
+  <div class="fm-foot">
+    <div class="fm-footnote" id="fmNote">—</div>
+  </div>
 </div>
