@@ -1,4 +1,4 @@
-/* finance-cashflow-modul.css – Apple-clean, höherer Chart, stabil in 2-Spalten-Layout */
+/* finance-cashflow-modul.css – Visual polish (Apple-clean), gleiche Höhe wie Mieten */
 
 .finance-cashflow-root{
   display:flex;
@@ -9,6 +9,7 @@
   min-height:0;
 }
 
+/* Header */
 .fc-head{
   display:flex;
   justify-content:space-between;
@@ -18,8 +19,9 @@
 }
 
 .fc-title{ font-size:14px; font-weight:950; letter-spacing:.01em; }
-.fc-sub{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.72); }
+.fc-sub{ margin-top:4px; font-size:11px; color: rgba(226,232,240,.68); }
 
+/* Meta chips – kleiner, cleaner */
 .fc-meta{
   display:flex;
   flex-wrap:wrap;
@@ -29,73 +31,91 @@
 }
 
 .fc-pill{
-  display:flex;
+  display:inline-flex;
   align-items:center;
   gap:8px;
   padding:6px 10px;
   border-radius:999px;
-  border:1px solid rgba(148,163,184,.18);
-  background: rgba(15,23,42,.35);
-  color: rgba(226,232,240,.88);
+  border:1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.28);
+  color: rgba(226,232,240,.86);
   font-size:11px;
   white-space:nowrap;
   min-width:0;
 }
-.fc-pill .k{ color: rgba(226,232,240,.60); }
-.fc-pill .v{ font-weight:950; }
+.fc-pill .k{ color: rgba(226,232,240,.55); }
+.fc-pill .v{ font-weight:900; }
 
+/* Chart wrapper */
 .fc-chart{
   display:grid;
-  grid-template-columns: 70px 1fr;
+  grid-template-columns: 54px 1fr;
   gap:10px;
   min-width:0;
-  /* Wichtig: gleiche Chart-Höhe wie Mieten */
   height: 320px;
   min-height: 320px;
 }
 
+/* Y-axis – ruhig */
 .fc-yaxis{
   position:relative;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  padding: 6px 0;
-  color: rgba(226,232,240,.70);
-  font-size:11px;
+  padding: 10px 0;
+  color: rgba(226,232,240,.55);
+  font-size:10px;
   min-width:0;
 }
 .fc-yaxis > div{ line-height:1; }
 
+/* Plot */
 .fc-plot{
   position:relative;
-  border-radius:16px;
-  border:1px solid rgba(148,163,184,.14);
-  background: rgba(2,6,23,.22);
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,.12);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(59,130,246,.10), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(34,197,94,.08), transparent 45%),
+    rgba(2,6,23,.25);
   overflow:hidden;
   min-width:0;
 }
 
+/* Zero line + soft grid */
 .fc-zeroline{
   position:absolute;
-  left:0;
-  right:0;
+  left:12px;
+  right:12px;
   top:50%;
   height:1px;
-  background: rgba(148,163,184,.22);
+  background: rgba(148,163,184,.18);
+  pointer-events:none;
+}
+.fc-plot::before{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border-radius:14px;
+  background:
+    linear-gradient(to bottom, rgba(148,163,184,.10) 1px, transparent 1px) 0 0/100% 25%,
+    linear-gradient(to right,  rgba(148,163,184,.06) 1px, transparent 1px) 0 0/25% 100%;
+  opacity:.55;
   pointer-events:none;
 }
 
+/* Bars layout */
 .fc-bars{
   position:absolute;
-  inset: 12px 12px 12px 12px;
+  inset: 14px 14px 14px 14px;
   display:grid;
   grid-template-columns: repeat(9, minmax(0,1fr));
-  gap:8px;
+  gap:10px;
   align-items:stretch;
   min-width:0;
 }
 
-/* Jede Bar hat ein 0-Mitte-System: pos nach oben, neg nach unten */
+/* Bar */
 .fc-bar{
   position:relative;
   display:flex;
@@ -107,12 +127,14 @@
 .fc-bar-stack{
   position:relative;
   height:100%;
-  border-radius:12px;
-  background: rgba(15,23,42,.35);
+  border-radius:14px;
+  background: rgba(15,23,42,.30);
   border:1px solid rgba(148,163,184,.10);
   overflow:hidden;
+  backdrop-filter: blur(6px);
 }
 
+/* Fill sections */
 .fc-bar-pos,
 .fc-bar-neg{
   position:absolute;
@@ -123,44 +145,54 @@
 .fc-bar-pos{
   bottom:50%;
   height:0%;
-  border-radius:10px 10px 0 0;
-  background: rgba(148,163,184,.35); /* past default */
+  border-radius:12px 12px 0 0;
+  background: rgba(148,163,184,.28);
 }
-
 .fc-bar-neg{
   top:50%;
   height:0%;
-  border-radius:0 0 10px 10px;
-  background: rgba(148,163,184,.35); /* past default */
+  border-radius:0 0 12px 12px;
+  background: rgba(148,163,184,.28);
 }
 
+/* Current month: blue gradient */
 .fc-bar.is-now .fc-bar-pos,
 .fc-bar.is-now .fc-bar-neg{
-  background: rgba(59,130,246,.85); /* blau */
+  background: linear-gradient(180deg, rgba(59,130,246,.95), rgba(37,99,235,.85));
 }
 
+/* Forecast up: green gradient */
 .fc-bar.is-forecast.up .fc-bar-pos,
 .fc-bar.is-forecast.up .fc-bar-neg{
-  background: rgba(34,197,94,.85); /* grün */
+  background: linear-gradient(180deg, rgba(34,197,94,.92), rgba(16,185,129,.78));
 }
 
+/* Forecast down: red gradient */
 .fc-bar.is-forecast.down .fc-bar-pos,
 .fc-bar.is-forecast.down .fc-bar-neg{
-  background: rgba(239,68,68,.85); /* rot */
+  background: linear-gradient(180deg, rgba(239,68,68,.92), rgba(248,113,113,.72));
 }
 
-/* Value label */
+/* Value label – NICHT überall riesig: nur on hover + current + forecast */
 .fc-val{
   position:absolute;
   left:50%;
   transform: translateX(-50%);
-  top: -2px;
+  top: 6px;
   font-size:10px;
   font-weight:950;
-  color: rgba(226,232,240,.92);
-  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  color: rgba(226,232,240,.0);
+  text-shadow: 0 2px 10px rgba(0,0,0,.55);
   white-space:nowrap;
   pointer-events:none;
+  transition: color .15s ease;
+}
+.fc-bar.is-now .fc-val,
+.fc-bar.is-forecast .fc-val{
+  color: rgba(226,232,240,.92);
+}
+.fc-bar:hover .fc-val{
+  color: rgba(226,232,240,.92);
 }
 
 /* Month label */
@@ -168,17 +200,19 @@
   margin-top:8px;
   text-align:center;
   font-size:10px;
-  color: rgba(226,232,240,.72);
+  color: rgba(226,232,240,.62);
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
 
-/* Trendline container (drawn via absolute positioned dots/segments in JS) */
+/* Trendline – subtle and clipped */
 .fc-trendline{
   position:absolute;
-  inset: 12px 12px 12px 12px;
+  inset: 14px 14px 14px 14px;
   pointer-events:none;
+  opacity:.55;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
 }
 
 /* Legend */
@@ -187,7 +221,7 @@
   gap:10px;
   flex-wrap:wrap;
   font-size:11px;
-  color: rgba(226,232,240,.72);
+  color: rgba(226,232,240,.68);
 }
 
 .fc-leg{
@@ -200,18 +234,24 @@
   width:12px;
   height:10px;
   border-radius:999px;
-  border:1px solid rgba(148,163,184,.18);
-  background: rgba(148,163,184,.35);
+  border:1px solid rgba(148,163,184,.16);
+  background: rgba(148,163,184,.28);
 }
-.fc-leg-now::before{ background: rgba(59,130,246,.85); }
-.fc-leg-forecast::before{ background: rgba(34,197,94,.85); } /* JS ändert Text, Farbe bleibt ok */
+.fc-leg-now::before{
+  background: linear-gradient(180deg, rgba(59,130,246,.95), rgba(37,99,235,.85));
+  border-color: rgba(59,130,246,.25);
+}
+.fc-leg-forecast::before{
+  background: linear-gradient(180deg, rgba(34,197,94,.92), rgba(16,185,129,.78));
+  border-color: rgba(34,197,94,.22);
+}
 
 .fc-foot{
   font-size:11px;
-  color: rgba(226,232,240,.72);
+  color: rgba(226,232,240,.68);
   line-height:1.35;
   border-radius:14px;
-  border:1px solid rgba(148,163,184,.14);
+  border:1px solid rgba(148,163,184,.12);
   background: rgba(2,6,23,.18);
   padding: 10px 12px;
 }
