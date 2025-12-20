@@ -72,9 +72,9 @@
 
   // PROJECTS
   const projectsGesamt = {
-    Projekt: "Baumstraße 35",
-    Adresse: "Baumstraße 35",
-    Objekt: "Baumstraße 35",
+    Projekt: "Baumstraße",
+    Adresse: "Baumstraße 35, 27777 Ganderkesee",
+    Objekt: "Umbau Stall zu 5 Wohnungen",
     Letztes_Update: new Date().toISOString().slice(0, 10),
     Notizen: "Gesamtübersicht über alle Gewerke.",
   };
