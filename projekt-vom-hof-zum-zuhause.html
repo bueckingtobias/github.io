@@ -5,44 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mehrfamilienhaus in Elmeloh – Bücking Immobilien GmbH & Co. KG</title>
 
-  <!-- ===== SEO GRUNDDATEN (Projekt-Detail) ===== -->
-  <meta name="description" content="Projekt „Mehrfamilienhaus in Elmeloh“ der Bücking Immobilien GmbH & Co. KG – Umbau eines traditionellen Hofs zu fünf modernen Wohneinheiten in Ganderkesee. Mit Wohnungsgrößen, Mieten und Bezugszeitraum ab Mai 2026.">
-  <meta name="keywords" content="Mehrfamileinhaus in Elmeloh, Wohnungen Ganderkesee, Hofumbau, Wohnung mieten, Bücking Immobilien">
+  <meta name="description" content="Projekt Mehrfamilienhaus in Elmeloh der Bücking Immobilien GmbH & Co. KG – Umbau eines traditionellen Hofs zu fünf modernen Wohneinheiten in Ganderkesee. Mit Wohnungsübersicht, Projektstatus, FAQ und Kontaktmöglichkeit.">
+  <meta name="keywords" content="Mehrfamilienhaus Elmeloh, Wohnungen Ganderkesee, Hofumbau, Wohnung mieten, Bücking Immobilien, Elmeloh wohnen">
   <meta name="author" content="Bücking Immobilien GmbH & Co. KG">
 
   <link rel="canonical" href="https://www.buecking-immobilien.de/projekt-vom-hof-zum-zuhause.html" />
 
-  <!-- OpenGraph -->
-  <meta property="og:title" content="Mehrfamilienhaus in Elmeloh  – Projekt in Ganderkesee">
-  <meta property="og:description" content="Umbau eines landwirtschaftlichen Gebäudes zu fünf hochwertigen Wohneinheiten. Wohnungen voraussichtlich bezugsbereit ab Mai 2026.">
+  <meta property="og:title" content="Mehrfamilienhaus in Elmeloh – Bücking Immobilien GmbH & Co. KG">
+  <meta property="og:description" content="Umbau eines landwirtschaftlichen Gebäudes zu fünf hochwertigen Wohneinheiten in Elmeloh.">
   <meta property="og:url" content="https://www.buecking-immobilien.de/projekt-vom-hof-zum-zuhause.html">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://www.buecking-immobilien.de/og-projekt.jpg">
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Mehrfamilienhaus in Elmeloh">
-  <meta name="twitter:description" content="Fünf moderne Wohneinheiten im Umbau. Voraussichtlicher Bezug ab Mai 2026.">
+  <meta name="twitter:description" content="Fünf moderne Wohneinheiten im Umbau eines traditionellen Hofgebäudes.">
   <meta name="twitter:image" content="https://www.buecking-immobilien.de/og-projekt.jpg">
 
   <link rel="sitemap" type="application/xml" href="https://www.buecking-immobilien.de/sitemap.xml" />
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="icon" type="image/png" href="/favicon.png" />
-  
+
   <style>
     :root{
       --brand:#004225;
       --brand-700:#00361e;
+      --brand-800:#002b18;
       --text:#ffffff;
       --bg:#004225;
-      --muted:#ffffff1a;
-      --muted-strong:#ffffff26;
+      --muted:#ffffff14;
+      --muted-strong:#ffffff22;
+      --line:rgba(255,255,255,.12);
+      --line-strong:rgba(255,255,255,.2);
       --shadow:0 2px 10px rgba(0,0,0,.25);
-      --shadow-strong:0 10px 30px rgba(0,0,0,.35);
+      --shadow-strong:0 14px 34px rgba(0,0,0,.34);
       --radius:12px;
+      --radius-lg:18px;
       --maxw:1200px;
+      --content-w:1020px;
       --nav-h:46px;
-      --hero-w:980px;
+
+      --success:#98fbce;
+      --current:#ffe082;
 
       --header-h:110px;
       --footer-h:64px;
@@ -50,118 +54,738 @@
     }
 
     *{box-sizing:border-box}
+
     html,body{
-      margin:0; padding:0;
+      margin:0;
+      padding:0;
       font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text); background:var(--bg);
+      color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,.05), transparent 28%),
+        linear-gradient(180deg, var(--brand-700) 0%, var(--brand) 42%, var(--brand-800) 100%);
       scroll-behavior:smooth;
     }
-    html{ scroll-padding-top:calc(var(--header-h) + 10px) }
+
+    html{scroll-padding-top:calc(var(--header-h) + 12px)}
+    a,button,input,textarea,select{font:inherit}
 
     header.site-header{
-      position:fixed; top:0; left:0; right:0; z-index:1000;
-      background:var(--brand-700); color:var(--text); box-shadow:var(--shadow);
+      position:fixed;
+      top:0; left:0; right:0;
+      z-index:1000;
+      background:rgba(0,54,30,.92);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      color:var(--text);
+      box-shadow:var(--shadow);
+      border-bottom:1px solid rgba(255,255,255,.08);
     }
-    .header-top{display:grid;place-items:center;padding:14px 16px;}
-    .brand-link{display:inline-flex;align-items:center;gap:10px;color:var(--text);text-decoration:none;}
-    .brand-logo{height:46px;width:auto;display:block;filter:brightness(0) invert(1);}
+
+    .header-top{
+      display:grid;
+      place-items:center;
+      padding:14px 16px;
+    }
+
+    .brand-link{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      color:var(--text);
+      text-decoration:none;
+    }
+
+    .brand-logo{
+      height:46px;
+      width:auto;
+      display:block;
+      filter:brightness(0) invert(1);
+    }
 
     .header-nav{
-      display:flex;align-items:center;justify-content:center;
-      border-top:1px solid rgba(255,255,255,.15);
-      min-height:var(--nav-h); padding:0 8px; position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-top:1px solid rgba(255,255,255,.12);
+      min-height:var(--nav-h);
+      padding:0 8px;
+      position:relative;
     }
-    nav.primary{display:none;}
-    nav.primary ul{list-style:none;margin:0;padding:0;display:flex;gap:28px;align-items:center;}
-    nav.primary a{color:var(--text);text-decoration:none;font-weight:700;padding:10px 6px;border-radius:8px;transition:opacity .2s ease;}
-    nav.primary a:hover{opacity:.8;}
-    nav.primary a[aria-current="page"]{text-decoration:underline;}
+
+    nav.primary{display:none}
+    nav.primary ul{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:flex;
+      gap:28px;
+      align-items:center;
+    }
+
+    nav.primary a{
+      color:var(--text);
+      text-decoration:none;
+      font-weight:700;
+      padding:10px 6px;
+      border-radius:8px;
+      transition:opacity .2s ease;
+    }
+
+    nav.primary a:hover{opacity:.8}
+    nav.primary a[aria-current="page"]{text-decoration:underline}
 
     .menu-toggle{
-      position:absolute; right:8px; width:44px; height:44px;
-      border:0; background:transparent; color:var(--text);
-      display:grid; place-items:center; border-radius:8px; cursor:pointer;
+      position:absolute;
+      right:8px;
+      width:44px;
+      height:44px;
+      border:0;
+      background:transparent;
+      color:var(--text);
+      display:grid;
+      place-items:center;
+      border-radius:8px;
+      cursor:pointer;
     }
+
     .menu-icon,.menu-icon::before,.menu-icon::after{
-      content:""; display:block; width:22px; height:2px;
-      background:var(--text); border-radius:2px; transition:transform .25s ease, opacity .2s ease;
+      content:"";
+      display:block;
+      width:22px;
+      height:2px;
+      background:var(--text);
+      border-radius:2px;
+      transition:transform .25s ease, opacity .2s ease;
     }
+
     .menu-icon::before{transform:translateY(-7px)}
     .menu-icon::after{transform:translateY(5px)}
     .menu-toggle[aria-expanded="true"] .menu-icon{transform:rotate(45deg)}
     .menu-toggle[aria-expanded="true"] .menu-icon::before{transform:rotate(90deg)}
     .menu-toggle[aria-expanded="true"] .menu-icon::after{opacity:0}
 
-    .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:999;}
-    .drawer{
-      position:fixed; left:0; right:0;
-      top:var(--header-h); bottom:calc(var(--footer-h) + var(--safe-bottom));
-      background:var(--brand); color:var(--text);
-      transform:translateY(-8px); opacity:0; pointer-events:none;
-      border-bottom:1px solid rgba(255,255,255,.15); box-shadow:0 10px 25px rgba(0,0,0,.25);
-      transition:transform .25s ease, opacity .25s ease; z-index:1001;
-      overflow:auto; -webkit-overflow-scrolling:touch;
+    .drawer-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.4);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .25s ease;
+      z-index:999;
     }
+
+    .drawer{
+      position:fixed;
+      left:0; right:0;
+      top:var(--header-h);
+      bottom:calc(var(--footer-h) + var(--safe-bottom));
+      background:var(--brand);
+      color:var(--text);
+      transform:translateY(-8px);
+      opacity:0;
+      pointer-events:none;
+      border-bottom:1px solid rgba(255,255,255,.15);
+      box-shadow:0 10px 25px rgba(0,0,0,.25);
+      transition:transform .25s ease, opacity .25s ease;
+      z-index:1001;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+
     .drawer.open,.drawer-backdrop.open{pointer-events:auto}
     .drawer.open{transform:translateY(0);opacity:1}
     .drawer-backdrop.open{opacity:1}
+
     .drawer nav{padding:14px 16px 18px}
-    .drawer ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-    .drawer a{display:block;text-decoration:none;color:var(--text);font-weight:700;padding:12px 10px;border-radius:10px;background:var(--muted)}
+    .drawer ul{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:grid;
+      gap:8px;
+    }
+
+    .drawer a{
+      display:block;
+      text-decoration:none;
+      color:var(--text);
+      font-weight:700;
+      padding:12px 10px;
+      border-radius:10px;
+      background:var(--muted);
+    }
 
     @media (min-width:900px){
-      nav.primary{display:block} .menu-toggle{display:none} .drawer,.drawer-backdrop{display:none}
+      nav.primary{display:block}
+      .menu-toggle{display:none}
+      .drawer,.drawer-backdrop{display:none}
     }
 
     main{
-      max-width:var(--maxw); margin:0 auto;
-      padding:calc(var(--header-h) + clamp(24px,4vw,40px)) 16px calc(var(--footer-h) + var(--safe-bottom) + 24px);
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:
+        calc(var(--header-h) + clamp(24px,4vw,40px))
+        16px
+        calc(var(--footer-h) + var(--safe-bottom) + 26px);
     }
 
-    .intro-wrap{max-width:var(--hero-w);margin:0 auto;text-align:center;padding:clamp(8px,2vw,16px) 0 0;}
-    .kicker{font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.65;font-size:.9rem;text-align:center;margin:clamp(12px,2vw,18px) 0 10px;}
-    .title-stacked{text-align:center;margin-inline:auto;max-width:100%;line-height:1.1;letter-spacing:.01em;margin-bottom:clamp(8px,2vw,14px);}
-    .title-stacked .line1{display:block;font-size:clamp(20px,3vw,30px);font-weight:800;margin-bottom:4px;}
-    .title-stacked .line2{display:block;font-size:clamp(16px,2.4vw,24px);font-weight:700;opacity:.95;}
-    .intro-wrap p{margin:10px auto 0;opacity:.95;max-width:70ch;}
-
-    .project-hero{position:relative;overflow:hidden;border-radius:var(--radius);background:rgba(255,255,255,.04);box-shadow:var(--shadow);max-width:var(--hero-w);margin:20px auto;}
-    .project-hero img{display:block;width:100%;height:auto;object-fit:contain;}
-
-    .tabs{max-width:var(--hero-w);margin:clamp(18px,3vw,26px) auto 0;display:flex;flex-direction:column;gap:14px;align-items:center;}
-    .tab-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
-    .tab-controls input{position:absolute;opacity:0;pointer-events:none;}
-    .tab-controls label{user-select:none;cursor:pointer;padding:10px 14px;border-radius:999px;font-weight:800;background:var(--muted);border:1px solid rgba(255,255,255,.12);transition:transform .12s ease,opacity .2s ease,background .2s ease;opacity:.9;}
-    .tab-controls label:hover{transform:translateY(-1px);opacity:1;}
-    .tab-controls input:checked + label{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);}
-
-    .panels{width:100%;display:grid;place-items:center;}
-    .panel{display:none;width:min(100%,var(--hero-w));background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);box-shadow:var(--shadow);}
-    .panel.active{display:block;}
-
-    .box-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;}
-    .meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;opacity:.95;font-size:.98rem;}
-    .chip{background:var(--muted);padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);}
-
-    .price-list{list-style:none;margin:4px auto 0;padding:0;width:min(92%,460px);}
-    .price-list li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);}
-    .price-list .label{opacity:.85;text-align:left;}
-    .price-list .value{font-weight:800;text-align:right;min-width:120px;flex:0 0 120px;}
-
-    .total{margin:10px auto 0;padding:10px 12px;width:min(92%,460px);display:flex;justify-content:space-between;align-items:center;font-weight:800;border-radius:10px;background:var(--muted);border:1px solid rgba(255,255,255,.12);}
-
-    .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
-    .badge{font-weight:700;padding:6px 10px;border-radius:999px;background:var(--muted);border:1px solid rgba(255,255,255,.12);}
-    .badge.vermietet{
-      background:#b30000;
-      border-color:#ff8080;
+    section + section{
+      margin-top:clamp(24px,4vw,40px);
     }
 
-    .actions{margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;text-decoration:none;color:var(--text);background:var(--muted);border:1px solid rgba(255,255,255,.14);font-weight:800;transition:transform .15s ease,box-shadow .2s ease,background-color .2s ease;box-shadow:var(--shadow);}
-    .btn:hover{transform:translateY(-2px);background:var(--muted-strong);box-shadow:var(--shadow-strong);}
+    .section-panel{
+      max-width:var(--content-w);
+      margin:0 auto;
+      background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
 
-    .apartment-info{margin-top:clamp(18px,3vw,28px);padding:16px;border-radius:var(--radius);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);max-width:var(--hero-w);margin-inline:auto;}
+    .section-head{
+      padding:22px 22px 0;
+    }
+
+    .section-head h2{
+      margin:0 0 8px;
+      font-size:clamp(22px,2.6vw,30px);
+      line-height:1.15;
+    }
+
+    .section-head p{
+      margin:0;
+      opacity:.92;
+      line-height:1.65;
+      max-width:72ch;
+    }
+
+    .intro-wrap{
+      max-width:var(--content-w);
+      margin:0 auto;
+      text-align:center;
+      padding:clamp(8px,2vw,16px) 0 0;
+    }
+
+    .kicker{
+      font-weight:700;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      opacity:.65;
+      font-size:.9rem;
+      text-align:center;
+      margin:clamp(12px,2vw,18px) 0 10px;
+    }
+
+    .title-stacked{
+      text-align:center;
+      margin-inline:auto;
+      max-width:100%;
+      line-height:1.08;
+      letter-spacing:.01em;
+      margin-bottom:clamp(10px,2vw,16px);
+    }
+
+    .title-stacked .line1{
+      display:block;
+      font-size:clamp(28px,4vw,42px);
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .title-stacked .line2{
+      display:block;
+      font-size:clamp(17px,2.2vw,24px);
+      font-weight:700;
+      opacity:.95;
+    }
+
+    .intro-wrap p{
+      margin:10px auto 0;
+      opacity:.95;
+      max-width:72ch;
+      line-height:1.7;
+    }
+
+    .hero-wrap{
+      max-width:var(--content-w);
+      margin:22px auto 0;
+    }
+
+    .project-hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:20px;
+      background:rgba(255,255,255,.04);
+      box-shadow:var(--shadow-strong);
+      border:1px solid rgba(255,255,255,.1);
+      aspect-ratio:16 / 8.5;
+      isolation:isolate;
+    }
+
+    .hero-slides{
+      position:absolute;
+      inset:0;
+    }
+
+    .hero-slide{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transition:opacity .85s ease, transform 7s ease;
+    }
+
+    .hero-slide.active{
+      opacity:1;
+      transform:scale(1.03);
+    }
+
+    .hero-slide img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .project-hero::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.14) 40%, rgba(0,0,0,.55) 100%);
+      pointer-events:none;
+      z-index:1;
+    }
+
+    .hero-overlay{
+      position:absolute;
+      inset:auto 20px 18px 20px;
+      z-index:2;
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-end;
+      flex-wrap:wrap;
+    }
+
+    .hero-badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .hero-badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:34px;
+      padding:7px 12px;
+      border-radius:999px;
+      font-size:.82rem;
+      font-weight:800;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:0 8px 18px rgba(0,0,0,.22);
+      white-space:nowrap;
+      background:rgba(255,255,255,.12);
+    }
+
+    .hero-badge.success{
+      background:rgba(0,184,118,.18);
+      border-color:rgba(174,255,220,.28);
+    }
+
+    .hero-dots{
+      display:flex;
+      gap:7px;
+      align-items:center;
+    }
+
+    .hero-dots button{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      border:0;
+      padding:0;
+      background:rgba(255,255,255,.44);
+      cursor:pointer;
+      transition:transform .18s ease, background-color .18s ease;
+    }
+
+    .hero-dots button.active{
+      background:#fff;
+      transform:scale(1.18);
+    }
+
+    /* neue Projektfakten */
+    .project-facts{
+      padding:22px;
+      display:grid;
+      gap:14px;
+      grid-template-columns:repeat(2,1fr);
+    }
+
+    .project-fact{
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+      padding:16px 18px;
+      border-radius:16px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.1);
+    }
+
+    .project-fact-mark{
+      flex:0 0 10px;
+      width:10px;
+      height:10px;
+      margin-top:6px;
+      border-radius:999px;
+      background:rgba(255,255,255,.55);
+      box-shadow:0 0 0 6px rgba(255,255,255,.04);
+    }
+
+    .project-fact-copy{
+      display:grid;
+      gap:4px;
+    }
+
+    .project-fact-copy strong{
+      font-size:.82rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      opacity:.64;
+    }
+
+    .project-fact-copy span{
+      font-size:1rem;
+      line-height:1.55;
+      font-weight:700;
+    }
+
+    @media (max-width:760px){
+      .project-facts{grid-template-columns:1fr}
+    }
+
+    /* horizontale timeline */
+    .timeline-wrap{
+      padding:22px;
+    }
+
+    .timeline-horizontal{
+      position:relative;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+    }
+
+    .timeline-horizontal::before{
+      content:"";
+      position:absolute;
+      left:9%;
+      right:9%;
+      top:18px;
+      height:2px;
+      background:rgba(255,255,255,.15);
+      z-index:0;
+    }
+
+    .timeline-step{
+      position:relative;
+      z-index:1;
+      text-align:center;
+    }
+
+    .timeline-step-dot{
+      width:18px;
+      height:18px;
+      border-radius:999px;
+      margin:9px auto 16px;
+      background:rgba(255,255,255,.32);
+      box-shadow:0 0 0 8px rgba(255,255,255,.04);
+      border:2px solid rgba(255,255,255,.08);
+    }
+
+    .timeline-step.done .timeline-step-dot{
+      background:var(--success);
+    }
+
+    .timeline-step.current .timeline-step-dot{
+      background:var(--current);
+    }
+
+    .timeline-step-card{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:16px;
+      min-height:170px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      text-align:left;
+    }
+
+    .timeline-step-card strong{
+      font-size:.98rem;
+      line-height:1.4;
+    }
+
+    .timeline-step-card .status{
+      font-size:.78rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:800;
+      opacity:.72;
+    }
+
+    .timeline-step-card p{
+      margin:0;
+      line-height:1.6;
+      opacity:.94;
+      font-size:.94rem;
+    }
+
+    @media (max-width:900px){
+      .timeline-horizontal{
+        grid-template-columns:1fr 1fr;
+      }
+      .timeline-horizontal::before{
+        display:none;
+      }
+    }
+
+    @media (max-width:580px){
+      .timeline-horizontal{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .tabs{
+      max-width:var(--content-w);
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      align-items:center;
+    }
+
+    .tab-controls{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+
+    .tab-controls input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .tab-controls label{
+      user-select:none;
+      cursor:pointer;
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:800;
+      background:var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+      transition:transform .12s ease, opacity .2s ease, background .2s ease, border-color .2s ease;
+      opacity:.92;
+    }
+
+    .tab-controls label:hover{
+      transform:translateY(-1px);
+      opacity:1;
+    }
+
+    .tab-controls input:checked + label{
+      background:rgba(255,255,255,.16);
+      border-color:rgba(255,255,255,.28);
+    }
+
+    .panels{
+      width:100%;
+      display:grid;
+      place-items:center;
+    }
+
+    .panel{
+      display:none;
+      width:min(100%, var(--content-w));
+      background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel.active{display:block}
+
+    .box-body{
+      padding:22px;
+      display:grid;
+      gap:18px;
+    }
+
+    .apartment-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .apartment-head h3{
+      margin:0 0 6px;
+      font-size:1.34rem;
+    }
+
+    .apartment-sub{
+      margin:0;
+      opacity:.88;
+      line-height:1.6;
+    }
+
+    .meta{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      opacity:.95;
+      font-size:.98rem;
+    }
+
+    .chip{
+      background:var(--muted);
+      padding:7px 11px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      font-weight:700;
+    }
+
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+
+    .badge{
+      font-weight:800;
+      padding:7px 11px;
+      border-radius:999px;
+      background:var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    .badge.available{
+      background:rgba(0,184,118,.18);
+      border-color:rgba(174,255,220,.28);
+    }
+
+    .badge.rented{
+      background:rgba(179,0,0,.35);
+      border-color:rgba(255,128,128,.5);
+    }
+
+    .apartment-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:18px;
+    }
+
+    .info-card{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .info-card h4{
+      margin:0 0 12px;
+      font-size:1rem;
+    }
+
+    .price-list{
+      list-style:none;
+      margin:0;
+      padding:0;
+    }
+
+    .price-list li{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:16px;
+      padding:10px 0;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .price-list .label{
+      opacity:.85;
+      text-align:left;
+    }
+
+    .price-list .value{
+      font-weight:800;
+      text-align:right;
+      min-width:120px;
+      flex:0 0 120px;
+    }
+
+    .total{
+      margin:14px 0 0;
+      padding:12px 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight:800;
+      border-radius:12px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    .rented-note{
+      display:none;
+      margin:0;
+      opacity:.9;
+      line-height:1.6;
+    }
+
+    .actions{
+      margin-top:2px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:12px;
+      text-decoration:none;
+      color:var(--text);
+      background:var(--muted);
+      border:1px solid rgba(255,255,255,.14);
+      font-weight:800;
+      transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease;
+      box-shadow:var(--shadow);
+      min-height:44px;
+    }
+
+    .btn:hover{
+      transform:translateY(-2px);
+      background:var(--muted-strong);
+      box-shadow:var(--shadow-strong);
+    }
+
+    .btn-ghost{
+      background:rgba(255,255,255,.08);
+    }
 
     .panel.is-rented .price-list,
     .panel.is-rented .total,
@@ -169,20 +793,151 @@
       display:none;
     }
 
-    .rented-note{
-      display:none;
-      margin-top:8px;
-      opacity:.9;
-    }
     .panel.is-rented .rented-note{
       display:block;
     }
 
+    .faq-wrap{
+      padding:22px;
+      display:grid;
+      gap:12px;
+    }
+
+    .faq-item{
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      overflow:hidden;
+    }
+
+    .faq-item summary{
+      cursor:pointer;
+      list-style:none;
+      padding:16px 18px;
+      font-weight:800;
+      position:relative;
+      line-height:1.5;
+    }
+
+    .faq-item summary::-webkit-details-marker{display:none}
+
+    .faq-item summary::after{
+      content:"+";
+      position:absolute;
+      right:18px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:1.1rem;
+      opacity:.8;
+    }
+
+    .faq-item[open] summary::after{
+      content:"–";
+    }
+
+    .faq-content{
+      padding:0 18px 16px;
+      opacity:.92;
+      line-height:1.7;
+    }
+
+    .faq-content p{
+      margin:0;
+    }
+
+    .contact-wrap{
+      padding:22px;
+      display:grid;
+      gap:14px;
+      max-width:760px;
+    }
+
+    .contact-intro{
+      margin:0 0 4px;
+      line-height:1.7;
+      opacity:.95;
+    }
+
+    .contact-note{
+      padding:14px 16px;
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.1);
+      line-height:1.6;
+      opacity:.94;
+    }
+
+    form.project-contact-form{
+      display:grid;
+      gap:12px;
+    }
+
+    .field{
+      display:grid;
+      gap:7px;
+    }
+
+    .field label{
+      font-size:.92rem;
+      font-weight:700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      min-height:46px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      padding:12px 14px;
+      outline:none;
+      transition:border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+    }
+
+    .field textarea{
+      min-height:160px;
+      resize:vertical;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder{
+      color:rgba(255,255,255,.66);
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color:rgba(255,255,255,.34);
+      background:rgba(255,255,255,.1);
+      box-shadow:0 0 0 4px rgba(255,255,255,.05);
+    }
+
+    .field select option{
+      color:#111;
+    }
+
+    .form-note{
+      font-size:.9rem;
+      opacity:.8;
+      line-height:1.55;
+      margin:0;
+    }
+
     footer.site-footer{
-      position:fixed; left:0; right:0; bottom:0; z-index:1000;
-      background:var(--brand-700); color:var(--text);
-      text-align:center; padding:14px 18px calc(14px + var(--safe-bottom));
-      font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25);
+      position:fixed;
+      left:0; right:0; bottom:0;
+      z-index:1000;
+      background:rgba(0,54,30,.94);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      color:var(--text);
+      text-align:center;
+      padding:14px 18px calc(14px + var(--safe-bottom));
+      font-size:.95rem;
+      box-shadow:0 -2px 10px rgba(0,0,0,.25);
+      border-top:1px solid rgba(255,255,255,.08);
     }
   </style>
 </head>
@@ -225,22 +980,143 @@
   </header>
 
   <main id="top">
-    <section class="intro-wrap">
+    <section class="intro-wrap" aria-labelledby="projekt-title">
       <div class="kicker">Aktuelles Projekt</div>
-      <h2 class="title-stacked">
+      <h1 class="title-stacked" id="projekt-title">
         <span class="line1">Mehrfamilienhaus in Elmeloh</span>
-        <span class="line2">Umbau eines landwirtschaftlichen Gebäudes</span>
-      </h2>
-      <p>Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde,
-         wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Wir verbinden ländlichen Charme mit
-         zeitgemäßem Wohnkomfort.</p>
+        <span class="line2">Umbau eines landwirtschaftlichen Gebäudes zu modernem Wohnraum</span>
+      </h1>
+      <p>
+        Ein landwirtschaftliches Gebäude, das über Generationen von unserer Familie bewirtschaftet wurde,
+        wird zu fünf modernen und charmanten Wohneinheiten umgebaut. Das Projekt verbindet ländlichen
+        Charakter mit zeitgemäßem Wohnkomfort und einer hochwertigen, langfristigen Vermietungsausrichtung.
+      </p>
     </section>
 
-    <section class="project-hero">
-      <img src="projekt-aussenansicht.jpeg" alt="Außenansicht Gesamtansicht">
+    <section class="hero-wrap">
+      <div class="project-hero project-slider" data-interval="4500">
+        <div class="hero-slides">
+          <div class="hero-slide active">
+            <img src="projekt-aussenansicht-1.jpeg" alt="Außenansicht Mehrfamilienhaus in Elmeloh">
+          </div>
+          <div class="hero-slide">
+            <img src="projekt-aussenansicht-2.jpeg" alt="Weitere Außenansicht des Projekts in Elmeloh">
+          </div>
+          <div class="hero-slide">
+            <img src="projekt-aussenansicht-3.jpeg" alt="Detailansicht des Umbaus in Elmeloh">
+          </div>
+        </div>
+
+        <div class="hero-overlay">
+          <div class="hero-badges">
+            <span class="hero-badge success">Vermietung läuft</span>
+            <span class="hero-badge">5 Wohneinheiten</span>
+            <span class="hero-badge">Elmeloh, Ganderkesee</span>
+          </div>
+
+          <div class="hero-dots" aria-label="Bildauswahl Projektansichten">
+            <button type="button" class="active" aria-label="Bild 1 anzeigen"></button>
+            <button type="button" aria-label="Bild 2 anzeigen"></button>
+            <button type="button" aria-label="Bild 3 anzeigen"></button>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="tabs">
+    <section class="section-panel" aria-labelledby="facts-title">
+      <div class="section-head">
+        <h2 id="facts-title">Projektfakten</h2>
+        <p>Die wichtigsten Eckdaten des Projekts auf einen Blick.</p>
+      </div>
+
+      <div class="project-facts">
+        <div class="project-fact">
+          <div class="project-fact-mark"></div>
+          <div class="project-fact-copy">
+            <strong>Projektart</strong>
+            <span>Umbau eines landwirtschaftlichen Bestandsgebäudes zu modernem Wohnraum.</span>
+          </div>
+        </div>
+        <div class="project-fact">
+          <div class="project-fact-mark"></div>
+          <div class="project-fact-copy">
+            <strong>Wohneinheiten</strong>
+            <span>Fünf eigenständige Wohnungen mit hochwertiger Vermietungsausrichtung.</span>
+          </div>
+        </div>
+        <div class="project-fact">
+          <div class="project-fact-mark"></div>
+          <div class="project-fact-copy">
+            <strong>Lage</strong>
+            <span>Elmeloh in Ganderkesee – ländlich, ruhig und mit besonderem Charakter.</span>
+          </div>
+        </div>
+        <div class="project-fact">
+          <div class="project-fact-mark"></div>
+          <div class="project-fact-copy">
+            <strong>Besonderheiten</strong>
+            <span>Stellplatz, Fahrradschuppen und Strombezug über die hauseigene Solaranlage.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-labelledby="timeline-title">
+      <div class="section-head">
+        <h2 id="timeline-title">Projektstatus</h2>
+        <p>Das Projekt befindet sich in der finalen Bauphase. Die Vermietung läuft bereits parallel.</p>
+      </div>
+
+      <div class="timeline-wrap">
+        <div class="timeline-horizontal">
+          <div class="timeline-step done">
+            <div class="timeline-step-dot"></div>
+            <div class="timeline-step-card">
+              <strong>Projektentwicklung & Konzeption</strong>
+              <span class="status">Abgeschlossen</span>
+              <p>Die inhaltliche, gestalterische und bauliche Grundkonzeption des Projekts wurde vollständig entwickelt.</p>
+            </div>
+          </div>
+
+          <div class="timeline-step done">
+            <div class="timeline-step-dot"></div>
+            <div class="timeline-step-card">
+              <strong>Umbau & Modernisierung</strong>
+              <span class="status">Weit fortgeschritten</span>
+              <p>Die wesentlichen baulichen Maßnahmen sind umgesetzt, aktuell laufen die letzten Fertigstellungsarbeiten.</p>
+            </div>
+          </div>
+
+          <div class="timeline-step current">
+            <div class="timeline-step-dot"></div>
+            <div class="timeline-step-card">
+              <strong>Vermietung</strong>
+              <span class="status">Aktuell</span>
+              <p>Interessenten können sich bereits jetzt über verfügbare Einheiten informieren und eine Anfrage stellen.</p>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="timeline-step-dot"></div>
+            <div class="timeline-step-card">
+              <strong>Fertigstellung & Bezug</strong>
+              <span class="status">Als Nächstes</span>
+              <p>Nach Abschluss der Restarbeiten erfolgt die finale Übergabe und Bereitstellung der Wohnungen zur Bezugsphase.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tabs" aria-labelledby="wohnungen-title">
+      <div class="intro-wrap" style="padding-top:0">
+        <div class="kicker">Wohnungsübersicht</div>
+        <h2 class="title-stacked" id="wohnungen-title" style="margin-bottom:6px">
+          <span class="line1" style="font-size:clamp(24px,3vw,34px)">Verfügbarkeiten & Mietübersicht</span>
+          <span class="line2" style="font-size:clamp(15px,2vw,19px)">Alle Wohneinheiten im Überblick</span>
+        </h2>
+      </div>
+
       <div class="tab-controls">
         <input type="radio" name="apt" id="tab1" checked><label for="tab1">Wohnung 1</label>
         <input type="radio" name="apt" id="tab2"><label for="tab2">Wohnung 2</label>
@@ -250,143 +1126,350 @@
       </div>
 
       <div class="panels">
-        <!-- Wohnung 1 -->
         <article class="panel active"
-                 data-id="1" data-groesse="ca. 107 m²" data-zimmer="3 Zimmer" data-status="Verfügbar"
-                 data-miete="1391" data-nk="214" data-kueche="70">
+                 data-id="1"
+                 data-groesse="ca. 107 m²"
+                 data-zimmer="3 Zimmer"
+                 data-status="Verfügbar"
+                 data-miete="1391"
+                 data-nk="214"
+                 data-kueche="70">
           <div class="box-body">
-            <h4>Wohnung 1</h4>
-            <div class="meta"><span class="chip">ca. 107 m²</span><span class="chip">3 Zimmer</span></div>
+            <div class="apartment-head">
+              <div>
+                <h3>Wohnung 1</h3>
+                <p class="apartment-sub">Großzügige Wohneinheit mit moderner Aufteilung und hochwertigem Wohngefühl im umgebauten Bestandsgebäude.</p>
+              </div>
+              <div class="badges">
+                <span class="badge available">Verfügbar</span>
+              </div>
+            </div>
 
-            <ul class="price-list">
-              <li><span class="label">Miete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+            <div class="meta">
+              <span class="chip">ca. 107 m²</span>
+              <span class="chip">3 Zimmer</span>
+              <span class="chip">Stellplatz inklusive</span>
+            </div>
 
-            <div class="badges"><span class="badge">Verfügbar</span></div>
+            <div class="apartment-grid">
+              <div class="info-card">
+                <h4>Mietübersicht</h4>
+                <ul class="price-list">
+                  <li><span class="label">Miete</span><span class="value js-miete"></span></li>
+                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+                </ul>
+                <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+              </div>
+            </div>
+
             <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
 
             <div class="actions">
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+4917657960759">☎︎ Anrufen</a>
+              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
+              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
             </div>
           </div>
         </article>
 
-        <!-- Wohnung 2 (Vermietet) -->
         <article class="panel"
-                 data-id="2" data-groesse="ca. 93 m²" data-zimmer="4 Zimmer" data-status="Vermietet"
-                 data-miete="1215" data-nk="250" data-kueche="75">
+                 data-id="2"
+                 data-groesse="ca. 93 m²"
+                 data-zimmer="4 Zimmer"
+                 data-status="Vermietet"
+                 data-miete="1215"
+                 data-nk="250"
+                 data-kueche="75">
           <div class="box-body">
-            <h4>Wohnung 2</h4>
-            <div class="meta"><span class="chip">ca. 93 m²</span><span class="chip">4 Zimmer</span></div>
+            <div class="apartment-head">
+              <div>
+                <h3>Wohnung 2</h3>
+                <p class="apartment-sub">Familienfreundliche Aufteilung mit vier Zimmern und klarem Fokus auf ruhiges, modernes Wohnen.</p>
+              </div>
+              <div class="badges">
+                <span class="badge rented">Vermietet</span>
+              </div>
+            </div>
 
-            <ul class="price-list">
-              <li><span class="label">Miete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+            <div class="meta">
+              <span class="chip">ca. 93 m²</span>
+              <span class="chip">4 Zimmer</span>
+              <span class="chip">Bereits vergeben</span>
+            </div>
 
-            <div class="badges"><span class="badge vermietet">Vermietet</span></div>
+            <div class="apartment-grid">
+              <div class="info-card">
+                <h4>Status</h4>
+                <p class="rented-note">Diese Wohnung ist bereits vermietet. Gerne können Sie sich für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.</p>
+              </div>
+            </div>
+
+            <p class="rented-note">Diese Wohnung ist bereits vermietet. Gerne können Sie sich für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.</p>
+          </div>
+        </article>
+
+        <article class="panel"
+                 data-id="3"
+                 data-groesse="ca. 92 m²"
+                 data-zimmer="3 Zimmer"
+                 data-status="Vermietet"
+                 data-miete="1202"
+                 data-nk="250"
+                 data-kueche="75">
+          <div class="box-body">
+            <div class="apartment-head">
+              <div>
+                <h3>Wohnung 3</h3>
+                <p class="apartment-sub">Wertige Dreizimmerwohnung mit ausgewogener Größe und klassischer Aufteilung im modernisierten Bestand.</p>
+              </div>
+              <div class="badges">
+                <span class="badge rented">Vermietet</span>
+              </div>
+            </div>
+
+            <div class="meta">
+              <span class="chip">ca. 92 m²</span>
+              <span class="chip">3 Zimmer</span>
+              <span class="chip">Bereits vergeben</span>
+            </div>
+
+            <div class="apartment-grid">
+              <div class="info-card">
+                <h4>Status</h4>
+                <p class="rented-note">Diese Wohnung ist bereits vermietet. Bei Interesse an ähnlichen Einheiten freuen wir uns über Ihre Nachricht.</p>
+              </div>
+            </div>
+
+            <p class="rented-note">Diese Wohnung ist bereits vermietet. Bei Interesse an ähnlichen Einheiten freuen wir uns über Ihre Nachricht.</p>
+          </div>
+        </article>
+
+        <article class="panel"
+                 data-id="4"
+                 data-groesse="ca. 94 m²"
+                 data-zimmer="3 Zimmer"
+                 data-status="Verfügbar"
+                 data-miete="1220"
+                 data-nk="188"
+                 data-kueche="70">
+          <div class="box-body">
+            <div class="apartment-head">
+              <div>
+                <h3>Wohnung 4</h3>
+                <p class="apartment-sub">Attraktive Dreizimmerwohnung mit moderner Ausstattung und ruhigem Wohncharakter.</p>
+              </div>
+              <div class="badges">
+                <span class="badge available">Verfügbar</span>
+              </div>
+            </div>
+
+            <div class="meta">
+              <span class="chip">ca. 94 m²</span>
+              <span class="chip">3 Zimmer</span>
+              <span class="chip">Stellplatz inklusive</span>
+            </div>
+
+            <div class="apartment-grid">
+              <div class="info-card">
+                <h4>Mietübersicht</h4>
+                <ul class="price-list">
+                  <li><span class="label">Miete</span><span class="value js-miete"></span></li>
+                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+                </ul>
+                <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+              </div>
+            </div>
+
             <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
 
             <div class="actions">
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
+              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
+              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
             </div>
           </div>
         </article>
 
-        <!-- Wohnung 3 (Vermietet) -->
         <article class="panel"
-                 data-id="3" data-groesse="ca. 92 m²" data-zimmer="3 Zimmer" data-status="Vermietet"
-                 data-miete="1202" data-nk="250" data-kueche="75">
+                 data-id="5"
+                 data-groesse="ca. 124 m²"
+                 data-zimmer="4 Zimmer"
+                 data-status="Verfügbar"
+                 data-miete="1612"
+                 data-nk="248"
+                 data-kueche="70">
           <div class="box-body">
-            <h4>Wohnung 3</h4>
-            <div class="meta"><span class="chip">ca. 92 m²</span><span class="chip">3 Zimmer</span></div>
-
-            <ul class="price-list">
-              <li><span class="label">Miete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
-
-            <div class="badges"><span class="badge vermietet">Vermietet</span></div>
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
-
-            <div class="actions">
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+494201234567">☎︎ Anrufen</a>
+            <div class="apartment-head">
+              <div>
+                <h3>Wohnung 5</h3>
+                <p class="apartment-sub">Die größte Einheit im Projekt mit großzügigem Raumgefühl und hochwertiger Vermietungsqualität.</p>
+              </div>
+              <div class="badges">
+                <span class="badge available">Verfügbar</span>
+              </div>
             </div>
-          </div>
-        </article>
 
-        <!-- Wohnung 4 -->
-        <article class="panel"
-                 data-id="4" data-groesse="ca. 94 m²" data-zimmer="3 Zimmer" data-status="Verfügbar"
-                 data-miete="1220" data-nk="188" data-kueche="70">
-          <div class="box-body">
-            <h4>Wohnung 4</h4>
-            <div class="meta"><span class="chip">ca. 94 m²</span><span class="chip">3 Zimmer</span></div>
-
-            <ul class="price-list">
-              <li><span class="label">Miete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
-
-            <div class="badges"><span class="badge">Verfügbar</span></div>
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
-
-            <div class="actions">
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+4917657960759">☎︎ Anrufen</a>
+            <div class="meta">
+              <span class="chip">ca. 124 m²</span>
+              <span class="chip">4 Zimmer</span>
+              <span class="chip">Stellplatz inklusive</span>
             </div>
-          </div>
-        </article>
 
-        <!-- Wohnung 5 -->
-        <article class="panel"
-                 data-id="5" data-groesse="ca. 124 m²" data-zimmer="4 Zimmer" data-status="Verfügbar"
-                 data-miete="1612" data-nk="248" data-kueche="70">
-          <div class="box-body">
-            <h4>Wohnung 5</h4>
-            <div class="meta"><span class="chip">ca. 124 m²</span><span class="chip">4 Zimmer</span></div>
+            <div class="apartment-grid">
+              <div class="info-card">
+                <h4>Mietübersicht</h4>
+                <ul class="price-list">
+                  <li><span class="label">Miete</span><span class="value js-miete"></span></li>
+                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+                </ul>
+                <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
+              </div>
+            </div>
 
-            <ul class="price-list">
-              <li><span class="label">Miete</span><span class="value js-miete"></span></li>
-              <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-              <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-            </ul>
-            <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
-
-            <div class="badges"><span class="badge">Verfügbar</span></div>
             <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
 
             <div class="actions">
-              <a class="btn btn-email" href="#">✉︎ Anfragen per E-Mail</a>
-              <a class="btn" href="tel:+4917657960759">☎︎ Anrufen</a>
+              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
+              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
             </div>
           </div>
         </article>
       </div>
     </section>
 
-    <div class="apartment-info">
-      <p><strong>Bezugszeitraum:</strong> Die Wohnungen sind voraussichtlich ab Juni 2026 bezugsbereit – sichern Sie sich schon heute Ihr neues Zuhause.</p>
-      <p><strong>Hinweis:</strong> Im Mietpreis enthalten sind ein Stellplatz sowie die Nutzung des Fahrradschuppens.
-      Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters. Die Nebenkosten werden nach tatsächlichem Aufwand abgerechnet.</p>
-      <p>Wohnflächenangaben und Mietpreise können sich während der Bauphase noch geringfügig ändern.</p>
-    </div>
+    <section class="section-panel" aria-labelledby="faq-title">
+      <div class="section-head">
+        <h2 id="faq-title">Häufige Fragen</h2>
+        <p>Die wichtigsten Informationen zum Projekt, zur Vermietung und zum Ablauf kompakt zusammengefasst.</p>
+      </div>
+
+      <div class="faq-wrap">
+        <details class="faq-item">
+          <summary>Wann sind die Wohnungen voraussichtlich bezugsbereit?</summary>
+          <div class="faq-content">
+            <p>Die Wohnungen sind voraussichtlich ab Juni 2026 bezugsbereit. Maßgeblich ist der finale Stand nach Abschluss der letzten Bauarbeiten.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Welche Leistungen sind im Projekt beziehungsweise im Mietverhältnis vorgesehen?</summary>
+          <div class="faq-content">
+            <p>Zum Projekt gehören unter anderem Stellplätze sowie die Nutzung des Fahrradschuppens. Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters. Nebenkosten werden nach tatsächlichem Aufwand abgerechnet.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Können sich Wohnflächen, Preise oder Ausstattungsdetails noch ändern?</summary>
+          <div class="faq-content">
+            <p>Geringfügige Änderungen während der finalen Bauphase sind möglich. Verbindlich sind die finalen Angaben im späteren Vermietungsprozess beziehungsweise in den Vertragsunterlagen.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Wie gehe ich vor, wenn mich eine konkrete Wohnung interessiert?</summary>
+          <div class="faq-content">
+            <p>Sie können entweder direkt bei der jeweiligen verfügbaren Wohnung eine Anfrage per E-Mail auslösen oder das Kontaktformular weiter unten nutzen. Dabei öffnet sich Ihr Mailprogramm bereits mit einer vorbereiteten Nachricht.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Kann ich mich auch für bereits vermietete Einheiten oder spätere Verfügbarkeiten vormerken lassen?</summary>
+          <div class="faq-content">
+            <p>Ja. Auch wenn einzelne Wohnungen bereits vergeben sind, können Sie sich jederzeit für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Wie läuft eine Besichtigungsanfrage ab?</summary>
+          <div class="faq-content">
+            <p>Nach Ihrer Anfrage prüfen wir die Verfügbarkeit und melden uns zur weiteren Abstimmung. Da sich das Projekt noch in der finalen Phase befindet, können Termine je nach Baufortschritt koordiniert werden.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="section-panel" id="kontakt" aria-labelledby="kontakt-title">
+      <div class="section-head">
+        <h2 id="kontakt-title">Kontakt & Anfrage</h2>
+        <p>Für Besichtigungsanfragen, Vormerkungen oder allgemeine Rückfragen zum Projekt.</p>
+      </div>
+
+      <div class="contact-wrap">
+        <p class="contact-intro">
+          Nutzen Sie das Formular für Ihre Anfrage. Beim Absenden öffnet sich Ihr Mailprogramm
+          mit einer bereits vorbereiteten Nachricht, die Sie nur noch prüfen und versenden müssen.
+        </p>
+
+        <div class="contact-note">
+          Sie können eine konkrete Wohnung auswählen oder eine allgemeine Projektanfrage senden.
+          Auch Vormerkungen für bereits vergebene Einheiten sind möglich.
+        </div>
+
+        <form class="project-contact-form" id="projectContactForm">
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" placeholder="Ihr Name" required />
+          </div>
+
+          <div class="field">
+            <label for="email">E-Mail</label>
+            <input id="email" name="email" type="email" placeholder="ihre@email.de" required />
+          </div>
+
+          <div class="field">
+            <label for="telefon">Telefon</label>
+            <input id="telefon" name="telefon" type="tel" placeholder="Optional" />
+          </div>
+
+          <div class="field">
+            <label for="wohnung">Wohneinheit</label>
+            <select id="wohnung" name="wohnung">
+              <option value="">Bitte auswählen</option>
+              <option value="Wohnung 1">Wohnung 1</option>
+              <option value="Wohnung 2">Wohnung 2</option>
+              <option value="Wohnung 3">Wohnung 3</option>
+              <option value="Wohnung 4">Wohnung 4</option>
+              <option value="Wohnung 5">Wohnung 5</option>
+              <option value="Allgemeine Projektanfrage">Allgemeine Projektanfrage</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="anliegen">Anliegen</label>
+            <select id="anliegen" name="anliegen" required>
+              <option value="">Bitte auswählen</option>
+              <option value="Besichtigung anfragen">Besichtigung anfragen</option>
+              <option value="Interesse vormerken">Interesse vormerken</option>
+              <option value="Allgemeine Anfrage">Allgemeine Anfrage</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="zeitraum">Gewünschter Zeitraum</label>
+            <input id="zeitraum" name="zeitraum" type="text" placeholder="Optional, z. B. ab Juni 2026" />
+          </div>
+
+          <div class="field">
+            <label for="nachricht">Nachricht</label>
+            <textarea id="nachricht" name="nachricht" placeholder="Ihre Nachricht"></textarea>
+          </div>
+
+          <div class="actions">
+            <button class="btn" type="submit">E-Mail vorbereiten</button>
+            <a class="btn btn-ghost" href="tel:+4917657960759">Direkt anrufen</a>
+          </div>
+
+          <p class="form-note">
+            Technischer Hinweis: Das Formular öffnet Ihr lokales Mailprogramm mit vorausgefülltem Betreff und Text.
+          </p>
+        </form>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
-    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
+    &copy; 2026 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
   </footer>
 
   <script>
@@ -399,58 +1482,102 @@
       root.style.setProperty('--header-h', headerH + 'px');
       root.style.setProperty('--footer-h', footerH + 'px');
     }
-    window.addEventListener('load', updateChromeVars);
-    window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(updateChromeVars, 100); });
 
-    const body=document.body,
-          toggle=document.querySelector('.menu-toggle'),
-          drawer=document.getElementById('mobile-drawer'),
-          backdrop=document.getElementById('drawer-backdrop');
+    window.addEventListener('load', updateChromeVars);
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__rz);
+      window.__rz = setTimeout(updateChromeVars, 100);
+    });
+
+    const body = document.body,
+          toggle = document.querySelector('.menu-toggle'),
+          drawer = document.getElementById('mobile-drawer'),
+          backdrop = document.getElementById('drawer-backdrop');
 
     function openMenu(){
       toggle.setAttribute('aria-expanded','true');
-      drawer.hidden=false; backdrop.hidden=false;
-      requestAnimationFrame(()=>{
-        drawer.classList.add('open'); backdrop.classList.add('open');
-        body.style.overflow='hidden';
-        const firstLink=drawer.querySelector('a'); firstLink&&firstLink.focus();
+      drawer.hidden = false;
+      backdrop.hidden = false;
+      requestAnimationFrame(() => {
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+        body.style.overflow = 'hidden';
+        const firstLink = drawer.querySelector('a');
+        if(firstLink) firstLink.focus();
       });
     }
+
     function closeMenu(){
       toggle.setAttribute('aria-expanded','false');
-      drawer.classList.remove('open'); backdrop.classList.remove('open');
-      body.style.overflow='';
-      setTimeout(()=>{ drawer.hidden=true; backdrop.hidden=true; },200);
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      body.style.overflow = '';
+      setTimeout(() => {
+        drawer.hidden = true;
+        backdrop.hidden = true;
+      }, 200);
       toggle.focus();
     }
-    toggle.addEventListener('click',()=>toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu());
-    backdrop.addEventListener('click',closeMenu);
-    window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
+
+    if(toggle){
+      toggle.addEventListener('click', () => {
+        toggle.getAttribute('aria-expanded') === 'true' ? closeMenu() : openMenu();
+      });
+    }
+
+    if(backdrop){
+      backdrop.addEventListener('click', closeMenu);
+    }
+
+    window.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true'){
+        closeMenu();
+      }
+    });
 
     const radios = document.querySelectorAll('.tab-controls input');
     const panels = document.querySelectorAll('.panel');
-    radios.forEach((r,i)=> r.addEventListener('change',()=> panels.forEach((p,j)=>p.classList.toggle('active', i===j))));
 
-    const euro = v => (+v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-
-    panels.forEach(p=>{
-      const status = p.dataset.status || '';
-      if(status === 'Vermietet'){
-        p.classList.add('is-rented');
-        return;
-      }
-      const m=+p.dataset.miete||0, n=+p.dataset.nk||0, k=+p.dataset.kueche||0;
-      p.querySelector('.js-miete').textContent  = euro(m);
-      p.querySelector('.js-nk').textContent     = euro(n);
-      p.querySelector('.js-kueche').textContent = euro(k);
-      p.querySelector('.js-total').textContent  = euro(m+n+k);
+    radios.forEach((radio, i) => {
+      radio.addEventListener('change', () => {
+        panels.forEach((panel, j) => {
+          panel.classList.toggle('active', i === j);
+        });
+      });
     });
 
-    function buildMailto(panel){
-      const id      = panel.dataset.id;
-      const groesse = panel.dataset.groesse;
-      const zimmer  = panel.dataset.zimmer;
-      const status  = panel.dataset.status;
+    const euro = value => (+value).toLocaleString('de-DE', {
+      style:'currency',
+      currency:'EUR'
+    });
+
+    panels.forEach(panel => {
+      const status = panel.dataset.status || '';
+      if(status === 'Vermietet'){
+        panel.classList.add('is-rented');
+        return;
+      }
+
+      const m = +panel.dataset.miete || 0;
+      const n = +panel.dataset.nk || 0;
+      const k = +panel.dataset.kueche || 0;
+
+      const mieteEl = panel.querySelector('.js-miete');
+      const nkEl = panel.querySelector('.js-nk');
+      const kuecheEl = panel.querySelector('.js-kueche');
+      const totalEl = panel.querySelector('.js-total');
+
+      if(mieteEl) mieteEl.textContent = euro(m);
+      if(nkEl) nkEl.textContent = euro(n);
+      if(kuecheEl) kuecheEl.textContent = euro(k);
+      if(totalEl) totalEl.textContent = euro(m + n + k);
+    });
+
+    function buildApartmentMailto(panel){
+      const id = panel.dataset.id || '';
+      const groesse = panel.dataset.groesse || '';
+      const zimmer = panel.dataset.zimmer || '';
+      const status = panel.dataset.status || '';
 
       const subject = `Anfrage Wohnung ${id} – Mehrfamilienhaus in Elmeloh`;
       const body = [
@@ -473,30 +1600,130 @@
         'Vielen Dank und freundliche Grüße'
       ].join('\r\n');
 
-      const href =
-        'mailto:info@buecking-immobilien.de'
+      return 'mailto:info@buecking-immobilien.de'
         + '?subject=' + encodeURIComponent(subject)
-        + '&body='    + encodeURIComponent(body);
-
-      return href;
+        + '&body=' + encodeURIComponent(body);
     }
 
-    document.querySelectorAll('.btn-email').forEach(btn=>{
+    document.querySelectorAll('.btn-email').forEach(btn => {
       const panel = btn.closest('.panel');
       if(panel?.dataset.status === 'Vermietet') return;
-      btn.addEventListener('click',(e)=>{
+
+      btn.addEventListener('click', e => {
         e.preventDefault();
-        window.location.href = buildMailto(panel);
+        window.location.href = buildApartmentMailto(panel);
       });
     });
 
-    document.querySelectorAll('.btn-plan').forEach(btn=>{
-      const panel = btn.closest('.panel');
-      if(panel?.dataset.status === 'Vermietet') return;
-      const id = panel?.dataset.id || '';
-      btn.setAttribute('href',`grundriss-wohnung${id}.pdf`);
-      btn.setAttribute('download', `grundriss-wohnung${id}.pdf`);
+    document.querySelectorAll('.project-slider').forEach(slider => {
+      const slides = slider.querySelectorAll('.hero-slide');
+      const dots = slider.querySelectorAll('.hero-dots button');
+      const interval = parseInt(slider.dataset.interval || '4500', 10);
+      let index = 0;
+      let timer = null;
+
+      function showSlide(nextIndex){
+        slides[index].classList.remove('active');
+        if(dots[index]) dots[index].classList.remove('active');
+
+        index = nextIndex;
+
+        slides[index].classList.add('active');
+        if(dots[index]) dots[index].classList.add('active');
+      }
+
+      function nextSlide(){
+        const nextIndex = (index + 1) % slides.length;
+        showSlide(nextIndex);
+      }
+
+      function startSlider(){
+        stopSlider();
+        timer = setInterval(nextSlide, interval);
+      }
+
+      function stopSlider(){
+        if(timer){
+          clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      dots.forEach((dot, dotIndex) => {
+        dot.addEventListener('click', () => {
+          showSlide(dotIndex);
+          startSlider();
+        });
+      });
+
+      slider.addEventListener('mouseenter', stopSlider);
+      slider.addEventListener('mouseleave', startSlider);
+      slider.addEventListener('focusin', stopSlider);
+      slider.addEventListener('focusout', startSlider);
+
+      if(slides.length > 1){
+        startSlider();
+      }
     });
+
+    const projectContactForm = document.getElementById('projectContactForm');
+
+    function buildFormMailto(data){
+      const subject = `${data.anliegen} – Mehrfamilienhaus in Elmeloh`;
+
+      const lines = [
+        'Guten Tag,',
+        '',
+        'ich möchte eine Anfrage zum Projekt „Mehrfamilienhaus in Elmeloh“ stellen.',
+        '',
+        'Anliegen:',
+        `${data.anliegen || '-'}`,
+        '',
+        'Wohneinheit:',
+        `${data.wohnung || 'Allgemeine Projektanfrage'}`,
+        '',
+        'Gewünschter Zeitraum:',
+        `${data.zeitraum || '-'}`,
+        '',
+        'Nachricht:',
+        `${data.nachricht || '-'}`,
+        '',
+        'Kontaktdaten:',
+        `Name: ${data.name || '-'}`,
+        `E-Mail: ${data.email || '-'}`,
+        `Telefon: ${data.telefon || '-'}`,
+        '',
+        'Vielen Dank und freundliche Grüße',
+        `${data.name || ''}`
+      ];
+
+      return 'mailto:info@buecking-immobilien.de'
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(lines.join('\r\n'));
+    }
+
+    if(projectContactForm){
+      projectContactForm.addEventListener('submit', function(e){
+        e.preventDefault();
+
+        const formData = {
+          name: document.getElementById('name')?.value.trim() || '',
+          email: document.getElementById('email')?.value.trim() || '',
+          telefon: document.getElementById('telefon')?.value.trim() || '',
+          wohnung: document.getElementById('wohnung')?.value || '',
+          anliegen: document.getElementById('anliegen')?.value || '',
+          zeitraum: document.getElementById('zeitraum')?.value.trim() || '',
+          nachricht: document.getElementById('nachricht')?.value.trim() || ''
+        };
+
+        if(!formData.name || !formData.email || !formData.anliegen){
+          alert('Bitte füllen Sie mindestens Name, E-Mail und Anliegen aus.');
+          return;
+        }
+
+        window.location.href = buildFormMailto(formData);
+      });
+    }
   </script>
 </body>
 </html>
