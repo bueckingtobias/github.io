@@ -42,11 +42,12 @@
       --radius:12px;
       --radius-lg:18px;
       --maxw:1200px;
-      --content-w:1020px;
+      --content-w:1040px;
       --nav-h:46px;
 
       --success:#98fbce;
       --current:#ffe082;
+      --danger:#ff9d9d;
 
       --header-h:110px;
       --footer-h:64px;
@@ -225,13 +226,13 @@
       max-width:var(--maxw);
       margin:0 auto;
       padding:
-        calc(var(--header-h) + clamp(24px,4vw,40px))
+        calc(var(--header-h) + clamp(28px,4vw,44px))
         16px
-        calc(var(--footer-h) + var(--safe-bottom) + 26px);
+        calc(var(--footer-h) + var(--safe-bottom) + 32px);
     }
 
     section + section{
-      margin-top:clamp(24px,4vw,40px);
+      margin-top:clamp(34px,5vw,56px);
     }
 
     .section-panel{
@@ -245,19 +246,19 @@
     }
 
     .section-head{
-      padding:22px 22px 0;
+      padding:28px 28px 0;
     }
 
     .section-head h2{
-      margin:0 0 8px;
-      font-size:clamp(22px,2.6vw,30px);
+      margin:0 0 10px;
+      font-size:clamp(24px,2.8vw,32px);
       line-height:1.15;
     }
 
     .section-head p{
       margin:0;
       opacity:.92;
-      line-height:1.65;
+      line-height:1.72;
       max-width:72ch;
     }
 
@@ -265,7 +266,7 @@
       max-width:var(--content-w);
       margin:0 auto;
       text-align:center;
-      padding:clamp(8px,2vw,16px) 0 0;
+      padding-top:8px;
     }
 
     .kicker{
@@ -275,7 +276,7 @@
       opacity:.65;
       font-size:.9rem;
       text-align:center;
-      margin:clamp(12px,2vw,18px) 0 10px;
+      margin:0 0 14px;
     }
 
     .title-stacked{
@@ -284,14 +285,14 @@
       max-width:100%;
       line-height:1.08;
       letter-spacing:.01em;
-      margin-bottom:clamp(10px,2vw,16px);
+      margin-bottom:16px;
     }
 
     .title-stacked .line1{
       display:block;
-      font-size:clamp(28px,4vw,42px);
+      font-size:clamp(30px,4vw,46px);
       font-weight:800;
-      margin-bottom:6px;
+      margin-bottom:8px;
     }
 
     .title-stacked .line2{
@@ -302,21 +303,21 @@
     }
 
     .intro-wrap p{
-      margin:10px auto 0;
+      margin:0 auto;
       opacity:.95;
-      max-width:72ch;
-      line-height:1.7;
+      max-width:74ch;
+      line-height:1.8;
     }
 
     .hero-wrap{
       max-width:var(--content-w);
-      margin:22px auto 0;
+      margin:28px auto 0;
     }
 
     .project-hero{
       position:relative;
       overflow:hidden;
-      border-radius:20px;
+      border-radius:22px;
       background:rgba(255,255,255,.04);
       box-shadow:var(--shadow-strong);
       border:1px solid rgba(255,255,255,.1);
@@ -359,7 +360,7 @@
 
     .hero-overlay{
       position:absolute;
-      inset:auto 20px 18px 20px;
+      inset:auto 22px 20px 22px;
       z-index:2;
       display:flex;
       justify-content:space-between;
@@ -417,90 +418,64 @@
       transform:scale(1.18);
     }
 
-    /* neue Projektfakten */
-    .project-facts{
-      padding:22px;
-      display:grid;
-      gap:14px;
-      grid-template-columns:repeat(2,1fr);
-    }
-
-    .project-fact{
-      display:flex;
-      align-items:flex-start;
-      gap:14px;
-      padding:16px 18px;
-      border-radius:16px;
-      background:rgba(255,255,255,.045);
-      border:1px solid rgba(255,255,255,.1);
-    }
-
-    .project-fact-mark{
-      flex:0 0 10px;
-      width:10px;
-      height:10px;
-      margin-top:6px;
-      border-radius:999px;
-      background:rgba(255,255,255,.55);
-      box-shadow:0 0 0 6px rgba(255,255,255,.04);
-    }
-
-    .project-fact-copy{
-      display:grid;
-      gap:4px;
-    }
-
-    .project-fact-copy strong{
-      font-size:.82rem;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      opacity:.64;
-    }
-
-    .project-fact-copy span{
-      font-size:1rem;
-      line-height:1.55;
-      font-weight:700;
-    }
-
-    @media (max-width:760px){
-      .project-facts{grid-template-columns:1fr}
-    }
-
-    /* horizontale timeline */
+    /* timeline */
     .timeline-wrap{
-      padding:22px;
+      padding:30px 28px 34px;
     }
 
     .timeline-horizontal{
       position:relative;
       display:grid;
       grid-template-columns:repeat(4,1fr);
-      gap:16px;
+      gap:18px;
+      align-items:start;
+      padding:34px 0 6px;
     }
 
     .timeline-horizontal::before{
       content:"";
       position:absolute;
-      left:9%;
-      right:9%;
-      top:18px;
+      left:12.5%;
+      right:12.5%;
+      top:50%;
+      transform:translateY(-50%);
       height:2px;
-      background:rgba(255,255,255,.15);
+      background:rgba(255,255,255,.16);
       z-index:0;
     }
 
     .timeline-step{
       position:relative;
       z-index:1;
-      text-align:center;
+      min-height:280px;
+      display:grid;
+      grid-template-rows:1fr auto 1fr;
+      align-items:center;
+    }
+
+    .timeline-step.top .timeline-card{
+      grid-row:1;
+      align-self:end;
+      margin-bottom:18px;
+    }
+
+    .timeline-step.bottom .timeline-card{
+      grid-row:3;
+      align-self:start;
+      margin-top:18px;
+    }
+
+    .timeline-step-center{
+      grid-row:2;
+      display:grid;
+      place-items:center;
+      min-height:48px;
     }
 
     .timeline-step-dot{
       width:18px;
       height:18px;
       border-radius:999px;
-      margin:9px auto 16px;
       background:rgba(255,255,255,.32);
       box-shadow:0 0 0 8px rgba(255,255,255,.04);
       border:2px solid rgba(255,255,255,.08);
@@ -514,48 +489,61 @@
       background:var(--current);
     }
 
-    .timeline-step-card{
+    .timeline-card{
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.1);
       border-radius:16px;
       padding:16px;
-      min-height:170px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
       text-align:left;
     }
 
-    .timeline-step-card strong{
+    .timeline-card strong{
+      display:block;
       font-size:.98rem;
-      line-height:1.4;
+      line-height:1.45;
+      margin-bottom:8px;
     }
 
-    .timeline-step-card .status{
+    .timeline-card .status{
+      display:block;
       font-size:.78rem;
       letter-spacing:.12em;
       text-transform:uppercase;
       font-weight:800;
       opacity:.72;
+      margin-bottom:10px;
     }
 
-    .timeline-step-card p{
+    .timeline-card p{
       margin:0;
-      line-height:1.6;
+      line-height:1.65;
       opacity:.94;
       font-size:.94rem;
     }
 
-    @media (max-width:900px){
+    @media (max-width:980px){
       .timeline-horizontal{
         grid-template-columns:1fr 1fr;
+        padding-top:0;
       }
       .timeline-horizontal::before{
         display:none;
       }
+      .timeline-step{
+        min-height:auto;
+        grid-template-rows:auto;
+      }
+      .timeline-step.top .timeline-card,
+      .timeline-step.bottom .timeline-card{
+        grid-row:auto;
+        margin:0;
+      }
+      .timeline-step-center{
+        display:none;
+      }
     }
 
-    @media (max-width:580px){
+    @media (max-width:620px){
       .timeline-horizontal{
         grid-template-columns:1fr;
       }
@@ -566,13 +554,13 @@
       margin:0 auto;
       display:flex;
       flex-direction:column;
-      gap:16px;
+      gap:20px;
       align-items:center;
     }
 
     .tab-controls{
       display:flex;
-      gap:8px;
+      gap:10px;
       flex-wrap:wrap;
       justify-content:center;
     }
@@ -586,7 +574,7 @@
     .tab-controls label{
       user-select:none;
       cursor:pointer;
-      padding:10px 14px;
+      padding:11px 15px;
       border-radius:999px;
       font-weight:800;
       background:var(--muted);
@@ -624,28 +612,29 @@
     .panel.active{display:block}
 
     .box-body{
-      padding:22px;
+      padding:28px;
       display:grid;
-      gap:18px;
+      gap:24px;
     }
 
     .apartment-head{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:16px;
+      gap:18px;
       flex-wrap:wrap;
     }
 
     .apartment-head h3{
-      margin:0 0 6px;
-      font-size:1.34rem;
+      margin:0 0 8px;
+      font-size:1.36rem;
     }
 
     .apartment-sub{
       margin:0;
       opacity:.88;
-      line-height:1.6;
+      line-height:1.7;
+      max-width:62ch;
     }
 
     .meta{
@@ -658,7 +647,7 @@
 
     .chip{
       background:var(--muted);
-      padding:7px 11px;
+      padding:8px 12px;
       border-radius:10px;
       border:1px solid rgba(255,255,255,.12);
       font-weight:700;
@@ -673,7 +662,7 @@
 
     .badge{
       font-weight:800;
-      padding:7px 11px;
+      padding:8px 12px;
       border-radius:999px;
       background:var(--muted);
       border:1px solid rgba(255,255,255,.12);
@@ -685,8 +674,81 @@
     }
 
     .badge.rented{
-      background:rgba(179,0,0,.35);
-      border-color:rgba(255,128,128,.5);
+      background:rgba(179,0,0,.28);
+      border-color:rgba(255,128,128,.38);
+      color:#fff;
+    }
+
+    .apartment-slider{
+      position:relative;
+      border-radius:18px;
+      overflow:hidden;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      aspect-ratio:16 / 9;
+      isolation:isolate;
+    }
+
+    .apartment-slides{
+      position:absolute;
+      inset:0;
+    }
+
+    .apartment-slide{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transition:opacity .7s ease, transform 6s ease;
+    }
+
+    .apartment-slide.active{
+      opacity:1;
+      transform:scale(1.03);
+    }
+
+    .apartment-slide img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .apartment-slider::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.08) 45%, rgba(0,0,0,.28) 100%);
+      pointer-events:none;
+      z-index:1;
+    }
+
+    .apartment-dots{
+      position:absolute;
+      left:16px;
+      right:16px;
+      bottom:14px;
+      z-index:2;
+      display:flex;
+      gap:7px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .apartment-dots button{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      border:0;
+      padding:0;
+      background:rgba(255,255,255,.42);
+      cursor:pointer;
+      transition:transform .18s ease, background-color .18s ease;
+    }
+
+    .apartment-dots button.active{
+      background:#fff;
+      transform:scale(1.18);
     }
 
     .apartment-grid{
@@ -699,11 +761,11 @@
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.1);
       border-radius:16px;
-      padding:16px;
+      padding:18px;
     }
 
     .info-card h4{
-      margin:0 0 12px;
+      margin:0 0 14px;
       font-size:1rem;
     }
 
@@ -718,7 +780,7 @@
       justify-content:space-between;
       align-items:baseline;
       gap:16px;
-      padding:10px 0;
+      padding:11px 0;
       border-bottom:1px solid rgba(255,255,255,.08);
     }
 
@@ -735,8 +797,8 @@
     }
 
     .total{
-      margin:14px 0 0;
-      padding:12px 14px;
+      margin:16px 0 0;
+      padding:13px 14px;
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -746,11 +808,14 @@
       border:1px solid rgba(255,255,255,.12);
     }
 
-    .rented-note{
+    .rented-box{
       display:none;
-      margin:0;
-      opacity:.9;
-      line-height:1.6;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:18px;
+      line-height:1.7;
+      opacity:.95;
     }
 
     .actions{
@@ -787,94 +852,55 @@
       background:rgba(255,255,255,.08);
     }
 
-    .panel.is-rented .price-list,
-    .panel.is-rented .total,
+    .panel.is-rented .price-card,
     .panel.is-rented .actions{
       display:none;
     }
 
-    .panel.is-rented .rented-note{
+    .panel.is-rented .rented-box{
       display:block;
     }
 
-    .faq-wrap{
-      padding:22px;
-      display:grid;
-      gap:12px;
-    }
-
-    .faq-item{
-      border:1px solid rgba(255,255,255,.1);
-      border-radius:16px;
-      background:rgba(255,255,255,.04);
-      overflow:hidden;
-    }
-
-    .faq-item summary{
-      cursor:pointer;
-      list-style:none;
-      padding:16px 18px;
-      font-weight:800;
-      position:relative;
-      line-height:1.5;
-    }
-
-    .faq-item summary::-webkit-details-marker{display:none}
-
-    .faq-item summary::after{
-      content:"+";
-      position:absolute;
-      right:18px;
-      top:50%;
-      transform:translateY(-50%);
-      font-size:1.1rem;
-      opacity:.8;
-    }
-
-    .faq-item[open] summary::after{
-      content:"–";
-    }
-
-    .faq-content{
-      padding:0 18px 16px;
-      opacity:.92;
-      line-height:1.7;
-    }
-
-    .faq-content p{
-      margin:0;
-    }
-
     .contact-wrap{
-      padding:22px;
+      padding:30px 28px 34px;
       display:grid;
-      gap:14px;
+      gap:18px;
       max-width:760px;
+      margin:0 auto;
+      text-align:center;
     }
 
     .contact-intro{
-      margin:0 0 4px;
-      line-height:1.7;
+      margin:0;
+      line-height:1.8;
       opacity:.95;
+      max-width:62ch;
+      margin-inline:auto;
     }
 
     .contact-note{
-      padding:14px 16px;
+      padding:16px 18px;
       border-radius:14px;
       background:rgba(255,255,255,.05);
       border:1px solid rgba(255,255,255,.1);
-      line-height:1.6;
+      line-height:1.7;
       opacity:.94;
+      max-width:62ch;
+      margin:0 auto;
     }
 
     form.project-contact-form{
       display:grid;
-      gap:12px;
+      gap:14px;
+      max-width:620px;
+      width:100%;
+      margin:0 auto;
+      text-align:left;
     }
 
     .field{
       display:grid;
-      gap:7px;
+      gap:8px;
     }
 
     .field label{
@@ -886,7 +912,7 @@
     .field select,
     .field textarea{
       width:100%;
-      min-height:46px;
+      min-height:48px;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.15);
       background:rgba(255,255,255,.08);
@@ -897,7 +923,7 @@
     }
 
     .field textarea{
-      min-height:160px;
+      min-height:170px;
       resize:vertical;
     }
 
@@ -918,10 +944,59 @@
       color:#111;
     }
 
-    .form-note{
-      font-size:.9rem;
-      opacity:.8;
+    .contact-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      padding-top:4px;
+    }
+
+    .faq-wrap{
+      padding:30px 28px 34px;
+      display:grid;
+      gap:12px;
+    }
+
+    .faq-item{
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      overflow:hidden;
+    }
+
+    .faq-item summary{
+      cursor:pointer;
+      list-style:none;
+      padding:17px 18px;
+      font-weight:800;
+      position:relative;
       line-height:1.55;
+    }
+
+    .faq-item summary::-webkit-details-marker{display:none}
+
+    .faq-item summary::after{
+      content:"+";
+      position:absolute;
+      right:18px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:1.1rem;
+      opacity:.8;
+    }
+
+    .faq-item[open] summary::after{
+      content:"–";
+    }
+
+    .faq-content{
+      padding:0 18px 18px;
+      opacity:.92;
+      line-height:1.75;
+    }
+
+    .faq-content p{
       margin:0;
     }
 
@@ -996,15 +1071,9 @@
     <section class="hero-wrap">
       <div class="project-hero project-slider" data-interval="4500">
         <div class="hero-slides">
-          <div class="hero-slide active">
-            <img src="projekt-aussenansicht-1.jpeg" alt="Außenansicht Mehrfamilienhaus in Elmeloh">
-          </div>
-          <div class="hero-slide">
-            <img src="projekt-aussenansicht-2.jpeg" alt="Weitere Außenansicht des Projekts in Elmeloh">
-          </div>
-          <div class="hero-slide">
-            <img src="projekt-aussenansicht-3.jpeg" alt="Detailansicht des Umbaus in Elmeloh">
-          </div>
+          <div class="hero-slide active"><img src="projekt-aussenansicht-1.jpeg" alt="Außenansicht Mehrfamilienhaus in Elmeloh"></div>
+          <div class="hero-slide"><img src="projekt-aussenansicht-2.jpeg" alt="Weitere Außenansicht des Projekts in Elmeloh"></div>
+          <div class="hero-slide"><img src="projekt-aussenansicht-3.jpeg" alt="Detailansicht des Umbaus in Elmeloh"></div>
         </div>
 
         <div class="hero-overlay">
@@ -1023,44 +1092,6 @@
       </div>
     </section>
 
-    <section class="section-panel" aria-labelledby="facts-title">
-      <div class="section-head">
-        <h2 id="facts-title">Projektfakten</h2>
-        <p>Die wichtigsten Eckdaten des Projekts auf einen Blick.</p>
-      </div>
-
-      <div class="project-facts">
-        <div class="project-fact">
-          <div class="project-fact-mark"></div>
-          <div class="project-fact-copy">
-            <strong>Projektart</strong>
-            <span>Umbau eines landwirtschaftlichen Bestandsgebäudes zu modernem Wohnraum.</span>
-          </div>
-        </div>
-        <div class="project-fact">
-          <div class="project-fact-mark"></div>
-          <div class="project-fact-copy">
-            <strong>Wohneinheiten</strong>
-            <span>Fünf eigenständige Wohnungen mit hochwertiger Vermietungsausrichtung.</span>
-          </div>
-        </div>
-        <div class="project-fact">
-          <div class="project-fact-mark"></div>
-          <div class="project-fact-copy">
-            <strong>Lage</strong>
-            <span>Elmeloh in Ganderkesee – ländlich, ruhig und mit besonderem Charakter.</span>
-          </div>
-        </div>
-        <div class="project-fact">
-          <div class="project-fact-mark"></div>
-          <div class="project-fact-copy">
-            <strong>Besonderheiten</strong>
-            <span>Stellplatz, Fahrradschuppen und Strombezug über die hauseigene Solaranlage.</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="section-panel" aria-labelledby="timeline-title">
       <div class="section-head">
         <h2 id="timeline-title">Projektstatus</h2>
@@ -1069,36 +1100,48 @@
 
       <div class="timeline-wrap">
         <div class="timeline-horizontal">
-          <div class="timeline-step done">
-            <div class="timeline-step-dot"></div>
-            <div class="timeline-step-card">
+          <div class="timeline-step top done">
+            <div class="timeline-card">
               <strong>Projektentwicklung & Konzeption</strong>
               <span class="status">Abgeschlossen</span>
-              <p>Die inhaltliche, gestalterische und bauliche Grundkonzeption des Projekts wurde vollständig entwickelt.</p>
+              <p>Die inhaltliche und bauliche Grundkonzeption des Projekts wurde vollständig ausgearbeitet und vorbereitet.</p>
             </div>
+            <div class="timeline-step-center">
+              <div class="timeline-step-dot"></div>
+            </div>
+            <div></div>
           </div>
 
-          <div class="timeline-step done">
-            <div class="timeline-step-dot"></div>
-            <div class="timeline-step-card">
+          <div class="timeline-step bottom done">
+            <div></div>
+            <div class="timeline-step-center">
+              <div class="timeline-step-dot"></div>
+            </div>
+            <div class="timeline-card">
               <strong>Umbau & Modernisierung</strong>
               <span class="status">Weit fortgeschritten</span>
               <p>Die wesentlichen baulichen Maßnahmen sind umgesetzt, aktuell laufen die letzten Fertigstellungsarbeiten.</p>
             </div>
           </div>
 
-          <div class="timeline-step current">
-            <div class="timeline-step-dot"></div>
-            <div class="timeline-step-card">
+          <div class="timeline-step top current">
+            <div class="timeline-card">
               <strong>Vermietung</strong>
               <span class="status">Aktuell</span>
               <p>Interessenten können sich bereits jetzt über verfügbare Einheiten informieren und eine Anfrage stellen.</p>
             </div>
+            <div class="timeline-step-center">
+              <div class="timeline-step-dot"></div>
+            </div>
+            <div></div>
           </div>
 
-          <div class="timeline-step">
-            <div class="timeline-step-dot"></div>
-            <div class="timeline-step-card">
+          <div class="timeline-step bottom">
+            <div></div>
+            <div class="timeline-step-center">
+              <div class="timeline-step-dot"></div>
+            </div>
+            <div class="timeline-card">
               <strong>Fertigstellung & Bezug</strong>
               <span class="status">Als Nächstes</span>
               <p>Nach Abschluss der Restarbeiten erfolgt die finale Übergabe und Bereitstellung der Wohnungen zur Bezugsphase.</p>
@@ -1111,7 +1154,7 @@
     <section class="tabs" aria-labelledby="wohnungen-title">
       <div class="intro-wrap" style="padding-top:0">
         <div class="kicker">Wohnungsübersicht</div>
-        <h2 class="title-stacked" id="wohnungen-title" style="margin-bottom:6px">
+        <h2 class="title-stacked" id="wohnungen-title" style="margin-bottom:8px">
           <span class="line1" style="font-size:clamp(24px,3vw,34px)">Verfügbarkeiten & Mietübersicht</span>
           <span class="line2" style="font-size:clamp(15px,2vw,19px)">Alle Wohneinheiten im Überblick</span>
         </h2>
@@ -1126,6 +1169,7 @@
       </div>
 
       <div class="panels">
+        <!-- Wohnung 1 -->
         <article class="panel active"
                  data-id="1"
                  data-groesse="ca. 107 m²"
@@ -1151,8 +1195,24 @@
               <span class="chip">Stellplatz inklusive</span>
             </div>
 
+            <div class="apartment-slider project-subslider" data-interval="3800">
+              <div class="apartment-slides">
+                <div class="apartment-slide active"><img src="wohnung1-1.jpg" alt="Wohnung 1 Bild 1"></div>
+                <div class="apartment-slide"><img src="wohnung1-2.jpg" alt="Wohnung 1 Bild 2"></div>
+                <div class="apartment-slide"><img src="wohnung1-3.jpg" alt="Wohnung 1 Bild 3"></div>
+                <div class="apartment-slide"><img src="wohnung1-4.jpg" alt="Wohnung 1 Bild 4"></div>
+                <div class="apartment-slide"><img src="wohnung1-5.jpg" alt="Wohnung 1 Bild 5"></div>
+                <div class="apartment-slide"><img src="wohnung1-6.jpg" alt="Wohnung 1 Bild 6"></div>
+                <div class="apartment-slide"><img src="wohnung1-7.jpg" alt="Wohnung 1 Bild 7"></div>
+                <div class="apartment-slide"><img src="wohnung1-8.jpg" alt="Wohnung 1 Bild 8"></div>
+                <div class="apartment-slide"><img src="wohnung1-9.jpg" alt="Wohnung 1 Bild 9"></div>
+                <div class="apartment-slide"><img src="wohnung1-10.jpg" alt="Wohnung 1 Bild 10"></div>
+              </div>
+              <div class="apartment-dots"></div>
+            </div>
+
             <div class="apartment-grid">
-              <div class="info-card">
+              <div class="info-card price-card">
                 <h4>Mietübersicht</h4>
                 <ul class="price-list">
                   <li><span class="label">Miete</span><span class="value js-miete"></span></li>
@@ -1163,7 +1223,7 @@
               </div>
             </div>
 
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
+            <div class="rented-box"></div>
 
             <div class="actions">
               <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
@@ -1172,6 +1232,7 @@
           </div>
         </article>
 
+        <!-- Wohnung 2 -->
         <article class="panel"
                  data-id="2"
                  data-groesse="ca. 93 m²"
@@ -1197,17 +1258,47 @@
               <span class="chip">Bereits vergeben</span>
             </div>
 
+            <div class="apartment-slider project-subslider" data-interval="3800">
+              <div class="apartment-slides">
+                <div class="apartment-slide active"><img src="wohnung2-1.jpg" alt="Wohnung 2 Bild 1"></div>
+                <div class="apartment-slide"><img src="wohnung2-2.jpg" alt="Wohnung 2 Bild 2"></div>
+                <div class="apartment-slide"><img src="wohnung2-3.jpg" alt="Wohnung 2 Bild 3"></div>
+                <div class="apartment-slide"><img src="wohnung2-4.jpg" alt="Wohnung 2 Bild 4"></div>
+                <div class="apartment-slide"><img src="wohnung2-5.jpg" alt="Wohnung 2 Bild 5"></div>
+                <div class="apartment-slide"><img src="wohnung2-6.jpg" alt="Wohnung 2 Bild 6"></div>
+                <div class="apartment-slide"><img src="wohnung2-7.jpg" alt="Wohnung 2 Bild 7"></div>
+                <div class="apartment-slide"><img src="wohnung2-8.jpg" alt="Wohnung 2 Bild 8"></div>
+                <div class="apartment-slide"><img src="wohnung2-9.jpg" alt="Wohnung 2 Bild 9"></div>
+                <div class="apartment-slide"><img src="wohnung2-10.jpg" alt="Wohnung 2 Bild 10"></div>
+              </div>
+              <div class="apartment-dots"></div>
+            </div>
+
             <div class="apartment-grid">
-              <div class="info-card">
-                <h4>Status</h4>
-                <p class="rented-note">Diese Wohnung ist bereits vermietet. Gerne können Sie sich für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.</p>
+              <div class="info-card price-card">
+                <h4>Mietübersicht</h4>
+                <ul class="price-list">
+                  <li><span class="label">Miete</span><span class="value js-miete"></span></li>
+                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+                </ul>
+                <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
               </div>
             </div>
 
-            <p class="rented-note">Diese Wohnung ist bereits vermietet. Gerne können Sie sich für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.</p>
+            <div class="rented-box">
+              Diese Wohnung ist bereits vergeben. Gerne können Sie sich über das Kontaktformular
+              für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.
+            </div>
+
+            <div class="actions">
+              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
+              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
+            </div>
           </div>
         </article>
 
+        <!-- Wohnung 3 -->
         <article class="panel"
                  data-id="3"
                  data-groesse="ca. 92 m²"
@@ -1233,17 +1324,47 @@
               <span class="chip">Bereits vergeben</span>
             </div>
 
+            <div class="apartment-slider project-subslider" data-interval="3800">
+              <div class="apartment-slides">
+                <div class="apartment-slide active"><img src="wohnung3-1.jpg" alt="Wohnung 3 Bild 1"></div>
+                <div class="apartment-slide"><img src="wohnung3-2.jpg" alt="Wohnung 3 Bild 2"></div>
+                <div class="apartment-slide"><img src="wohnung3-3.jpg" alt="Wohnung 3 Bild 3"></div>
+                <div class="apartment-slide"><img src="wohnung3-4.jpg" alt="Wohnung 3 Bild 4"></div>
+                <div class="apartment-slide"><img src="wohnung3-5.jpg" alt="Wohnung 3 Bild 5"></div>
+                <div class="apartment-slide"><img src="wohnung3-6.jpg" alt="Wohnung 3 Bild 6"></div>
+                <div class="apartment-slide"><img src="wohnung3-7.jpg" alt="Wohnung 3 Bild 7"></div>
+                <div class="apartment-slide"><img src="wohnung3-8.jpg" alt="Wohnung 3 Bild 8"></div>
+                <div class="apartment-slide"><img src="wohnung3-9.jpg" alt="Wohnung 3 Bild 9"></div>
+                <div class="apartment-slide"><img src="wohnung3-10.jpg" alt="Wohnung 3 Bild 10"></div>
+              </div>
+              <div class="apartment-dots"></div>
+            </div>
+
             <div class="apartment-grid">
-              <div class="info-card">
-                <h4>Status</h4>
-                <p class="rented-note">Diese Wohnung ist bereits vermietet. Bei Interesse an ähnlichen Einheiten freuen wir uns über Ihre Nachricht.</p>
+              <div class="info-card price-card">
+                <h4>Mietübersicht</h4>
+                <ul class="price-list">
+                  <li><span class="label">Miete</span><span class="value js-miete"></span></li>
+                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
+                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
+                </ul>
+                <div class="total"><span>Gesamt</span><span class="js-total"></span></div>
               </div>
             </div>
 
-            <p class="rented-note">Diese Wohnung ist bereits vermietet. Bei Interesse an ähnlichen Einheiten freuen wir uns über Ihre Nachricht.</p>
+            <div class="rented-box">
+              Diese Wohnung ist bereits vermietet. Bei Interesse an ähnlichen Einheiten
+              oder einer allgemeinen Projektanfrage freuen wir uns über Ihre Nachricht.
+            </div>
+
+            <div class="actions">
+              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
+              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
+            </div>
           </div>
         </article>
 
+        <!-- Wohnung 4 -->
         <article class="panel"
                  data-id="4"
                  data-groesse="ca. 94 m²"
@@ -1269,8 +1390,24 @@
               <span class="chip">Stellplatz inklusive</span>
             </div>
 
+            <div class="apartment-slider project-subslider" data-interval="3800">
+              <div class="apartment-slides">
+                <div class="apartment-slide active"><img src="wohnung4-1.jpg" alt="Wohnung 4 Bild 1"></div>
+                <div class="apartment-slide"><img src="wohnung4-2.jpg" alt="Wohnung 4 Bild 2"></div>
+                <div class="apartment-slide"><img src="wohnung4-3.jpg" alt="Wohnung 4 Bild 3"></div>
+                <div class="apartment-slide"><img src="wohnung4-4.jpg" alt="Wohnung 4 Bild 4"></div>
+                <div class="apartment-slide"><img src="wohnung4-5.jpg" alt="Wohnung 4 Bild 5"></div>
+                <div class="apartment-slide"><img src="wohnung4-6.jpg" alt="Wohnung 4 Bild 6"></div>
+                <div class="apartment-slide"><img src="wohnung4-7.jpg" alt="Wohnung 4 Bild 7"></div>
+                <div class="apartment-slide"><img src="wohnung4-8.jpg" alt="Wohnung 4 Bild 8"></div>
+                <div class="apartment-slide"><img src="wohnung4-9.jpg" alt="Wohnung 4 Bild 9"></div>
+                <div class="apartment-slide"><img src="wohnung4-10.jpg" alt="Wohnung 4 Bild 10"></div>
+              </div>
+              <div class="apartment-dots"></div>
+            </div>
+
             <div class="apartment-grid">
-              <div class="info-card">
+              <div class="info-card price-card">
                 <h4>Mietübersicht</h4>
                 <ul class="price-list">
                   <li><span class="label">Miete</span><span class="value js-miete"></span></li>
@@ -1281,7 +1418,7 @@
               </div>
             </div>
 
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
+            <div class="rented-box"></div>
 
             <div class="actions">
               <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
@@ -1290,6 +1427,7 @@
           </div>
         </article>
 
+        <!-- Wohnung 5 -->
         <article class="panel"
                  data-id="5"
                  data-groesse="ca. 124 m²"
@@ -1315,8 +1453,24 @@
               <span class="chip">Stellplatz inklusive</span>
             </div>
 
+            <div class="apartment-slider project-subslider" data-interval="3800">
+              <div class="apartment-slides">
+                <div class="apartment-slide active"><img src="wohnung5-1.jpg" alt="Wohnung 5 Bild 1"></div>
+                <div class="apartment-slide"><img src="wohnung5-2.jpg" alt="Wohnung 5 Bild 2"></div>
+                <div class="apartment-slide"><img src="wohnung5-3.jpg" alt="Wohnung 5 Bild 3"></div>
+                <div class="apartment-slide"><img src="wohnung5-4.jpg" alt="Wohnung 5 Bild 4"></div>
+                <div class="apartment-slide"><img src="wohnung5-5.jpg" alt="Wohnung 5 Bild 5"></div>
+                <div class="apartment-slide"><img src="wohnung5-6.jpg" alt="Wohnung 5 Bild 6"></div>
+                <div class="apartment-slide"><img src="wohnung5-7.jpg" alt="Wohnung 5 Bild 7"></div>
+                <div class="apartment-slide"><img src="wohnung5-8.jpg" alt="Wohnung 5 Bild 8"></div>
+                <div class="apartment-slide"><img src="wohnung5-9.jpg" alt="Wohnung 5 Bild 9"></div>
+                <div class="apartment-slide"><img src="wohnung5-10.jpg" alt="Wohnung 5 Bild 10"></div>
+              </div>
+              <div class="apartment-dots"></div>
+            </div>
+
             <div class="apartment-grid">
-              <div class="info-card">
+              <div class="info-card price-card">
                 <h4>Mietübersicht</h4>
                 <ul class="price-list">
                   <li><span class="label">Miete</span><span class="value js-miete"></span></li>
@@ -1327,7 +1481,7 @@
               </div>
             </div>
 
-            <p class="rented-note">Diese Wohnung ist bereits vermietet.</p>
+            <div class="rented-box"></div>
 
             <div class="actions">
               <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
@@ -1335,57 +1489,6 @@
             </div>
           </div>
         </article>
-      </div>
-    </section>
-
-    <section class="section-panel" aria-labelledby="faq-title">
-      <div class="section-head">
-        <h2 id="faq-title">Häufige Fragen</h2>
-        <p>Die wichtigsten Informationen zum Projekt, zur Vermietung und zum Ablauf kompakt zusammengefasst.</p>
-      </div>
-
-      <div class="faq-wrap">
-        <details class="faq-item">
-          <summary>Wann sind die Wohnungen voraussichtlich bezugsbereit?</summary>
-          <div class="faq-content">
-            <p>Die Wohnungen sind voraussichtlich ab Juni 2026 bezugsbereit. Maßgeblich ist der finale Stand nach Abschluss der letzten Bauarbeiten.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Welche Leistungen sind im Projekt beziehungsweise im Mietverhältnis vorgesehen?</summary>
-          <div class="faq-content">
-            <p>Zum Projekt gehören unter anderem Stellplätze sowie die Nutzung des Fahrradschuppens. Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters. Nebenkosten werden nach tatsächlichem Aufwand abgerechnet.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Können sich Wohnflächen, Preise oder Ausstattungsdetails noch ändern?</summary>
-          <div class="faq-content">
-            <p>Geringfügige Änderungen während der finalen Bauphase sind möglich. Verbindlich sind die finalen Angaben im späteren Vermietungsprozess beziehungsweise in den Vertragsunterlagen.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Wie gehe ich vor, wenn mich eine konkrete Wohnung interessiert?</summary>
-          <div class="faq-content">
-            <p>Sie können entweder direkt bei der jeweiligen verfügbaren Wohnung eine Anfrage per E-Mail auslösen oder das Kontaktformular weiter unten nutzen. Dabei öffnet sich Ihr Mailprogramm bereits mit einer vorbereiteten Nachricht.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Kann ich mich auch für bereits vermietete Einheiten oder spätere Verfügbarkeiten vormerken lassen?</summary>
-          <div class="faq-content">
-            <p>Ja. Auch wenn einzelne Wohnungen bereits vergeben sind, können Sie sich jederzeit für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.</p>
-          </div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Wie läuft eine Besichtigungsanfrage ab?</summary>
-          <div class="faq-content">
-            <p>Nach Ihrer Anfrage prüfen wir die Verfügbarkeit und melden uns zur weiteren Abstimmung. Da sich das Projekt noch in der finalen Phase befindet, können Termine je nach Baufortschritt koordiniert werden.</p>
-          </div>
-        </details>
       </div>
     </section>
 
@@ -1398,7 +1501,7 @@
       <div class="contact-wrap">
         <p class="contact-intro">
           Nutzen Sie das Formular für Ihre Anfrage. Beim Absenden öffnet sich Ihr Mailprogramm
-          mit einer bereits vorbereiteten Nachricht, die Sie nur noch prüfen und versenden müssen.
+          mit einer bereits vorbereiteten Nachricht.
         </p>
 
         <div class="contact-note">
@@ -1446,8 +1549,8 @@
           </div>
 
           <div class="field">
-            <label for="zeitraum">Gewünschter Zeitraum</label>
-            <input id="zeitraum" name="zeitraum" type="text" placeholder="Optional, z. B. ab Juni 2026" />
+            <label for="bezugsdatum">Gewünschtes Bezugsdatum</label>
+            <input id="bezugsdatum" name="bezugsdatum" type="date" />
           </div>
 
           <div class="field">
@@ -1455,15 +1558,69 @@
             <textarea id="nachricht" name="nachricht" placeholder="Ihre Nachricht"></textarea>
           </div>
 
-          <div class="actions">
+          <div class="contact-actions">
             <button class="btn" type="submit">E-Mail vorbereiten</button>
             <a class="btn btn-ghost" href="tel:+4917657960759">Direkt anrufen</a>
           </div>
-
-          <p class="form-note">
-            Technischer Hinweis: Das Formular öffnet Ihr lokales Mailprogramm mit vorausgefülltem Betreff und Text.
-          </p>
         </form>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-labelledby="faq-title">
+      <div class="section-head">
+        <h2 id="faq-title">Häufige Fragen</h2>
+        <p>Die wichtigsten Informationen zum Projekt, zur Vermietung und zum Ablauf kompakt zusammengefasst.</p>
+      </div>
+
+      <div class="faq-wrap">
+        <details class="faq-item">
+          <summary>Wann sind die Wohnungen voraussichtlich bezugsbereit?</summary>
+          <div class="faq-content">
+            <p>Die Wohnungen sind voraussichtlich ab Juni 2026 bezugsbereit. Maßgeblich ist der finale Stand nach Abschluss der letzten Bauarbeiten.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Was ist im Mietverhältnis beziehungsweise im Projekt vorgesehen?</summary>
+          <div class="faq-content">
+            <p>Zum Projekt gehören unter anderem Stellplätze sowie die Nutzung des Fahrradschuppens. Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters. Nebenkosten werden nach tatsächlichem Aufwand abgerechnet.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Können sich Wohnflächen, Preise oder Ausstattungsdetails noch ändern?</summary>
+          <div class="faq-content">
+            <p>Geringfügige Änderungen während der finalen Bauphase sind möglich. Verbindlich sind die finalen Angaben im späteren Vermietungsprozess beziehungsweise in den Vertragsunterlagen.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Wie gehe ich vor, wenn mich eine konkrete Wohnung interessiert?</summary>
+          <div class="faq-content">
+            <p>Sie können direkt bei der jeweiligen verfügbaren Wohnung eine E-Mail-Anfrage auslösen oder das Kontaktformular nutzen. Bei beiden Wegen wird eine vorbereitete Nachricht geöffnet, die Sie nur noch prüfen und versenden müssen.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Kann ich mich auch für bereits vergebene Einheiten oder spätere Verfügbarkeiten vormerken lassen?</summary>
+          <div class="faq-content">
+            <p>Ja. Auch wenn einzelne Wohnungen bereits vergeben sind, können Sie sich jederzeit für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Wie läuft eine Besichtigungsanfrage ab?</summary>
+          <div class="faq-content">
+            <p>Nach Ihrer Anfrage prüfen wir die Verfügbarkeit und melden uns zur weiteren Abstimmung. Da sich das Projekt noch in der finalen Bauphase befindet, können Termine je nach Baufortschritt koordiniert werden.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Kann ich auch ohne konkrete Wohnung eine Anfrage senden?</summary>
+          <div class="faq-content">
+            <p>Ja. Über das Kontaktformular können Sie auch eine allgemeine Projektanfrage senden, wenn Sie sich zunächst einen Überblick verschaffen oder auf passende Einheiten hingewiesen werden möchten.</p>
+          </div>
+        </details>
       </div>
     </section>
   </main>
@@ -1476,7 +1633,7 @@
     function updateChromeVars(){
       const header = document.querySelector('.site-header');
       const footer = document.querySelector('.site-footer');
-      const root   = document.documentElement;
+      const root = document.documentElement;
       const headerH = header?.offsetHeight || 110;
       const footerH = footer?.offsetHeight || 64;
       root.style.setProperty('--header-h', headerH + 'px');
@@ -1555,7 +1712,6 @@
       const status = panel.dataset.status || '';
       if(status === 'Vermietet'){
         panel.classList.add('is-rented');
-        return;
       }
 
       const m = +panel.dataset.miete || 0;
@@ -1579,7 +1735,7 @@
       const zimmer = panel.dataset.zimmer || '';
       const status = panel.dataset.status || '';
 
-      const subject = `Anfrage Wohnung ${id} – Mehrfamilienhaus in Elmeloh`;
+      const subject = `Anfrage ${status === 'Vermietet' ? 'Vormerkung' : 'Wohnung'} ${id} – Mehrfamilienhaus in Elmeloh`;
       const body = [
         'Guten Tag,',
         '',
@@ -1590,7 +1746,9 @@
         `• Zimmer: ${zimmer}`,
         `• Status: ${status}`,
         '',
-        'Bitte senden Sie mir weitere Informationen und – sofern möglich – Terminvorschläge für eine Besichtigung.',
+        status === 'Vermietet'
+          ? 'Bitte merken Sie mich gerne für vergleichbare Einheiten oder spätere Verfügbarkeiten vor.'
+          : 'Bitte senden Sie mir weitere Informationen und – sofern möglich – Terminvorschläge für eine Besichtigung.',
         '',
         'Meine Kontaktdaten:',
         'Name:',
@@ -1607,8 +1765,6 @@
 
     document.querySelectorAll('.btn-email').forEach(btn => {
       const panel = btn.closest('.panel');
-      if(panel?.dataset.status === 'Vermietet') return;
-
       btn.addEventListener('click', e => {
         e.preventDefault();
         window.location.href = buildApartmentMailto(panel);
@@ -1666,10 +1822,81 @@
       }
     });
 
+    document.querySelectorAll('.project-subslider').forEach(slider => {
+      const slides = slider.querySelectorAll('.apartment-slide');
+      const dotsWrap = slider.querySelector('.apartment-dots');
+      const interval = parseInt(slider.dataset.interval || '3800', 10);
+      let index = 0;
+      let timer = null;
+
+      slides.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', `Bild ${i + 1} anzeigen`);
+        if(i === 0) dot.classList.add('active');
+        dotsWrap.appendChild(dot);
+      });
+
+      const dots = dotsWrap.querySelectorAll('button');
+
+      function showSlide(nextIndex){
+        slides[index].classList.remove('active');
+        if(dots[index]) dots[index].classList.remove('active');
+
+        index = nextIndex;
+
+        slides[index].classList.add('active');
+        if(dots[index]) dots[index].classList.add('active');
+      }
+
+      function nextSlide(){
+        showSlide((index + 1) % slides.length);
+      }
+
+      function startSlider(){
+        stopSlider();
+        if(slides.length > 1){
+          timer = setInterval(nextSlide, interval);
+        }
+      }
+
+      function stopSlider(){
+        if(timer){
+          clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      dots.forEach((dot, dotIndex) => {
+        dot.addEventListener('click', () => {
+          showSlide(dotIndex);
+          startSlider();
+        });
+      });
+
+      slider.addEventListener('mouseenter', stopSlider);
+      slider.addEventListener('mouseleave', startSlider);
+      slider.addEventListener('focusin', stopSlider);
+      slider.addEventListener('focusout', startSlider);
+
+      startSlider();
+    });
+
     const projectContactForm = document.getElementById('projectContactForm');
 
+    function formatDateGerman(value){
+      if(!value) return '-';
+      const [year, month, day] = value.split('-');
+      if(!year || !month || !day) return value;
+      return `${day}.${month}.${year}`;
+    }
+
     function buildFormMailto(data){
-      const subject = `${data.anliegen} – Mehrfamilienhaus in Elmeloh`;
+      const wohnungBetreff = data.wohnung && data.wohnung !== 'Allgemeine Projektanfrage'
+        ? ` – ${data.wohnung}`
+        : ' – Allgemeine Projektanfrage';
+
+      const subject = `${data.anliegen}${wohnungBetreff} – Mehrfamilienhaus in Elmeloh`;
 
       const lines = [
         'Guten Tag,',
@@ -1682,8 +1909,8 @@
         'Wohneinheit:',
         `${data.wohnung || 'Allgemeine Projektanfrage'}`,
         '',
-        'Gewünschter Zeitraum:',
-        `${data.zeitraum || '-'}`,
+        'Gewünschtes Bezugsdatum:',
+        `${data.bezugsdatum || '-'}`,
         '',
         'Nachricht:',
         `${data.nachricht || '-'}`,
@@ -1712,7 +1939,7 @@
           telefon: document.getElementById('telefon')?.value.trim() || '',
           wohnung: document.getElementById('wohnung')?.value || '',
           anliegen: document.getElementById('anliegen')?.value || '',
-          zeitraum: document.getElementById('zeitraum')?.value.trim() || '',
+          bezugsdatum: formatDateGerman(document.getElementById('bezugsdatum')?.value || ''),
           nachricht: document.getElementById('nachricht')?.value.trim() || ''
         };
 
