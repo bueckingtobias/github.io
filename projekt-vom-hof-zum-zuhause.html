@@ -32,7 +32,6 @@
       --brand-700:#00361e;
       --brand-800:#002b18;
       --text:#ffffff;
-      --bg:#004225;
       --muted:#ffffff14;
       --muted-strong:#ffffff22;
       --line:rgba(255,255,255,.12);
@@ -40,7 +39,7 @@
       --shadow:0 2px 10px rgba(0,0,0,.25);
       --shadow-strong:0 14px 34px rgba(0,0,0,.34);
       --radius:12px;
-      --radius-lg:18px;
+      --radius-lg:20px;
       --maxw:1200px;
       --content-w:1040px;
       --nav-h:46px;
@@ -226,13 +225,13 @@
       max-width:var(--maxw);
       margin:0 auto;
       padding:
-        calc(var(--header-h) + clamp(28px,4vw,44px))
+        calc(var(--header-h) + clamp(30px,5vw,50px))
         16px
-        calc(var(--footer-h) + var(--safe-bottom) + 32px);
+        calc(var(--footer-h) + var(--safe-bottom) + 40px);
     }
 
     section + section{
-      margin-top:clamp(34px,5vw,56px);
+      margin-top:clamp(42px,6vw,74px);
     }
 
     .section-panel{
@@ -246,7 +245,7 @@
     }
 
     .section-head{
-      padding:28px 28px 0;
+      padding:34px 34px 0;
     }
 
     .section-head h2{
@@ -258,7 +257,7 @@
     .section-head p{
       margin:0;
       opacity:.92;
-      line-height:1.72;
+      line-height:1.75;
       max-width:72ch;
     }
 
@@ -285,7 +284,7 @@
       max-width:100%;
       line-height:1.08;
       letter-spacing:.01em;
-      margin-bottom:16px;
+      margin-bottom:18px;
     }
 
     .title-stacked .line1{
@@ -306,12 +305,12 @@
       margin:0 auto;
       opacity:.95;
       max-width:74ch;
-      line-height:1.8;
+      line-height:1.85;
     }
 
     .hero-wrap{
       max-width:var(--content-w);
-      margin:28px auto 0;
+      margin:32px auto 0;
     }
 
     .project-hero{
@@ -325,35 +324,40 @@
       isolation:isolate;
     }
 
-    .hero-slides{
+    .hero-slides,
+    .apartment-slides{
       position:absolute;
       inset:0;
     }
 
-    .hero-slide{
+    .hero-slide,
+    .apartment-slide{
       position:absolute;
       inset:0;
       opacity:0;
       transition:opacity .85s ease, transform 7s ease;
     }
 
-    .hero-slide.active{
+    .hero-slide.active,
+    .apartment-slide.active{
       opacity:1;
       transform:scale(1.03);
     }
 
-    .hero-slide img{
+    .hero-slide img,
+    .apartment-slide img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
     }
 
-    .project-hero::after{
+    .project-hero::after,
+    .apartment-slider::after{
       content:"";
       position:absolute;
       inset:0;
-      background:linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.14) 40%, rgba(0,0,0,.55) 100%);
+      background:linear-gradient(180deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.12) 45%, rgba(0,0,0,.32) 100%);
       pointer-events:none;
       z-index:1;
     }
@@ -396,13 +400,17 @@
       border-color:rgba(174,255,220,.28);
     }
 
-    .hero-dots{
+    .hero-dots,
+    .apartment-dots{
       display:flex;
       gap:7px;
       align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
     }
 
-    .hero-dots button{
+    .hero-dots button,
+    .apartment-dots button{
       width:8px;
       height:8px;
       border-radius:999px;
@@ -413,95 +421,125 @@
       transition:transform .18s ease, background-color .18s ease;
     }
 
-    .hero-dots button.active{
+    .hero-dots button.active,
+    .apartment-dots button.active{
       background:#fff;
       transform:scale(1.18);
     }
 
-    /* timeline */
-    .timeline-wrap{
-      padding:30px 28px 34px;
+    .slider-arrow{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      z-index:3;
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.28);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
+      box-shadow:var(--shadow);
+      transition:transform .15s ease, background-color .2s ease;
     }
 
-    .timeline-horizontal{
+    .slider-arrow:hover{
+      background:rgba(0,0,0,.42);
+    }
+
+    .slider-arrow.prev{left:16px}
+    .slider-arrow.next{right:16px}
+
+    .slider-arrow svg{
+      width:18px;
+      height:18px;
+      display:block;
+    }
+
+    /* Timeline komplett neu */
+    .project-status-panel{
+      margin-top:clamp(52px,7vw,84px);
+      margin-bottom:clamp(16px,2vw,24px);
+    }
+
+    .timeline-wrap{
+      padding:46px 34px 48px;
+    }
+
+    .timeline-track{
       position:relative;
       display:grid;
       grid-template-columns:repeat(4,1fr);
-      gap:18px;
+      gap:26px;
       align-items:start;
-      padding:34px 0 6px;
     }
 
-    .timeline-horizontal::before{
+    .timeline-track::before{
       content:"";
       position:absolute;
       left:12.5%;
       right:12.5%;
-      top:50%;
-      transform:translateY(-50%);
+      top:22px;
       height:2px;
-      background:rgba(255,255,255,.16);
+      background:rgba(255,255,255,.15);
       z-index:0;
     }
 
-    .timeline-step{
+    .timeline-progress{
+      content:"";
+      position:absolute;
+      left:12.5%;
+      top:22px;
+      height:2px;
+      width:50%;
+      background:linear-gradient(90deg, rgba(152,251,206,.9), rgba(255,224,130,.9));
+      z-index:0;
+    }
+
+    .timeline-node{
       position:relative;
       z-index:1;
-      min-height:280px;
       display:grid;
-      grid-template-rows:1fr auto 1fr;
-      align-items:center;
+      gap:18px;
+      justify-items:center;
     }
 
-    .timeline-step.top .timeline-card{
-      grid-row:1;
-      align-self:end;
-      margin-bottom:18px;
-    }
-
-    .timeline-step.bottom .timeline-card{
-      grid-row:3;
-      align-self:start;
-      margin-top:18px;
-    }
-
-    .timeline-step-center{
-      grid-row:2;
-      display:grid;
-      place-items:center;
-      min-height:48px;
-    }
-
-    .timeline-step-dot{
+    .timeline-dot{
       width:18px;
       height:18px;
       border-radius:999px;
       background:rgba(255,255,255,.32);
       box-shadow:0 0 0 8px rgba(255,255,255,.04);
       border:2px solid rgba(255,255,255,.08);
+      margin-top:13px;
     }
 
-    .timeline-step.done .timeline-step-dot{
+    .timeline-node.done .timeline-dot{
       background:var(--success);
     }
 
-    .timeline-step.current .timeline-step-dot{
+    .timeline-node.current .timeline-dot{
       background:var(--current);
     }
 
     .timeline-card{
+      width:100%;
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.1);
       border-radius:16px;
-      padding:16px;
-      text-align:left;
+      padding:18px;
+      min-height:190px;
     }
 
     .timeline-card strong{
       display:block;
-      font-size:.98rem;
+      font-size:1rem;
       line-height:1.45;
-      margin-bottom:8px;
+      margin-bottom:10px;
     }
 
     .timeline-card .status{
@@ -511,41 +549,45 @@
       text-transform:uppercase;
       font-weight:800;
       opacity:.72;
-      margin-bottom:10px;
+      margin-bottom:12px;
     }
 
     .timeline-card p{
       margin:0;
-      line-height:1.65;
+      line-height:1.72;
       opacity:.94;
-      font-size:.94rem;
+      font-size:.95rem;
     }
 
     @media (max-width:980px){
-      .timeline-horizontal{
+      .timeline-track{
         grid-template-columns:1fr 1fr;
-        padding-top:0;
       }
-      .timeline-horizontal::before{
+      .timeline-track::before,
+      .timeline-progress{
         display:none;
       }
-      .timeline-step{
-        min-height:auto;
-        grid-template-rows:auto;
+      .timeline-dot{
+        margin-top:0;
       }
-      .timeline-step.top .timeline-card,
-      .timeline-step.bottom .timeline-card{
-        grid-row:auto;
-        margin:0;
-      }
-      .timeline-step-center{
-        display:none;
+      .timeline-card{
+        min-height:unset;
       }
     }
 
     @media (max-width:620px){
-      .timeline-horizontal{
+      .timeline-wrap{
+        padding:36px 22px 38px;
+      }
+      .timeline-track{
         grid-template-columns:1fr;
+        gap:18px;
+      }
+      .timeline-node{
+        justify-items:stretch;
+      }
+      .timeline-dot{
+        justify-self:center;
       }
     }
 
@@ -554,7 +596,7 @@
       margin:0 auto;
       display:flex;
       flex-direction:column;
-      gap:20px;
+      gap:22px;
       align-items:center;
     }
 
@@ -612,16 +654,16 @@
     .panel.active{display:block}
 
     .box-body{
-      padding:28px;
+      padding:32px;
       display:grid;
-      gap:24px;
+      gap:28px;
     }
 
     .apartment-head{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:18px;
+      gap:20px;
       flex-wrap:wrap;
     }
 
@@ -633,7 +675,7 @@
     .apartment-sub{
       margin:0;
       opacity:.88;
-      line-height:1.7;
+      line-height:1.75;
       max-width:62ch;
     }
 
@@ -689,83 +731,29 @@
       isolation:isolate;
     }
 
-    .apartment-slides{
-      position:absolute;
-      inset:0;
-    }
-
-    .apartment-slide{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      transition:opacity .7s ease, transform 6s ease;
-    }
-
-    .apartment-slide.active{
-      opacity:1;
-      transform:scale(1.03);
-    }
-
-    .apartment-slide img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .apartment-slider::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:linear-gradient(180deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.08) 45%, rgba(0,0,0,.28) 100%);
-      pointer-events:none;
-      z-index:1;
-    }
-
     .apartment-dots{
       position:absolute;
       left:16px;
       right:16px;
       bottom:14px;
       z-index:2;
-      display:flex;
-      gap:7px;
-      align-items:center;
-      justify-content:center;
-      flex-wrap:wrap;
-    }
-
-    .apartment-dots button{
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      border:0;
-      padding:0;
-      background:rgba(255,255,255,.42);
-      cursor:pointer;
-      transition:transform .18s ease, background-color .18s ease;
-    }
-
-    .apartment-dots button.active{
-      background:#fff;
-      transform:scale(1.18);
     }
 
     .apartment-grid{
       display:grid;
       grid-template-columns:1fr;
-      gap:18px;
+      gap:20px;
     }
 
     .info-card{
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.1);
       border-radius:16px;
-      padding:18px;
+      padding:20px;
     }
 
     .info-card h4{
-      margin:0 0 14px;
+      margin:0 0 16px;
       font-size:1rem;
     }
 
@@ -780,7 +768,7 @@
       justify-content:space-between;
       align-items:baseline;
       gap:16px;
-      padding:11px 0;
+      padding:12px 0;
       border-bottom:1px solid rgba(255,255,255,.08);
     }
 
@@ -797,8 +785,8 @@
     }
 
     .total{
-      margin:16px 0 0;
-      padding:13px 14px;
+      margin:18px 0 0;
+      padding:14px 14px;
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -813,13 +801,13 @@
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.1);
       border-radius:16px;
-      padding:18px;
-      line-height:1.7;
+      padding:20px;
+      line-height:1.78;
       opacity:.95;
     }
 
     .actions{
-      margin-top:2px;
+      margin-top:4px;
       display:flex;
       gap:10px;
       flex-wrap:wrap;
@@ -862,9 +850,9 @@
     }
 
     .contact-wrap{
-      padding:30px 28px 34px;
+      padding:36px 34px 40px;
       display:grid;
-      gap:18px;
+      gap:20px;
       max-width:760px;
       margin:0 auto;
       text-align:center;
@@ -872,7 +860,7 @@
 
     .contact-intro{
       margin:0;
-      line-height:1.8;
+      line-height:1.82;
       opacity:.95;
       max-width:62ch;
       margin-inline:auto;
@@ -883,7 +871,7 @@
       border-radius:14px;
       background:rgba(255,255,255,.05);
       border:1px solid rgba(255,255,255,.1);
-      line-height:1.7;
+      line-height:1.72;
       opacity:.94;
       max-width:62ch;
       margin:0 auto;
@@ -891,7 +879,7 @@
 
     form.project-contact-form{
       display:grid;
-      gap:14px;
+      gap:16px;
       max-width:620px;
       width:100%;
       margin:0 auto;
@@ -901,6 +889,7 @@
     .field{
       display:grid;
       gap:8px;
+      min-width:0;
     }
 
     .field label{
@@ -912,6 +901,8 @@
     .field select,
     .field textarea{
       width:100%;
+      max-width:100%;
+      min-width:0;
       min-height:48px;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.15);
@@ -920,6 +911,13 @@
       padding:12px 14px;
       outline:none;
       transition:border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+      appearance:none;
+      -webkit-appearance:none;
+    }
+
+    .field input[type="date"]{
+      display:block;
+      line-height:1.2;
     }
 
     .field textarea{
@@ -949,13 +947,13 @@
       gap:10px;
       flex-wrap:wrap;
       justify-content:center;
-      padding-top:4px;
+      padding-top:6px;
     }
 
     .faq-wrap{
-      padding:30px 28px 34px;
+      padding:36px 34px 40px;
       display:grid;
-      gap:12px;
+      gap:14px;
     }
 
     .faq-item{
@@ -968,10 +966,10 @@
     .faq-item summary{
       cursor:pointer;
       list-style:none;
-      padding:17px 18px;
+      padding:18px 20px;
       font-weight:800;
       position:relative;
-      line-height:1.55;
+      line-height:1.6;
     }
 
     .faq-item summary::-webkit-details-marker{display:none}
@@ -991,13 +989,25 @@
     }
 
     .faq-content{
-      padding:0 18px 18px;
+      padding:0 20px 20px;
       opacity:.92;
-      line-height:1.75;
+      line-height:1.8;
     }
 
     .faq-content p{
       margin:0;
+    }
+
+    @media (max-width:680px){
+      .section-head{padding:26px 22px 0}
+      .timeline-wrap,
+      .contact-wrap,
+      .faq-wrap{padding-left:22px;padding-right:22px}
+      .box-body{padding:24px}
+      .slider-arrow{
+        width:40px;
+        height:40px;
+      }
     }
 
     footer.site-footer{
@@ -1070,6 +1080,13 @@
 
     <section class="hero-wrap">
       <div class="project-hero project-slider" data-interval="4500">
+        <button class="slider-arrow prev" type="button" aria-label="Vorheriges Bild">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="slider-arrow next" type="button" aria-label="Nächstes Bild">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+
         <div class="hero-slides">
           <div class="hero-slide active"><img src="projekt-aussenansicht-1.jpeg" alt="Außenansicht Mehrfamilienhaus in Elmeloh"></div>
           <div class="hero-slide"><img src="projekt-aussenansicht-2.jpeg" alt="Weitere Außenansicht des Projekts in Elmeloh"></div>
@@ -1092,55 +1109,45 @@
       </div>
     </section>
 
-    <section class="section-panel" aria-labelledby="timeline-title">
+    <section class="section-panel project-status-panel" aria-labelledby="timeline-title">
       <div class="section-head">
         <h2 id="timeline-title">Projektstatus</h2>
         <p>Das Projekt befindet sich in der finalen Bauphase. Die Vermietung läuft bereits parallel.</p>
       </div>
 
       <div class="timeline-wrap">
-        <div class="timeline-horizontal">
-          <div class="timeline-step top done">
+        <div class="timeline-track">
+          <div class="timeline-progress"></div>
+
+          <div class="timeline-node done">
+            <div class="timeline-dot"></div>
             <div class="timeline-card">
               <strong>Projektentwicklung & Konzeption</strong>
               <span class="status">Abgeschlossen</span>
               <p>Die inhaltliche und bauliche Grundkonzeption des Projekts wurde vollständig ausgearbeitet und vorbereitet.</p>
             </div>
-            <div class="timeline-step-center">
-              <div class="timeline-step-dot"></div>
-            </div>
-            <div></div>
           </div>
 
-          <div class="timeline-step bottom done">
-            <div></div>
-            <div class="timeline-step-center">
-              <div class="timeline-step-dot"></div>
-            </div>
+          <div class="timeline-node done">
+            <div class="timeline-dot"></div>
             <div class="timeline-card">
               <strong>Umbau & Modernisierung</strong>
               <span class="status">Weit fortgeschritten</span>
-              <p>Die wesentlichen baulichen Maßnahmen sind umgesetzt, aktuell laufen die letzten Fertigstellungsarbeiten.</p>
+              <p>Die wesentlichen baulichen Maßnahmen sind umgesetzt. Aktuell laufen die letzten Fertigstellungsarbeiten.</p>
             </div>
           </div>
 
-          <div class="timeline-step top current">
+          <div class="timeline-node current">
+            <div class="timeline-dot"></div>
             <div class="timeline-card">
               <strong>Vermietung</strong>
               <span class="status">Aktuell</span>
               <p>Interessenten können sich bereits jetzt über verfügbare Einheiten informieren und eine Anfrage stellen.</p>
             </div>
-            <div class="timeline-step-center">
-              <div class="timeline-step-dot"></div>
-            </div>
-            <div></div>
           </div>
 
-          <div class="timeline-step bottom">
-            <div></div>
-            <div class="timeline-step-center">
-              <div class="timeline-step-dot"></div>
-            </div>
+          <div class="timeline-node">
+            <div class="timeline-dot"></div>
             <div class="timeline-card">
               <strong>Fertigstellung & Bezug</strong>
               <span class="status">Als Nächstes</span>
@@ -1169,7 +1176,6 @@
       </div>
 
       <div class="panels">
-        <!-- Wohnung 1 -->
         <article class="panel active"
                  data-id="1"
                  data-groesse="ca. 107 m²"
@@ -1196,6 +1202,13 @@
             </div>
 
             <div class="apartment-slider project-subslider" data-interval="3800">
+              <button class="slider-arrow prev" type="button" aria-label="Vorheriges Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button class="slider-arrow next" type="button" aria-label="Nächstes Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+
               <div class="apartment-slides">
                 <div class="apartment-slide active"><img src="wohnung1-1.jpg" alt="Wohnung 1 Bild 1"></div>
                 <div class="apartment-slide"><img src="wohnung1-2.jpg" alt="Wohnung 1 Bild 2"></div>
@@ -1232,7 +1245,6 @@
           </div>
         </article>
 
-        <!-- Wohnung 2 -->
         <article class="panel"
                  data-id="2"
                  data-groesse="ca. 93 m²"
@@ -1259,6 +1271,13 @@
             </div>
 
             <div class="apartment-slider project-subslider" data-interval="3800">
+              <button class="slider-arrow prev" type="button" aria-label="Vorheriges Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button class="slider-arrow next" type="button" aria-label="Nächstes Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+
               <div class="apartment-slides">
                 <div class="apartment-slide active"><img src="wohnung2-1.jpg" alt="Wohnung 2 Bild 1"></div>
                 <div class="apartment-slide"><img src="wohnung2-2.jpg" alt="Wohnung 2 Bild 2"></div>
@@ -1287,8 +1306,8 @@
             </div>
 
             <div class="rented-box">
-              Diese Wohnung ist bereits vergeben. Gerne können Sie sich über das Kontaktformular
-              für vergleichbare Einheiten oder spätere Verfügbarkeiten vormerken lassen.
+              Diese Wohnung ist bereits vergeben. Gerne können Sie sich für vergleichbare Einheiten
+              oder spätere Verfügbarkeiten vormerken lassen.
             </div>
 
             <div class="actions">
@@ -1298,7 +1317,6 @@
           </div>
         </article>
 
-        <!-- Wohnung 3 -->
         <article class="panel"
                  data-id="3"
                  data-groesse="ca. 92 m²"
@@ -1325,6 +1343,13 @@
             </div>
 
             <div class="apartment-slider project-subslider" data-interval="3800">
+              <button class="slider-arrow prev" type="button" aria-label="Vorheriges Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button class="slider-arrow next" type="button" aria-label="Nächstes Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+
               <div class="apartment-slides">
                 <div class="apartment-slide active"><img src="wohnung3-1.jpg" alt="Wohnung 3 Bild 1"></div>
                 <div class="apartment-slide"><img src="wohnung3-2.jpg" alt="Wohnung 3 Bild 2"></div>
@@ -1353,8 +1378,8 @@
             </div>
 
             <div class="rented-box">
-              Diese Wohnung ist bereits vermietet. Bei Interesse an ähnlichen Einheiten
-              oder einer allgemeinen Projektanfrage freuen wir uns über Ihre Nachricht.
+              Diese Wohnung ist bereits vermietet. Bei Interesse an ähnlichen Einheiten oder einer
+              allgemeinen Projektanfrage freuen wir uns über Ihre Nachricht.
             </div>
 
             <div class="actions">
@@ -1364,7 +1389,6 @@
           </div>
         </article>
 
-        <!-- Wohnung 4 -->
         <article class="panel"
                  data-id="4"
                  data-groesse="ca. 94 m²"
@@ -1391,6 +1415,13 @@
             </div>
 
             <div class="apartment-slider project-subslider" data-interval="3800">
+              <button class="slider-arrow prev" type="button" aria-label="Vorheriges Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button class="slider-arrow next" type="button" aria-label="Nächstes Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+
               <div class="apartment-slides">
                 <div class="apartment-slide active"><img src="wohnung4-1.jpg" alt="Wohnung 4 Bild 1"></div>
                 <div class="apartment-slide"><img src="wohnung4-2.jpg" alt="Wohnung 4 Bild 2"></div>
@@ -1427,7 +1458,6 @@
           </div>
         </article>
 
-        <!-- Wohnung 5 -->
         <article class="panel"
                  data-id="5"
                  data-groesse="ca. 124 m²"
@@ -1454,6 +1484,13 @@
             </div>
 
             <div class="apartment-slider project-subslider" data-interval="3800">
+              <button class="slider-arrow prev" type="button" aria-label="Vorheriges Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button class="slider-arrow next" type="button" aria-label="Nächstes Bild">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+
               <div class="apartment-slides">
                 <div class="apartment-slide active"><img src="wohnung5-1.jpg" alt="Wohnung 5 Bild 1"></div>
                 <div class="apartment-slide"><img src="wohnung5-2.jpg" alt="Wohnung 5 Bild 2"></div>
@@ -1597,7 +1634,7 @@
         <details class="faq-item">
           <summary>Wie gehe ich vor, wenn mich eine konkrete Wohnung interessiert?</summary>
           <div class="faq-content">
-            <p>Sie können direkt bei der jeweiligen verfügbaren Wohnung eine E-Mail-Anfrage auslösen oder das Kontaktformular nutzen. Bei beiden Wegen wird eine vorbereitete Nachricht geöffnet, die Sie nur noch prüfen und versenden müssen.</p>
+            <p>Sie können direkt bei der jeweiligen Wohnung eine E-Mail-Anfrage auslösen oder das Kontaktformular nutzen. In beiden Fällen öffnet sich eine vorbereitete Nachricht mit allen relevanten Angaben.</p>
           </div>
         </details>
 
@@ -1735,7 +1772,7 @@
       const zimmer = panel.dataset.zimmer || '';
       const status = panel.dataset.status || '';
 
-      const subject = `Anfrage ${status === 'Vermietet' ? 'Vormerkung' : 'Wohnung'} ${id} – Mehrfamilienhaus in Elmeloh`;
+      const subject = `${status === 'Vermietet' ? 'Vormerkung' : 'Anfrage'} Wohnung ${id} – Mehrfamilienhaus in Elmeloh`;
       const body = [
         'Guten Tag,',
         '',
@@ -1771,87 +1808,39 @@
       });
     });
 
-    document.querySelectorAll('.project-slider').forEach(slider => {
-      const slides = slider.querySelectorAll('.hero-slide');
-      const dots = slider.querySelectorAll('.hero-dots button');
-      const interval = parseInt(slider.dataset.interval || '4500', 10);
+    function initSlider(slider, slideSelector, dotsContainerSelector, prevSelector, nextSelector, intervalFallback){
+      const slides = slider.querySelectorAll(slideSelector);
+      const dotsContainer = slider.querySelector(dotsContainerSelector);
+      const prevBtn = slider.querySelector(prevSelector);
+      const nextBtn = slider.querySelector(nextSelector);
+      const interval = parseInt(slider.dataset.interval || intervalFallback, 10);
       let index = 0;
       let timer = null;
 
-      function showSlide(nextIndex){
-        slides[index].classList.remove('active');
-        if(dots[index]) dots[index].classList.remove('active');
-
-        index = nextIndex;
-
-        slides[index].classList.add('active');
-        if(dots[index]) dots[index].classList.add('active');
-      }
-
-      function nextSlide(){
-        const nextIndex = (index + 1) % slides.length;
-        showSlide(nextIndex);
-      }
-
-      function startSlider(){
-        stopSlider();
-        timer = setInterval(nextSlide, interval);
-      }
-
-      function stopSlider(){
-        if(timer){
-          clearInterval(timer);
-          timer = null;
-        }
-      }
-
-      dots.forEach((dot, dotIndex) => {
-        dot.addEventListener('click', () => {
-          showSlide(dotIndex);
-          startSlider();
+      if(dotsContainer && dotsContainer.children.length === 0){
+        slides.forEach((_, i) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.setAttribute('aria-label', `Bild ${i + 1} anzeigen`);
+          if(i === 0) dot.classList.add('active');
+          dotsContainer.appendChild(dot);
         });
-      });
-
-      slider.addEventListener('mouseenter', stopSlider);
-      slider.addEventListener('mouseleave', startSlider);
-      slider.addEventListener('focusin', stopSlider);
-      slider.addEventListener('focusout', startSlider);
-
-      if(slides.length > 1){
-        startSlider();
       }
-    });
 
-    document.querySelectorAll('.project-subslider').forEach(slider => {
-      const slides = slider.querySelectorAll('.apartment-slide');
-      const dotsWrap = slider.querySelector('.apartment-dots');
-      const interval = parseInt(slider.dataset.interval || '3800', 10);
-      let index = 0;
-      let timer = null;
-
-      slides.forEach((_, i) => {
-        const dot = document.createElement('button');
-        dot.type = 'button';
-        dot.setAttribute('aria-label', `Bild ${i + 1} anzeigen`);
-        if(i === 0) dot.classList.add('active');
-        dotsWrap.appendChild(dot);
-      });
-
-      const dots = dotsWrap.querySelectorAll('button');
+      const dots = dotsContainer ? dotsContainer.querySelectorAll('button') : [];
 
       function showSlide(nextIndex){
         slides[index].classList.remove('active');
         if(dots[index]) dots[index].classList.remove('active');
 
-        index = nextIndex;
+        index = (nextIndex + slides.length) % slides.length;
 
         slides[index].classList.add('active');
         if(dots[index]) dots[index].classList.add('active');
       }
 
-      function nextSlide(){
-        showSlide((index + 1) % slides.length);
-      }
+      function nextSlide(){ showSlide(index + 1); }
+      function prevSlide(){ showSlide(index - 1); }
 
       function startSlider(){
         stopSlider();
@@ -1874,12 +1863,34 @@
         });
       });
 
+      if(prevBtn){
+        prevBtn.addEventListener('click', () => {
+          prevSlide();
+          startSlider();
+        });
+      }
+
+      if(nextBtn){
+        nextBtn.addEventListener('click', () => {
+          nextSlide();
+          startSlider();
+        });
+      }
+
       slider.addEventListener('mouseenter', stopSlider);
       slider.addEventListener('mouseleave', startSlider);
       slider.addEventListener('focusin', stopSlider);
       slider.addEventListener('focusout', startSlider);
 
       startSlider();
+    }
+
+    document.querySelectorAll('.project-slider').forEach(slider => {
+      initSlider(slider, '.hero-slide', '.hero-dots', '.prev', '.next', '4500');
+    });
+
+    document.querySelectorAll('.project-subslider').forEach(slider => {
+      initSlider(slider, '.apartment-slide', '.apartment-dots', '.prev', '.next', '3800');
     });
 
     const projectContactForm = document.getElementById('projectContactForm');
