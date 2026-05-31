@@ -1,0 +1,551 @@
+<!-- ============================================================
+     BÜCKING IMMOBILIEN — Landing "Die Einfahrt" (Comic/Clipart)
+     Scroll-gesteuerte 3D-Allee mit handgezeichneten, wackeligen
+     Linien. Feldweg statt Straße. Laternen gehen paarweise an,
+     am Ende erscheint der beleuchtete Landhof; die zwei CTAs
+     sind als leuchtende Fenster ins Haus integriert.
+     Schrift: ausschließlich Avenir, immer weiß. Three.js r160.
+     ============================================================ -->
+
+<style>
+.bk-root{
+  --bk-green:#004225;
+  --bk-green-900:#002414;
+  --bk-green-950:#001a0f;
+  --bk-warm:#ffd9a0;
+  --bk-line:rgba(255,255,255,.18);
+  --bk-font:"Avenir","Avenir Next",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --bk-ease:cubic-bezier(.22,1,.36,1);
+}
+.bk-root, .bk-root *{ box-sizing:border-box; font-family:var(--bk-font); color:#ffffff; }
+
+/* Vollbreite-Ausbruch aus dem 1200px-Container der index.html */
+.bk-root{
+  width:100vw; position:relative;
+  left:50%; right:50%; margin-left:-50vw; margin-right:-50vw;
+  overflow-x:clip;
+  background:var(--bk-green-950);
+}
+
+/* ===== Scroll-Bühne ===== */
+.bk-drive{ position:relative; height:520vh; background:var(--bk-green-950); }
+.bk-stage{
+  position:sticky; top:0; height:100svh; overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 8%, #06311c 0%, var(--bk-green-950) 60%);
+}
+.bk-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; z-index:1; }
+
+.bk-grain{
+  position:absolute; inset:0; z-index:2; pointer-events:none; opacity:.07; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.bk-vignette{
+  position:absolute; inset:0; z-index:2; pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 46%, transparent 50%, rgba(0,12,6,.7));
+}
+
+/* ===== Overlay-Texte ===== */
+.bk-overlay{ position:absolute; inset:0; z-index:3; pointer-events:none; }
+.bk-cue{
+  position:absolute; left:50%; transform:translateX(-50%);
+  width:min(1100px,90vw); text-align:center; opacity:0; transition:opacity .5s ease;
+}
+.bk-cue.bk-on{ opacity:1; }
+.bk-cue-top{ top:13%; }
+.bk-cue-mid{ top:42%; }
+.bk-eyebrow{
+  display:inline-flex; align-items:center; gap:10px;
+  font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; font-weight:600;
+}
+.bk-eyebrow::before,.bk-eyebrow::after{ content:""; width:30px; height:1px; background:#fff; opacity:.55; }
+.bk-h1{
+  font-weight:700; font-size:clamp(2.4rem,6vw,5rem); line-height:1.06; letter-spacing:-.01em;
+  margin:.3em auto; max-width:16ch; text-shadow:0 4px 40px rgba(0,0,0,.65);
+}
+.bk-sub{ font-weight:400; font-size:clamp(1rem,1.6vw,1.2rem); line-height:1.6; max-width:42ch; margin:0 auto; text-shadow:0 2px 20px rgba(0,0,0,.5); }
+
+/* Final-Headline (über dem Haus); Buttons sind separat als Fenster */
+.bk-final{
+  position:absolute; left:50%; top:14%; transform:translate(-50%,18px);
+  z-index:4; width:min(1100px,90vw); text-align:center;
+  opacity:0; pointer-events:none; transition:opacity .6s ease, transform .6s var(--bk-ease);
+}
+.bk-final.bk-on{ opacity:1; transform:translate(-50%,0); }
+
+/* ===== Fenster-Buttons (über die projizierten Hausfenster gelegt) ===== */
+.bk-winbtns{ position:absolute; inset:0; z-index:5; pointer-events:none; }
+.bk-winbtn{
+  position:absolute; transform:translate(-50%,-50%) scale(.9);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  padding:10px 8px; min-width:96px;
+  border:2px solid rgba(255,255,255,.85); border-radius:4px;
+  background:linear-gradient(180deg, rgba(255,216,150,.34), rgba(255,196,120,.18));
+  box-shadow:0 0 26px rgba(255,200,120,.55), inset 0 0 18px rgba(255,225,170,.4);
+  text-decoration:none; cursor:pointer;
+  opacity:0; pointer-events:none;
+  transition:opacity .5s ease, transform .35s var(--bk-ease), box-shadow .35s ease, background .35s ease;
+  backdrop-filter:blur(1px);
+}
+.bk-winbtn.bk-on{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+.bk-winbtn:hover{
+  background:linear-gradient(180deg, rgba(255,224,170,.6), rgba(255,205,130,.38));
+  box-shadow:0 0 40px rgba(255,210,140,.85), inset 0 0 22px rgba(255,235,190,.6);
+  transform:translate(-50%,-50%) scale(1.06);
+}
+.bk-winbtn .bk-wb-label{ font-weight:700; font-size:.92rem; letter-spacing:.01em; white-space:nowrap; }
+.bk-winbtn .bk-wb-sub{ font-weight:500; font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; opacity:.85; }
+
+.bk-scrollcue{
+  position:absolute; left:50%; bottom:30px; transform:translateX(-50%); z-index:4;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; opacity:.6;
+  transition:opacity .4s ease;
+}
+.bk-scrollcue .bk-l{ width:1px; height:42px; background:linear-gradient(#fff,transparent); position:relative; overflow:hidden; }
+.bk-scrollcue .bk-l::after{ content:""; position:absolute; top:-50%; left:0; width:100%; height:50%; background:#fff; animation:bk-drop 2s ease-in-out infinite; }
+
+.bk-prog{ position:absolute; left:0; bottom:0; height:3px; width:0%; z-index:5; background:linear-gradient(90deg,#fff,var(--bk-warm)); transition:width .1s linear; box-shadow:0 0 16px rgba(255,200,120,.6); }
+
+/* ===== Abschluss-Sektion ===== */
+.bk-outro{ position:relative; z-index:2; background:linear-gradient(180deg,var(--bk-green-900),var(--bk-green)); padding:120px 0; }
+.bk-section{ width:min(1200px,92vw); margin:0 auto; }
+.bk-tag{ font-size:.76rem; letter-spacing:.26em; text-transform:uppercase; font-weight:600; }
+.bk-h2{ font-weight:700; font-size:clamp(1.9rem,4vw,3.2rem); line-height:1.12; letter-spacing:-.01em; margin:.4em 0 .6em; max-width:18ch; }
+.bk-grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:30px; }
+@media (max-width:860px){ .bk-grid3{ grid-template-columns:1fr; } }
+.bk-card{ padding:32px 28px; border-radius:20px; background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02)); border:1px solid var(--bk-line); transition:transform .5s var(--bk-ease), border-color .5s; }
+.bk-card:hover{ transform:translateY(-6px); border-color:rgba(255,255,255,.45); }
+.bk-card h3{ font-weight:700; font-size:1.3rem; margin:0 0 10px; }
+.bk-card p{ font-weight:400; font-size:.96rem; line-height:1.6; color:#fff; opacity:.85; margin:0; }
+.bk-reveal{ opacity:0; transform:translateY(30px); transition:opacity .9s var(--bk-ease), transform .9s var(--bk-ease); }
+.bk-reveal.bk-in{ opacity:1; transform:none; }
+
+@keyframes bk-drop{ 0%{ top:-50%; } 60%,100%{ top:120%; } }
+
+@media (prefers-reduced-motion:reduce){
+  .bk-drive{ height:auto; }
+  .bk-stage{ position:relative; height:80svh; }
+  .bk-cue,.bk-final{ opacity:1 !important; position:relative; transform:none; margin:30px auto; top:auto; }
+  .bk-reveal{ opacity:1; transform:none; }
+}
+</style>
+
+<section class="bk-root" id="home">
+
+  <div class="bk-drive" id="bk-drive">
+    <div class="bk-stage">
+      <canvas class="bk-canvas" id="bk-canvas"></canvas>
+      <div class="bk-grain"></div>
+      <div class="bk-vignette"></div>
+
+      <div class="bk-overlay">
+        <div class="bk-cue bk-cue-top bk-on" id="bk-cue-1">
+          <span class="bk-eyebrow">Bücking Immobilien · Ganderkesee</span>
+          <h1 class="bk-h1">Am Ende des Feldwegs</h1>
+          <p class="bk-sub">Folgen Sie dem Weg. Scrollen Sie hinein — Stück für Stück erwacht das Licht.</p>
+        </div>
+        <div class="bk-cue bk-cue-mid" id="bk-cue-2">
+          <h1 class="bk-h1">Wohnraum, der bleibt.</h1>
+          <p class="bk-sub">Ein alter Hof, neu gedacht — moderner Wohnraum im Landhauscharakter.</p>
+        </div>
+      </div>
+
+      <div class="bk-final" id="bk-final">
+        <span class="bk-eyebrow">Willkommen zuhause</span>
+        <h1 class="bk-h1">Der Landhof.</h1>
+        <p class="bk-sub">Treten Sie ein — die erleuchteten Fenster führen Sie weiter.</p>
+      </div>
+
+      <!-- Fenster-Buttons: Position wird per JS auf die Hausfenster projiziert -->
+      <div class="bk-winbtns" id="bk-winbtns">
+        <a href="projekte.html" class="bk-winbtn" id="bk-win-1">
+          <span class="bk-wb-label">Projekte</span>
+          <span class="bk-wb-sub">entdecken</span>
+        </a>
+        <a href="unternehmen.html" class="bk-winbtn" id="bk-win-2">
+          <span class="bk-wb-label">Unternehmen</span>
+          <span class="bk-wb-sub">kennenlernen</span>
+        </a>
+      </div>
+
+      <div class="bk-scrollcue" id="bk-scrollcue"><span>Scroll</span><span class="bk-l"></span></div>
+      <div class="bk-prog" id="bk-prog"></div>
+    </div>
+  </div>
+
+  <div class="bk-outro">
+    <div class="bk-section">
+      <div class="bk-reveal">
+        <span class="bk-tag">Was uns ausmacht</span>
+        <h2 class="bk-h2">Drei Prinzipien, ein Anspruch.</h2>
+      </div>
+      <div class="bk-grid3">
+        <article class="bk-card bk-reveal"><h3>Moderne Wohnprojekte</h3><p>Durchdachte Grundrisse und hochwertige Materialien — vom ersten Entwurf bis zur Schlüsselübergabe.</p></article>
+        <article class="bk-card bk-reveal"><h3>Nachhaltige Bestände</h3><p>Wir halten und pflegen unsere Objekte langfristig. Substanz statt Spekulation.</p></article>
+        <article class="bk-card bk-reveal"><h3>Klare Vermietung</h3><p>Transparente Prozesse, schnelle Kommunikation, verlässliche Strukturen.</p></article>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+/* ============================================================
+   "Die Einfahrt" — Comic/Clipart. Wackelige, handgezeichnete
+   Linien (mehrfach versetzt), Feldweg, progressive Beleuchtung,
+   CTA-Fenster ins Haus projiziert.
+   ============================================================ */
+(function(){
+  function bkInitDrive(){
+    if(window.__bkDriveInit) return;
+    var canvas=document.getElementById('bk-canvas');
+    var drive =document.getElementById('bk-drive');
+    if(!canvas||!drive||typeof THREE==='undefined') return;
+    window.__bkDriveInit=true;
+
+    var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+    var renderer=new THREE.WebGLRenderer({ canvas:canvas, antialias:true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    renderer.outputColorSpace=THREE.SRGBColorSpace;
+    renderer.setClearColor(0x001a0f,1);
+
+    var scene=new THREE.Scene();
+    scene.fog=new THREE.Fog(0x001a0f,12,64);
+    var camera=new THREE.PerspectiveCamera(58,1,0.1,200);
+
+    var C_LINE  =0xffffff;   // Comic-Outline weiß
+    var C_LINE_D=0x6fae8c;   // gedämpfte ferne Linie (grünlich)
+    var C_EARTH =0x8a6b3a;   // Feldweg-Erdton
+    var C_WARM  =0xffc77a;
+
+    /* ---------- deterministischer Zufall (ruhiges, reproduzierbares Wackeln) ---------- */
+    var _s=12345;
+    function rnd(){ _s=(_s*16807)%2147483647; return _s/2147483647; }
+
+    /* ---------- Comic-Linie: Polyline mit Wackel-Versatz, als Doppelpass für Dicke ---------- */
+    // pts: Array von THREE.Vector3 (Stützpunkte). amp: Wackel-Amplitude.
+    function wobblyPath(pts, amp, segPer){
+      segPer=segPer||1.0;
+      var out=[];
+      for(var i=0;i<pts.length-1;i++){
+        var a=pts[i], b=pts[i+1];
+        var len=a.distanceTo(b);
+        var n=Math.max(2, Math.round(len/segPer));
+        for(var j=0;j<n;j++){
+          var t0=j/n, t1=(j+1)/n;
+          var taper0=Math.sin(t0*Math.PI), taper1=Math.sin(t1*Math.PI);
+          var p0=new THREE.Vector3().lerpVectors(a,b,t0);
+          var p1=new THREE.Vector3().lerpVectors(a,b,t1);
+          p0.x+=(rnd()-0.5)*amp*taper0; p0.y+=(rnd()-0.5)*amp*taper0; p0.z+=(rnd()-0.5)*amp*taper0;
+          p1.x+=(rnd()-0.5)*amp*taper1; p1.y+=(rnd()-0.5)*amp*taper1; p1.z+=(rnd()-0.5)*amp*taper1;
+          out.push(p0,p1);
+        }
+      }
+      return out;
+    }
+    // erzeugt LineSegments aus einer Punktliste (Paare), mit Doppelpass für "dicke" Comic-Linie
+    function comicLine(pts, opt){
+      opt=opt||{};
+      var color=opt.color==null?C_LINE:opt.color;
+      var opacity=opt.opacity==null?0.95:opt.opacity;
+      var amp=opt.amp==null?0.07:opt.amp;
+      var grp=new THREE.Group();
+      var passes=opt.passes==null?2:opt.passes;
+      for(var k=0;k<passes;k++){
+        _s = (opt.seed||1)+k*999;             // jeder Pass leicht anders, aber stabil
+        var seg=wobblyPath(pts, amp, opt.segPer||1.0);
+        var g=new THREE.BufferGeometry().setFromPoints(seg);
+        grp.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color:color, transparent:true, opacity:opacity*(k===0?1:0.6) })));
+      }
+      return grp;
+    }
+    // Box als 12 Comic-Kanten
+    function comicBox(w,h,d, opt){
+      var x=w/2,y=h/2,z=d/2;
+      var c=[
+        [-x,-y,-z],[x,-y,-z],[x,-y,z],[-x,-y,z],      // unten
+        [-x, y,-z],[x, y,-z],[x, y,z],[-x, y,z]       // oben
+      ].map(function(p){return new THREE.Vector3(p[0],p[1],p[2]);});
+      var edges=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+      var grp=new THREE.Group();
+      edges.forEach(function(e,i){
+        var ln=comicLine([c[e[0]],c[e[1]]], Object.assign({seed:(opt&&opt.seed||1)+i*37}, opt||{}));
+        grp.add(ln);
+      });
+      return grp;
+    }
+
+    /* ---------- Boden + Feldweg ---------- */
+    var ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400),
+      new THREE.MeshStandardMaterial({ color:0x04240f, roughness:1, metalness:0 }));
+    ground.rotation.x=-Math.PI/2; scene.add(ground);
+
+    // Feldweg: zwei gewackelte Erd-Ränder + Erd-Streifen (zwei Fahrspuren-Andeutung)
+    function fieldPathEdge(baseX){
+      var pts=[];
+      for(var z=8; z>=-124; z-=3){
+        var wob=Math.sin(z*0.25)*0.5 + (rnd()-0.5)*0.6;   // unregelmäßiger Rand
+        pts.push(new THREE.Vector3(baseX+wob, 0.03, z));
+      }
+      return comicLine(pts, { color:C_EARTH, opacity:0.85, amp:0.12, segPer:1.4, seed:Math.floor(baseX*13)+50, passes:2 });
+    }
+    scene.add(fieldPathEdge(-3.0));
+    scene.add(fieldPathEdge( 3.0));
+    // Erd-Fläche des Wegs (leicht heller als Wiese)
+    var pathStrip=new THREE.Mesh(new THREE.PlaneGeometry(6.4,132),
+      new THREE.MeshStandardMaterial({ color:0x3a2c16, roughness:1, metalness:0 }));
+    pathStrip.rotation.x=-Math.PI/2; pathStrip.position.set(0,0.012,-58); scene.add(pathStrip);
+    // gestrichelte Mittel-"Spur" (Trcampelpfad) – kurze Comic-Striche
+    for(var sz=6; sz>-122; sz-=4){
+      var dash=comicLine([new THREE.Vector3(0,0.04,sz), new THREE.Vector3(0,0.04,sz-1.6)],
+        { color:C_EARTH, opacity:0.5, amp:0.1, segPer:0.8, seed:sz*7+3, passes:1 });
+      scene.add(dash);
+    }
+
+    /* ---------- Glow-Textur ---------- */
+    var glowTex=(function(){ var t=null; return function(){
+      if(t) return t;
+      var c=document.createElement('canvas'); c.width=c.height=128; var g=c.getContext('2d');
+      var rad=g.createRadialGradient(64,64,0,64,64,64);
+      rad.addColorStop(0,'rgba(255,225,170,1)'); rad.addColorStop(0.4,'rgba(255,200,120,0.5)'); rad.addColorStop(1,'rgba(255,200,120,0)');
+      g.fillStyle=rad; g.fillRect(0,0,128,128); t=new THREE.CanvasTexture(c); return t;
+    };})();
+
+    /* ---------- Laternen (Comic) ---------- */
+    var lamps=[];
+    function makeLamp(x,z){
+      var grp=new THREE.Group(); grp.position.set(x,0,z);
+      var dir=x<0?1:-1;
+      // leicht gebogener Mast (3 Stützpunkte → Comic-Schwung)
+      grp.add(comicLine([
+        new THREE.Vector3(0,0,0), new THREE.Vector3(0.08*dir,1.6,0), new THREE.Vector3(0,3.0,0)
+      ], { color:C_LINE, opacity:0.9, amp:0.06, segPer:0.7, seed:Math.floor(z*5)+11 }));
+      // Ausleger
+      grp.add(comicLine([ new THREE.Vector3(0,3.0,0), new THREE.Vector3(0.62*dir,3.05,0) ],
+        { color:C_LINE, opacity:0.9, amp:0.05, segPer:0.5, seed:Math.floor(z*5)+12 }));
+      // Leuchtenkopf (kleine Comic-Box)
+      var head=comicBox(0.36,0.42,0.36,{ color:C_LINE, opacity:0.9, amp:0.04, segPer:0.5, seed:Math.floor(z*5)+13, passes:1 });
+      head.position.set(0.62*dir,2.82,0); grp.add(head);
+      // Glühbirne
+      var bulbMat=new THREE.MeshBasicMaterial({ color:0x10301f, transparent:true, opacity:0.95 });
+      var bulb=new THREE.Mesh(new THREE.SphereGeometry(0.13,12,12), bulbMat);
+      bulb.position.set(0.62*dir,2.72,0); grp.add(bulb);
+      // Glow
+      var glow=new THREE.Sprite(new THREE.SpriteMaterial({ map:glowTex(), color:C_WARM, transparent:true, opacity:0, depthWrite:false, blending:THREE.AdditiveBlending }));
+      glow.scale.set(0,0,0); glow.position.copy(bulb.position); grp.add(glow);
+      var light=new THREE.PointLight(C_WARM,0,16,2.0); light.position.set(0.62*dir,2.7,0); grp.add(light);
+      scene.add(grp);
+      lamps.push({ light:light, glow:glow, bulbMat:bulbMat, z:z, on:0 });
+    }
+
+    /* ---------- Baum (Comic: Stamm + runde Krone aus Wackel-Schlaufen) ---------- */
+    function makeTree(x,z,scale){
+      var grp=new THREE.Group(); grp.position.set(x,0,z); scale=scale||1;
+      grp.add(comicLine([
+        new THREE.Vector3(0,0,0), new THREE.Vector3(0.1,0.8*scale,0), new THREE.Vector3(-0.05,1.6*scale,0)
+      ], { color:C_LINE, opacity:0.8, amp:0.07, segPer:0.6, seed:Math.floor(x*9+z)+20 }));
+      // Krone als 2 versetzte Wackel-Kreise (Comic-Busch)
+      var cy=2.5*scale, r=1.1*scale;
+      [0,1].forEach(function(p){
+        var ring=[]; var steps=18;
+        for(var i=0;i<=steps;i++){ var a=i/steps*Math.PI*2; ring.push(new THREE.Vector3(Math.cos(a)*r, cy+Math.sin(a)*r*0.9, (p?0.2:-0.2))); }
+        grp.add(comicLine(ring, { color:C_LINE, opacity:0.7, amp:0.14, segPer:0.7, seed:Math.floor(x*3+z+p*100)+30, passes:1 }));
+      });
+      grp.rotation.y=rnd()*Math.PI; scene.add(grp);
+    }
+
+    /* ---------- Hecke (Comic: niedrige wackelige Wellenlinie) ---------- */
+    function makeHedge(x,z,len){
+      var pts=[]; var n=Math.round(len/0.8);
+      for(var i=0;i<=n;i++){ var zz=z-len/2 + (i/n)*len; pts.push(new THREE.Vector3(x+(rnd()-0.5)*0.25, 0.4+Math.sin(i*0.8)*0.18, zz)); }
+      scene.add(comicLine(pts, { color:C_LINE_D, opacity:0.55, amp:0.12, segPer:0.7, seed:Math.floor(x*7+z)+40, passes:1 }));
+    }
+
+    /* ---------- Allee bestücken ---------- */
+    var PAIRS=9, SPACING=12, Z0=-8;
+    for(var i=0;i<PAIRS;i++){
+      var z=Z0-i*SPACING;
+      makeLamp(-4.4,z); makeLamp(4.4,z);
+      makeTree(-7.0-(i%2)*1.2, z-3, 0.9+(i%3)*0.15);
+      makeTree( 7.0+(i%2)*1.2, z-3, 0.9+(i%3)*0.15);
+      makeHedge(-5.7, z-SPACING/2, SPACING-1.5);
+      makeHedge( 5.7, z-SPACING/2, SPACING-1.5);
+    }
+    var END_Z=Z0-(PAIRS-1)*SPACING;
+
+    /* ---------- Endobjekt: Landhof (Comic) ---------- */
+    var house=new THREE.Group();
+    var hz=END_Z-16; house.position.set(0,0,hz);
+
+    function gableWing(w,h,d,roofH,seed){
+      var g=new THREE.Group();
+      var body=comicBox(w,h,d,{ color:C_LINE, opacity:0.92, amp:0.06, segPer:0.9, seed:seed, passes:2 });
+      body.position.y=h/2; g.add(body);
+      var peak=h+roofH;
+      // Satteldach als Comic-Linien (Giebel vorn/hinten + First + Traufen)
+      var TL=new THREE.Vector3(-w/2,h, d/2), TR=new THREE.Vector3(w/2,h, d/2);
+      var BL=new THREE.Vector3(-w/2,h,-d/2), BR=new THREE.Vector3(w/2,h,-d/2);
+      var PF=new THREE.Vector3(0,peak, d/2), PB=new THREE.Vector3(0,peak,-d/2);
+      [[TL,PF],[PF,TR],[BL,PB],[PB,BR],[PF,PB],[TL,BL],[TR,BR]].forEach(function(e,k){
+        g.add(comicLine([e[0],e[1]], { color:C_LINE, opacity:0.92, amp:0.06, segPer:0.9, seed:(seed||1)+200+k*17 }));
+      });
+      return g;
+    }
+
+    var main=gableWing(12,4.2,6.5,2.6, 1); house.add(main);
+    var wingL=gableWing(5.2,3.6,7.5,2.0, 400); wingL.position.set(-8,0,1.5); wingL.rotation.y=Math.PI/2; house.add(wingL);
+    var wingR=gableWing(5.2,3.6,7.5,2.0, 700); wingR.position.set( 8,0,1.5); wingR.rotation.y=Math.PI/2; house.add(wingR);
+
+    // Fenster-Frontfläche (z der Hauptflügel-Front in Welt: hz + 6.5/2)
+    var faceZ=6.5/2+0.02;
+    var winMat=new THREE.MeshBasicMaterial({ color:0x10301f, transparent:true, opacity:0.0 });
+
+    // normale (deko) Fenster, kleine Comic-Rahmen + Glühfläche
+    function decoWindow(x,y){
+      var m=new THREE.Mesh(new THREE.PlaneGeometry(0.7,0.95), winMat);
+      m.position.set(x,y,faceZ); house.add(m);
+      var fr=comicBox(0.72,0.97,0.04,{ color:C_LINE, opacity:0.85, amp:0.03, segPer:0.4, seed:Math.floor(x*30+y*7)+800, passes:1 });
+      fr.position.set(x,y,faceZ); house.add(fr);
+    }
+    // obere Reihe deko-Fenster
+    for(var c=0;c<6;c++){ var wx=-11/2 + (c+0.5)*(11/6); decoWindow(wx, 2.7); }
+    // untere Reihe: 6 Fenster, davon 2 werden zu CTA-Türen/-Fenstern (größer)
+    var ctaWindows=[];   // {x,y,z(welt-lokal)} – Position der zwei Button-Fenster
+    for(var c2=0;c2<6;c2++){
+      var wx2=-11/2 + (c2+0.5)*(11/6);
+      if(c2===2 || c2===3){
+        // CTA-Fenster: größer, hell umrahmt; merken für HTML-Overlay
+        var fr2=comicBox(1.05,1.7,0.06,{ color:C_LINE, opacity:0.95, amp:0.04, segPer:0.45, seed:Math.floor(wx2*30)+900, passes:2 });
+        fr2.position.set(wx2,1.15,faceZ); house.add(fr2);
+        var glowM=new THREE.Mesh(new THREE.PlaneGeometry(0.95,1.55), winMat);
+        glowM.position.set(wx2,1.15,faceZ-0.005); house.add(glowM);
+        ctaWindows.push(new THREE.Vector3(wx2,1.15,faceZ));
+      } else {
+        decoWindow(wx2, 1.0);
+      }
+    }
+
+    scene.add(house);
+
+    var houseLight=new THREE.PointLight(C_WARM,0,60,1.6); houseLight.position.set(0,9,hz+12); scene.add(houseLight);
+    var houseFill=new THREE.SpotLight(0xfff0d8,0,80,Math.PI/5,0.5,1.4);
+    houseFill.position.set(0,16,hz+22); houseFill.target.position.set(0,2,hz); scene.add(houseFill); scene.add(houseFill.target);
+    scene.add(new THREE.AmbientLight(0x163a26,0.5));
+    var moon=new THREE.DirectionalLight(0x9fc6df,0.18); moon.position.set(-6,14,4); scene.add(moon);
+
+    /* ---------- CTA-Fenster → HTML-Overlay projizieren ---------- */
+    var winBtnEls=[ document.getElementById('bk-win-1'), document.getElementById('bk-win-2') ];
+    var ctaWorld=ctaWindows.map(function(v){ var w=v.clone(); house.localToWorld(w); return w; });
+
+    function resize(){
+      var w=canvas.clientWidth||window.innerWidth, h=canvas.clientHeight||window.innerHeight;
+      if(canvas.width!==Math.floor(w*renderer.getPixelRatio())||canvas.height!==Math.floor(h*renderer.getPixelRatio())){
+        renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+      }
+    }
+
+    var prog=0, progTarget=0;
+    function computeProgress(){
+      var rect=drive.getBoundingClientRect();
+      var total=drive.offsetHeight-window.innerHeight;
+      progTarget= total>0 ? Math.max(0,Math.min(1,(-rect.top)/total)) : 0;
+    }
+    window.addEventListener('scroll', computeProgress, { passive:true });
+    window.addEventListener('resize', function(){ resize(); computeProgress(); });
+
+    var cue1=document.getElementById('bk-cue-1'), cue2=document.getElementById('bk-cue-2');
+    var finalCard=document.getElementById('bk-final'), scrollcue=document.getElementById('bk-scrollcue'), prog_el=document.getElementById('bk-prog');
+    function setCue(el,on){ if(el) el.classList.toggle('bk-on',on); }
+
+    var camStartZ=10, camEndZ=hz+15, camStartY=1.7, camEndY=3.2;
+    function easeInOut(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+
+    var _v=new THREE.Vector3();
+    function projectButtons(showFactor){
+      var w=canvas.clientWidth, h=canvas.clientHeight;
+      ctaWorld.forEach(function(p,i){
+        var el=winBtnEls[i]; if(!el) return;
+        _v.copy(p).project(camera);
+        var behind=_v.z>1;     // hinter der Kamera / zu weit
+        var sx=(_v.x*0.5+0.5)*w, sy=(-_v.y*0.5+0.5)*h;
+        el.style.left=sx+'px'; el.style.top=sy+'px';
+        var visible = showFactor>0.5 && !behind && _v.x>-1.2 && _v.x<1.2;
+        el.classList.toggle('bk-on', visible);
+      });
+    }
+
+    var lastT=performance.now();
+    function tick(now){
+      resize();
+      var dt=Math.min(0.05,(now-lastT)/1000); lastT=now;
+      prog+=(progTarget-prog)*Math.min(1,dt*6);
+      var e=easeInOut(prog);
+
+      camera.position.z=camStartZ+(camEndZ-camStartZ)*e;
+      camera.position.y=camStartY+(camEndY-camStartY)*e;
+      camera.position.x=Math.sin(prog*Math.PI*2)*0.5*(1-e);
+      camera.lookAt(0,1.6+e*1.2,camera.position.z-20);
+
+      lamps.forEach(function(L){
+        var zNorm=(camStartZ-L.z)/(camStartZ-END_Z); zNorm=Math.max(0,Math.min(1,zNorm));
+        var lit=prog>zNorm*0.82?1:0;
+        L.on+=(lit-L.on)*Math.min(1,dt*5);
+        var v=L.on;
+        L.light.intensity=v*7.0;
+        L.bulbMat.color.setRGB(0.06+v*0.94,0.18+v*0.66,0.12+v*0.18);
+        L.bulbMat.opacity=0.5+v*0.5;
+        var gs=0.2+v*2.2; L.glow.scale.set(gs,gs,gs); L.glow.material.opacity=v*0.85;
+      });
+
+      var hp=Math.max(0,Math.min(1,(prog-0.66)/0.34));
+      houseLight.intensity=hp*9; houseFill.intensity=hp*6;
+      winMat.color.setRGB(0.06+hp*0.94,0.18+hp*0.62,0.12+hp*0.10);
+      winMat.opacity=0.15+hp*0.85;
+      scene.fog.near=12+prog*16; scene.fog.far=64+prog*40;
+
+      setCue(cue1, prog<0.12);
+      setCue(cue2, prog>0.34&&prog<0.62);
+      finalCard.classList.toggle('bk-on', prog>0.88);
+      projectButtons(hp);                 // Buttons erscheinen mit Hauslicht
+      if(scrollcue) scrollcue.style.opacity= prog>0.05?0:1;
+      if(prog_el) prog_el.style.width=(prog*100).toFixed(1)+'%';
+
+      renderer.render(scene,camera);
+      requestAnimationFrame(tick);
+    }
+
+    computeProgress();
+    if(reduce){
+      progTarget=1; prog=1; resize();
+      lamps.forEach(function(L){ L.light.intensity=6; L.bulbMat.color.setRGB(1,.85,.5); L.bulbMat.opacity=1; L.glow.material.opacity=.7; L.glow.scale.set(2,2,2); });
+      houseLight.intensity=8; houseFill.intensity=5; winMat.opacity=1; winMat.color.setRGB(1,.8,.45);
+      camera.position.set(0,3.2,hz+15); camera.lookAt(0,2.8,hz);
+      renderer.render(scene,camera);
+      projectButtons(1);
+    } else {
+      requestAnimationFrame(tick);
+    }
+
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(ent){
+        if(ent.isIntersecting){
+          var el=ent.target;
+          var sibs=el.parentElement?Array.prototype.slice.call(el.parentElement.querySelectorAll(':scope > .bk-reveal')):[el];
+          el.style.transitionDelay=(Math.max(0,sibs.indexOf(el))*0.09)+'s';
+          el.classList.add('bk-in'); io.unobserve(el);
+        }
+      });
+    },{threshold:0.16});
+    document.querySelectorAll('.bk-root .bk-reveal').forEach(function(el){ io.observe(el); });
+  }
+
+  window.bkInitDrive=bkInitDrive;
+  var tries=0;
+  (function boot(){
+    if(typeof THREE!=='undefined' && document.getElementById('bk-canvas')){ bkInitDrive(); }
+    else if(tries++<120){ setTimeout(boot,50); }
+  })();
+})();
+</script>
