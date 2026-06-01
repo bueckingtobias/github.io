@@ -528,17 +528,23 @@
 
   /* ---------------- DATEN (Pflegemaske) ---------------- */
   let dz = "projekte";
+  let diffShown = false;
   function renderDaten() {
+    diffShown = false;
     const out = [];
     const subs = [["projekte", "Projekte & Gewerke"], ["kredite", "Kredite"], ["finanz", "Finanzbewegungen"], ["vermietung", "Vermietung"], ["zugang", "Zugang & Export"]];
     const bar = el(`<div class="col-12 ftabs">${subs.map(s => `<button class="ftab ${s[0] === dz ? 'on' : ''}" data-dz="${s[0]}">${s[1]}</button>`).join("")}</div>`);
     bar.querySelectorAll(".ftab").forEach(b => b.onclick = () => { dz = b.dataset.dz; route("daten"); });
     out.push(bar);
 
-    out.push(el(`<div class="card col-12"><div class="card-b note" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <span>Änderungen werden sofort im Dashboard übernommen. Zum Sichern unten <b>data.js exportieren</b> und im Repo/Drive ersetzen.</span>
-      <button class="btn btn-accent" id="exportBtn">⬇ data.js exportieren</button>
-      <span class="note" id="exportMsg"></span></div></div>`));
+    out.push(el(`<div class="card col-12"><div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+      <div class="note">Felder bearbeiten – der <b>aktuelle Wert</b> steht klein/ausgegraut darunter. Geänderte Felder werden grün markiert.</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-accent" id="copyBtn">📋 Änderungen prüfen & Code kopieren</button>
+        <span class="note" id="copyMsg"></span>
+      </div>
+      <div id="diffPanel" class="diff-panel" style="display:none"></div>
+    </div></div>`));
 
     if (dz === "projekte") out.push(...formProjekte());
     if (dz === "kredite") out.push(...formKredite());
@@ -546,20 +552,41 @@
     if (dz === "vermietung") out.push(...formVermietung());
     if (dz === "zugang") out.push(...formZugang());
 
-    setTimeout(() => { const b = $("#exportBtn"); if (b) b.onclick = exportData; }, 0);
+    setTimeout(() => { const b = $("#copyBtn"); if (b) b.onclick = showDiffThenCopy; }, 0);
     return out;
   }
 
   // ---- Form helpers (live binding to D) ----
+  // Zeigt kleinen Titel + ausgegrauten aktuellen Wert, damit klar ist, was überschrieben wird.
   function field(label, value, onInput, type) {
-    const w = el(`<label class="fld"><span>${esc(label)}</span><input type="${type || 'text'}" value="${esc(value)}"></label>`);
-    w.querySelector("input").addEventListener("input", e => onInput(type === "number" ? Number(e.target.value) : e.target.value));
+    const cur = (value === "" || value == null) ? "leer" : value;
+    const w = el(`<label class="fld">
+      <span class="fld-lab">${esc(label)}</span>
+      <input type="${type || 'text'}" value="${esc(value)}">
+      <span class="fld-cur">aktuell: ${esc(cur)}</span>
+    </label>`);
+    const inp = w.querySelector("input");
+    const curEl = w.querySelector(".fld-cur");
+    inp.addEventListener("input", e => {
+      onInput(type === "number" ? Number(e.target.value) : e.target.value);
+      // markieren, wenn vom Ausgangswert abweichend
+      curEl.classList.toggle("changed", String(e.target.value) !== String(value));
+    });
     return w;
   }
   function selectField(label, value, options, onInput) {
     const opts = options.map(o => `<option value="${esc(o[0])}" ${o[0] === value ? "selected" : ""}>${esc(o[1])}</option>`).join("");
-    const w = el(`<label class="fld"><span>${esc(label)}</span><select>${opts}</select></label>`);
-    w.querySelector("select").addEventListener("change", e => onInput(e.target.value));
+    const curLabel = (options.find(o => o[0] === value) || [null, value])[1];
+    const w = el(`<label class="fld">
+      <span class="fld-lab">${esc(label)}</span>
+      <select>${opts}</select>
+      <span class="fld-cur">aktuell: ${esc(curLabel)}</span>
+    </label>`);
+    const curEl = w.querySelector(".fld-cur");
+    w.querySelector("select").addEventListener("change", e => {
+      onInput(e.target.value);
+      curEl.classList.toggle("changed", e.target.value !== value);
+    });
     return w;
   }
   function rowBtn(txt, fn, danger) {
@@ -793,13 +820,13 @@
     body.appendChild(g);
     body.appendChild(el(`<div class="sub-h">Passwort ändern</div>`));
     const pwRow = el(`<div class="erow erow-2"></div>`);
-    const inp = el(`<label class="fld"><span>Neues Passwort</span><input type="text" placeholder="neues Passwort"></label>`);
-    const btn = rowBtn("Hash erzeugen & setzen", async () => {
+    const inp = el(`<label class="fld"><span class="fld-lab">neues Passwort</span><input type="text" placeholder="neues Passwort"><span class="fld-cur">setzt den Login-Hash</span></label>`);
+    const btn = rowBtn("Hash setzen", async () => {
       const v = inp.querySelector("input").value;
       if (!v) { $("#pwHashMsg").textContent = "Bitte Passwort eingeben."; return; }
       const h = await sha256(v);
       D.auth = D.auth || {}; D.auth.passwordHash = h;
-      $("#pwHashMsg").innerHTML = `Gesetzt ✓ Hash: <code style="word-break:break-all">${h}</code> – jetzt unten exportieren.`;
+      $("#pwHashMsg").innerHTML = `Gesetzt ✓ – oben „Änderungen prüfen & Code kopieren" klicken.`;
     });
     pwRow.append(inp, btn); body.appendChild(pwRow);
     body.appendChild(el(`<div class="note" id="pwHashMsg" style="margin-top:10px">Aktueller Hash bleibt erhalten, bis du einen neuen erzeugst.</div>`));
@@ -807,14 +834,127 @@
     return out;
   }
 
-  function exportData() {
+  // Baut den fertigen data.js-Code
+  function buildDataCode() {
     const clean = { meta: D.meta, auth: D.auth, projects: D.projects, rentals: D.rentals };
-    const content = "/* data.js — exportiert am " + new Date().toLocaleString("de-DE") + " */\n" +
+    return "/* data.js — Stand " + new Date().toLocaleString("de-DE") + " */\n" +
       "window.DASHBOARD_DATA = " + JSON.stringify(clean, null, 2) + ";\n";
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([content], { type: "text/javascript" }));
-    a.download = "data.js"; a.click(); URL.revokeObjectURL(a.href);
-    const m = $("#exportMsg"); if (m) { m.textContent = "✓ data.js heruntergeladen."; m.style.color = "var(--accent-2)"; }
+  }
+
+  // Kompakter Vergleich Original (window.DASHBOARD_DATA) vs. bearbeitet (D)
+  function computeChanges() {
+    const orig = window.DASHBOARD_DATA || {};
+    const changes = [];
+    const fmt = v => {
+      if (v === undefined) return "—";
+      if (v === "" ) return "(leer)";
+      if (typeof v === "object") return Array.isArray(v) ? `[${v.length} Einträge]` : "{…}";
+      return String(v);
+    };
+    function walk(a, b, path) {
+      // a = original, b = neu
+      if (Array.isArray(a) || Array.isArray(b)) {
+        const ax = Array.isArray(a) ? a : [];
+        const bx = Array.isArray(b) ? b : [];
+        const max = Math.max(ax.length, bx.length);
+        for (let i = 0; i < max; i++) {
+          if (i >= ax.length) { changes.push({ path: path + "[" + (i + 1) + "]", from: "—", to: "neu hinzugefügt" }); }
+          else if (i >= bx.length) { changes.push({ path: path + "[" + (i + 1) + "]", from: "vorhanden", to: "entfernt" }); }
+          else walk(ax[i], bx[i], path + "[" + (i + 1) + "]");
+        }
+      } else if (a && b && typeof a === "object" && typeof b === "object") {
+        const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+        keys.forEach(k => {
+          if (k === "passwordHash") { if (a[k] !== b[k]) changes.push({ path: niceKey(path, k), from: "•••", to: "geändert" }); return; }
+          walk(a[k], b[k], path ? path + " › " + labelize(k) : labelize(k));
+        });
+      } else {
+        if (String(a) !== String(b)) changes.push({ path: path, from: fmt(a), to: fmt(b) });
+      }
+    }
+    // Über die relevanten Wurzeln gehen, mit sprechenden Namen
+    walk(orig.meta, D.meta, "Meta");
+    walk(orig.auth, D.auth, "Zugang");
+    (D.projects || []).forEach((p, i) => walk((orig.projects || [])[i], p, p.name || ("Projekt " + (i + 1))));
+    (D.rentals || []).forEach((o, i) => walk((orig.rentals || [])[i], o, o.objekt || ("Objekt " + (i + 1))));
+    return changes;
+  }
+  function labelize(k) {
+    const map = { betrag: "Summe", zinsSatz: "Zins %", tilgungSatz: "Tilgung %", rateBetrag: "Rate €",
+      laufzeitJahre: "Laufzeit J.", rateModus: "Berechnung", kaltmiete: "Kaltmiete", nebenkosten: "NK",
+      fortschritt: "Fortschritt %", angebot: "Angebot", gezahlt: "Gezahlt", kontostand: "Kontostand",
+      ruecklagen: "Rücklagen", mieter: "Mieter", einzug: "Einzug", status: "Status", flaeche: "Fläche",
+      wohnung: "Einheit", name: "Name", firma: "Firma", glaeubiger: "Gläubiger", bezeichnung: "Bezeichnung",
+      sondertilgungen: "Sondertilgungen", gewerke: "Gewerke", kredite: "Kredite", cashflow: "Cashflow",
+      einheiten: "Einheiten", weitereInvestition: "Weitere Invest.", miete: "Miete",
+      betriebskosten: "Betriebskosten", sonstigeKosten: "Sonstige Kosten", monat: "Monat",
+      datum: "Datum", titel: "Titel", address: "Adresse", scope: "Umfang", version: "Version",
+      sessionHours: "Session Std." };
+    return map[k] || k;
+  }
+  function niceKey(path, k) { return (path ? path + " › " : "") + labelize(k); }
+
+  // Schritt 1: Änderungen zeigen. Schritt 2 (erneuter Klick): kopieren.
+  function showDiffThenCopy() {
+    const panel = $("#diffPanel");
+    const btn = $("#copyBtn");
+    const msg = $("#copyMsg");
+    if (!panel) return;
+
+    if (!diffShown) {
+      const changes = computeChanges();
+      if (!changes.length) {
+        panel.style.display = "block";
+        panel.innerHTML = `<div class="diff-empty">Keine Änderungen gegenüber dem aktuellen Stand.</div>`;
+        if (msg) { msg.textContent = ""; }
+        return;
+      }
+      const rows = changes.map(c => `<div class="diff-row">
+        <div class="diff-path">${esc(c.path)}</div>
+        <div class="diff-val"><span class="dfrom">${esc(c.from)}</span><span class="darrow">→</span><span class="dto">${esc(c.to)}</span></div>
+      </div>`).join("");
+      panel.style.display = "block";
+      panel.innerHTML = `<div class="diff-head">${changes.length} Änderung${changes.length === 1 ? "" : "en"} – bitte prüfen:</div>
+        <div class="diff-list">${rows}</div>
+        <div class="diff-note">Beim nächsten Klick wird der komplette Code in die Zwischenablage kopiert.</div>`;
+      btn.textContent = "📋 Jetzt in Zwischenablage kopieren";
+      diffShown = true;
+      return;
+    }
+
+    // Schritt 2: kopieren
+    const code = buildDataCode();
+    copyToClipboard(code).then(ok => {
+      if (msg) {
+        msg.textContent = ok ? "✓ Kompletter Code kopiert – in data.js einfügen & ersetzen." : "Kopieren nicht möglich – Code unten markieren.";
+        msg.style.color = ok ? "var(--accent-2)" : "var(--warn)";
+      }
+      if (!ok) {
+        // Fallback: Code zum manuellen Kopieren anzeigen
+        panel.innerHTML = `<div class="diff-head">Code manuell kopieren:</div>
+          <textarea class="diff-code" readonly>${esc(code)}</textarea>`;
+        const ta = panel.querySelector("textarea"); if (ta) { ta.focus(); ta.select(); }
+      }
+      btn.textContent = "📋 Änderungen prüfen & Code kopieren";
+      diffShown = false;
+    });
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch { return false; }
   }
 
   const VIEWS = {
