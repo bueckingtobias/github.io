@@ -86,7 +86,7 @@ window.DASHBOARD_DATA = {
         { titel: "Baunebenkosten",      betrag: 40000  }
       ],
       kredite: [
-        { id: "huenen-mama", bezeichnung: "Privatdarlehen Mama", glaeubiger: "E. Bücking (privat)", art: "endfaellig", betrag: 600000, zinsSatz: 2.0, tilgungSatz: 0, laufzeitJahre: 15, start: "2025-06-01", sondertilgungen: [ { datum: "2026-12-01", betrag: 25000 }, { datum: "2027-12-01", betrag: 25000 } ] }
+        { id: "huenen-buecking", bezeichnung: "Annuitätendarlehen E. Bücking", glaeubiger: "E. Bücking", art: "annuitaet", betrag: 20000, zinsSatz: 3.5, tilgungSatz: 2.0, laufzeitJahre: 20, start: "2026-08-01", sondertilgungen: [ { datum: "2027-08-01", betrag: 3000 }, { datum: "2028-08-01", betrag: 3000 }, { datum: "2029-08-01", betrag: 3000 }, { datum: "2030-08-01", betrag: 3000 }, { datum: "2031-08-01", betrag: 3000 } ] }
       ],
       cashflow: [
         { monat: "2026-03", miete: 0,   nebenkosten: 0,   betriebskosten: 400, sonstigeKosten: 200 },
