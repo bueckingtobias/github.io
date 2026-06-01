@@ -248,7 +248,7 @@
       <td class="num">${eur(y.ausgaben)}</td><td class="num ${y.netto < 0 ? 'neg-t' : 'pos-t'}">${eur(y.netto)}</td></tr>`).join("");
     out.push(el(`<div class="card col-4">
       <div class="card-h"><div><div class="card-t">Jahresübersicht</div><div class="card-s">Einnahmen / Ausgaben / Netto</div></div></div>
-      <div class="card-b" style="padding-top:4px"><table><thead><tr><th>Jahr</th><th class="num">Ein</th><th class="num">Aus</th><th class="num">Netto</th></tr></thead><tbody>${yrows}</tbody></table></div></div>`));
+      <div class="card-b" style="padding-top:4px"><div class="tw"><table><thead><tr><th>Jahr</th><th class="num">Ein</th><th class="num">Aus</th><th class="num">Netto</th></tr></thead><tbody>${yrows}</tbody></table></div></div></div>`));
 
     // Kredite Detail
     (p.kredite || []).forEach(k => out.push(creditCard(k)));
@@ -334,7 +334,7 @@
         <div class="be-lab" style="margin:14px 0 6px">Restschuld-Verlauf (jährlich)</div>
         ${spark(yearly)}
         <div class="be-lab" style="margin:14px 0 6px">Sondertilgungen</div>
-        <table><thead><tr><th>Datum</th><th class="num">Betrag</th></tr></thead><tbody>${sonderRows}</tbody></table>
+        <div class="tw"><table><thead><tr><th>Datum</th><th class="num">Betrag</th></tr></thead><tbody>${sonderRows}</tbody></table></div>
       </div></div>`);
   }
 
@@ -348,7 +348,7 @@
         <div class="dc-pair"><span class="dc-in" style="height:${he}px"></span><span class="dc-out" style="height:${ha}px"></span></div>
         <div class="dc-lab">${r.monat.slice(5)}</div></div>`;
     }).join("");
-    return `<div class="dc">${cols}</div>
+    return `<div class="dc-wrap"><div class="dc">${cols}</div></div>
       <div class="dc-legend"><span><i class="li-in"></i>Einnahmen</span><span><i class="li-out"></i>Ausgaben (inkl. Kredit)</span></div>`;
   }
 
@@ -379,8 +379,8 @@
     }).join("");
     out.push(el(`<div class="card col-12"><div class="card-h"><div><div class="card-t">Vergleich der Projekte</div>
       <div class="card-s">getrennte Konten</div></div></div>
-      <div class="card-b" style="padding-top:4px"><table><thead><tr><th>Projekt</th><th class="num">Investiert</th>
-      <th class="num">Restschuld</th><th class="num">Rate/Mon.</th><th class="num">Netto-CF</th></tr></thead><tbody>${rows}</tbody></table></div></div>`));
+      <div class="card-b" style="padding-top:4px"><div class="tw"><table><thead><tr><th>Projekt</th><th class="num">Investiert</th>
+      <th class="num">Restschuld</th><th class="num">Rate/Mon.</th><th class="num">Netto-CF</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`));
     return out;
   }
 
@@ -409,8 +409,8 @@
       const oN = sum(o.einheiten.filter(u => u.status === "vermietet"), u => u.nebenkosten);
       out.push(el(`<div class="card col-12"><div class="card-h"><div><div class="card-t">${esc(o.objekt)}</div>
         <div class="card-s">${esc(o.ort)} · ${o.einheiten.length} Einheiten</div></div><span class="chip">${eur(oR + oN)} / Monat</span></div>
-        <div class="card-b" style="padding-top:4px"><table><thead><tr><th>Einheit</th><th>Fläche</th><th>Mieter</th><th>Einzug</th>
-        <th class="num">Kaltmiete</th><th class="num">NK</th><th class="num">Warm</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div></div>`));
+        <div class="card-b" style="padding-top:4px"><div class="tw"><table><thead><tr><th>Einheit</th><th>Fläche</th><th>Mieter</th><th>Einzug</th>
+        <th class="num">Kaltmiete</th><th class="num">NK</th><th class="num">Warm</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`));
     });
     return out;
   }
