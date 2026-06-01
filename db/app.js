@@ -135,6 +135,80 @@
           <div style="margin-top:12px">${spark(cf.map(r => r.netto), cf.map(r => r.monat))}</div>
         </div></div>`));
     });
+
+    // ===== Portfolio-Cashflow (kombiniert, letzte gemeinsame Monate) =====
+    const monthSet = {};
+    (D.projects || []).forEach(p => FE.projectCashflow(p).forEach(r => {
+      monthSet[r.monat] = (monthSet[r.monat] || 0) + r.netto;
+    }));
+    const months = Object.keys(monthSet).sort();
+    const combined = months.map(m => monthSet[m]);
+    out.push(el(`<div class="card col-8">
+      <div class="card-h"><div><div class="card-t">Portfolio-Cashflow</div>
+        <div class="card-s">Netto über alle Projekte je Monat</div></div>
+        <span class="chip ${totalNetto < 0 ? '' : ''}">Σ ${eur(totalNetto)}</span></div>
+      <div class="card-b">${spark(combined, months)}
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--softer);margin-top:8px">
+          <span>${months[0] || "—"}</span><span>${months[months.length - 1] || "—"}</span></div>
+      </div></div>`));
+
+    // ===== Auf dem Schirm (Hinweise) =====
+    const alerts = [];
+    (D.rentals || []).forEach(o => {
+      const frei = o.einheiten.filter(u => u.status === "frei").length;
+      const kuend = o.einheiten.filter(u => u.status === "kuendigung").length;
+      if (frei) alerts.push({ t: "warn", txt: `${o.objekt}: ${frei} Einheit(en) frei` });
+      if (kuend) alerts.push({ t: "warn", txt: `${o.objekt}: ${kuend} Kündigung(en)` });
+    });
+    (D.projects || []).forEach(p => {
+      const cf = FE.projectCashflow(p);
+      if (cf.length && cf[cf.length - 1].netto < 0) alerts.push({ t: "warn", txt: `${p.name}: negativer Netto-Cashflow (${eur(cf[cf.length - 1].netto)})` });
+      // bevorstehende Sondertilgungen (nächste 12 Mon.)
+      const now = new Date(); const in12 = new Date(now.getFullYear(), now.getMonth() + 12, 1);
+      (p.kredite || []).forEach(k => (k.sondertilgungen || []).forEach(s => {
+        const d = new Date(s.datum);
+        if (d >= now && d <= in12) alerts.push({ t: "info", txt: `${dttm(s.datum)}: Sondertilgung ${eur(s.betrag)} (${k.bezeichnung})` });
+      }));
+    });
+    if (!alerts.length) alerts.push({ t: "ok", txt: "Keine offenen Hinweise." });
+    const alertRows = alerts.map(a => `<div class="alert a-${a.t}"><span class="adot"></span>${esc(a.txt)}</div>`).join("");
+    out.push(el(`<div class="card col-4">
+      <div class="card-h"><div><div class="card-t">Auf dem Schirm</div>
+        <div class="card-s">Hinweise & Termine</div></div></div>
+      <div class="card-b"><div class="alerts">${alertRows}</div></div></div>`));
+
+    // ===== Kreditübersicht (alle Kredite) =====
+    const kreditRows = [];
+    (D.projects || []).forEach(p => (p.kredite || []).forEach(k => {
+      const s = FE.creditSummary(k);
+      kreditRows.push(`<tr><td><b>${esc(k.bezeichnung)}</b><div style="font-size:11px;color:var(--soft)">${esc(p.name)} · ${esc(k.glaeubiger)}</div></td>
+        <td class="num">${eur(k.betrag)}</td><td class="num neg-t">${eur(s.restschuld)}</td>
+        <td class="num">${eur(s.monatsrate)}</td><td>${esc(k.zinsSatz)}%</td><td>${dttm(s.abzahlungDatum)}</td></tr>`);
+    }));
+    out.push(el(`<div class="card col-7">
+      <div class="card-h"><div><div class="card-t">Kredite</div>
+        <div class="card-s">alle Darlehen über beide Projekte</div></div>
+        <span class="chip">${eur(totalDebtRest)} Restschuld</span></div>
+      <div class="card-b" style="padding-top:4px"><div class="tw"><table><thead><tr>
+        <th>Darlehen</th><th class="num">Summe</th><th class="num">Restschuld</th>
+        <th class="num">Rate/Mon.</th><th>Zins</th><th>Ende</th></tr></thead>
+        <tbody>${kreditRows.join("")}</tbody></table></div></div></div>`));
+
+    // ===== Vermietungsstatus =====
+    const vermRows = (D.rentals || []).map(o => {
+      let e = 0, v = 0, m = 0;
+      o.einheiten.forEach(u => { e++; if (u.status === "vermietet") { v++; m += u.kaltmiete + u.nebenkosten; } });
+      const r = e ? Math.round(v / e * 100) : 0;
+      return `<div class="vstat">
+        <div class="vstat-top"><b>${esc(o.objekt)}</b><span>${v}/${e}</span></div>
+        <div class="bar"><span style="width:${r}%"></span></div>
+        <div class="vstat-sub">${pct(r)} Auslastung · ${eur(m)}/Mon. warm</div></div>`;
+    }).join("");
+    out.push(el(`<div class="card col-5">
+      <div class="card-h"><div><div class="card-t">Vermietung</div>
+        <div class="card-s">Auslastung je Objekt</div></div></div>
+      <div class="card-b"><div class="vstats">${vermRows}</div></div></div>`));
+
     return out;
   }
 
@@ -173,6 +247,37 @@
         <div class="ps"><span>Aktive Gewerke</span><b>${aktiv.length}</b></div>
       </div>
     </div>`));
+
+    // ===== GESAMTÜBERSICHT (KPIs) =====
+    const cf = FE.projectCashflow(p);
+    const yc = FE.yearlyCashflow(p);
+    const be = FE.breakEven(p);
+    const monthlyDebt = FE.projectMonthlyDebt(p);
+    let restTotal = 0; (p.kredite || []).forEach(k => restTotal += FE.creditSummary(k).restschuld);
+    const lastNetto = cf.length ? cf[cf.length - 1].netto : 0;
+    const yearNetto = yc.length ? yc[yc.length - 1].netto : 0;
+    const obj = (D.rentals || []).find(o => o.projektId === p.id);
+    let einh = 0, verm = 0, miete = 0;
+    if (obj) obj.einheiten.forEach(u => { einh++; if (u.status === "vermietet") { verm++; miete += u.kaltmiete + u.nebenkosten; } });
+    const occ = einh ? Math.round(verm / einh * 100) : 0;
+    const beTxt = be.investBreakEven ? (be.monateBisBE === 0 ? "erreicht" : dttm(be.investBreakEven)) : "noch offen";
+
+    out.push(el(`<div class="card col-12">
+      <div class="card-h"><div><div class="card-t">Gesamtübersicht</div>
+        <div class="card-s">Kennzahlen für ${esc(p.name)}</div></div>
+        <span class="chip">${fort}% Baufortschritt</span></div>
+      <div class="card-b">
+        <div class="kpis">
+          ${kpi("Investition geplant", eur(inv.geplant), "Gewerke + Nebenkosten", true)}
+          ${kpi("Bereits investiert", eur(inv.investiert), pct(inv.geplant ? inv.investiert / inv.geplant * 100 : 0) + " der Planung", true)}
+          ${kpi("Restschuld Kredite", eur(restTotal), eur(monthlyDebt) + " / Monat", false)}
+          ${kpi("Netto-Cashflow / Monat", eur(lastNetto), cf.length ? cf[cf.length - 1].monat : "—", lastNetto >= 0)}
+          ${kpi("Netto-Cashflow / Jahr", eur(yearNetto), yc.length ? yc[yc.length - 1].jahr : "—", yearNetto >= 0)}
+          ${kpi("Mieteinnahmen", eur(miete), verm + " / " + einh + " vermietet (warm)", occ >= 80)}
+          ${kpi("Auslastung", pct(occ), einh + " Einheiten", occ >= 80)}
+          ${kpi("Invest-Break-Even", beTxt, be.investBreakEven && be.monateBisBE ? "in " + be.monateBisBE + " Mon." : "Prognose", !!be.investBreakEven)}
+        </div>
+      </div></div>`));
 
     // Gewerke
     const cards = aktiv.map(g => {
