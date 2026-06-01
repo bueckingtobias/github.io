@@ -183,7 +183,7 @@
       const s = FE.creditSummary(k);
       kreditRows.push(`<tr><td><b>${esc(k.bezeichnung)}</b><div style="font-size:11px;color:var(--soft)">${esc(p.name)} · ${esc(k.glaeubiger)}</div></td>
         <td class="num">${eur(k.betrag)}</td><td class="num neg-t">${eur(s.restschuld)}</td>
-        <td class="num">${eur(s.monatsrate)}</td><td>${esc(k.zinsSatz)}%</td><td>${dttm(s.abzahlungDatum)}</td></tr>`);
+        <td class="num">${eur(s.monatsrate)}</td><td>${esc(k.zinsSatz)}%</td><td>${s.tilgtNie ? "nie" : (s.abzahlungDatum ? dttm(s.abzahlungDatum) : "—")}</td></tr>`);
     }));
     out.push(el(`<div class="card col-7">
       <div class="card-h"><div><div class="card-t">Kredite</div>
@@ -416,23 +416,29 @@
 
   function creditCard(k) {
     const s = FE.creditSummary(k);
-    const artTxt = k.art === "endfaellig" ? "Endfällig (nur Zins, Tilgung am Ende)" : "Annuität (Zins + Tilgung)";
+    const modusTxt = k.art === "endfaellig" ? "Endfällig" :
+      (k.rateModus === "rate" ? "Annuität · feste Rate" :
+       k.rateModus === "laufzeit" ? "Annuität · feste Laufzeit" : "Annuität · Tilgungssatz");
     const sonderRows = (k.sondertilgungen || []).map(x => `<tr><td>${dttm(x.datum)}</td><td class="num">${eur(x.betrag)}</td></tr>`).join("")
       || `<tr><td colspan="2" class="note">keine Sondertilgungen</td></tr>`;
-    // Restschuld-Verlauf (jährlich) als Spark
     const yearly = []; const seen = {};
     s.plan.forEach(r => { const y = r.monat.slice(0, 4); seen[y] = r.restschuld; });
     Object.keys(seen).forEach(y => yearly.push(seen[y]));
+    const laufzeitTxt = s.tilgtNie ? "> 80 J. (Rate deckt Zins nicht)"
+      : s.abzahlungDatum ? `${s.laufzeitJahre} J. (bis ${dttm(s.abzahlungDatum)})`
+      : `${k.laufzeitJahre} J.`;
+    const warn = s.tilgtNie ? `<div class="warn-box">⚠ Die monatliche Rate deckt die Zinsen nicht – das Darlehen wird so nie getilgt. Rate erhöhen.</div>` : "";
     return el(`<div class="card col-6 credit-card">
       <div class="card-h"><div><div class="card-t">${esc(k.bezeichnung)}</div>
-        <div class="card-s">${esc(k.glaeubiger)} · ${artTxt}</div></div>
+        <div class="card-s">${esc(k.glaeubiger)} · ${modusTxt}</div></div>
         <span class="chip">${esc(k.zinsSatz)}% p.a.</span></div>
       <div class="card-b">
+        ${warn}
         <div class="mini-grid">
           <div><span>Darlehenssumme</span><b>${eur(k.betrag)}</b></div>
           <div><span>Restschuld aktuell</span><b class="neg-t">${eur(s.restschuld)}</b></div>
           <div><span>Rate / Monat</span><b>${eur(s.monatsrate)}</b></div>
-          <div><span>Laufzeit</span><b>${esc(k.laufzeitJahre)} J. (bis ${dttm(s.abzahlungDatum)})</b></div>
+          <div><span>Laufzeit (berechnet)</span><b>${laufzeitTxt}</b></div>
           <div><span>Zinsen gesamt</span><b>${eur(s.gesamtZinsen)}</b></div>
           <div><span>Sondertilgung Σ</span><b>${eur(s.sonderSumme)}</b></div>
         </div>
@@ -634,18 +640,51 @@
         body.innerHTML = "";
         p.kredite.forEach((k, ki) => {
           const block = el(`<div class="credit-edit"></div>`);
-          const g = el(`<div class="form-grid"></div>`);
-          g.append(
-            field("Bezeichnung", k.bezeichnung, v => k.bezeichnung = v),
-            field("Gläubiger", k.glaeubiger, v => k.glaeubiger = v),
-            selectField("Art", k.art, [["annuitaet", "Annuität (Zins+Tilgung)"], ["endfaellig", "Endfällig (nur Zins)"]], v => { k.art = v; }),
-            field("Darlehenssumme €", k.betrag, v => k.betrag = v, "number"),
-            field("Zins % p.a.", k.zinsSatz, v => k.zinsSatz = v, "number"),
-            field("Tilgung % p.a.", k.tilgungSatz, v => k.tilgungSatz = v, "number"),
-            field("Laufzeit (Jahre)", k.laufzeitJahre, v => k.laufzeitJahre = v, "number"),
-            field("Start", k.start, v => k.start = v),
-          );
-          block.appendChild(g);
+          // Felder neu aufbauen, je nach Modus (rerender bei Moduswechsel)
+          const fieldsWrap = el(`<div></div>`);
+          const preview = el(`<div class="calc-preview"></div>`);
+          const updatePreview = () => {
+            const s = FE.creditSummary(k);
+            if (k.art === "endfaellig") {
+              preview.innerHTML = `<b>Zins/Monat ${eur(s.monatsrate)}</b> · Tilgung endfällig nach ${k.laufzeitJahre} J. · Zinsen gesamt ${eur(s.gesamtZinsen)}`;
+            } else if (s.tilgtNie) {
+              preview.innerHTML = `<span class="cp-warn">⚠ Rate ${eur(s.monatsrate)} deckt die Zinsen nicht – wird nie getilgt.</span>`;
+            } else {
+              preview.innerHTML = `<b>Rate ${eur(s.monatsrate)}/Monat</b> · Laufzeit <b>${s.laufzeitJahre} J.</b>${s.abzahlungDatum ? " (bis " + dttm(s.abzahlungDatum) + ")" : ""} · Zinsen gesamt ${eur(s.gesamtZinsen)}`;
+            }
+          };
+          const buildFields = () => {
+            fieldsWrap.innerHTML = "";
+            const g = el(`<div class="form-grid"></div>`);
+            const onChange = v => { /* generic, preview updated per-field below */ };
+            const f = (lab, key, type) => field(lab, k[key], v => { k[key] = v; updatePreview(); }, type);
+            g.append(
+              f("Bezeichnung", "bezeichnung"),
+              f("Gläubiger", "glaeubiger"),
+              selectField("Art", k.art, [["annuitaet", "Annuität"], ["endfaellig", "Endfällig (nur Zins)"]], v => { k.art = v; buildFields(); updatePreview(); }),
+              f("Darlehenssumme €", "betrag", "number"),
+              f("Zins % p.a.", "zinsSatz", "number"),
+            );
+            if (k.art === "annuitaet") {
+              g.append(selectField("Berechnung über", k.rateModus || "tilgungssatz", [
+                ["tilgungssatz", "Tilgungssatz %"],
+                ["rate", "feste Rate in €"],
+                ["laufzeit", "feste Laufzeit (Jahre)"]
+              ], v => { k.rateModus = v; buildFields(); updatePreview(); }));
+              const modus = k.rateModus || "tilgungssatz";
+              if (modus === "tilgungssatz") g.append(f("anf. Tilgung % p.a.", "tilgungSatz", "number"));
+              if (modus === "rate") g.append(f("Rate € / Monat", "rateBetrag", "number"));
+              if (modus === "laufzeit") g.append(f("Wunsch-Laufzeit (Jahre)", "laufzeitJahre", "number"));
+            } else {
+              g.append(f("Laufzeit (Jahre)", "laufzeitJahre", "number"));
+            }
+            g.append(f("Start (YYYY-MM-DD)", "start"));
+            fieldsWrap.appendChild(g);
+            fieldsWrap.appendChild(preview);
+          };
+          buildFields();
+          updatePreview();
+          block.appendChild(fieldsWrap);
           block.appendChild(el(`<div class="sub-h">Sondertilgungen</div>`));
           const stWrap = el(`<div class="edit-rows"></div>`);
           k.sondertilgungen = k.sondertilgungen || [];
@@ -653,9 +692,9 @@
             stWrap.innerHTML = "";
             k.sondertilgungen.forEach((s, si) => {
               const r = el(`<div class="erow erow-2"></div>`);
-              r.append(field("Datum (YYYY-MM-DD)", s.datum, v => s.datum = v),
-                field("Betrag €", s.betrag, v => s.betrag = v, "number"),
-                rowBtn("✕", () => { k.sondertilgungen.splice(si, 1); renderSt(); }, true));
+              r.append(field("Datum (YYYY-MM-DD)", s.datum, v => { s.datum = v; updatePreview(); }),
+                field("Betrag €", s.betrag, v => { s.betrag = v; updatePreview(); }, "number"),
+                rowBtn("✕", () => { k.sondertilgungen.splice(si, 1); renderSt(); updatePreview(); }, true));
               stWrap.appendChild(r);
             });
           };
@@ -665,7 +704,7 @@
           body.appendChild(block);
         });
         body.appendChild(rowBtn("+ Kredit hinzufügen", () => {
-          p.kredite.push({ id: "kredit-" + Date.now(), bezeichnung: "Neuer Kredit", glaeubiger: "", art: "annuitaet", betrag: 0, zinsSatz: 0, tilgungSatz: 0, laufzeitJahre: 20, start: "2026-01-01", sondertilgungen: [] });
+          p.kredite.push({ id: "kredit-" + Date.now(), bezeichnung: "Neuer Kredit", glaeubiger: "", art: "annuitaet", rateModus: "tilgungssatz", betrag: 100000, zinsSatz: 3.0, tilgungSatz: 2.0, rateBetrag: 0, laufzeitJahre: 20, start: "2026-01-01", sondertilgungen: [] });
           render();
         }));
       };
