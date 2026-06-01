@@ -18,46 +18,61 @@
     return d.toLocaleDateString("de-DE", { month: "short", year: "numeric" });
   }
 
-  /* Monatliche Kreditrate (Zins + ggf. Tilgung) für den aktuellen Zustand.
-     Annuität: konstante Rate aus (zins+tilgung) auf Anfangssumme.
-     Endfällig: nur Zins auf Restschuld. */
+  /* Effektive Monatsrate (Annuität) je nach Modus:
+     - rateModus "rate":         feste Rate in € (kredit.rateBetrag) → Laufzeit ergibt sich
+     - rateModus "laufzeit":     Rate aus Wunsch-Laufzeit (kredit.laufzeitJahre) berechnet
+     - rateModus "tilgungssatz"/Default: Rate aus Zins + anf. Tilgung %
+     Endfällig: nur Zins auf Nominal (laufende Rate). */
   function monthlyRate(kredit) {
     const i = (Number(kredit.zinsSatz) || 0) / 100 / 12;
-    if (kredit.art === "endfaellig") {
-      return (Number(kredit.betrag) || 0) * i; // Näherung: Zins auf Nominal; Sondertilgung senkt das im Plan
+    const P = Number(kredit.betrag) || 0;
+    if (kredit.art === "endfaellig") return P * i;
+
+    const modus = kredit.rateModus || "tilgungssatz";
+    if (modus === "rate") {
+      return Number(kredit.rateBetrag) || 0;
     }
+    if (modus === "laufzeit") {
+      const n = (Number(kredit.laufzeitJahre) || 0) * 12;
+      if (n <= 0) return 0;
+      if (i === 0) return P / n;
+      return P * i / (1 - Math.pow(1 + i, -n)); // Annuitätenformel
+    }
+    // tilgungssatz
     const annual = ((Number(kredit.zinsSatz) || 0) + (Number(kredit.tilgungSatz) || 0)) / 100;
-    return (Number(kredit.betrag) || 0) * annual / 12;
+    return P * annual / 12;
   }
 
-  /* Tilgungsplan über die Laufzeit. Liefert Array je Monat:
-     { monat, zins, tilgung, sonder, rate, restschuld } */
+  /* Tilgungsplan. Läuft bis Restschuld = 0 (Laufzeit wird berechnet),
+     außer endfällig (Tilgung am Laufzeitende). Sicherheits-Cap 80 Jahre.
+     Liefert je Monat: { monat, dateIso, zins, tilgung, sonder, rate, restschuld } */
   function amortize(kredit) {
     const rows = [];
     const iMonth = (Number(kredit.zinsSatz) || 0) / 100 / 12;
-    const totalMonths = (Number(kredit.laufzeitJahre) || 0) * 12;
     let rest = Number(kredit.betrag) || 0;
     const endfaellig = kredit.art === "endfaellig";
-    // Annuitätenrate aus Anfangsbetrag
-    const annuitaet = endfaellig ? 0 : rest * (((Number(kredit.zinsSatz) || 0) + (Number(kredit.tilgungSatz) || 0)) / 100) / 12;
+    const CAP = 960; // 80 Jahre Sicherheitsgrenze
+    const endMonths = endfaellig ? Math.max(1, (Number(kredit.laufzeitJahre) || 0) * 12) : CAP;
+    const annuitaet = endfaellig ? 0 : monthlyRate(kredit); // effektive Rate je Modus
+
     const sonderMap = {};
     (kredit.sondertilgungen || []).forEach(s => {
       const key = String(s.datum).slice(0, 7);
       sonderMap[key] = (sonderMap[key] || 0) + (Number(s.betrag) || 0);
     });
 
-    for (let m = 0; m < totalMonths && rest > 0.01; m++) {
+    for (let m = 0; m < endMonths && rest > 0.01; m++) {
       const dateIso = addMonths(kredit.start, m);
       const key = dateIso.slice(0, 7);
       const zins = rest * iMonth;
       let tilgung = 0;
       if (endfaellig) {
-        tilgung = (m === totalMonths - 1) ? rest : 0; // Resttilgung am Ende
+        tilgung = (m === endMonths - 1) ? rest : 0;
       } else {
         tilgung = Math.min(annuitaet - zins, rest);
-        if (tilgung < 0) tilgung = 0;
+        if (tilgung < 0) tilgung = 0; // Rate deckt nicht mal den Zins → keine Tilgung
       }
-      const sonder = Math.min(sonderMap[key] || 0, rest - tilgung);
+      const sonder = Math.min(sonderMap[key] || 0, Math.max(0, rest - tilgung));
       rest = rest - tilgung - sonder;
       rows.push({
         monat: key, dateIso,
@@ -77,11 +92,18 @@
     const rest = current ? current.restschuld : (Number(kredit.betrag) || 0);
     const gezahltZins = plan.filter(r => r.monat <= nowKey).reduce((s, r) => s + r.zins, 0);
     const sonderSum = (kredit.sondertilgungen || []).reduce((s, x) => s + (Number(x.betrag) || 0), 0);
+    const months = plan.length;
+    const paidOff = last.restschuld <= 0.01;
+    // tilgt nie: Annuität, nicht endfällig, Plan am Cap und noch Restschuld
+    const tilgtNie = kredit.art !== "endfaellig" && !paidOff && months >= 960;
     return {
       kredit, plan,
       restschuld: round2(rest),
       monatsrate: round2(monthlyRate(kredit)),
-      abzahlungDatum: last.dateIso,
+      abzahlungDatum: paidOff ? last.dateIso : null,
+      laufzeitMonate: months,
+      laufzeitJahre: Math.round(months / 12 * 10) / 10,
+      tilgtNie,
       gezahlteZinsen: round2(gezahltZins),
       sonderSumme: round2(sonderSum),
       gesamtZinsen: round2(plan.reduce((s, r) => s + r.zins, 0))
