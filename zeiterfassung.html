@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Zeiterfassung · Bücking Immobilien</title>
+<style>
+  :root{
+    --smyrna:#1f4733;
+    --smyrna-deep:#163524;
+    --smyrna-soft:#2d5e44;
+    --paper:#f3f1ea;
+    --field:#ffffff;
+    --line:#d7d4c8;
+    --ink:#1d211d;
+    --muted:#6c6b61;
+    --gold:#b8995a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html{font-size:17px;-webkit-text-size-adjust:100%;}
+  body{
+    font-family:"Inter","Helvetica Neue",Arial,sans-serif;
+    background:var(--paper);color:var(--ink);line-height:1.5;
+    padding-bottom:calc(40px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:600px;margin:0 auto;}
+
+  header{
+    background:linear-gradient(165deg,var(--smyrna-soft),var(--smyrna) 55%,var(--smyrna-deep));
+    color:#fff;
+    padding:calc(20px + env(safe-area-inset-top)) 22px 26px;
+    text-align:center;
+  }
+  .logo-slot{min-height:64px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+  .logo-slot img{max-height:72px;max-width:78%;height:auto;display:block;}
+  .logo-fallback{font-family:Georgia,serif;font-size:1.35rem;font-weight:700;letter-spacing:.02em;color:#fff;}
+  .logo-fallback small{display:block;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;
+    font-weight:600;color:rgba(255,255,255,.7);font-family:Inter,sans-serif;margin-top:3px;}
+  header h1{font-family:Georgia,"Times New Roman",serif;font-size:1.75rem;font-weight:700;line-height:1.1;}
+  header .sub{font-size:.86rem;color:rgba(255,255,255,.78);margin-top:6px;}
+  .rule{height:3px;background:var(--gold);}
+
+  main{padding:18px 16px 0;}
+
+  .panel{background:var(--field);border:1px solid var(--line);border-radius:14px;
+    padding:18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(31,71,51,.06);}
+  .panel-head{display:flex;align-items:center;font-size:.72rem;letter-spacing:.15em;
+    text-transform:uppercase;font-weight:700;color:var(--smyrna);margin-bottom:15px;}
+  .panel-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+    border-radius:50%;background:var(--smyrna);color:#fff;font-size:.8rem;font-weight:700;
+    margin-right:11px;flex:0 0 auto;}
+
+  label{display:block;font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:7px;}
+  input[type=date],input[type=time],input[type=number],textarea{
+    width:100%;font:inherit;font-size:1.05rem;padding:13px;
+    border:1px solid var(--line);border-radius:10px;background:#fcfbf7;color:var(--ink);
+    -webkit-appearance:none;appearance:none;}
+  input:focus,textarea:focus{outline:2px solid var(--smyrna-soft);outline-offset:1px;border-color:var(--smyrna-soft);}
+  textarea{resize:vertical;min-height:88px;}
+
+  .timecard{display:flex;justify-content:space-between;align-items:center;padding:16px;margin-bottom:16px;
+    background:linear-gradient(165deg,var(--smyrna-soft),var(--smyrna-deep));border-radius:12px;color:#fff;}
+  .timecard .block{text-align:center;flex:1;}
+  .timecard .big{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.7rem;font-weight:600;line-height:1;}
+  .timecard .lbl{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.65);margin-top:7px;}
+  .timecard .arrow{flex:0 0 auto;color:var(--gold);font-size:1.3rem;padding:0 8px;}
+
+  .slider-row{margin-bottom:20px;}
+  .slider-row:last-child{margin-bottom:4px;}
+  .slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .slider-top .name{font-size:.84rem;font-weight:600;}
+  .slider-top .val{font-family:ui-monospace,Menlo,monospace;font-size:.98rem;font-weight:700;color:var(--smyrna);}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:8px;
+    background:var(--line);outline:none;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:32px;height:32px;
+    border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a7d5d,var(--smyrna) 65%,var(--smyrna-deep));
+    border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.28);}
+  input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;border:3px solid #fff;
+    background:var(--smyrna);box-shadow:0 2px 6px rgba(0,0,0,.28);}
+  input[type=range].pause::-webkit-slider-thumb{background:radial-gradient(circle at 35% 30%,#d6bd82,var(--gold) 60%,#8f7234);}
+  input[type=range].pause::-moz-range-thumb{background:var(--gold);}
+
+  .toggle{display:flex;gap:6px;margin-bottom:18px;}
+  .toggle button{flex:1;font:inherit;font-size:.86rem;font-weight:600;padding:12px;
+    border:1px solid var(--line);border-radius:10px;background:#f3f1ea;color:var(--muted);cursor:pointer;}
+  .toggle button.on{background:var(--smyrna);color:#fff;border-color:var(--smyrna);}
+
+  .manual{display:none;}
+  .manual.show{display:block;}
+  .slider-area.hide{display:none;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  .summary{background:#fcfbf7;border:1px dashed var(--smyrna-soft);border-radius:10px;
+    padding:15px 16px;margin-bottom:4px;font-size:.95rem;}
+  .summary .row{display:flex;justify-content:space-between;padding:4px 0;gap:12px;}
+  .summary .row span:first-child{color:var(--muted);flex:0 0 auto;}
+  .summary .row span:last-child{text-align:right;font-weight:600;}
+  .summary .row.total{border-top:1px solid var(--line);margin-top:7px;padding-top:9px;
+    font-weight:700;color:var(--smyrna);font-size:1.05rem;}
+
+  .submit{width:100%;font:inherit;font-size:1.1rem;font-weight:700;padding:18px;margin-top:14px;
+    border:none;border-radius:12px;cursor:pointer;background:var(--smyrna);color:#fff;
+    box-shadow:0 3px 0 var(--smyrna-deep);transition:transform .06s ease,box-shadow .06s ease;}
+  .submit:active{transform:translateY(3px);box-shadow:0 0 0 var(--smyrna-deep);}
+  .hint{font-size:.78rem;color:var(--muted);text-align:center;margin-top:13px;line-height:1.45;}
+  .err{color:#9d3322;font-size:.85rem;margin-top:10px;display:none;font-weight:600;}
+  .err.show{display:block;}
+
+  footer{text-align:center;font-size:.72rem;color:var(--muted);padding:22px 16px 0;}
+
+  @media (max-width:380px){
+    header h1{font-size:1.55rem;}
+    .timecard .big{font-size:1.45rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-slot">
+      <img src="logo.png" alt="Bücking Immobilien"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+      <div class="logo-fallback" style="display:none;">Bücking Immobilien<small>Ganderkesee</small></div>
+    </div>
+    <h1>Zeiterfassung</h1>
+    <div class="sub">Arbeitszeit eintragen und übermitteln</div>
+  </header>
+  <div class="rule"></div>
+
+  <main>
+    <div class="panel">
+      <div class="panel-head"><span class="panel-num">1</span>Datum</div>
+      <label for="date">Arbeitstag</label>
+      <input type="date" id="date">
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="panel-num">2</span>Arbeitszeit & Pause</div>
+
+      <div class="toggle">
+        <button type="button" id="tabSlider" class="on">Schieberegler</button>
+        <button type="button" id="tabManual">Direkteingabe</button>
+      </div>
+
+      <div class="slider-area" id="sliderArea">
+        <div class="timecard">
+          <div class="block"><div class="big" id="dStart">07:00</div><div class="lbl">Beginn</div></div>
+          <div class="arrow">→</div>
+          <div class="block"><div class="big" id="dEnd">16:00</div><div class="lbl">Ende</div></div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-top"><span class="name">Beginn</span><span class="val" id="vStart">07:00</span></div>
+          <input type="range" id="sStart" min="0" max="1440" step="15" value="420">
+        </div>
+        <div class="slider-row">
+          <div class="slider-top"><span class="name">Ende</span><span class="val" id="vEnd">16:00</span></div>
+          <input type="range" id="sEnd" min="0" max="1440" step="15" value="960">
+        </div>
+        <div class="slider-row">
+          <div class="slider-top"><span class="name">Pause</span><span class="val" id="vBreak">60 Min</span></div>
+          <input type="range" id="sBreak" class="pause" min="0" max="240" step="5" value="60">
+        </div>
+      </div>
+
+      <div class="manual" id="manualArea">
+        <div class="grid2">
+          <div><label for="mStart">Beginn</label><input type="time" id="mStart" value="07:00"></div>
+          <div><label for="mEnd">Ende</label><input type="time" id="mEnd" value="16:00"></div>
+        </div>
+        <div style="margin-top:13px;">
+          <label for="mBreak">Pause (Minuten)</label>
+          <input type="number" id="mBreak" min="0" max="480" step="5" value="60" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="panel-num">3</span>Tätigkeit</div>
+      <label for="task">Was wurde erledigt?</label>
+      <textarea id="task" placeholder="z. B. Rasen gemäht, Treppenhaus gereinigt, Lampe im Keller getauscht …"></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="panel-num">4</span>Übersicht & Übermitteln</div>
+      <div class="summary">
+        <div class="row"><span>Datum</span><span id="oDate">–</span></div>
+        <div class="row"><span>Beginn → Ende</span><span id="oSpan">–</span></div>
+        <div class="row"><span>Pause</span><span id="oBreak">–</span></div>
+        <div class="row total"><span>Arbeitszeit</span><span id="oTotal">–</span></div>
+      </div>
+      <div class="err" id="err"></div>
+      <button class="submit" id="send">Zeiten übermitteln</button>
+      <div class="hint">Öffnet eine fertige E-Mail an info@buecking-Immobilien.de –<br>nur noch „Senden“ antippen.</div>
+    </div>
+
+    <footer>© 2025 Bücking Immobilien GmbH &amp; Co. KG</footer>
+  </main>
+</div>
+
+<script>
+  const RECIPIENT = "info@buecking-Immobilien.de";
+  const $ = id => document.getElementById(id);
+
+  $('date').value = new Date().toISOString().slice(0,10);
+
+  const pad = n => String(n).padStart(2,'0');
+  const minToHHMM = m => pad(Math.floor(m/60)%24)+':'+pad(m%60);
+  const fmtDur = m => {
+    const h=Math.floor(m/60), mm=m%60;
+    if(h>0 && mm>0) return h+' Std '+mm+' Min';
+    if(h>0) return h+' Std';
+    return mm+' Min';
+  };
+  const fmtDate = iso => iso ? new Date(iso+'T00:00').toLocaleDateString('de-DE',
+      {weekday:'long',day:'2-digit',month:'long',year:'numeric'}) : '–';
+
+  let mode='slider';
+  $('tabSlider').onclick=()=>setMode('slider');
+  $('tabManual').onclick=()=>setMode('manual');
+  function setMode(m){
+    mode=m;
+    $('tabSlider').classList.toggle('on',m==='slider');
+    $('tabManual').classList.toggle('on',m==='manual');
+    $('sliderArea').classList.toggle('hide',m!=='slider');
+    $('manualArea').classList.toggle('show',m==='manual');
+    update();
+  }
+
+  ['sStart','sEnd','sBreak','mStart','mEnd','mBreak','date','task']
+    .forEach(id=>$(id).addEventListener('input',update));
+
+  function getValues(){
+    let s,e,b;
+    if(mode==='slider'){
+      s=+$('sStart').value; e=+$('sEnd').value; b=+$('sBreak').value;
+    }else{
+      const[sh,sm]=$('mStart').value.split(':').map(Number);
+      const[eh,em]=$('mEnd').value.split(':').map(Number);
+      s=sh*60+sm; e=eh*60+em; b=+$('mBreak').value||0;
+    }
+    return{s,e,b};
+  }
+
+  function update(){
+    const{s,e,b}=getValues();
+    $('vStart').textContent=minToHHMM(s);
+    $('vEnd').textContent=minToHHMM(e);
+    $('vBreak').textContent=b+' Min';
+    $('dStart').textContent=minToHHMM(s);
+    $('dEnd').textContent=minToHHMM(e);
+
+    const w=e-s-b;
+    $('oDate').textContent=fmtDate($('date').value);
+    $('oSpan').textContent=minToHHMM(s)+' → '+minToHHMM(e)+' Uhr';
+    $('oBreak').textContent=b>0?b+' Min':'keine';
+    $('oTotal').textContent=w>=0?fmtDur(w):'ungültig';
+    return{s,e,b,w};
+  }
+
+  $('send').onclick=()=>{
+    $('err').classList.remove('show');
+    const{s,e,b,w}=update();
+    const task=$('task').value.trim();
+
+    if(e<=s) return showErr('Das Ende muss nach dem Beginn liegen.');
+    if(w<0)  return showErr('Die Pause ist länger als die Arbeitszeit.');
+    if(!task) return showErr('Bitte eine kurze Tätigkeitsbeschreibung eingeben.');
+
+    const subject=`Zeiterfassung Hausmeister – ${fmtDate($('date').value)}`;
+    const body=
+`Zeiterfassung Bücking Immobilien
+--------------------------------
+
+Datum:        ${fmtDate($('date').value)}
+Beginn:       ${minToHHMM(s)} Uhr
+Ende:         ${minToHHMM(e)} Uhr
+Pause:        ${b>0?b+' Minuten':'keine'}
+Arbeitszeit:  ${fmtDur(w)}
+
+Tätigkeit:
+${task}
+
+--------------------------------
+Übermittelt am ${new Date().toLocaleString('de-DE')}`;
+
+    window.location.href=
+      `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  function showErr(m){const el=$('err');el.textContent=m;el.classList.add('show');}
+
+  update();
+</script>
+</body>
+</html>
