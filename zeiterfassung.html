@@ -6,112 +6,190 @@
 <title>Zeiterfassung · Bücking Immobilien</title>
 <style>
   :root{
-    --smyrna:#1f4733;
-    --smyrna-deep:#163524;
-    --smyrna-soft:#2d5e44;
-    --paper:#f3f1ea;
-    --field:#ffffff;
-    --line:#d7d4c8;
-    --ink:#1d211d;
-    --muted:#6c6b61;
-    --gold:#b8995a;
+    /* Grüntöne exakt vom Website-Screenshot abgeleitet */
+    --bg:#2c4a38;          /* Haupt-Tannengrün */
+    --bg-top:#233a2c;      /* dunkler Header oben */
+    --bg-deep:#1f3528;     /* Tiefe für Verläufe */
+    --card:rgba(255,255,255,.045);   /* halbtransparente Karte */
+    --card-line:rgba(255,255,255,.16);
+    --field:rgba(255,255,255,.07);
+    --field-line:rgba(255,255,255,.22);
+    --hair:rgba(255,255,255,.12);    /* feine Trennlinien */
+
+    --white:#ffffff;
+    --soft:rgba(255,255,255,.72);    /* gedämpfter Fließtext */
+    --faint:rgba(255,255,255,.5);    /* Eyebrow / Captions */
+
+    /* Schatten & Radlichter exakt wie die Karten der Website */
+    --card-shadow:0 18px 40px rgba(0,0,0,.28);
+    --card-glow:inset 0 1px 0 rgba(255,255,255,.18);
+    --btn-shadow:0 10px 24px rgba(0,0,0,.25);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html{font-size:17px;-webkit-text-size-adjust:100%;}
   body{
-    font-family:"Inter","Helvetica Neue",Arial,sans-serif;
-    background:var(--paper);color:var(--ink);line-height:1.5;
-    padding-bottom:calc(40px + env(safe-area-inset-bottom));
+    font-family:"Avenir Next","Avenir","Avenir Next World",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--white);
+    background:var(--bg);
+    background:
+      radial-gradient(120% 80% at 50% 0%, #335440 0%, var(--bg) 42%, var(--bg-deep) 100%);
+    background-attachment:fixed;
+    line-height:1.5;
+    padding-bottom:calc(44px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:600px;margin:0 auto;}
 
+  /* ---- Header wie die Website: dunkleres Grün, zentriert, Hairline unten ---- */
   header{
-    background:linear-gradient(165deg,var(--smyrna-soft),var(--smyrna) 55%,var(--smyrna-deep));
-    color:#fff;
-    padding:calc(20px + env(safe-area-inset-top)) 22px 26px;
+    background:linear-gradient(180deg,var(--bg-top),rgba(35,58,44,.55));
+    border-bottom:1px solid var(--hair);
+    padding:calc(22px + env(safe-area-inset-top)) 22px 22px;
     text-align:center;
   }
-  .logo-slot{min-height:64px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
-  .logo-slot img{max-height:72px;max-width:78%;height:auto;display:block;}
-  .logo-fallback{font-family:Georgia,serif;font-size:1.35rem;font-weight:700;letter-spacing:.02em;color:#fff;}
-  .logo-fallback small{display:block;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;
-    font-weight:600;color:rgba(255,255,255,.7);font-family:Inter,sans-serif;margin-top:3px;}
-  header h1{font-family:Georgia,"Times New Roman",serif;font-size:1.75rem;font-weight:700;line-height:1.1;}
-  header .sub{font-size:.86rem;color:rgba(255,255,255,.78);margin-top:6px;}
-  .rule{height:3px;background:var(--gold);}
+  .logo-slot{min-height:70px;display:flex;align-items:center;justify-content:center;}
+  .logo-slot img{max-height:78px;max-width:80%;height:auto;display:block;}
+  .logo-fallback{font-style:italic;font-weight:700;font-size:2.1rem;line-height:1;color:#fff;letter-spacing:.005em;}
+  .logo-fallback small{display:block;font-style:normal;font-weight:600;font-size:.6rem;
+    letter-spacing:.04em;color:var(--soft);margin-top:4px;}
+  .nav-hair{
+    margin-top:18px;padding-top:16px;border-top:1px solid var(--hair);
+    font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);font-weight:600;
+  }
 
-  main{padding:18px 16px 0;}
+  /* ---- Hero-Block im Stil der Startseite ---- */
+  .hero{text-align:center;padding:34px 24px 8px;}
+  .eyebrow{font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);font-weight:700;}
+  .hero h1{font-size:2.1rem;font-weight:800;line-height:1.08;margin-top:14px;letter-spacing:-.01em;}
+  .hero p{color:var(--soft);font-size:1rem;margin-top:12px;max-width:34ch;margin-left:auto;margin-right:auto;}
 
-  .panel{background:var(--field);border:1px solid var(--line);border-radius:14px;
-    padding:18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(31,71,51,.06);}
-  .panel-head{display:flex;align-items:center;font-size:.72rem;letter-spacing:.15em;
-    text-transform:uppercase;font-weight:700;color:var(--smyrna);margin-bottom:15px;}
-  .panel-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
-    border-radius:50%;background:var(--smyrna);color:#fff;font-size:.8rem;font-weight:700;
-    margin-right:11px;flex:0 0 auto;}
+  main{padding:22px 16px 0;}
 
-  label{display:block;font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:7px;}
+  /* ---- Karten: halbtransparent, weiches Schatten + oberes Radlicht ---- */
+  .panel{
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:20px;
+    padding:22px;
+    margin-bottom:18px;
+    box-shadow:var(--card-shadow),var(--card-glow);
+    backdrop-filter:blur(2px);
+  }
+  .panel-head{
+    display:flex;align-items:center;
+    font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+    font-weight:700;color:var(--soft);margin-bottom:18px;
+  }
+  .panel-num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:30px;height:30px;border-radius:9px;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--card-line);
+    box-shadow:var(--card-glow);
+    color:#fff;font-size:.82rem;font-weight:700;margin-right:12px;flex:0 0 auto;
+  }
+
+  label{display:block;font-size:.82rem;font-weight:600;color:var(--white);margin-bottom:8px;}
   input[type=date],input[type=time],input[type=number],textarea{
-    width:100%;font:inherit;font-size:1.05rem;padding:13px;
-    border:1px solid var(--line);border-radius:10px;background:#fcfbf7;color:var(--ink);
-    -webkit-appearance:none;appearance:none;}
-  input:focus,textarea:focus{outline:2px solid var(--smyrna-soft);outline-offset:1px;border-color:var(--smyrna-soft);}
-  textarea{resize:vertical;min-height:88px;}
+    width:100%;font:inherit;font-size:1.05rem;color:#fff;
+    padding:14px;
+    background:var(--field);
+    border:1px solid var(--field-line);
+    border-radius:12px;
+    -webkit-appearance:none;appearance:none;
+  }
+  input::placeholder,textarea::placeholder{color:var(--faint);}
+  input:focus,textarea:focus{outline:none;border-color:rgba(255,255,255,.55);
+    box-shadow:0 0 0 3px rgba(255,255,255,.1);}
+  textarea{resize:vertical;min-height:92px;}
+  /* dunkle Datums-/Zeit-Picker-Icons aufhellen */
+  input[type=date]::-webkit-calendar-picker-indicator,
+  input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.7);}
 
-  .timecard{display:flex;justify-content:space-between;align-items:center;padding:16px;margin-bottom:16px;
-    background:linear-gradient(165deg,var(--smyrna-soft),var(--smyrna-deep));border-radius:12px;color:#fff;}
+  /* ---- Zeit-Anzeige: dunkle Karte mit Radlicht ---- */
+  .timecard{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px;margin-bottom:20px;
+    background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.28));
+    border:1px solid var(--card-line);
+    border-radius:16px;
+    box-shadow:var(--card-glow);
+  }
   .timecard .block{text-align:center;flex:1;}
-  .timecard .big{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.7rem;font-weight:600;line-height:1;}
-  .timecard .lbl{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.65);margin-top:7px;}
-  .timecard .arrow{flex:0 0 auto;color:var(--gold);font-size:1.3rem;padding:0 8px;}
+  .timecard .big{font-size:1.8rem;font-weight:800;line-height:1;letter-spacing:.01em;font-variant-numeric:tabular-nums;}
+  .timecard .lbl{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:9px;font-weight:600;}
+  .timecard .arrow{flex:0 0 auto;color:var(--soft);font-size:1.3rem;padding:0 10px;}
 
-  .slider-row{margin-bottom:20px;}
-  .slider-row:last-child{margin-bottom:4px;}
-  .slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .slider-row{margin-bottom:22px;}
+  .slider-row:last-child{margin-bottom:6px;}
+  .slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
   .slider-top .name{font-size:.84rem;font-weight:600;}
-  .slider-top .val{font-family:ui-monospace,Menlo,monospace;font-size:.98rem;font-weight:700;color:var(--smyrna);}
+  .slider-top .val{font-size:1rem;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
 
-  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:8px;
-    background:var(--line);outline:none;cursor:pointer;}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:32px;height:32px;
-    border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a7d5d,var(--smyrna) 65%,var(--smyrna-deep));
-    border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.28);}
-  input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;border:3px solid #fff;
-    background:var(--smyrna);box-shadow:0 2px 6px rgba(0,0,0,.28);}
-  input[type=range].pause::-webkit-slider-thumb{background:radial-gradient(circle at 35% 30%,#d6bd82,var(--gold) 60%,#8f7234);}
-  input[type=range].pause::-moz-range-thumb{background:var(--gold);}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;
+    background:rgba(255,255,255,.18);outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:30px;height:30px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#ffffff,#e7ece8 70%);
+    border:none;box-shadow:0 4px 10px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:30px;height:30px;border-radius:50%;border:none;background:#fff;
+    box-shadow:0 4px 10px rgba(0,0,0,.35);
+  }
+  input[type=range].pause::-webkit-slider-thumb{
+    background:radial-gradient(circle at 35% 30%,#d8e2da,#aebcb1 75%);
+  }
+  input[type=range].pause::-moz-range-thumb{background:#bcc8be;}
 
-  .toggle{display:flex;gap:6px;margin-bottom:18px;}
-  .toggle button{flex:1;font:inherit;font-size:.86rem;font-weight:600;padding:12px;
-    border:1px solid var(--line);border-radius:10px;background:#f3f1ea;color:var(--muted);cursor:pointer;}
-  .toggle button.on{background:var(--smyrna);color:#fff;border-color:var(--smyrna);}
+  /* ---- Umschalter: Pill wie der Website-Button ---- */
+  .toggle{display:flex;gap:8px;margin-bottom:20px;}
+  .toggle button{
+    flex:1;font:inherit;font-size:.86rem;font-weight:700;padding:13px;
+    border:1px solid var(--card-line);border-radius:999px;
+    background:transparent;color:var(--soft);cursor:pointer;transition:all .15s ease;
+  }
+  .toggle button.on{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.4);
+    box-shadow:var(--card-glow);}
 
   .manual{display:none;}
   .manual.show{display:block;}
   .slider-area.hide{display:none;}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
 
-  .summary{background:#fcfbf7;border:1px dashed var(--smyrna-soft);border-radius:10px;
-    padding:15px 16px;margin-bottom:4px;font-size:.95rem;}
-  .summary .row{display:flex;justify-content:space-between;padding:4px 0;gap:12px;}
-  .summary .row span:first-child{color:var(--muted);flex:0 0 auto;}
+  /* ---- Übersicht ---- */
+  .summary{font-size:.96rem;}
+  .summary .row{display:flex;justify-content:space-between;gap:12px;
+    padding:11px 0;border-bottom:1px solid var(--hair);}
+  .summary .row:first-child{padding-top:2px;}
+  .summary .row span:first-child{color:var(--soft);flex:0 0 auto;}
   .summary .row span:last-child{text-align:right;font-weight:600;}
-  .summary .row.total{border-top:1px solid var(--line);margin-top:7px;padding-top:9px;
-    font-weight:700;color:var(--smyrna);font-size:1.05rem;}
+  .summary .row.total{border-bottom:none;padding-bottom:2px;font-size:1.15rem;font-weight:800;}
+  .summary .row.total span:first-child{color:#fff;}
 
-  .submit{width:100%;font:inherit;font-size:1.1rem;font-weight:700;padding:18px;margin-top:14px;
-    border:none;border-radius:12px;cursor:pointer;background:var(--smyrna);color:#fff;
-    box-shadow:0 3px 0 var(--smyrna-deep);transition:transform .06s ease,box-shadow .06s ease;}
-  .submit:active{transform:translateY(3px);box-shadow:0 0 0 var(--smyrna-deep);}
-  .hint{font-size:.78rem;color:var(--muted);text-align:center;margin-top:13px;line-height:1.45;}
-  .err{color:#9d3322;font-size:.85rem;margin-top:10px;display:none;font-weight:600;}
+  /* ---- Senden-Button: Pill mit hellem Rand wie "Kontakt aufnehmen" ---- */
+  .submit{
+    width:100%;font:inherit;font-size:1.08rem;font-weight:800;letter-spacing:.01em;
+    padding:18px;margin-top:18px;
+    border:1px solid rgba(255,255,255,.45);border-radius:999px;cursor:pointer;
+    background:rgba(255,255,255,.1);color:#fff;
+    box-shadow:var(--btn-shadow),var(--card-glow);
+    transition:transform .08s ease,background .15s ease;
+  }
+  .submit:hover{background:rgba(255,255,255,.18);}
+  .submit:active{transform:translateY(2px);}
+  .hint{font-size:.78rem;color:var(--faint);text-align:center;margin-top:14px;line-height:1.5;}
+  .err{color:#ffd2c4;font-size:.85rem;margin-top:12px;display:none;font-weight:600;text-align:center;}
   .err.show{display:block;}
 
-  footer{text-align:center;font-size:.72rem;color:var(--muted);padding:22px 16px 0;}
+  footer{text-align:center;font-size:.74rem;color:var(--faint);padding:26px 16px 0;}
 
   @media (max-width:380px){
-    header h1{font-size:1.55rem;}
-    .timecard .big{font-size:1.45rem;}
+    .hero h1{font-size:1.8rem;}
+    .timecard .big{font-size:1.5rem;}
+    .logo-fallback{font-size:1.85rem;}
   }
 </style>
 </head>
@@ -122,12 +200,16 @@
     <div class="logo-slot">
       <img src="logo.png" alt="Bücking Immobilien"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-      <div class="logo-fallback" style="display:none;">Bücking Immobilien<small>Ganderkesee</small></div>
+      <div class="logo-fallback" style="display:none;">Bücking<small>IMMOBILIEN GMBH &amp; CO. KG</small></div>
     </div>
-    <h1>Zeiterfassung</h1>
-    <div class="sub">Arbeitszeit eintragen und übermitteln</div>
+    <div class="nav-hair">Zeiterfassung Hausmeister</div>
   </header>
-  <div class="rule"></div>
+
+  <div class="hero">
+    <div class="eyebrow">Bücking Immobilien GmbH &amp; Co. KG</div>
+    <h1>Zeiten erfassen.</h1>
+    <p>Arbeitszeit eintragen, Tätigkeit beschreiben, übermitteln.</p>
+  </div>
 
   <main>
     <div class="panel">
@@ -137,7 +219,7 @@
     </div>
 
     <div class="panel">
-      <div class="panel-head"><span class="panel-num">2</span>Arbeitszeit & Pause</div>
+      <div class="panel-head"><span class="panel-num">2</span>Arbeitszeit &amp; Pause</div>
 
       <div class="toggle">
         <button type="button" id="tabSlider" class="on">Schieberegler</button>
@@ -170,7 +252,7 @@
           <div><label for="mStart">Beginn</label><input type="time" id="mStart" value="07:00"></div>
           <div><label for="mEnd">Ende</label><input type="time" id="mEnd" value="16:00"></div>
         </div>
-        <div style="margin-top:13px;">
+        <div style="margin-top:14px;">
           <label for="mBreak">Pause (Minuten)</label>
           <input type="number" id="mBreak" min="0" max="480" step="5" value="60" inputmode="numeric">
         </div>
@@ -184,7 +266,7 @@
     </div>
 
     <div class="panel">
-      <div class="panel-head"><span class="panel-num">4</span>Übersicht & Übermitteln</div>
+      <div class="panel-head"><span class="panel-num">4</span>Übersicht &amp; Übermitteln</div>
       <div class="summary">
         <div class="row"><span>Datum</span><span id="oDate">–</span></div>
         <div class="row"><span>Beginn → Ende</span><span id="oSpan">–</span></div>
@@ -196,7 +278,7 @@
       <div class="hint">Öffnet eine fertige E-Mail an info@buecking-Immobilien.de –<br>nur noch „Senden“ antippen.</div>
     </div>
 
-    <footer>© 2025 Bücking Immobilien GmbH &amp; Co. KG</footer>
+    <footer>© 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</footer>
   </main>
 </div>
 
