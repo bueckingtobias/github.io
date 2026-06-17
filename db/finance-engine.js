@@ -18,11 +18,7 @@
     return d.toLocaleDateString("de-DE", { month: "short", year: "numeric" });
   }
 
-  /* Effektive Monatsrate (Annuität) je nach Modus:
-     - rateModus "rate":         feste Rate in € (kredit.rateBetrag) → Laufzeit ergibt sich
-     - rateModus "laufzeit":     Rate aus Wunsch-Laufzeit (kredit.laufzeitJahre) berechnet
-     - rateModus "tilgungssatz"/Default: Rate aus Zins + anf. Tilgung %
-     Endfällig: nur Zins auf Nominal (laufende Rate). */
+  /* Effektive Monatsrate (Annuität) je nach Modus. */
   function monthlyRate(kredit) {
     const i = (Number(kredit.zinsSatz) || 0) / 100 / 12;
     const P = Number(kredit.betrag) || 0;
@@ -36,24 +32,20 @@
       const n = (Number(kredit.laufzeitJahre) || 0) * 12;
       if (n <= 0) return 0;
       if (i === 0) return P / n;
-      return P * i / (1 - Math.pow(1 + i, -n)); // Annuitätenformel
+      return P * i / (1 - Math.pow(1 + i, -n));
     }
-    // tilgungssatz
     const annual = ((Number(kredit.zinsSatz) || 0) + (Number(kredit.tilgungSatz) || 0)) / 100;
     return P * annual / 12;
   }
 
-  /* Tilgungsplan. Läuft bis Restschuld = 0 (Laufzeit wird berechnet),
-     außer endfällig (Tilgung am Laufzeitende). Sicherheits-Cap 80 Jahre.
-     Liefert je Monat: { monat, dateIso, zins, tilgung, sonder, rate, restschuld } */
   function amortize(kredit) {
     const rows = [];
     const iMonth = (Number(kredit.zinsSatz) || 0) / 100 / 12;
     let rest = Number(kredit.betrag) || 0;
     const endfaellig = kredit.art === "endfaellig";
-    const CAP = 960; // 80 Jahre Sicherheitsgrenze
+    const CAP = 960;
     const endMonths = endfaellig ? Math.max(1, (Number(kredit.laufzeitJahre) || 0) * 12) : CAP;
-    const annuitaet = endfaellig ? 0 : monthlyRate(kredit); // effektive Rate je Modus
+    const annuitaet = endfaellig ? 0 : monthlyRate(kredit);
 
     const sonderMap = {};
     (kredit.sondertilgungen || []).forEach(s => {
@@ -70,7 +62,7 @@
         tilgung = (m === endMonths - 1) ? rest : 0;
       } else {
         tilgung = Math.min(annuitaet - zins, rest);
-        if (tilgung < 0) tilgung = 0; // Rate deckt nicht mal den Zins → keine Tilgung
+        if (tilgung < 0) tilgung = 0;
       }
       const sonder = Math.min(sonderMap[key] || 0, Math.max(0, rest - tilgung));
       rest = rest - tilgung - sonder;
@@ -94,7 +86,6 @@
     const sonderSum = (kredit.sondertilgungen || []).reduce((s, x) => s + (Number(x.betrag) || 0), 0);
     const months = plan.length;
     const paidOff = last.restschuld <= 0.01;
-    // tilgt nie: Annuität, nicht endfällig, Plan am Cap und noch Restschuld
     const tilgtNie = kredit.art !== "endfaellig" && !paidOff && months >= 960;
     return {
       kredit, plan,
@@ -110,8 +101,6 @@
     };
   }
 
-  /* Projekt-Investition gesamt: gezahlte Gewerke + weitere Investition.
-     (Angebot = geplant; gezahlt = bereits investiert) */
   function projectInvestment(project) {
     const gewerkeAngebot = (project.gewerke || []).reduce((s, g) => s + (Number(g.angebot) || 0), 0);
     const gewerkeGezahlt = (project.gewerke || []).reduce((s, g) => s + (Number(g.gezahlt) || 0), 0);
@@ -123,14 +112,86 @@
     };
   }
 
-  /* Monatliche Kreditbelastung aller Projekt-Kredite (zum aktuellen Monat). */
   function projectMonthlyDebt(project) {
     return (project.kredite || []).reduce((s, k) => s + monthlyRate(k), 0);
   }
 
+  /* ===== AirBnB =====
+     Modellierte Monatsrechnung aus den Stellschrauben in project.airbnb:
+       nachtpreis            € pro Nacht
+       belegungsrate         % der verfügbaren Nächte gebucht
+       reinigungProBuchung   € Reinigungsgebühr an den Gast je Buchung (Einnahme)
+       naechteProBuchung     ø Nächte je Buchung (für Buchungszahl)
+       plattformProvision    % Abzug Airbnb/Booking auf Übernachtungsumsatz
+       reinigungskostenIntern € interne Reinigungskosten je Buchung (Ausgabe)
+       fixkostenMonat        € laufende Fixkosten/Monat (Strom, WLAN, Wäsche etc.)
+       betreuungMonat        € Gästebetreuung/Verwaltung pro Monat
+     Liefert eine konsistente Monats-Hochrechnung. */
+  function airbnbModel(project, daysInMonth) {
+    const a = project.airbnb || {};
+    const tage = daysInMonth || 30.4;
+    const nachtpreis = Number(a.nachtpreis) || 0;
+    const beleg = Math.min(100, Math.max(0, Number(a.belegungsrate) || 0)) / 100;
+    const reinG = Number(a.reinigungProBuchung) || 0;
+    const naechtePb = Math.max(1, Number(a.naechteProBuchung) || 1);
+    const prov = Math.min(100, Math.max(0, Number(a.plattformProvision) || 0)) / 100;
+    const reinK = Number(a.reinigungskostenIntern) || 0;
+    const fix = Number(a.fixkostenMonat) || 0;
+    const betr = Number(a.betreuungMonat) || 0;
+
+    const belegteNaechte = tage * beleg;
+    const buchungen = belegteNaechte / naechtePb;
+    const uebernachtungsumsatz = belegteNaechte * nachtpreis;
+    const reinigungseinnahmen = buchungen * reinG;
+    const bruttoUmsatz = uebernachtungsumsatz + reinigungseinnahmen;
+    const provisionKosten = uebernachtungsumsatz * prov;
+    const reinigungskosten = buchungen * reinK;
+    const ausgaben = provisionKosten + reinigungskosten + fix + betr;
+    const netto = bruttoUmsatz - ausgaben;
+
+    return {
+      belegteNaechte: round2(belegteNaechte),
+      buchungen: round2(buchungen),
+      uebernachtungsumsatz: round2(uebernachtungsumsatz),
+      reinigungseinnahmen: round2(reinigungseinnahmen),
+      bruttoUmsatz: round2(bruttoUmsatz),
+      provisionKosten: round2(provisionKosten),
+      reinigungskosten: round2(reinigungskosten),
+      fixkosten: round2(fix),
+      betreuung: round2(betr),
+      ausgaben: round2(ausgaben + projectMonthlyDebt(project)),
+      ausgabenOhneKredit: round2(ausgaben),
+      kreditrate: round2(projectMonthlyDebt(project)),
+      netto: round2(netto - projectMonthlyDebt(project)),
+      auslastungProzent: round2(beleg * 100),
+      nachtpreis
+    };
+  }
+
   /* Projekt-Cashflow je Monat inkl. Kreditrate.
-     row: { monat, einnahmen, ausgaben(betrieb+kredit), netto, miete, nebenkosten } */
+     Bei AirBnB ohne erfasste cashflow-Historie: 12 Monate aus dem Modell. */
   function projectCashflow(project) {
+    if (project.type === "airbnb" && (!project.cashflow || !project.cashflow.length)) {
+      const start = project.investitionStart || new Date().toISOString().slice(0, 10);
+      const rows = [];
+      for (let m = 0; m < 12; m++) {
+        const iso = addMonths(start.slice(0, 7) + "-01", m);
+        const d = new Date(iso);
+        const dim = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        const mod = airbnbModel(project, dim);
+        rows.push({
+          monat: iso.slice(0, 7),
+          miete: mod.bruttoUmsatz,
+          nebenkosten: 0,
+          einnahmen: mod.bruttoUmsatz,
+          betrieb: mod.ausgabenOhneKredit,
+          kreditrate: mod.kreditrate,
+          ausgaben: mod.ausgaben,
+          netto: mod.netto
+        });
+      }
+      return rows;
+    }
     const debt = projectMonthlyDebt(project);
     return (project.cashflow || []).map(r => {
       const einnahmen = (Number(r.miete) || 0) + (Number(r.nebenkosten) || 0);
@@ -148,7 +209,6 @@
     });
   }
 
-  /* Jahres-Aggregation aus Monats-Cashflow. */
   function yearlyCashflow(project) {
     const cf = projectCashflow(project);
     const byYear = {};
@@ -164,22 +224,14 @@
     }));
   }
 
-  /* Break-Even-Forecast.
-     1) Invest-Break-Even: ab wann kumulierte Netto-Einnahmen die Gesamt-Investition decken.
-     2) Cashflow-Break-Even: ab wann der monatliche Netto-Cashflow dauerhaft >= 0 ist.
-     Nutzt den Durchschnitt der letzten 6 Monate als Lauf-Rate für die Projektion. */
   function breakEven(project) {
     const inv = projectInvestment(project);
     const cf = projectCashflow(project);
     const recent = cf.slice(-6);
     const avgNetto = recent.length ? recent.reduce((s, r) => s + r.netto, 0) / recent.length : 0;
-
-    // Cashflow-Break-Even: ist der Schnitt schon positiv?
     const cfPositive = avgNetto >= 0;
-
-    // Invest-Break-Even: kumulierte Netto bis Investition gedeckt
     const startIso = cf.length ? cf[cf.length - 1].monat + "-01" : new Date().toISOString().slice(0, 10);
-    let kum = cf.reduce((s, r) => s + r.netto, 0); // bisher kumuliert
+    let kum = cf.reduce((s, r) => s + r.netto, 0);
     let result = { investBreakEven: null, monateBisBE: null, monatlicheRate: round2(avgNetto), cfPositive, ziel: inv.investiert, bisher: round2(kum) };
 
     if (avgNetto > 0 && kum < inv.investiert) {
@@ -188,7 +240,7 @@
       result.investBreakEven = addMonths(startIso, monate);
       result.monateBisBE = monate;
     } else if (kum >= inv.investiert) {
-      result.investBreakEven = startIso; // bereits erreicht
+      result.investBreakEven = startIso;
       result.monateBisBE = 0;
     }
     return result;
@@ -199,6 +251,7 @@
   window.FinanceEngine = {
     amortize, creditSummary, monthlyRate,
     projectInvestment, projectMonthlyDebt, projectCashflow, yearlyCashflow, breakEven,
+    airbnbModel,
     monthsBetween, addMonths, fmtMonth
   };
 })();
