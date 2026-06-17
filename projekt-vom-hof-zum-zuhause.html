@@ -1,12 +1,10 @@
-Hier der komplette Code mit neuen Werten inkl. Kaution:
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mehrfamilienhaus in Elmeloh – Bücking Immobilien GmbH & Co. KG</title>
-  <meta name="description" content="Projekt Mehrfamilienhaus in Elmeloh der Bücking Immobilien GmbH & Co. KG – Umbau eines traditionellen Hofs zu fünf modernen Wohneinheiten in Ganderkesee. Mit Wohnungsübersicht, Projektstatus, FAQ und Kontaktmöglichkeit.">
+  <meta name="description" content="Projekt Mehrfamilienhaus in Elmeloh der Bücking Immobilien GmbH & Co. KG – Umbau eines traditionellen Hofs zu fünf modernen Wohneinheiten in Ganderkesee. Mit Wohnungsübersicht, Projektstatus und Kontaktmöglichkeit.">
   <meta name="keywords" content="Mehrfamilienhaus Elmeloh, Wohnungen Ganderkesee, Hofumbau, Wohnung mieten, Bücking Immobilien, Elmeloh wohnen">
   <meta name="author" content="Bücking Immobilien GmbH & Co. KG">
   <link rel="canonical" href="https://www.buecking-immobilien.de/projekt-vom-hof-zum-zuhause.html" />
@@ -405,99 +403,104 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
     .slider-static .apartment-dots{
       display:none !important;
     }
+
+    /* ===== Projektstatus (kompakt, grün) ===== */
     .project-status-panel{
       margin-top:clamp(56px,7vw,90px);
-      margin-bottom:clamp(12px,2vw,18px);
+      margin-bottom:clamp(36px,5vw,64px);
     }
-    .timeline-wrap{
-      padding:48px 34px 52px;
+    .status-wrap{
+      padding:34px 34px 38px;
     }
-    .timeline-track{
+    .status-steps{
       position:relative;
       display:grid;
       grid-template-columns:repeat(4,1fr);
-      gap:26px;
+      gap:18px;
       align-items:start;
     }
-    .timeline-track::before{
+    .status-steps::before{
       content:"";
       position:absolute;
       left:12.5%;
       right:12.5%;
-      top:22px;
-      height:2px;
-      background:rgba(255,255,255,.15);
+      top:11px;
+      height:3px;
+      border-radius:999px;
+      background:rgba(255,255,255,.14);
       z-index:0;
     }
-    .timeline-progress{
+    .status-steps::after{
+      content:"";
       position:absolute;
       left:12.5%;
-      top:22px;
-      height:2px;
-      width:50%;
-      background:linear-gradient(90deg, rgba(152,251,206,.9), rgba(255,224,130,.9));
+      top:11px;
+      height:3px;
+      width:62.5%;
+      border-radius:999px;
+      background:linear-gradient(90deg, #2e7d52 0%, #4faa72 55%, var(--success) 100%);
       z-index:0;
     }
-    .timeline-node{
+    .status-step{
       position:relative;
       z-index:1;
       display:grid;
-      gap:18px;
+      gap:12px;
       justify-items:center;
+      text-align:center;
     }
-    .timeline-dot{
-      width:18px;
-      height:18px;
+    .status-dot{
+      width:24px;
+      height:24px;
       border-radius:999px;
-      background:rgba(255,255,255,.32);
-      box-shadow:0 0 0 8px rgba(255,255,255,.04);
-      border:2px solid rgba(255,255,255,.08);
-      margin-top:13px;
+      background:rgba(255,255,255,.28);
+      border:2px solid rgba(255,255,255,.16);
+      display:grid;
+      place-items:center;
+      box-shadow:0 0 0 6px rgba(255,255,255,.04);
     }
-    .timeline-node.done .timeline-dot{background:var(--success)}
-    .timeline-node.current .timeline-dot{background:var(--current)}
-    .timeline-card{
-      width:100%;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.1);
-      border-radius:16px;
-      padding:18px;
-      min-height:190px;
+    .status-dot svg{
+      width:13px;
+      height:13px;
+      opacity:0;
+      transition:opacity .2s ease;
     }
-    .timeline-card strong{
-      display:block;
-      font-size:1rem;
-      line-height:1.45;
-      margin-bottom:10px;
+    .status-step.done .status-dot{
+      background:linear-gradient(135deg, #3f9466, var(--success));
+      border-color:rgba(174,255,220,.5);
     }
-    .timeline-card .status{
-      display:block;
-      font-size:.78rem;
-      letter-spacing:.12em;
+    .status-step.done .status-dot svg{opacity:1}
+    .status-step.current .status-dot{
+      background:var(--success);
+      border-color:#fff;
+      box-shadow:0 0 0 6px rgba(152,251,206,.16);
+    }
+    .status-label{
+      font-weight:800;
+      font-size:.98rem;
+      line-height:1.3;
+    }
+    .status-tag{
+      font-size:.72rem;
+      letter-spacing:.1em;
       text-transform:uppercase;
       font-weight:800;
-      opacity:.72;
-      margin-bottom:12px;
+      opacity:.7;
     }
-    .timeline-card p{
-      margin:0;
-      line-height:1.72;
-      opacity:.94;
-      font-size:.95rem;
+    .status-step.current .status-tag{
+      color:var(--success);
+      opacity:1;
     }
-    @media (max-width:980px){
-      .timeline-track{grid-template-columns:1fr 1fr}
-      .timeline-track::before,
-      .timeline-progress{display:none}
-      .timeline-dot{margin-top:0}
-      .timeline-card{min-height:unset}
+    @media (max-width:760px){
+      .status-wrap{padding:28px 20px 30px}
+      .status-steps{grid-template-columns:1fr 1fr;gap:24px 16px}
+      .status-steps::before,
+      .status-steps::after{display:none}
     }
-    @media (max-width:620px){
-      .timeline-wrap{padding:36px 22px 40px}
-      .timeline-track{grid-template-columns:1fr;gap:18px}
-      .timeline-node{justify-items:stretch}
-      .timeline-dot{justify-self:center}
+    @media (max-width:420px){
+      .status-steps{grid-template-columns:1fr}
     }
+
     .tabs{
       max-width:var(--content-w);
       margin:0 auto;
@@ -627,8 +630,11 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
     }
     .apartment-grid{
       display:grid;
-      grid-template-columns:1fr;
+      grid-template-columns:1fr 1fr;
       gap:20px;
+    }
+    @media (max-width:760px){
+      .apartment-grid{grid-template-columns:1fr}
     }
     .info-card{
       background:rgba(255,255,255,.04);
@@ -674,6 +680,38 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.12);
     }
+    .deposit-note{
+      margin:10px 2px 0;
+      font-size:.82rem;
+      line-height:1.5;
+      opacity:.72;
+    }
+    .usp-list{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:grid;
+      gap:14px;
+    }
+    .usp-list li{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      line-height:1.55;
+      font-size:.95rem;
+    }
+    .usp-ic{
+      flex:0 0 32px;
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      font-size:1rem;
+      background:rgba(152,251,206,.14);
+      border:1px solid rgba(174,255,220,.26);
+    }
+    .usp-list strong{font-weight:800}
     .rented-box{
       display:none;
       background:rgba(255,255,255,.04);
@@ -712,16 +750,17 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
     }
     .btn-ghost{background:rgba(255,255,255,.08)}
     .panel.is-rented .price-card,
+    .panel.is-rented .usp-card,
     .panel.is-rented .actions{
       display:none;
+    }
+    .panel.is-rented .apartment-grid{
+      grid-template-columns:1fr;
     }
     .panel.is-rented .rented-box{
       display:block;
     }
     #kontakt{
-      margin-top:clamp(56px,7vw,88px);
-    }
-    section[aria-labelledby="faq-title"]{
       margin-top:clamp(56px,7vw,88px);
     }
     .contact-wrap{
@@ -755,6 +794,14 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
       width:100%;
       margin:0 auto;
       text-align:left;
+    }
+    .form-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    @media (max-width:560px){
+      .form-row{grid-template-columns:1fr}
     }
     .field{
       display:grid;
@@ -798,6 +845,22 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
       box-shadow:0 0 0 4px rgba(255,255,255,.05);
     }
     .field select option{color:#111}
+    .field-check{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      line-height:1.6;
+      font-size:.92rem;
+      opacity:.95;
+    }
+    .field-check input{
+      width:20px;
+      height:20px;
+      min-height:20px;
+      margin-top:2px;
+      flex:0 0 20px;
+      accent-color:var(--success);
+    }
     .contact-actions{
       display:flex;
       gap:10px;
@@ -805,47 +868,31 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
       justify-content:center;
       padding-top:6px;
     }
-    .faq-wrap{
-      padding:40px 34px 44px;
-      display:grid;
-      gap:14px;
+    .disclaimer-wrap{
+      padding:28px 34px 34px;
     }
-    .faq-item{
+    .disclaimer-box{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.1);
       border-radius:16px;
-      background:rgba(255,255,255,.04);
-      overflow:hidden;
+      padding:20px 22px;
+      line-height:1.72;
+      font-size:.9rem;
+      opacity:.9;
     }
-    .faq-item summary{
-      cursor:pointer;
-      list-style:none;
-      padding:18px 20px;
-      font-weight:800;
-      position:relative;
-      line-height:1.6;
-    }
-    .faq-item summary::-webkit-details-marker{display:none}
-    .faq-item summary::after{
-      content:"+";
-      position:absolute;
-      right:18px;
-      top:50%;
-      transform:translateY(-50%);
+    .disclaimer-box .d-ic{
+      flex:0 0 28px;
       font-size:1.1rem;
       opacity:.8;
     }
-    .faq-item[open] summary::after{content:"–"}
-    .faq-content{
-      padding:0 20px 20px;
-      opacity:.92;
-      line-height:1.8;
-    }
-    .faq-content p{margin:0}
     @media (max-width:680px){
       .section-head{padding:28px 22px 0}
-      .timeline-wrap,
+      .status-wrap,
       .contact-wrap,
-      .faq-wrap{padding-left:22px;padding-right:22px}
+      .disclaimer-wrap{padding-left:22px;padding-right:22px}
       .box-body{padding:24px}
       .slider-arrow{
         width:40px;
@@ -872,6 +919,7 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
     }
   </style>
 </head>
+
 <body>
   <header class="site-header" role="banner">
     <div class="header-top">
@@ -928,7 +976,11 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
         <div class="hero-slides">
-          <div class="hero-slide active"><img src="projekt-aussenansicht-1.jpg" alt="Außenansicht Mehrfamilienhaus in Elmeloh"></div>
+          <div class="hero-slide active"><img src="pictures_projects/elmeloh-1.jpeg" alt="Mehrfamilienhaus in Elmeloh – Bild 1"></div>
+          <div class="hero-slide"><img src="pictures_projects/elmeloh-2.jpeg" alt="Mehrfamilienhaus in Elmeloh – Bild 2"></div>
+          <div class="hero-slide"><img src="pictures_projects/elmeloh-3.jpeg" alt="Mehrfamilienhaus in Elmeloh – Bild 3"></div>
+          <div class="hero-slide"><img src="pictures_projects/elmeloh-4.jpeg" alt="Mehrfamilienhaus in Elmeloh – Bild 4"></div>
+          <div class="hero-slide"><img src="pictures_projects/elmeloh-5.jpeg" alt="Mehrfamilienhaus in Elmeloh – Bild 5"></div>
         </div>
         <div class="hero-overlay">
           <div class="hero-badges">
@@ -938,45 +990,36 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
         </div>
       </div>
     </section>
-    <section class="section-panel project-status-panel" aria-labelledby="timeline-title">
+    <section class="section-panel project-status-panel" aria-labelledby="status-title">
       <div class="section-head">
-        <h2 id="timeline-title">Projektstatus</h2>
+        <h2 id="status-title">Projektstatus</h2>
         <p>Das Projekt befindet sich in der finalen Bauphase. Die Vermietung läuft bereits parallel.</p>
       </div>
-      <div class="timeline-wrap">
-        <div class="timeline-track">
-          <div class="timeline-progress"></div>
-          <div class="timeline-node done">
-            <div class="timeline-dot"></div>
-            <div class="timeline-card">
-              <strong>Projektentwicklung & Konzeption</strong>
-              <span class="status">Abgeschlossen</span>
-              <p>Die konzeptionelle und bauliche Grundlage des Projekts wurde vollständig ausgearbeitet und vorbereitet.</p>
+      <div class="status-wrap">
+        <div class="status-steps">
+          <div class="status-step done">
+            <div class="status-dot">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0c3d28" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>
             </div>
+            <div class="status-label">Konzeption</div>
+            <div class="status-tag">Abgeschlossen</div>
           </div>
-          <div class="timeline-node done">
-            <div class="timeline-dot"></div>
-            <div class="timeline-card">
-              <strong>Umbau & Modernisierung</strong>
-              <span class="status">Weit fortgeschritten</span>
-              <p>Die wesentlichen baulichen Maßnahmen sind umgesetzt. Der Fokus liegt derzeit auf den letzten Fertigstellungsarbeiten.</p>
+          <div class="status-step done">
+            <div class="status-dot">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0c3d28" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>
             </div>
+            <div class="status-label">Umbau &amp; Modernisierung</div>
+            <div class="status-tag">Weit fortgeschritten</div>
           </div>
-          <div class="timeline-node current">
-            <div class="timeline-dot"></div>
-            <div class="timeline-card">
-              <strong>Vermietung</strong>
-              <span class="status">Aktuell</span>
-              <p>Interessenten können sich bereits jetzt über verfügbare Einheiten informieren und eine Anfrage stellen.</p>
-            </div>
+          <div class="status-step current">
+            <div class="status-dot"></div>
+            <div class="status-label">Vermietung</div>
+            <div class="status-tag">Aktuell</div>
           </div>
-          <div class="timeline-node">
-            <div class="timeline-dot"></div>
-            <div class="timeline-card">
-              <strong>Fertigstellung & Bezug</strong>
-              <span class="status">Als Nächstes</span>
-              <p>Der Bezugsstart ist voraussichtlich zum 01.07.2026 vorgesehen, vorbehaltlich der finalen Restarbeiten.</p>
-            </div>
+          <div class="status-step">
+            <div class="status-dot"></div>
+            <div class="status-label">Fertigstellung &amp; Bezug</div>
+            <div class="status-tag">Als Nächstes</div>
           </div>
         </div>
       </div>
@@ -985,7 +1028,7 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
       <div class="intro-wrap" style="padding-top:0">
         <div class="kicker">Wohnungsübersicht</div>
         <h2 class="title-stacked" id="wohnungen-title" style="margin-bottom:8px">
-          <span class="line1" style="font-size:clamp(24px,3vw,34px)">Verfügbarkeiten & Mietübersicht</span>
+          <span class="line1" style="font-size:clamp(24px,3vw,34px)">Verfügbarkeiten &amp; Mietübersicht</span>
           <span class="line2" style="font-size:clamp(15px,2vw,19px)">Alle Wohneinheiten im Überblick</span>
         </h2>
       </div>
@@ -1002,10 +1045,10 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                  data-groesse="ca. 106 m²"
                  data-zimmer="3 Zimmer"
                  data-status="Verfügbar"
-                 data-miete="1325.00"
-                 data-nk="265.00"
+                 data-miete="1272.00"
+                 data-nk="159.00"
                  data-kueche="70"
-                 data-kaution="3975.00">
+                 data-kaution="3816.00">
           <div class="box-body">
             <div class="apartment-head">
               <div>
@@ -1028,7 +1071,26 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </button>
               <div class="apartment-slides">
-                <div class="apartment-slide active"><img src="wohnung1-1.png" alt="Wohnung 1"></div>
+                <div class="apartment-slide active"><img src="pictures_elmeloh/w1-1.jpeg" alt="Wohnung 1 – Bild 1"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-2.jpeg" alt="Wohnung 1 – Bild 2"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-3.jpeg" alt="Wohnung 1 – Bild 3"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-4.jpeg" alt="Wohnung 1 – Bild 4"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-5.jpeg" alt="Wohnung 1 – Bild 5"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-6.jpeg" alt="Wohnung 1 – Bild 6"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-7.jpeg" alt="Wohnung 1 – Bild 7"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-8.jpeg" alt="Wohnung 1 – Bild 8"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-9.jpeg" alt="Wohnung 1 – Bild 9"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-10.jpeg" alt="Wohnung 1 – Bild 10"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-11.jpeg" alt="Wohnung 1 – Bild 11"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-12.jpeg" alt="Wohnung 1 – Bild 12"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-13.jpeg" alt="Wohnung 1 – Bild 13"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-14.jpeg" alt="Wohnung 1 – Bild 14"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-15.jpeg" alt="Wohnung 1 – Bild 15"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-16.jpeg" alt="Wohnung 1 – Bild 16"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-17.jpeg" alt="Wohnung 1 – Bild 17"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-18.jpeg" alt="Wohnung 1 – Bild 18"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-19.jpeg" alt="Wohnung 1 – Bild 19"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w1-20.jpeg" alt="Wohnung 1 – Bild 20"></div>
               </div>
               <div class="apartment-dots"></div>
             </div>
@@ -1039,9 +1101,18 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                   <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
                   <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
                   <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                  <li><span class="label">Kaution</span><span class="value js-kaution"></span></li>
                 </ul>
                 <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
+                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
+              </div>
+              <div class="info-card usp-card">
+                <h4>Inklusivleistungen &amp; Vorteile</h4>
+                <ul class="usp-list">
+                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
+                </ul>
               </div>
             </div>
             <div class="rented-box"></div>
@@ -1082,7 +1153,26 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </button>
               <div class="apartment-slides">
-                <div class="apartment-slide active"><img src="wohnung2-1.jpg" alt="Wohnung 2"></div>
+                <div class="apartment-slide active"><img src="pictures_elmeloh/w2-1.jpeg" alt="Wohnung 2 – Bild 1"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-2.jpeg" alt="Wohnung 2 – Bild 2"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-3.jpeg" alt="Wohnung 2 – Bild 3"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-4.jpeg" alt="Wohnung 2 – Bild 4"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-5.jpeg" alt="Wohnung 2 – Bild 5"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-6.jpeg" alt="Wohnung 2 – Bild 6"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-7.jpeg" alt="Wohnung 2 – Bild 7"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-8.jpeg" alt="Wohnung 2 – Bild 8"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-9.jpeg" alt="Wohnung 2 – Bild 9"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-10.jpeg" alt="Wohnung 2 – Bild 10"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-11.jpeg" alt="Wohnung 2 – Bild 11"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-12.jpeg" alt="Wohnung 2 – Bild 12"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-13.jpeg" alt="Wohnung 2 – Bild 13"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-14.jpeg" alt="Wohnung 2 – Bild 14"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-15.jpeg" alt="Wohnung 2 – Bild 15"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-16.jpeg" alt="Wohnung 2 – Bild 16"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-17.jpeg" alt="Wohnung 2 – Bild 17"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-18.jpeg" alt="Wohnung 2 – Bild 18"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-19.jpeg" alt="Wohnung 2 – Bild 19"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w2-20.jpeg" alt="Wohnung 2 – Bild 20"></div>
               </div>
               <div class="apartment-dots"></div>
             </div>
@@ -1093,14 +1183,21 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                   <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
                   <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
                   <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                  <li><span class="label">Kaution</span><span class="value js-kaution"></span></li>
                 </ul>
                 <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
+                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
+              </div>
+              <div class="info-card usp-card">
+                <h4>Inklusivleistungen &amp; Vorteile</h4>
+                <ul class="usp-list">
+                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
+                </ul>
               </div>
             </div>
-            <div class="rented-box">
-              Diese Wohnung ist bereits vergeben. Auf Wunsch nehmen wir Sie gern für ähnliche Einheiten oder spätere Verfügbarkeiten auf die Vormerkliste.
-            </div>
+            <div class="rented-box">Diese Wohnung ist bereits vergeben. Auf Wunsch nehmen wir Sie gern für ähnliche Einheiten oder spätere Verfügbarkeiten auf die Vormerkliste.</div>
             <div class="actions">
               <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
               <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
@@ -1138,7 +1235,26 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </button>
               <div class="apartment-slides">
-                <div class="apartment-slide active"><img src="wohnung3-1.jpg" alt="Wohnung 3"></div>
+                <div class="apartment-slide active"><img src="pictures_elmeloh/w3-1.jpeg" alt="Wohnung 3 – Bild 1"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-2.jpeg" alt="Wohnung 3 – Bild 2"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-3.jpeg" alt="Wohnung 3 – Bild 3"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-4.jpeg" alt="Wohnung 3 – Bild 4"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-5.jpeg" alt="Wohnung 3 – Bild 5"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-6.jpeg" alt="Wohnung 3 – Bild 6"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-7.jpeg" alt="Wohnung 3 – Bild 7"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-8.jpeg" alt="Wohnung 3 – Bild 8"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-9.jpeg" alt="Wohnung 3 – Bild 9"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-10.jpeg" alt="Wohnung 3 – Bild 10"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-11.jpeg" alt="Wohnung 3 – Bild 11"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-12.jpeg" alt="Wohnung 3 – Bild 12"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-13.jpeg" alt="Wohnung 3 – Bild 13"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-14.jpeg" alt="Wohnung 3 – Bild 14"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-15.jpeg" alt="Wohnung 3 – Bild 15"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-16.jpeg" alt="Wohnung 3 – Bild 16"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-17.jpeg" alt="Wohnung 3 – Bild 17"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-18.jpeg" alt="Wohnung 3 – Bild 18"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-19.jpeg" alt="Wohnung 3 – Bild 19"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w3-20.jpeg" alt="Wohnung 3 – Bild 20"></div>
               </div>
               <div class="apartment-dots"></div>
             </div>
@@ -1149,14 +1265,21 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                   <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
                   <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
                   <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                  <li><span class="label">Kaution</span><span class="value js-kaution"></span></li>
                 </ul>
                 <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
+                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
+              </div>
+              <div class="info-card usp-card">
+                <h4>Inklusivleistungen &amp; Vorteile</h4>
+                <ul class="usp-list">
+                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
+                </ul>
               </div>
             </div>
-            <div class="rented-box">
-              Diese Wohnung ist bereits vergeben. Gern können Sie sich für spätere Verfügbarkeiten oder vergleichbare Einheiten vormerken lassen.
-            </div>
+            <div class="rented-box">Diese Wohnung ist bereits vergeben. Gern können Sie sich für spätere Verfügbarkeiten oder vergleichbare Einheiten vormerken lassen.</div>
             <div class="actions">
               <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
               <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
@@ -1168,10 +1291,10 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                  data-groesse="ca. 94 m²"
                  data-zimmer="3 Zimmer"
                  data-status="Verfügbar"
-                 data-miete="1175.00"
-                 data-nk="235.00"
+                 data-miete="1128.00"
+                 data-nk="141.00"
                  data-kueche="70"
-                 data-kaution="3525.00">
+                 data-kaution="3384.00">
           <div class="box-body">
             <div class="apartment-head">
               <div>
@@ -1194,7 +1317,26 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </button>
               <div class="apartment-slides">
-                <div class="apartment-slide active"><img src="wohnung4-1.jpg" alt="Wohnung 4"></div>
+                <div class="apartment-slide active"><img src="pictures_elmeloh/w4-1.jpeg" alt="Wohnung 4 – Bild 1"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-2.jpeg" alt="Wohnung 4 – Bild 2"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-3.jpeg" alt="Wohnung 4 – Bild 3"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-4.jpeg" alt="Wohnung 4 – Bild 4"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-5.jpeg" alt="Wohnung 4 – Bild 5"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-6.jpeg" alt="Wohnung 4 – Bild 6"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-7.jpeg" alt="Wohnung 4 – Bild 7"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-8.jpeg" alt="Wohnung 4 – Bild 8"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-9.jpeg" alt="Wohnung 4 – Bild 9"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-10.jpeg" alt="Wohnung 4 – Bild 10"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-11.jpeg" alt="Wohnung 4 – Bild 11"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-12.jpeg" alt="Wohnung 4 – Bild 12"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-13.jpeg" alt="Wohnung 4 – Bild 13"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-14.jpeg" alt="Wohnung 4 – Bild 14"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-15.jpeg" alt="Wohnung 4 – Bild 15"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-16.jpeg" alt="Wohnung 4 – Bild 16"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-17.jpeg" alt="Wohnung 4 – Bild 17"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-18.jpeg" alt="Wohnung 4 – Bild 18"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-19.jpeg" alt="Wohnung 4 – Bild 19"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w4-20.jpeg" alt="Wohnung 4 – Bild 20"></div>
               </div>
               <div class="apartment-dots"></div>
             </div>
@@ -1205,9 +1347,18 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                   <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
                   <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
                   <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                  <li><span class="label">Kaution</span><span class="value js-kaution"></span></li>
                 </ul>
                 <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
+                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
+              </div>
+              <div class="info-card usp-card">
+                <h4>Inklusivleistungen &amp; Vorteile</h4>
+                <ul class="usp-list">
+                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
+                </ul>
               </div>
             </div>
             <div class="rented-box"></div>
@@ -1222,10 +1373,10 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                  data-groesse="ca. 124 m²"
                  data-zimmer="4 Zimmer"
                  data-status="Verfügbar"
-                 data-miete="1550.00"
-                 data-nk="310.00"
+                 data-miete="1488.00"
+                 data-nk="186.00"
                  data-kueche="70"
-                 data-kaution="4650.00">
+                 data-kaution="4464.00">
           <div class="box-body">
             <div class="apartment-head">
               <div>
@@ -1248,7 +1399,26 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </button>
               <div class="apartment-slides">
-                <div class="apartment-slide active"><img src="wohnung5-1.jpg" alt="Wohnung 5"></div>
+                <div class="apartment-slide active"><img src="pictures_elmeloh/w5-1.jpeg" alt="Wohnung 5 – Bild 1"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-2.jpeg" alt="Wohnung 5 – Bild 2"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-3.jpeg" alt="Wohnung 5 – Bild 3"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-4.jpeg" alt="Wohnung 5 – Bild 4"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-5.jpeg" alt="Wohnung 5 – Bild 5"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-6.jpeg" alt="Wohnung 5 – Bild 6"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-7.jpeg" alt="Wohnung 5 – Bild 7"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-8.jpeg" alt="Wohnung 5 – Bild 8"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-9.jpeg" alt="Wohnung 5 – Bild 9"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-10.jpeg" alt="Wohnung 5 – Bild 10"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-11.jpeg" alt="Wohnung 5 – Bild 11"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-12.jpeg" alt="Wohnung 5 – Bild 12"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-13.jpeg" alt="Wohnung 5 – Bild 13"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-14.jpeg" alt="Wohnung 5 – Bild 14"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-15.jpeg" alt="Wohnung 5 – Bild 15"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-16.jpeg" alt="Wohnung 5 – Bild 16"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-17.jpeg" alt="Wohnung 5 – Bild 17"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-18.jpeg" alt="Wohnung 5 – Bild 18"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-19.jpeg" alt="Wohnung 5 – Bild 19"></div>
+                <div class="apartment-slide"><img src="pictures_elmeloh/w5-20.jpeg" alt="Wohnung 5 – Bild 20"></div>
               </div>
               <div class="apartment-dots"></div>
             </div>
@@ -1259,9 +1429,18 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
                   <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
                   <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
                   <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                  <li><span class="label">Kaution</span><span class="value js-kaution"></span></li>
                 </ul>
                 <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
+                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
+              </div>
+              <div class="info-card usp-card">
+                <h4>Inklusivleistungen &amp; Vorteile</h4>
+                <ul class="usp-list">
+                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
+                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
+                </ul>
               </div>
             </div>
             <div class="rented-box"></div>
@@ -1273,62 +1452,91 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
         </article>
       </div>
     </section>
+
     <section class="section-panel" id="kontakt" aria-labelledby="kontakt-title">
       <div class="section-head">
-        <h2 id="kontakt-title">Kontakt & Anfrage</h2>
+        <h2 id="kontakt-title">Kontakt &amp; Anfrage</h2>
         <p>Für Besichtigungsanfragen, Vormerkungen oder allgemeine Rückfragen zum Projekt.</p>
       </div>
       <div class="contact-wrap">
         <p class="contact-intro">
           Nutzen Sie das Formular für Ihre Anfrage. Beim Absenden öffnet sich Ihr Mailprogramm
-          mit einer bereits vorbereiteten Nachricht.
+          mit einer bereits vollständig vorbereiteten Nachricht – Sie müssen nur noch auf „Senden“ klicken.
         </p>
         <div class="contact-note">
           Sie können eine konkrete Wohnung auswählen oder eine allgemeine Projektanfrage senden.
-          Auch Vormerkungen für bereits vergebene Einheiten sind möglich.
+          Auch Vormerkungen für bereits vergebene Einheiten sind jederzeit möglich.
         </div>
         <form class="project-contact-form" id="projectContactForm">
-          <div class="field">
-            <label for="name">Name</label>
-            <input id="name" name="name" type="text" placeholder="Ihr Name" required />
+          <div class="form-row">
+            <div class="field">
+              <label for="vorname">Vorname</label>
+              <input id="vorname" name="vorname" type="text" placeholder="Ihr Vorname" required />
+            </div>
+            <div class="field">
+              <label for="nachname">Nachname</label>
+              <input id="nachname" name="nachname" type="text" placeholder="Ihr Nachname" required />
+            </div>
           </div>
-          <div class="field">
-            <label for="email">E-Mail</label>
-            <input id="email" name="email" type="email" placeholder="ihre@email.de" required />
+          <div class="form-row">
+            <div class="field">
+              <label for="email">E-Mail</label>
+              <input id="email" name="email" type="email" placeholder="ihre@email.de" required />
+            </div>
+            <div class="field">
+              <label for="telefon">Telefon</label>
+              <input id="telefon" name="telefon" type="tel" placeholder="Optional" />
+            </div>
           </div>
-          <div class="field">
-            <label for="telefon">Telefon</label>
-            <input id="telefon" name="telefon" type="tel" placeholder="Optional" />
+          <div class="form-row">
+            <div class="field">
+              <label for="wohnung">Wohneinheit</label>
+              <select id="wohnung" name="wohnung">
+                <option value="">Bitte auswählen</option>
+                <option value="Wohnung 1">Wohnung 1 (ca. 106 m², verfügbar)</option>
+                <option value="Wohnung 2">Wohnung 2 (ca. 93 m², vermietet)</option>
+                <option value="Wohnung 3">Wohnung 3 (ca. 92 m², vermietet)</option>
+                <option value="Wohnung 4">Wohnung 4 (ca. 94 m², verfügbar)</option>
+                <option value="Wohnung 5">Wohnung 5 (ca. 124 m², verfügbar)</option>
+                <option value="Allgemeine Projektanfrage">Allgemeine Projektanfrage</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="anliegen">Anliegen</label>
+              <select id="anliegen" name="anliegen" required>
+                <option value="">Bitte auswählen</option>
+                <option value="Besichtigung anfragen">Besichtigung anfragen</option>
+                <option value="Interesse vormerken">Interesse vormerken</option>
+                <option value="Rückruf erwünscht">Rückruf erwünscht</option>
+                <option value="Allgemeine Anfrage">Allgemeine Anfrage</option>
+              </select>
+            </div>
           </div>
-          <div class="field">
-            <label for="wohnung">Wohneinheit</label>
-            <select id="wohnung" name="wohnung">
-              <option value="">Bitte auswählen</option>
-              <option value="Wohnung 1">Wohnung 1</option>
-              <option value="Wohnung 2">Wohnung 2</option>
-              <option value="Wohnung 3">Wohnung 3</option>
-              <option value="Wohnung 4">Wohnung 4</option>
-              <option value="Wohnung 5">Wohnung 5</option>
-              <option value="Allgemeine Projektanfrage">Allgemeine Projektanfrage</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="anliegen">Anliegen</label>
-            <select id="anliegen" name="anliegen" required>
-              <option value="">Bitte auswählen</option>
-              <option value="Besichtigung anfragen">Besichtigung anfragen</option>
-              <option value="Interesse vormerken">Interesse vormerken</option>
-              <option value="Allgemeine Anfrage">Allgemeine Anfrage</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="bezugsdatum">Gewünschtes Bezugsdatum</label>
-            <input id="bezugsdatum" name="bezugsdatum" type="date" />
+          <div class="form-row">
+            <div class="field">
+              <label for="bezugsdatum">Gewünschtes Bezugsdatum</label>
+              <input id="bezugsdatum" name="bezugsdatum" type="date" />
+            </div>
+            <div class="field">
+              <label for="personen">Anzahl Personen im Haushalt</label>
+              <select id="personen" name="personen">
+                <option value="">Keine Angabe</option>
+                <option value="1 Person">1 Person</option>
+                <option value="2 Personen">2 Personen</option>
+                <option value="3 Personen">3 Personen</option>
+                <option value="4 Personen">4 Personen</option>
+                <option value="5+ Personen">5+ Personen</option>
+              </select>
+            </div>
           </div>
           <div class="field">
             <label for="nachricht">Nachricht</label>
-            <textarea id="nachricht" name="nachricht" placeholder="Ihre Nachricht"></textarea>
+            <textarea id="nachricht" name="nachricht" placeholder="Ihre Nachricht – z. B. Fragen, Wunschtermine oder weitere Angaben"></textarea>
           </div>
+          <label class="field-check" for="datenschutz">
+            <input id="datenschutz" name="datenschutz" type="checkbox" required />
+            <span>Ich bin damit einverstanden, dass meine Angaben zur Bearbeitung meiner Anfrage verarbeitet werden. Eine Weitergabe an Dritte erfolgt nicht.</span>
+          </label>
           <div class="contact-actions">
             <button class="btn" type="submit">E-Mail vorbereiten</button>
             <a class="btn btn-ghost" href="tel:+4917657960759">Direkt anrufen</a>
@@ -1336,54 +1544,23 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
         </form>
       </div>
     </section>
-    <section class="section-panel" aria-labelledby="faq-title">
+    <section class="section-panel" aria-labelledby="hinweis-title">
       <div class="section-head">
-        <h2 id="faq-title">Häufige Fragen</h2>
-        <p>Die wichtigsten Informationen zum Projekt, zur Vermietung und zum Ablauf kompakt zusammengefasst.</p>
+        <h2 id="hinweis-title">Rechtlicher Hinweis</h2>
       </div>
-      <div class="faq-wrap">
-        <details class="faq-item">
-          <summary>Ab wann sind die Wohnungen voraussichtlich bezugsbereit?</summary>
-          <div class="faq-content">
-            <p>Der Bezugsstart ist voraussichtlich zum 01.07.2026 vorgesehen. Maßgeblich ist der finale Baufortschritt sowie die abschließende Fertigstellung der Einheiten.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Welche Außenflächen gehören zu den Wohnungen?</summary>
-          <div class="faq-content">
-            <p>Je nach Einheit stehen Balkon- beziehungsweise Gartenflächen zur Verfügung. Die konkrete Zuordnung ergibt sich aus der jeweiligen Wohnung und den finalen Vermietungsunterlagen.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Was ist im Mietverhältnis beziehungsweise im Projekt vorgesehen?</summary>
-          <div class="faq-content">
-            <p>Zum Projekt gehören unter anderem Stellplätze sowie die Nutzung des Fahrradschuppens. Der Strombezug erfolgt über die hauseigene Solaranlage des Vermieters. Nebenkosten werden nach tatsächlichem Aufwand abgerechnet.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Können sich Wohnflächen, Preise oder Ausstattungsdetails noch ändern?</summary>
-          <div class="faq-content">
-            <p>Geringfügige Änderungen während der finalen Bauphase sind möglich. Verbindlich sind ausschließlich die finalen Angaben im Vermietungsprozess und in den späteren Vertragsunterlagen.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Wie stelle ich eine Anfrage für eine konkrete Wohnung?</summary>
-          <div class="faq-content">
-            <p>Sie können direkt bei der jeweiligen Wohnung eine E-Mail-Anfrage auslösen oder das Kontaktformular nutzen. In beiden Fällen öffnet sich eine vorbereitete Nachricht mit den wichtigsten Angaben.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Ist auch eine Vormerkung für bereits vergebene Wohnungen möglich?</summary>
-          <div class="faq-content">
-            <p>Ja. Auch für bereits vergebene Einheiten können Sie sich vormerken lassen, um bei späteren Verfügbarkeiten oder vergleichbaren Wohnungen berücksichtigt zu werden.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Wie läuft eine Besichtigungsanfrage ab?</summary>
-          <div class="faq-content">
-            <p>Nach Eingang Ihrer Anfrage prüfen wir Verfügbarkeit und Baufortschritt und stimmen anschließend einen möglichen Termin mit Ihnen ab.</p>
-          </div>
-        </details>
+      <div class="disclaimer-wrap">
+        <div class="disclaimer-box">
+          <span class="d-ic" aria-hidden="true">ⓘ</span>
+          <p>
+            Alle Angaben auf dieser Seite – insbesondere Wohnflächen, Zimmeranzahl, Miet- und Nebenkosten,
+            Kaution sowie Ausstattungs- und Inklusivleistungen – dienen der unverbindlichen Information und
+            erfolgen nach bestem Wissen. Während der finalen Bauphase sind geringfügige Abweichungen möglich.
+            Flächenangaben sind ca.-Werte. Abbildungen können Visualisierungen, Muster- oder Beispielansichten
+            enthalten und müssen nicht in jedem Detail dem endgültigen Zustand entsprechen. Verbindlich sind
+            ausschließlich die finalen Angaben im jeweiligen Mietvertrag und in den zugehörigen Vertragsunterlagen.
+            Es besteht kein Anspruch auf Abschluss eines Mietvertrags. Irrtümer und Änderungen vorbehalten.
+          </p>
+        </div>
       </div>
     </section>
   </main>
@@ -1466,16 +1643,13 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
       const m = Number(panel.dataset.miete || 0);
       const n = Number(panel.dataset.nk || 0);
       const k = Number(panel.dataset.kueche || 0);
-      const kaution = Number(panel.dataset.kaution || 0);
       const mieteEl = panel.querySelector('.js-miete');
       const nkEl = panel.querySelector('.js-nk');
       const kuecheEl = panel.querySelector('.js-kueche');
-      const kautionEl = panel.querySelector('.js-kaution');
       const totalEl = panel.querySelector('.js-total');
       if(mieteEl) mieteEl.textContent = euro(m);
       if(nkEl) nkEl.textContent = euro(n);
       if(kuecheEl) kuecheEl.textContent = euro(k);
-      if(kautionEl) kautionEl.textContent = euro(kaution);
       if(totalEl) totalEl.textContent = euro(m + n + k);
     });
     function buildApartmentMailto(panel){
@@ -1614,16 +1788,19 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
         'Gewünschtes Bezugsdatum:',
         `${data.bezugsdatum || '-'}`,
         '',
+        'Anzahl Personen im Haushalt:',
+        `${data.personen || '-'}`,
+        '',
         'Nachricht:',
         `${data.nachricht || '-'}`,
         '',
         'Kontaktdaten:',
-        `Name: ${data.name || '-'}`,
+        `Name: ${data.vorname} ${data.nachname}`.trim(),
         `E-Mail: ${data.email || '-'}`,
         `Telefon: ${data.telefon || '-'}`,
         '',
         'Vielen Dank und freundliche Grüße',
-        `${data.name || ''}`
+        `${data.vorname} ${data.nachname}`.trim()
       ];
       return 'mailto:info@buecking-immobilien.de'
         + '?subject=' + encodeURIComponent(subject)
@@ -1632,20 +1809,27 @@ Hier der komplette Code mit neuen Werten inkl. Kaution:
     if(projectContactForm){
       projectContactForm.addEventListener('submit', function(e){
         e.preventDefault();
-        const formData = {
-          name: document.getElementById('name')?.value.trim() || '',
+        const data = {
+          vorname: document.getElementById('vorname')?.value.trim() || '',
+          nachname: document.getElementById('nachname')?.value.trim() || '',
           email: document.getElementById('email')?.value.trim() || '',
           telefon: document.getElementById('telefon')?.value.trim() || '',
           wohnung: document.getElementById('wohnung')?.value || '',
           anliegen: document.getElementById('anliegen')?.value || '',
           bezugsdatum: formatDateGerman(document.getElementById('bezugsdatum')?.value || ''),
-          nachricht: document.getElementById('nachricht')?.value.trim() || ''
+          personen: document.getElementById('personen')?.value || '',
+          nachricht: document.getElementById('nachricht')?.value.trim() || '',
+          datenschutz: document.getElementById('datenschutz')?.checked || false
         };
-        if(!formData.name || !formData.email || !formData.anliegen){
-          alert('Bitte füllen Sie mindestens Name, E-Mail und Anliegen aus.');
+        if(!data.vorname || !data.nachname || !data.email || !data.anliegen){
+          alert('Bitte füllen Sie mindestens Vorname, Nachname, E-Mail und Anliegen aus.');
           return;
         }
-        window.location.href = buildFormMailto(formData);
+        if(!data.datenschutz){
+          alert('Bitte bestätigen Sie den Hinweis zur Verarbeitung Ihrer Angaben.');
+          return;
+        }
+        window.location.href = buildFormMailto(data);
       });
     }
   </script>
