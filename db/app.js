@@ -1,12 +1,12 @@
 /* ============================================================================
    app.js — Bücking Dashboard
-   Auth · Routing · Home · Projekte · Vermietung · Finanzen (pro Projekt,
-   Kredite, Break-Even) · Pflegemaske (Formular → data.js Export)
+   Auth · Routing (dynamisch je Projekt) · Home · Miet-Projekte · AirBnB ·
+   Vermietung · Finanzen · Datenpflege (Formular → data.js Export)
    ========================================================================== */
 (function () {
   "use strict";
 
-  let D = JSON.parse(JSON.stringify(window.DASHBOARD_DATA || {})); // Arbeitskopie (Pflegemaske bearbeitet diese)
+  let D = JSON.parse(JSON.stringify(window.DASHBOARD_DATA || {}));
   const FE = window.FinanceEngine;
   const SESSION_KEY = "buecking_session_v2";
 
@@ -16,9 +16,11 @@
   const eur = n => (Number(n) || 0).toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
   const eur2 = n => (Number(n) || 0).toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
   const pct = n => (Number(n) || 0).toLocaleString("de-DE", { maximumFractionDigits: 0 }) + " %";
+  const num = n => (Number(n) || 0).toLocaleString("de-DE", { maximumFractionDigits: 1 });
   const dttm = iso => iso ? new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
   const sum = (a, f) => a.reduce((x, y) => x + (Number(f(y)) || 0), 0);
   const el = h => { const t = document.createElement("template"); t.innerHTML = h.trim(); return t.content.firstElementChild; };
+  const isAir = p => p && p.type === "airbnb";
 
   async function sha256(str) {
     const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -45,6 +47,7 @@
   function enterApp() {
     $("#login").classList.add("hide"); $("#app").classList.remove("hide");
     $("#verChip").textContent = "v " + ((D.meta && D.meta.version) || "—");
+    buildNav();
     startClock(); route("home");
   }
   function startClock() {
@@ -53,22 +56,54 @@
     t(); setInterval(t, 20000);
   }
 
+  /* ---------------- Nav (dynamisch je Projekt) ---------------- */
+  function buildNav() {
+    const nav = $("#nav");
+    const proj = (D.projects || []).map(p =>
+      `<a data-view="${esc(p.id)}"><span class="ic">${isAir(p) ? "✦" : "▦"}</span><span class="txt">${esc(p.name)}</span></a>`
+    ).join("");
+    nav.innerHTML =
+      `<a data-view="home" class="active"><span class="ic">◆</span><span class="txt">Home</span></a>
+       <div class="nav-label">Projekte</div>
+       ${proj}
+       <div class="nav-label">Betrieb</div>
+       <a data-view="vermietung"><span class="ic">▥</span><span class="txt">Vermietung</span></a>
+       <a data-view="finanzen"><span class="ic">€</span><span class="txt">Finanzen</span></a>
+       <div class="nav-label">Verwaltung</div>
+       <a data-view="daten"><span class="ic">✎</span><span class="txt">Datenpflege</span></a>`;
+    $$("#nav a").forEach(a => a.addEventListener("click", () => route(a.dataset.view)));
+  }
+
   /* ---------------- Routing ---------------- */
-  const TITLES = {
-    home: ["Home", "Gesamtüberblick über alle Projekte"],
-    baumstrasse: ["Baumstraße", "Umbau Stall zu 5 Wohnungen"],
-    huenenberg: ["Am Hünenberg", "Neubau Mehrfamilienhaus"],
-    vermietung: ["Vermietung", "Objekte · Mieter · Nebenkosten"],
-    finanzen: ["Finanzen", "Pro Projekt · Kredite · Break-Even"],
-    daten: ["Daten", "Pflegemaske & Export"]
-  };
+  function titleFor(v) {
+    const fixed = {
+      home: ["Home", "Gesamtüberblick über alle Projekte"],
+      vermietung: ["Vermietung", "Objekte · Mieter · Nebenkosten"],
+      finanzen: ["Finanzen", "Pro Projekt · Kredite · Break-Even"],
+      daten: ["Datenpflege", "Werte ändern & Export"]
+    };
+    if (fixed[v]) return fixed[v];
+    const p = (D.projects || []).find(x => x.id === v);
+    if (p) return [p.name, p.scope];
+    return ["", ""];
+  }
   function route(v) {
     $$("#nav a").forEach(a => a.classList.toggle("active", a.dataset.view === v));
-    const [t, s] = TITLES[v] || ["", ""]; $("#pageTitle").textContent = t; $("#pageSub").textContent = s;
+    const [t, s] = titleFor(v); $("#pageTitle").textContent = t; $("#pageSub").textContent = s;
     const host = $("#views"); host.innerHTML = "";
-    (VIEWS[v] || (() => el(`<div></div>`)))().forEach(n => host.appendChild(n));
+    let nodes;
+    const p = (D.projects || []).find(x => x.id === v);
+    if (v === "home") nodes = renderHome();
+    else if (v === "vermietung") nodes = renderVermietung();
+    else if (v === "finanzen") nodes = renderFinanzen();
+    else if (v === "daten") nodes = renderDaten();
+    else if (p) nodes = isAir(p) ? renderAirbnb(p) : renderProject(p.id);
+    else nodes = [el(`<div class="card col-12"><div class="card-b note">Nicht gefunden.</div></div>`)];
+    nodes.forEach(n => host.appendChild(n));
     $(".content").scrollTop = 0;
+    currentView = v;
   }
+  let currentView = "home";
 
   /* ---------------- shared UI ---------------- */
   function kpi(label, val, sub, up) {
@@ -113,30 +148,32 @@
         ${kpi("Auslastung", pct(rate), occ + " / " + units + " Einheiten", rate >= 80)}
       </div></div></div>`));
 
-    // pro Projekt eine Überblickskarte
     (D.projects || []).forEach(p => {
       const inv = FE.projectInvestment(p);
       const cf = FE.projectCashflow(p);
       const lastNetto = cf.length ? cf[cf.length - 1].netto : 0;
       const be = FE.breakEven(p);
-      const fort = Math.round(p.gewerke.reduce((s, x) => s + x.fortschritt, 0) / (p.gewerke.length || 1));
+      const fort = Math.round((p.gewerke || []).reduce((s, x) => s + x.fortschritt, 0) / ((p.gewerke || []).length || 1));
       const beTxt = be.investBreakEven ? dttm(be.investBreakEven) + (be.monateBisBE ? " (" + be.monateBisBE + " Mon.)" : " erreicht") : "noch offen";
-      out.push(el(`<div class="card col-6">
+      const tag = isAir(p) ? `<span class="chip chip-air">AirBnB</span>` : `<span class="chip">${fort}% Bau</span>`;
+      const extra = isAir(p)
+        ? `<div><span>Ø Netto/Mon.</span><b class="${lastNetto < 0 ? 'neg-t' : 'pos-t'}">${eur(lastNetto)}</b></div>
+           <div><span>Auslastung</span><b>${pct(p.airbnb ? p.airbnb.belegungsrate : 0)}</b></div>`
+        : `<div><span>Netto-CF zuletzt</span><b class="${lastNetto < 0 ? 'neg-t' : 'pos-t'}">${eur(lastNetto)}</b></div>
+           <div><span>Invest-Break-Even</span><b>${beTxt}</b></div>`;
+      out.push(el(`<div class="card col-6 home-proj" data-go="${esc(p.id)}">
         <div class="card-h"><div><div class="card-t">${esc(p.name)}</div>
-          <div class="card-s">${esc(p.scope)}</div></div>
-          <span class="chip">${fort}% Bau</span></div>
+          <div class="card-s">${esc(p.scope)}</div></div>${tag}</div>
         <div class="card-b">
           <div class="mini-grid">
             <div><span>Investiert</span><b>${eur(inv.investiert)}</b></div>
-            <div><span>Netto-CF zuletzt</span><b class="${lastNetto < 0 ? 'neg-t' : 'pos-t'}">${eur(lastNetto)}</b></div>
             <div><span>Kreditrate/Mon.</span><b>${eur(FE.projectMonthlyDebt(p))}</b></div>
-            <div><span>Invest-Break-Even</span><b>${beTxt}</b></div>
+            ${extra}
           </div>
           <div style="margin-top:12px">${spark(cf.map(r => r.netto), cf.map(r => r.monat))}</div>
         </div></div>`));
     });
 
-    // ===== Portfolio-Cashflow (kombiniert, letzte gemeinsame Monate) =====
     const monthSet = {};
     (D.projects || []).forEach(p => FE.projectCashflow(p).forEach(r => {
       monthSet[r.monat] = (monthSet[r.monat] || 0) + r.netto;
@@ -146,13 +183,12 @@
     out.push(el(`<div class="card col-8">
       <div class="card-h"><div><div class="card-t">Portfolio-Cashflow</div>
         <div class="card-s">Netto über alle Projekte je Monat</div></div>
-        <span class="chip ${totalNetto < 0 ? '' : ''}">Σ ${eur(totalNetto)}</span></div>
+        <span class="chip">Σ ${eur(totalNetto)}</span></div>
       <div class="card-b">${spark(combined, months)}
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--softer);margin-top:8px">
           <span>${months[0] || "—"}</span><span>${months[months.length - 1] || "—"}</span></div>
       </div></div>`));
 
-    // ===== Auf dem Schirm (Hinweise) =====
     const alerts = [];
     (D.rentals || []).forEach(o => {
       const frei = o.einheiten.filter(u => u.status === "frei").length;
@@ -161,9 +197,13 @@
       if (kuend) alerts.push({ t: "warn", txt: `${o.objekt}: ${kuend} Kündigung(en)` });
     });
     (D.projects || []).forEach(p => {
+      if (isAir(p)) {
+        const inv = FE.projectInvestment(p);
+        if (inv.investiert === 0) alerts.push({ t: "info", txt: `${p.name}: Investitionskosten in der Datenpflege ergänzen` });
+        return;
+      }
       const cf = FE.projectCashflow(p);
       if (cf.length && cf[cf.length - 1].netto < 0) alerts.push({ t: "warn", txt: `${p.name}: negativer Netto-Cashflow (${eur(cf[cf.length - 1].netto)})` });
-      // bevorstehende Sondertilgungen (nächste 12 Mon.)
       const now = new Date(); const in12 = new Date(now.getFullYear(), now.getMonth() + 12, 1);
       (p.kredite || []).forEach(k => (k.sondertilgungen || []).forEach(s => {
         const d = new Date(s.datum);
@@ -177,7 +217,6 @@
         <div class="card-s">Hinweise & Termine</div></div></div>
       <div class="card-b"><div class="alerts">${alertRows}</div></div></div>`));
 
-    // ===== Kreditübersicht (alle Kredite) =====
     const kreditRows = [];
     (D.projects || []).forEach(p => (p.kredite || []).forEach(k => {
       const s = FE.creditSummary(k);
@@ -185,16 +224,16 @@
         <td class="num">${eur(k.betrag)}</td><td class="num neg-t">${eur(s.restschuld)}</td>
         <td class="num">${eur(s.monatsrate)}</td><td>${esc(k.zinsSatz)}%</td><td>${s.tilgtNie ? "nie" : (s.abzahlungDatum ? dttm(s.abzahlungDatum) : "—")}</td></tr>`);
     }));
+    if (!kreditRows.length) kreditRows.push(`<tr><td colspan="6" class="note">Keine Kredite erfasst.</td></tr>`);
     out.push(el(`<div class="card col-7">
       <div class="card-h"><div><div class="card-t">Kredite</div>
-        <div class="card-s">alle Darlehen über beide Projekte</div></div>
+        <div class="card-s">alle Darlehen über alle Projekte</div></div>
         <span class="chip">${eur(totalDebtRest)} Restschuld</span></div>
       <div class="card-b" style="padding-top:4px"><div class="tw"><table><thead><tr>
         <th>Darlehen</th><th class="num">Summe</th><th class="num">Restschuld</th>
         <th class="num">Rate/Mon.</th><th>Zins</th><th>Ende</th></tr></thead>
         <tbody>${kreditRows.join("")}</tbody></table></div></div></div>`));
 
-    // ===== Vermietungsstatus =====
     const vermRows = (D.rentals || []).map(o => {
       let e = 0, v = 0, m = 0;
       o.einheiten.forEach(u => { e++; if (u.status === "vermietet") { v++; m += u.kaltmiete + u.nebenkosten; } });
@@ -209,10 +248,32 @@
         <div class="card-s">Auslastung je Objekt</div></div></div>
       <div class="card-b"><div class="vstats">${vermRows}</div></div></div>`));
 
+    setTimeout(() => $$(".home-proj").forEach(c => c.onclick = () => route(c.dataset.go)), 0);
     return out;
   }
 
-  /* ---------------- PROJECT (Baumstraße / Am Hünenberg) ---------------- */
+  /* ---------------- MIET-PROJEKT ---------------- */
+  function projectHero(p, fort, inv, statBoxes) {
+    return `<div class="proj-hero col-12">
+      <div class="proj-hero-bg"></div>
+      <div class="proj-hero-in">
+        <div class="proj-hero-l">
+          <div class="proj-tag">${isAir(p) ? "Kurzzeitvermietung" : "Projekt"}</div>
+          <h2>${esc(p.name)}</h2>
+          <div class="proj-addr">${esc(p.address)}</div>
+          <div class="proj-scope">${esc(p.scope)}</div>
+        </div>
+        <div class="proj-hero-r">
+          <div class="ring" style="--p:${fort}">
+            <div class="ring-num">${fort}<span>%</span></div>
+            <div class="ring-lab">${isAir(p) ? "Auslastung" : "Fortschritt"}</div>
+          </div>
+        </div>
+      </div>
+      <div class="proj-stats">${statBoxes}</div>
+    </div>`;
+  }
+
   function renderProject(id) {
     const p = (D.projects || []).find(x => x.id === id);
     const out = [];
@@ -223,32 +284,12 @@
     const totalA = sum(aktiv, g => g.angebot), totalG = sum(aktiv, g => g.gezahlt);
     const fort = Math.round(aktiv.reduce((s, x) => s + x.fortschritt, 0) / (aktiv.length || 1));
 
-    // HERO header (visuell überarbeitet)
-    out.push(el(`<div class="proj-hero col-12">
-      <div class="proj-hero-bg"></div>
-      <div class="proj-hero-in">
-        <div class="proj-hero-l">
-          <div class="proj-tag">Projekt</div>
-          <h2>${esc(p.name)}</h2>
-          <div class="proj-addr">📍 ${esc(p.address)}</div>
-          <div class="proj-scope">${esc(p.scope)}</div>
-        </div>
-        <div class="proj-hero-r">
-          <div class="ring" style="--p:${fort}">
-            <div class="ring-num">${fort}<span>%</span></div>
-            <div class="ring-lab">Fortschritt</div>
-          </div>
-        </div>
-      </div>
-      <div class="proj-stats">
-        <div class="ps"><span>Investition geplant</span><b>${eur(inv.geplant)}</b></div>
-        <div class="ps"><span>Bereits investiert</span><b>${eur(inv.investiert)}</b></div>
-        <div class="ps"><span>Gewerke gezahlt</span><b>${eur(totalG)} / ${eur(totalA)}</b></div>
-        <div class="ps"><span>Aktive Gewerke</span><b>${aktiv.length}</b></div>
-      </div>
-    </div>`));
+    out.push(el(projectHero(p, fort, inv,
+      `<div class="ps"><span>Investition geplant</span><b>${eur(inv.geplant)}</b></div>
+       <div class="ps"><span>Bereits investiert</span><b>${eur(inv.investiert)}</b></div>
+       <div class="ps"><span>Gewerke gezahlt</span><b>${eur(totalG)} / ${eur(totalA)}</b></div>
+       <div class="ps"><span>Aktive Gewerke</span><b>${aktiv.length}</b></div>`)));
 
-    // ===== GESAMTÜBERSICHT (KPIs) =====
     const cf = FE.projectCashflow(p);
     const yc = FE.yearlyCashflow(p);
     const be = FE.breakEven(p);
@@ -279,7 +320,6 @@
         </div>
       </div></div>`));
 
-    // Gewerke
     const cards = aktiv.map(g => {
       const o = g.angebot - g.gezahlt;
       const tone = g.fortschritt >= 100 ? "done" : g.fortschritt > 0 ? "wip" : "todo";
@@ -289,26 +329,143 @@
         <div class="bar"><span style="width:${g.fortschritt}%"></span></div>
         <div class="gw-row"><span>Angebot</span><b>${eur(g.angebot)}</b></div>
         <div class="gw-row"><span>Gezahlt</span><b>${eur(g.gezahlt)}</b></div>
-        <div class="gw-row"><span>Offen</span><b style="color:${o > 0 ? '#f3b4ae' : 'var(--accent-2)'}">${eur(o)}</b></div>
+        <div class="gw-row"><span>Offen</span><b style="color:${o > 0 ? 'var(--danger)' : 'var(--accent-2)'}">${eur(o)}</b></div>
       </div>`;
     }).join("");
     out.push(el(`<div class="card col-12">
       <div class="card-h"><div><div class="card-t">Gewerke</div><div class="card-s">${aktiv.length} aktive Gewerke</div></div></div>
       <div class="card-b"><div class="gw-grid">${cards}</div></div></div>`));
 
-    // Kurzfinanz auf der Projektseite (Detail unter Finanzen)
-    out.push(financeProjectCard(p, true));
+    out.push(financeProjectCard(p));
     return out;
   }
 
-  /* ---------------- FINANZEN (pro Projekt) ---------------- */
+  /* ---------------- AIRBNB-PROJEKT ---------------- */
+  function renderAirbnb(p) {
+    const out = [];
+    const a = p.airbnb || {};
+    const inv = FE.projectInvestment(p);
+    const mod = FE.airbnbModel(p, 30.4);
+    const be = FE.breakEven(p);
+    const cf = FE.projectCashflow(p);
+    const jahresNetto = cf.reduce((s, r) => s + r.netto, 0);
+
+    out.push(el(projectHero(p, Math.round(a.belegungsrate || 0), inv,
+      `<div class="ps"><span>Ø Umsatz / Monat</span><b>${eur(mod.bruttoUmsatz)}</b></div>
+       <div class="ps"><span>Ø Netto / Monat</span><b>${eur(mod.netto)}</b></div>
+       <div class="ps"><span>Netto / Jahr</span><b>${eur(jahresNetto)}</b></div>
+       <div class="ps"><span>Nachtpreis</span><b>${eur(a.nachtpreis)}</b></div>`)));
+
+    // Steuerungspult
+    out.push(el(`<div class="card col-12 air-control">
+      <div class="card-h"><div><div class="card-t">Steuerung</div>
+        <div class="card-s">Stellschrauben bewegen – die Hochrechnung aktualisiert sich live</div></div>
+        <button class="btn" id="airToData">In Datenpflege öffnen →</button></div>
+      <div class="card-b"><div class="air-sliders" id="airSliders"></div></div></div>`));
+
+    // Live-Ergebniskarte
+    out.push(el(`<div class="card col-12" id="airResultCard">
+      <div class="card-h"><div><div class="card-t">Monats-Hochrechnung</div>
+        <div class="card-s">auf Basis der aktuellen Steuerung (Ø-Monat = 30,4 Tage)</div></div></div>
+      <div class="card-b" id="airResult"></div></div>`));
+
+    // Jahresverlauf
+    out.push(el(`<div class="card col-12">
+      <div class="card-h"><div><div class="card-t">Jahresverlauf</div>
+        <div class="card-s">Netto je Monat über 12 Monate (modelliert)</div></div>
+        <span class="chip">Σ ${eur(jahresNetto)}</span></div>
+      <div class="card-b" id="airYear"></div></div>`));
+
+    setTimeout(() => { buildAirControls(p); }, 0);
+    return out;
+  }
+
+  const AIR_FIELDS = [
+    ["nachtpreis", "Nachtpreis", "€", 20, 400, 5],
+    ["belegungsrate", "Belegung", "%", 0, 100, 1],
+    ["naechteProBuchung", "Ø Nächte / Buchung", "", 1, 14, 1],
+    ["reinigungProBuchung", "Reinigungsgebühr (Gast)", "€", 0, 150, 5],
+    ["reinigungskostenIntern", "Reinigungskosten (intern)", "€", 0, 150, 5],
+    ["plattformProvision", "Plattform-Provision", "%", 0, 30, 1],
+    ["fixkostenMonat", "Fixkosten / Monat", "€", 0, 1500, 10],
+    ["betreuungMonat", "Betreuung / Monat", "€", 0, 1500, 10]
+  ];
+
+  function buildAirControls(p) {
+    const host = $("#airSliders");
+    if (!host) return;
+    p.airbnb = p.airbnb || {};
+    host.innerHTML = "";
+    AIR_FIELDS.forEach(([key, label, unit, min, max, step]) => {
+      const val = Number(p.airbnb[key]) || 0;
+      const row = el(`<div class="air-sl">
+        <div class="air-sl-top"><span>${esc(label)}</span><b><span class="air-val">${num(val)}</span>${unit ? " " + unit : ""}</b></div>
+        <input type="range" min="${min}" max="${max}" step="${step}" value="${val}">
+      </div>`);
+      const input = row.querySelector("input");
+      const valEl = row.querySelector(".air-val");
+      input.addEventListener("input", e => {
+        const v = Number(e.target.value);
+        p.airbnb[key] = v;
+        valEl.textContent = num(v);
+        updateAirResult(p);
+      });
+      host.appendChild(row);
+    });
+    updateAirResult(p);
+  }
+
+  function updateAirResult(p) {
+    const mod = FE.airbnbModel(p, 30.4);
+    const host = $("#airResult");
+    if (host) {
+      host.innerHTML = `<div class="kpis">
+        ${kpi("Ø Umsatz / Monat", eur(mod.bruttoUmsatz), num(mod.belegteNaechte) + " belegte Nächte", true)}
+        ${kpi("Plattform-Provision", "− " + eur(mod.provisionKosten), pct(p.airbnb.plattformProvision) + " v. Übernachtung", false)}
+        ${kpi("Reinigung intern", "− " + eur(mod.reinigungskosten), num(mod.buchungen) + " Buchungen", false)}
+        ${kpi("Fixkosten + Betreuung", "− " + eur(mod.fixkosten + mod.betreuung), "pro Monat", false)}
+        ${kpi("Kreditrate", "− " + eur(mod.kreditrate), (p.kredite || []).length + " Kredit(e)", false)}
+        ${kpi("Netto / Monat", eur(mod.netto), "nach allen Kosten", mod.netto >= 0)}
+      </div>
+      <div class="air-flow">
+        <div class="air-flow-bar">
+          <span class="afb afb-in" style="flex:${Math.max(0.01, mod.bruttoUmsatz)}" title="Umsatz ${eur(mod.bruttoUmsatz)}"></span>
+        </div>
+        <div class="air-flow-bar">
+          <span class="afb afb-prov" style="flex:${Math.max(0.01, mod.provisionKosten)}" title="Provision"></span>
+          <span class="afb afb-rein" style="flex:${Math.max(0.01, mod.reinigungskosten)}" title="Reinigung"></span>
+          <span class="afb afb-fix" style="flex:${Math.max(0.01, mod.fixkosten + mod.betreuung)}" title="Fix + Betreuung"></span>
+          <span class="afb afb-kredit" style="flex:${Math.max(0.01, mod.kreditrate)}" title="Kredit"></span>
+          <span class="afb afb-net" style="flex:${Math.max(0.01, Math.abs(mod.netto))}" title="Netto"></span>
+        </div>
+        <div class="air-legend">
+          <span><i class="afb-in"></i>Umsatz</span>
+          <span><i class="afb-prov"></i>Provision</span>
+          <span><i class="afb-rein"></i>Reinigung</span>
+          <span><i class="afb-fix"></i>Fix/Betreuung</span>
+          <span><i class="afb-kredit"></i>Kredit</span>
+          <span><i class="afb-net"></i>Netto</span>
+        </div>
+      </div>`;
+    }
+    const yhost = $("#airYear");
+    if (yhost) {
+      const cf = FE.projectCashflow(p);
+      yhost.innerHTML = spark(cf.map(r => r.netto), cf.map(r => r.monat)) +
+        `<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--softer);margin-top:8px">
+          <span>${cf[0] ? cf[0].monat : "—"}</span><span>${cf.length ? cf[cf.length - 1].monat : "—"}</span></div>`;
+    }
+  }
+
+  /* ---------------- FINANZEN ---------------- */
   let financeActive = null;
   function renderFinanzen() {
     const out = [];
     const projs = D.projects || [];
-    if (!financeActive) financeActive = projs[0] ? projs[0].id : null;
+    if (!financeActive || !projs.find(p => p.id === financeActive) && financeActive !== "__all") {
+      financeActive = projs[0] ? projs[0].id : null;
+    }
 
-    // Tabs
     const tabs = projs.map(p => `<button class="ftab ${p.id === financeActive ? 'on' : ''}" data-pid="${p.id}">${esc(p.name)}</button>`).join("");
     const tabBar = el(`<div class="col-12 ftabs">${tabs}<button class="ftab ${financeActive === '__all' ? 'on' : ''}" data-pid="__all">Gesamt</button></div>`);
     tabBar.querySelectorAll(".ftab").forEach(b => b.onclick = () => { financeActive = b.dataset.pid; route("finanzen"); });
@@ -318,7 +475,6 @@
     const p = projs.find(x => x.id === financeActive) || projs[0];
     if (!p) { out.push(el(`<div class="card col-12"><div class="card-b note">Kein Projekt.</div></div>`)); return out; }
 
-    // KPIs
     const inv = FE.projectInvestment(p);
     const cf = FE.projectCashflow(p);
     const yc = FE.yearlyCashflow(p);
@@ -339,23 +495,19 @@
         ${kpi("Investiert", eur(inv.investiert), "von " + eur(inv.geplant), true)}
       </div></div></div>`));
 
-    // Break-Even Karte
     out.push(breakEvenCard(p, be, inv, monthlyDebt));
 
-    // Einnahmen vs Ausgaben monatlich
     out.push(el(`<div class="card col-8">
       <div class="card-h"><div><div class="card-t">Einnahmen vs. Ausgaben</div>
-        <div class="card-s">monatlich · Ausgaben inkl. Kreditrate & Nebenkosten</div></div></div>
+        <div class="card-s">monatlich · Ausgaben inkl. Kreditrate${isAir(p) ? " & Plattformkosten" : " & Nebenkosten"}</div></div></div>
       <div class="card-b">${dualChart(cf)}</div></div>`));
 
-    // Jahresübersicht
     const yrows = yc.map(y => `<tr><td><b>${y.jahr}</b></td><td class="num">${eur(y.einnahmen)}</td>
       <td class="num">${eur(y.ausgaben)}</td><td class="num ${y.netto < 0 ? 'neg-t' : 'pos-t'}">${eur(y.netto)}</td></tr>`).join("");
     out.push(el(`<div class="card col-4">
       <div class="card-h"><div><div class="card-t">Jahresübersicht</div><div class="card-s">Einnahmen / Ausgaben / Netto</div></div></div>
       <div class="card-b" style="padding-top:4px"><div class="tw"><table><thead><tr><th>Jahr</th><th class="num">Ein</th><th class="num">Aus</th><th class="num">Netto</th></tr></thead><tbody>${yrows}</tbody></table></div></div></div>`));
 
-    // Kredite Detail
     (p.kredite || []).forEach(k => out.push(creditCard(k)));
     return out;
   }
@@ -386,7 +538,7 @@
     let status, cls, detail;
     if (reached) { status = "Erreicht"; cls = "be-ok"; detail = "Die kumulierten Netto-Einnahmen decken die Investition."; }
     else if (proj) { status = dttm(be.investBreakEven); cls = "be-soon"; detail = `Voraussichtlich in ${be.monateBisBE} Monaten bei ø ${eur(be.monatlicheRate)} Netto/Monat.`; }
-    else { status = "noch offen"; cls = "be-wait"; detail = be.monatlicheRate < 0 ? `Aktueller Netto-Cashflow negativ (${eur(be.monatlicheRate)}/Monat) – Vermietung/Erträge müssen steigen.` : "Zu wenig Datenbasis für eine Prognose."; }
+    else { status = "noch offen"; cls = "be-wait"; detail = be.monatlicheRate < 0 ? `Aktueller Netto-Cashflow negativ (${eur(be.monatlicheRate)}/Monat) – Erträge müssen steigen.` : "Zu wenig Datenbasis für eine Prognose."; }
 
     const cfBE = be.cfPositive ? "positiv" : "negativ";
     return el(`<div class="card col-12 be-card">
@@ -421,13 +573,13 @@
        k.rateModus === "laufzeit" ? "Annuität · feste Laufzeit" : "Annuität · Tilgungssatz");
     const sonderRows = (k.sondertilgungen || []).map(x => `<tr><td>${dttm(x.datum)}</td><td class="num">${eur(x.betrag)}</td></tr>`).join("")
       || `<tr><td colspan="2" class="note">keine Sondertilgungen</td></tr>`;
-    const yearly = []; const seen = {};
+    const seen = {};
     s.plan.forEach(r => { const y = r.monat.slice(0, 4); seen[y] = r.restschuld; });
-    Object.keys(seen).forEach(y => yearly.push(seen[y]));
+    const yearly = Object.keys(seen).map(y => seen[y]);
     const laufzeitTxt = s.tilgtNie ? "> 80 J. (Rate deckt Zins nicht)"
       : s.abzahlungDatum ? `${s.laufzeitJahre} J. (bis ${dttm(s.abzahlungDatum)})`
       : `${k.laufzeitJahre} J.`;
-    const warn = s.tilgtNie ? `<div class="warn-box">⚠ Die monatliche Rate deckt die Zinsen nicht – das Darlehen wird so nie getilgt. Rate erhöhen.</div>` : "";
+    const warn = s.tilgtNie ? `<div class="warn-box">Die monatliche Rate deckt die Zinsen nicht – das Darlehen wird so nie getilgt. Bitte Rate erhöhen.</div>` : "";
     return el(`<div class="card col-6 credit-card">
       <div class="card-h"><div><div class="card-t">${esc(k.bezeichnung)}</div>
         <div class="card-s">${esc(k.glaeubiger)} · ${modusTxt}</div></div>
@@ -484,7 +636,7 @@
       const inv = FE.projectInvestment(p);
       let rest = 0; (p.kredite || []).forEach(k => rest += FE.creditSummary(k).restschuld);
       const cf = FE.projectCashflow(p); const ln = cf.length ? cf[cf.length - 1].netto : 0;
-      return `<tr><td><b>${esc(p.name)}</b></td><td class="num">${eur(inv.investiert)}</td>
+      return `<tr><td><b>${esc(p.name)}</b>${isAir(p) ? ' <span class="chip chip-air">AirBnB</span>' : ''}</td><td class="num">${eur(inv.investiert)}</td>
         <td class="num">${eur(rest)}</td><td class="num">${eur(FE.projectMonthlyDebt(p))}</td>
         <td class="num ${ln < 0 ? 'neg-t' : 'pos-t'}">${eur(ln)}</td></tr>`;
     }).join("");
@@ -526,27 +678,28 @@
     return out;
   }
 
-  /* ---------------- DATEN (Pflegemaske) ---------------- */
+  /* ---------------- DATENPFLEGE ---------------- */
   let dz = "projekte";
   let diffShown = false;
   function renderDaten() {
     diffShown = false;
     const out = [];
-    const subs = [["projekte", "Projekte & Gewerke"], ["kredite", "Kredite"], ["finanz", "Finanzbewegungen"], ["vermietung", "Vermietung"], ["zugang", "Zugang & Export"]];
+    const subs = [["projekte", "Projekte & Gewerke"], ["airbnb", "AirBnB"], ["kredite", "Kredite"], ["finanz", "Finanzbewegungen"], ["vermietung", "Vermietung"], ["zugang", "Zugang & Export"]];
     const bar = el(`<div class="col-12 ftabs">${subs.map(s => `<button class="ftab ${s[0] === dz ? 'on' : ''}" data-dz="${s[0]}">${s[1]}</button>`).join("")}</div>`);
     bar.querySelectorAll(".ftab").forEach(b => b.onclick = () => { dz = b.dataset.dz; route("daten"); });
     out.push(bar);
 
-    out.push(el(`<div class="card col-12"><div class="card-b" style="display:flex;flex-direction:column;gap:12px">
-      <div class="note">Felder bearbeiten – der <b>aktuelle Wert</b> steht klein/ausgegraut darunter. Geänderte Felder werden grün markiert.</div>
+    out.push(el(`<div class="card col-12 save-card"><div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+      <div class="note">Werte ändern – der <b>aktuelle Wert</b> steht klein darunter, geänderte Felder werden grün markiert. Prüfen, dann den Code kopieren und in <code>data.js</code> ersetzen.</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <button class="btn btn-accent" id="copyBtn">📋 Änderungen prüfen & Code kopieren</button>
+        <button class="btn btn-accent" id="copyBtn">Änderungen prüfen & Code kopieren</button>
         <span class="note" id="copyMsg"></span>
       </div>
       <div id="diffPanel" class="diff-panel" style="display:none"></div>
     </div></div>`));
 
     if (dz === "projekte") out.push(...formProjekte());
+    if (dz === "airbnb") out.push(...formAirbnb());
     if (dz === "kredite") out.push(...formKredite());
     if (dz === "finanz") out.push(...formFinanz());
     if (dz === "vermietung") out.push(...formVermietung());
@@ -556,8 +709,6 @@
     return out;
   }
 
-  // ---- Form helpers (live binding to D) ----
-  // Zeigt kleinen Titel + ausgegrauten aktuellen Wert, damit klar ist, was überschrieben wird.
   function field(label, value, onInput, type) {
     const cur = (value === "" || value == null) ? "leer" : value;
     const w = el(`<label class="fld">
@@ -569,7 +720,6 @@
     const curEl = w.querySelector(".fld-cur");
     inp.addEventListener("input", e => {
       onInput(type === "number" ? Number(e.target.value) : e.target.value);
-      // markieren, wenn vom Ausgangswert abweichend
       curEl.classList.toggle("changed", String(e.target.value) !== String(value));
     });
     return w;
@@ -596,7 +746,7 @@
 
   function formProjekte() {
     const out = [];
-    (D.projects || []).forEach((p, pi) => {
+    (D.projects || []).filter(p => !isAir(p)).forEach(p => {
       const card = el(`<div class="card col-12"><div class="card-h"><div><div class="card-t">${esc(p.name)}</div>
         <div class="card-s">Stammdaten · ${p.gewerke.length} Gewerke</div></div></div><div class="card-b form-body"></div></div>`);
       const body = card.querySelector(".form-body");
@@ -611,7 +761,6 @@
       );
       body.appendChild(stamm);
 
-      // Gewerke table editor
       body.appendChild(el(`<div class="sub-h">Gewerke</div>`));
       const gwWrap = el(`<div class="edit-rows"></div>`);
       const renderGw = () => {
@@ -624,7 +773,7 @@
             field("Angebot €", g.angebot, v => g.angebot = v, "number"),
             field("Gezahlt €", g.gezahlt, v => g.gezahlt = v, "number"),
             field("Fortschr. %", g.fortschritt, v => g.fortschritt = v, "number"),
-            rowBtn("✕", () => { p.gewerke.splice(gi, 1); renderGw(); }, true),
+            rowBtn("Entfernen", () => { p.gewerke.splice(gi, 1); renderGw(); }, true),
           );
           gwWrap.appendChild(r);
         });
@@ -636,7 +785,6 @@
         renderGw();
       }));
 
-      // weitere Investition
       body.appendChild(el(`<div class="sub-h">Weitere Investitionskosten</div>`));
       const wiWrap = el(`<div class="edit-rows"></div>`);
       p.weitereInvestition = p.weitereInvestition || [];
@@ -645,12 +793,78 @@
         p.weitereInvestition.forEach((x, xi) => {
           const r = el(`<div class="erow erow-2"></div>`);
           r.append(field("Titel", x.titel, v => x.titel = v), field("Betrag €", x.betrag, v => x.betrag = v, "number"),
-            rowBtn("✕", () => { p.weitereInvestition.splice(xi, 1); renderWi(); }, true));
+            rowBtn("Entfernen", () => { p.weitereInvestition.splice(xi, 1); renderWi(); }, true));
           wiWrap.appendChild(r);
         });
       };
       renderWi(); body.appendChild(wiWrap);
       body.appendChild(rowBtn("+ Kostenposition", () => { p.weitereInvestition.push({ titel: "", betrag: 0 }); renderWi(); }));
+      out.push(card);
+    });
+    return out;
+  }
+
+  function formAirbnb() {
+    const out = [];
+    const airProjects = (D.projects || []).filter(isAir);
+    if (!airProjects.length) {
+      out.push(el(`<div class="card col-12"><div class="card-b note">Kein AirBnB-Projekt vorhanden.</div></div>`));
+      return out;
+    }
+    airProjects.forEach(p => {
+      p.airbnb = p.airbnb || {};
+      const card = el(`<div class="card col-12"><div class="card-h"><div><div class="card-t">${esc(p.name)}</div>
+        <div class="card-s">Stammdaten & Steuerung der Kurzzeitvermietung</div></div></div><div class="card-b form-body"></div></div>`);
+      const body = card.querySelector(".form-body");
+
+      const stamm = el(`<div class="form-grid"></div>`);
+      stamm.append(
+        field("Name", p.name, v => p.name = v),
+        field("Adresse", p.address, v => p.address = v),
+        field("Umfang", p.scope, v => p.scope = v),
+        field("Investitionsstart", p.investitionStart, v => p.investitionStart = v),
+        field("Kontostand (€)", (p.account || {}).kontostand, v => { p.account = p.account || {}; p.account.kontostand = v; }, "number"),
+        field("Rücklagen (€)", (p.account || {}).ruecklagen, v => { p.account = p.account || {}; p.account.ruecklagen = v; }, "number"),
+      );
+      body.appendChild(stamm);
+
+      body.appendChild(el(`<div class="sub-h">Steuerung Kurzzeitvermietung</div>`));
+      const air = el(`<div class="form-grid"></div>`);
+      air.append(
+        field("Nachtpreis €", p.airbnb.nachtpreis, v => p.airbnb.nachtpreis = v, "number"),
+        field("Belegungsrate %", p.airbnb.belegungsrate, v => p.airbnb.belegungsrate = v, "number"),
+        field("Ø Nächte / Buchung", p.airbnb.naechteProBuchung, v => p.airbnb.naechteProBuchung = v, "number"),
+        field("Reinigungsgebühr Gast €", p.airbnb.reinigungProBuchung, v => p.airbnb.reinigungProBuchung = v, "number"),
+        field("Reinigungskosten intern €", p.airbnb.reinigungskostenIntern, v => p.airbnb.reinigungskostenIntern = v, "number"),
+        field("Plattform-Provision %", p.airbnb.plattformProvision, v => p.airbnb.plattformProvision = v, "number"),
+        field("Fixkosten / Monat €", p.airbnb.fixkostenMonat, v => p.airbnb.fixkostenMonat = v, "number"),
+        field("Betreuung / Monat €", p.airbnb.betreuungMonat, v => p.airbnb.betreuungMonat = v, "number"),
+      );
+      body.appendChild(air);
+
+      body.appendChild(el(`<div class="sub-h">Investition (Gewerke / Ausstattung)</div>`));
+      const gwWrap = el(`<div class="edit-rows"></div>`);
+      p.gewerke = p.gewerke || [];
+      const renderGw = () => {
+        gwWrap.innerHTML = "";
+        p.gewerke.forEach((g, gi) => {
+          const r = el(`<div class="erow erow-gw"></div>`);
+          r.append(
+            field("Position", g.name, v => g.name = v),
+            field("Firma", g.firma, v => g.firma = v),
+            field("Angebot €", g.angebot, v => g.angebot = v, "number"),
+            field("Gezahlt €", g.gezahlt, v => g.gezahlt = v, "number"),
+            field("Fortschr. %", g.fortschritt, v => g.fortschritt = v, "number"),
+            rowBtn("Entfernen", () => { p.gewerke.splice(gi, 1); renderGw(); }, true),
+          );
+          gwWrap.appendChild(r);
+        });
+      };
+      renderGw(); body.appendChild(gwWrap);
+      body.appendChild(rowBtn("+ Position hinzufügen", () => {
+        p.gewerke.push({ aktiv: true, sort: p.gewerke.length + 1, name: "Neue Position", firma: "", angebot: 0, gezahlt: 0, fortschritt: 0 });
+        renderGw();
+      }));
       out.push(card);
     });
     return out;
@@ -667,7 +881,6 @@
         body.innerHTML = "";
         p.kredite.forEach((k, ki) => {
           const block = el(`<div class="credit-edit"></div>`);
-          // Felder neu aufbauen, je nach Modus (rerender bei Moduswechsel)
           const fieldsWrap = el(`<div></div>`);
           const preview = el(`<div class="calc-preview"></div>`);
           const updatePreview = () => {
@@ -675,7 +888,7 @@
             if (k.art === "endfaellig") {
               preview.innerHTML = `<b>Zins/Monat ${eur(s.monatsrate)}</b> · Tilgung endfällig nach ${k.laufzeitJahre} J. · Zinsen gesamt ${eur(s.gesamtZinsen)}`;
             } else if (s.tilgtNie) {
-              preview.innerHTML = `<span class="cp-warn">⚠ Rate ${eur(s.monatsrate)} deckt die Zinsen nicht – wird nie getilgt.</span>`;
+              preview.innerHTML = `<span class="cp-warn">Rate ${eur(s.monatsrate)} deckt die Zinsen nicht – wird nie getilgt.</span>`;
             } else {
               preview.innerHTML = `<b>Rate ${eur(s.monatsrate)}/Monat</b> · Laufzeit <b>${s.laufzeitJahre} J.</b>${s.abzahlungDatum ? " (bis " + dttm(s.abzahlungDatum) + ")" : ""} · Zinsen gesamt ${eur(s.gesamtZinsen)}`;
             }
@@ -683,7 +896,6 @@
           const buildFields = () => {
             fieldsWrap.innerHTML = "";
             const g = el(`<div class="form-grid"></div>`);
-            const onChange = v => { /* generic, preview updated per-field below */ };
             const f = (lab, key, type) => field(lab, k[key], v => { k[key] = v; updatePreview(); }, type);
             g.append(
               f("Bezeichnung", "bezeichnung"),
@@ -721,7 +933,7 @@
               const r = el(`<div class="erow erow-2"></div>`);
               r.append(field("Datum (YYYY-MM-DD)", s.datum, v => { s.datum = v; updatePreview(); }),
                 field("Betrag €", s.betrag, v => { s.betrag = v; updatePreview(); }, "number"),
-                rowBtn("✕", () => { k.sondertilgungen.splice(si, 1); renderSt(); updatePreview(); }, true));
+                rowBtn("Entfernen", () => { k.sondertilgungen.splice(si, 1); renderSt(); updatePreview(); }, true));
               stWrap.appendChild(r);
             });
           };
@@ -742,7 +954,7 @@
 
   function formFinanz() {
     const out = [];
-    (D.projects || []).forEach(p => {
+    (D.projects || []).filter(p => !isAir(p)).forEach(p => {
       const card = el(`<div class="card col-12"><div class="card-h"><div><div class="card-t">${esc(p.name)} – Finanzbewegungen</div>
         <div class="card-s">monatlich · Miete & NK = Einnahmen, Betriebs-/sonstige Kosten = Ausgaben (Kreditrate rechnet das Dashboard)</div></div></div><div class="card-b form-body"></div></div>`);
       const body = card.querySelector(".form-body");
@@ -754,12 +966,12 @@
         p.cashflow.forEach((r, ri) => {
           const row = el(`<div class="erow erow-fin"></div>`);
           row.append(
-            field("", r.monat, v => r.monat = v),
-            field("", r.miete, v => r.miete = v, "number"),
-            field("", r.nebenkosten, v => r.nebenkosten = v, "number"),
-            field("", r.betriebskosten, v => r.betriebskosten = v, "number"),
-            field("", r.sonstigeKosten, v => r.sonstigeKosten = v, "number"),
-            rowBtn("✕", () => { p.cashflow.splice(ri, 1); render(); }, true));
+            field("Monat", r.monat, v => r.monat = v),
+            field("Miete", r.miete, v => r.miete = v, "number"),
+            field("NK", r.nebenkosten, v => r.nebenkosten = v, "number"),
+            field("Betrieb", r.betriebskosten, v => r.betriebskosten = v, "number"),
+            field("Sonstige", r.sonstigeKosten, v => r.sonstigeKosten = v, "number"),
+            rowBtn("Entfernen", () => { p.cashflow.splice(ri, 1); render(); }, true));
           body.appendChild(row);
         });
         body.appendChild(rowBtn("+ Monat hinzufügen", () => {
@@ -770,6 +982,10 @@
       };
       render(); out.push(card);
     });
+    const airNote = (D.projects || []).filter(isAir).length
+      ? el(`<div class="card col-12"><div class="card-b note">AirBnB-Projekte werden über die Steuerung im Tab „AirBnB" modelliert – hier sind keine manuellen Monatsbewegungen nötig.</div></div>`)
+      : null;
+    if (airNote) out.push(airNote);
     return out;
   }
 
@@ -796,7 +1012,7 @@
             field("Kalt €", u.kaltmiete, v => u.kaltmiete = v, "number"),
             field("NK €", u.nebenkosten, v => u.nebenkosten = v, "number"),
             selectField("Status", u.status, [["vermietet", "vermietet"], ["frei", "frei"], ["kuendigung", "Kündigung"]], v => u.status = v),
-            rowBtn("✕", () => { o.einheiten.splice(ui, 1); render(); }, true));
+            rowBtn("Entfernen", () => { o.einheiten.splice(ui, 1); render(); }, true));
           wrap.appendChild(r);
         });
       };
@@ -826,7 +1042,7 @@
       if (!v) { $("#pwHashMsg").textContent = "Bitte Passwort eingeben."; return; }
       const h = await sha256(v);
       D.auth = D.auth || {}; D.auth.passwordHash = h;
-      $("#pwHashMsg").innerHTML = `Gesetzt ✓ – oben „Änderungen prüfen & Code kopieren" klicken.`;
+      $("#pwHashMsg").innerHTML = `Gesetzt – oben „Änderungen prüfen & Code kopieren" klicken.`;
     });
     pwRow.append(inp, btn); body.appendChild(pwRow);
     body.appendChild(el(`<div class="note" id="pwHashMsg" style="margin-top:10px">Aktueller Hash bleibt erhalten, bis du einen neuen erzeugst.</div>`));
@@ -834,25 +1050,22 @@
     return out;
   }
 
-  // Baut den fertigen data.js-Code
   function buildDataCode() {
     const clean = { meta: D.meta, auth: D.auth, projects: D.projects, rentals: D.rentals };
     return "/* data.js — Stand " + new Date().toLocaleString("de-DE") + " */\n" +
       "window.DASHBOARD_DATA = " + JSON.stringify(clean, null, 2) + ";\n";
   }
 
-  // Kompakter Vergleich Original (window.DASHBOARD_DATA) vs. bearbeitet (D)
   function computeChanges() {
     const orig = window.DASHBOARD_DATA || {};
     const changes = [];
     const fmt = v => {
       if (v === undefined) return "—";
-      if (v === "" ) return "(leer)";
+      if (v === "") return "(leer)";
       if (typeof v === "object") return Array.isArray(v) ? `[${v.length} Einträge]` : "{…}";
       return String(v);
     };
     function walk(a, b, path) {
-      // a = original, b = neu
       if (Array.isArray(a) || Array.isArray(b)) {
         const ax = Array.isArray(a) ? a : [];
         const bx = Array.isArray(b) ? b : [];
@@ -872,7 +1085,6 @@
         if (String(a) !== String(b)) changes.push({ path: path, from: fmt(a), to: fmt(b) });
       }
     }
-    // Über die relevanten Wurzeln gehen, mit sprechenden Namen
     walk(orig.meta, D.meta, "Meta");
     walk(orig.auth, D.auth, "Zugang");
     (D.projects || []).forEach((p, i) => walk((orig.projects || [])[i], p, p.name || ("Projekt " + (i + 1))));
@@ -889,12 +1101,14 @@
       einheiten: "Einheiten", weitereInvestition: "Weitere Invest.", miete: "Miete",
       betriebskosten: "Betriebskosten", sonstigeKosten: "Sonstige Kosten", monat: "Monat",
       datum: "Datum", titel: "Titel", address: "Adresse", scope: "Umfang", version: "Version",
-      sessionHours: "Session Std." };
+      sessionHours: "Session Std.", airbnb: "AirBnB", nachtpreis: "Nachtpreis", belegungsrate: "Belegung %",
+      reinigungProBuchung: "Reinigungsgebühr", naechteProBuchung: "Nächte/Buchung", plattformProvision: "Provision %",
+      reinigungskostenIntern: "Reinigung intern", fixkostenMonat: "Fixkosten/Mon.", betreuungMonat: "Betreuung/Mon.",
+      type: "Typ" };
     return map[k] || k;
   }
   function niceKey(path, k) { return (path ? path + " › " : "") + labelize(k); }
 
-  // Schritt 1: Änderungen zeigen. Schritt 2 (erneuter Klick): kopieren.
   function showDiffThenCopy() {
     const panel = $("#diffPanel");
     const btn = $("#copyBtn");
@@ -917,25 +1131,23 @@
       panel.innerHTML = `<div class="diff-head">${changes.length} Änderung${changes.length === 1 ? "" : "en"} – bitte prüfen:</div>
         <div class="diff-list">${rows}</div>
         <div class="diff-note">Beim nächsten Klick wird der komplette Code in die Zwischenablage kopiert.</div>`;
-      btn.textContent = "📋 Jetzt in Zwischenablage kopieren";
+      btn.textContent = "Jetzt in Zwischenablage kopieren";
       diffShown = true;
       return;
     }
 
-    // Schritt 2: kopieren
     const code = buildDataCode();
     copyToClipboard(code).then(ok => {
       if (msg) {
-        msg.textContent = ok ? "✓ Kompletter Code kopiert – in data.js einfügen & ersetzen." : "Kopieren nicht möglich – Code unten markieren.";
+        msg.textContent = ok ? "Kompletter Code kopiert – in data.js einfügen & ersetzen." : "Kopieren nicht möglich – Code unten markieren.";
         msg.style.color = ok ? "var(--accent-2)" : "var(--warn)";
       }
       if (!ok) {
-        // Fallback: Code zum manuellen Kopieren anzeigen
         panel.innerHTML = `<div class="diff-head">Code manuell kopieren:</div>
           <textarea class="diff-code" readonly>${esc(code)}</textarea>`;
         const ta = panel.querySelector("textarea"); if (ta) { ta.focus(); ta.select(); }
       }
-      btn.textContent = "📋 Änderungen prüfen & Code kopieren";
+      btn.textContent = "Änderungen prüfen & Code kopieren";
       diffShown = false;
     });
   }
@@ -957,23 +1169,15 @@
     } catch { return false; }
   }
 
-  const VIEWS = {
-    home: renderHome,
-    baumstrasse: () => renderProject("baumstrasse"),
-    huenenberg: () => renderProject("huenenberg"),
-    vermietung: renderVermietung,
-    finanzen: renderFinanzen,
-    daten: renderDaten
-  };
-
   /* ---------------- Boot ---------------- */
   document.addEventListener("DOMContentLoaded", () => {
     $("#loginBtn").addEventListener("click", tryLogin);
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
     $("#logoutBtn").addEventListener("click", logout);
-    $$("#nav a").forEach(a => a.addEventListener("click", () => route(a.dataset.view)));
-    // delegated: project "Zu Finanzen" button
-    document.addEventListener("click", e => { if (e.target && e.target.id === "goFin") route("finanzen"); });
+    document.addEventListener("click", e => {
+      if (e.target && e.target.id === "goFin") route("finanzen");
+      if (e.target && e.target.id === "airToData") { dz = "airbnb"; route("daten"); }
+    });
     if (sessionValid()) enterApp();
     else { $("#login").classList.remove("hide"); setTimeout(() => $("#pw").focus(), 150); }
   });
