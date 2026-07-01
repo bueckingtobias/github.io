@@ -350,6 +350,10 @@
       background:rgba(0,184,118,.18);
       border-color:rgba(174,255,220,.28);
     }
+    .hero-badge.rented{
+      background:rgba(179,0,0,.28);
+      border-color:rgba(255,128,128,.38);
+    }
     .hero-dots,
     .apartment-dots{
       display:flex;
@@ -439,7 +443,7 @@
       left:12.5%;
       top:11px;
       height:3px;
-      width:62.5%;
+      width:87.5%;
       border-radius:999px;
       background:linear-gradient(90deg, #2e7d52 0%, #4faa72 55%, var(--success) 100%);
       z-index:0;
@@ -977,7 +981,7 @@
       <p>
         Eine umfassend sanierte Doppelhaushälfte in ruhiger Wohnlage in Syke. Bestehende Bausubstanz
         trifft auf zeitgemäße Ausstattung und hochwertigen Wohnkomfort – mit Garten und Gartenhaus,
-        großer Terrasse, Balkon und Garage. Bezug ist ab dem 01.07.2026 möglich.
+        großer Terrasse, Balkon und Garage. Bezug ist ab dem 01.08.2026 möglich.
       </p>
     </section>
     <section class="hero-wrap">
@@ -997,7 +1001,7 @@
         </div>
         <div class="hero-overlay">
           <div class="hero-badges">
-            <span class="hero-badge success">Vermietung läuft</span>
+            <span class="hero-badge rented">Vermietet</span>
           </div>
           <div class="hero-dots" aria-label="Bildauswahl Projektansichten"></div>
         </div>
@@ -1006,7 +1010,7 @@
     <section class="section-panel project-status-panel" aria-labelledby="status-title">
       <div class="section-head">
         <h2 id="status-title">Projektstatus</h2>
-        <p>Die Sanierung ist abgeschlossen. Die Vermietung läuft, der Bezug ist ab dem 01.07.2026 möglich.</p>
+        <p>Die Sanierung ist abgeschlossen und die Wohneinheit ist vermietet. Der Bezug erfolgt zum 01.08.2026.</p>
       </div>
       <div class="status-wrap">
         <div class="status-steps">
@@ -1024,15 +1028,17 @@
             <div class="status-label">Sanierung</div>
             <div class="status-tag">Abgeschlossen</div>
           </div>
+          <div class="status-step done">
+            <div class="status-dot">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0c3d28" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>
+            </div>
+            <div class="status-label">Vermietung</div>
+            <div class="status-tag">Abgeschlossen</div>
+          </div>
           <div class="status-step current">
             <div class="status-dot"></div>
-            <div class="status-label">Vermietung</div>
-            <div class="status-tag">Aktuell</div>
-          </div>
-          <div class="status-step">
-            <div class="status-dot"></div>
             <div class="status-label">Bezug</div>
-            <div class="status-tag">Ab 01.07.2026</div>
+            <div class="status-tag">Ab 01.08.2026</div>
           </div>
         </div>
       </div>
@@ -1050,7 +1056,7 @@
                  data-id="Syke"
                  data-groesse="ca. 98 m²"
                  data-zimmer="Doppelhaushälfte"
-                 data-status="Verfügbar"
+                 data-status="Vermietet"
                  data-miete="1029.00"
                  data-nk="196.00"
                  data-stellplatz="50.00">
@@ -1060,13 +1066,13 @@
                 <h3>Doppelhaushälfte in Syke</h3>
               </div>
               <div class="badges">
-                <span class="badge available">Verfügbar</span>
+                <span class="badge rented">Vermietet</span>
               </div>
             </div>
             <div class="meta">
               <span class="chip">ca. 98 m²</span>
               <span class="chip">Komplett saniert</span>
-              <span class="chip">Bezug ab 01.07.2026</span>
+              <span class="chip">Bezug ab 01.08.2026</span>
             </div>
             <div class="apartment-slider project-subslider" data-interval="3800">
               <button class="slider-arrow prev" type="button" aria-label="Vorheriges Bild">
@@ -1128,101 +1134,20 @@
                 </ul>
               </div>
             </div>
-            <div class="rented-box"></div>
+            <div class="rented-box">
+              <h4 style="margin:0 0 10px;font-size:1.05rem">Diese Einheit ist bereits vermietet</h4>
+              <p style="margin:0">
+                Die Doppelhaushälfte in Syke ist erfolgreich vermietet und steht aktuell nicht mehr zur Verfügung.
+                Gerne merken wir Sie für vergleichbare Objekte vor – nutzen Sie dafür einfach das Kontaktformular
+                weiter unten oder rufen Sie uns an.
+              </p>
+            </div>
             <div class="actions">
               <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
               <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
             </div>
           </div>
         </article>
-      </div>
-    </section>
-    <section class="section-panel" id="kontakt" aria-labelledby="kontakt-title">
-      <div class="section-head">
-        <h2 id="kontakt-title">Kontakt &amp; Anfrage</h2>
-        <p>Für Besichtigungsanfragen, Vormerkungen oder allgemeine Rückfragen zum Projekt.</p>
-      </div>
-      <div class="contact-wrap">
-        <p class="contact-intro">
-          Nutzen Sie das Formular für Ihre Anfrage. Beim Absenden öffnet sich Ihr Mailprogramm
-          mit einer bereits vollständig vorbereiteten Nachricht – Sie müssen nur noch auf „Senden“ klicken.
-        </p>
-        <div class="contact-note">
-          Sie erreichen uns für eine Besichtigung, eine Vormerkung oder allgemeine Fragen zum Objekt
-          jederzeit über das Formular oder telefonisch.
-        </div>
-        <form class="project-contact-form" id="projectContactForm">
-          <div class="form-row">
-            <div class="field">
-              <label for="vorname">Vorname</label>
-              <input id="vorname" name="vorname" type="text" placeholder="Ihr Vorname" required />
-            </div>
-            <div class="field">
-              <label for="nachname">Nachname</label>
-              <input id="nachname" name="nachname" type="text" placeholder="Ihr Nachname" required />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="field">
-              <label for="email">E-Mail</label>
-              <input id="email" name="email" type="email" placeholder="ihre@email.de" required />
-            </div>
-            <div class="field">
-              <label for="telefon">Telefon</label>
-              <input id="telefon" name="telefon" type="tel" placeholder="Optional" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="field">
-              <label for="anliegen">Anliegen</label>
-              <select id="anliegen" name="anliegen" required>
-                <option value="">Bitte auswählen</option>
-                <option value="Besichtigung anfragen">Besichtigung anfragen</option>
-                <option value="Interesse vormerken">Interesse vormerken</option>
-                <option value="Rückruf erwünscht">Rückruf erwünscht</option>
-                <option value="Allgemeine Anfrage">Allgemeine Anfrage</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="kueche">Wunsch zur Küche</label>
-              <select id="kueche" name="kueche">
-                <option value="">Keine Angabe</option>
-                <option value="Vorhandene Küche übernehmen">Vorhandene Küche übernehmen</option>
-                <option value="Eigene Küche einbringen">Eigene Küche einbringen</option>
-                <option value="Küche über Bücking Immobilien (75 €/Monat)">Küche über Bücking Immobilien (75 €/Monat)</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="field">
-              <label for="bezugsdatum">Gewünschtes Bezugsdatum</label>
-              <input id="bezugsdatum" name="bezugsdatum" type="date" />
-            </div>
-            <div class="field">
-              <label for="personen">Anzahl Personen im Haushalt</label>
-              <select id="personen" name="personen">
-                <option value="">Keine Angabe</option>
-                <option value="1 Person">1 Person</option>
-                <option value="2 Personen">2 Personen</option>
-                <option value="3 Personen">3 Personen</option>
-                <option value="4 Personen">4 Personen</option>
-                <option value="5+ Personen">5+ Personen</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label for="nachricht">Nachricht</label>
-            <textarea id="nachricht" name="nachricht" placeholder="Ihre Nachricht – z. B. Fragen, Wunschtermine oder weitere Angaben"></textarea>
-          </div>
-          <label class="field-check" for="datenschutz">
-            <input id="datenschutz" name="datenschutz" type="checkbox" required />
-            <span>Ich bin damit einverstanden, dass meine Angaben zur Bearbeitung meiner Anfrage verarbeitet werden. Eine Weitergabe an Dritte erfolgt nicht.</span>
-          </label>
-          <div class="contact-actions">
-            <button class="btn" type="submit">E-Mail vorbereiten</button>
-            <a class="btn btn-ghost" href="tel:+4917657960759">Direkt anrufen</a>
-          </div>
-        </form>
       </div>
     </section>
     <section class="section-panel" aria-labelledby="hinweis-title">
@@ -1337,7 +1262,7 @@
         'Eckdaten:',
         `• Wohnfläche: ${groesse}`,
         `• Status: ${status}`,
-        '• Bezug: ab 01.07.2026',
+        '• Bezug: ab 01.08.2026',
         '',
         'Bitte senden Sie mir weitere Informationen und – sofern möglich – Terminvorschläge für eine Besichtigung.',
         '',
@@ -1431,73 +1356,6 @@
     document.querySelectorAll('.project-subslider').forEach(slider => {
       initSlider(slider, '.apartment-slide', '.apartment-dots', '.prev', '.next', '3800');
     });
-    const projectContactForm = document.getElementById('projectContactForm');
-    function formatDateGerman(value){
-      if(!value) return '-';
-      const [year, month, day] = value.split('-');
-      if(!year || !month || !day) return value;
-      return `${day}.${month}.${year}`;
-    }
-    function buildFormMailto(data){
-      const subject = `${data.anliegen} – Doppelhaushälfte in Syke`;
-      const lines = [
-        'Guten Tag,',
-        '',
-        'ich möchte eine Anfrage zum Projekt „Doppelhaushälfte in Syke“ stellen.',
-        '',
-        'Anliegen:',
-        `${data.anliegen || '-'}`,
-        '',
-        'Wunsch zur Küche:',
-        `${data.kueche || '-'}`,
-        '',
-        'Gewünschtes Bezugsdatum:',
-        `${data.bezugsdatum || '-'}`,
-        '',
-        'Anzahl Personen im Haushalt:',
-        `${data.personen || '-'}`,
-        '',
-        'Nachricht:',
-        `${data.nachricht || '-'}`,
-        '',
-        'Kontaktdaten:',
-        `Name: ${data.vorname} ${data.nachname}`.trim(),
-        `E-Mail: ${data.email || '-'}`,
-        `Telefon: ${data.telefon || '-'}`,
-        '',
-        'Vielen Dank und freundliche Grüße',
-        `${data.vorname} ${data.nachname}`.trim()
-      ];
-      return 'mailto:info@buecking-immobilien.de'
-        + '?subject=' + encodeURIComponent(subject)
-        + '&body=' + encodeURIComponent(lines.join('\r\n'));
-    }
-    if(projectContactForm){
-      projectContactForm.addEventListener('submit', function(e){
-        e.preventDefault();
-        const data = {
-          vorname: document.getElementById('vorname')?.value.trim() || '',
-          nachname: document.getElementById('nachname')?.value.trim() || '',
-          email: document.getElementById('email')?.value.trim() || '',
-          telefon: document.getElementById('telefon')?.value.trim() || '',
-          anliegen: document.getElementById('anliegen')?.value || '',
-          kueche: document.getElementById('kueche')?.value || '',
-          bezugsdatum: formatDateGerman(document.getElementById('bezugsdatum')?.value || ''),
-          personen: document.getElementById('personen')?.value || '',
-          nachricht: document.getElementById('nachricht')?.value.trim() || '',
-          datenschutz: document.getElementById('datenschutz')?.checked || false
-        };
-        if(!data.vorname || !data.nachname || !data.email || !data.anliegen){
-          alert('Bitte füllen Sie mindestens Vorname, Nachname, E-Mail und Anliegen aus.');
-          return;
-        }
-        if(!data.datenschutz){
-          alert('Bitte bestätigen Sie den Hinweis zur Verarbeitung Ihrer Angaben.');
-          return;
-        }
-        window.location.href = buildFormMailto(data);
-      });
-    }
   </script>
 </body>
 </html>
