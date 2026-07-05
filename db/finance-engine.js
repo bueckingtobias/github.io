@@ -92,6 +92,44 @@
   // aktueller Depotwert
   function depotWert(s) { return r2((s.positionen || []).reduce((a, p) => a + (Number(p.aktuell) || 0), 0)); }
 
+  // Kredit-Tilgungsplan mit Zins + optionalen halbjährlichen Sondertilgungen.
+  // kredit: { summe, abtragMonat, zinsPa, sondertilgung:{betrag, monate:[6,12]} }
+  function creditPlan(kredit, startIso) {
+    if (!kredit) return null;
+    const start = startIso ? new Date(startIso) : new Date();
+    let rest = Number(kredit.summe) || 0;
+    const rate = Number(kredit.abtragMonat) || 0;
+    const i = (Number(kredit.zinsPa) || 0) / 100 / 12;
+    const st = kredit.sondertilgung || null;
+    const stBetrag = st ? Number(st.betrag) || 0 : 0;
+    const stMonate = st && Array.isArray(st.monate) ? st.monate : [];
+    const rows = [];
+    let zinsGesamt = 0, sonderGesamt = 0, monat = 0;
+    let d = new Date(start.getFullYear(), start.getMonth(), 1);
+    while (rest > 0.005 && monat < 600) {
+      const zins = rest * i;
+      let tilgung = Math.min(rate - zins, rest);
+      if (tilgung < 0) tilgung = 0; // Rate deckt Zins nicht
+      rest -= tilgung;
+      zinsGesamt += zins;
+      let sonder = 0;
+      if (stBetrag && stMonate.includes(d.getMonth() + 1) && rest > 0) {
+        sonder = Math.min(stBetrag, rest);
+        rest -= sonder; sonderGesamt += sonder;
+      }
+      rows.push({ monat: d.toISOString().slice(0, 7), zins: r2(zins), tilgung: r2(tilgung), sonder: r2(sonder), rest: r2(Math.max(0, rest)) });
+      monat++;
+      d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+      if (tilgung === 0 && stBetrag === 0) break; // tilgt nie
+    }
+    return {
+      rows, monate: monat, jahre: r2(monat / 12),
+      zinsGesamt: r2(zinsGesamt), sonderGesamt: r2(sonderGesamt),
+      getilgt: rest <= 0.005, restEnde: r2(Math.max(0, rest)),
+      abzahlDatum: rows.length ? rows[rows.length - 1].monat : null
+    };
+  }
+
   // Immobilien-Kennzahlen
   function immoKPIs(s) {
     const m = streamMonthly(s);
@@ -100,7 +138,8 @@
     const ertragJahr = m.gesamt * 12;
     const nettoJahr = m.netto * 12;
     const kredit = s.kredit || null;
-    const tilgungMonate = kredit && kredit.abtragMonat ? Math.ceil(kredit.summe / kredit.abtragMonat) : null;
+    const plan = kredit ? creditPlan(kredit) : null;
+    const tilgungMonate = plan ? plan.monate : null;
     return {
       invest,
       bruttoRendite: invest ? r2(kaltJahr / invest * 100) : 0,
@@ -108,7 +147,8 @@
       cashflowRoi: invest ? r2(nettoJahr / invest * 100) : 0,
       nettoCashflowMonat: m.netto, nettoCashflowJahr: r2(nettoJahr),
       kreditAbtrag: m.kreditAbtrag, kreditSumme: kredit ? kredit.summe : 0,
-      tilgungMonate, tilgungJahre: tilgungMonate ? r2(tilgungMonate / 12) : null,
+      tilgungMonate, tilgungJahre: plan ? plan.jahre : null,
+      kreditPlan: plan,
       nkPuffer: m.nkPuffer, nkPufferJahr: r2(m.nkPuffer * 12)
     };
   }
@@ -132,5 +172,5 @@
   }
 
   window.FinanceEngine = { unitIncome, airbnbIncome, streamMonthly, totals, r2,
-    projectPosition, investProjection, depotWert, immoKPIs, monthsBetween };
+    projectPosition, investProjection, depotWert, immoKPIs, creditPlan, monthsBetween };
 })();
