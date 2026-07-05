@@ -405,27 +405,35 @@
       </div>`));
     }
 
-    // Kredit-Tilgung Karte
+    // Kredit-Tilgung Karte (mit Zins + Sondertilgung)
     if (k && s.kredit) {
-      const paid = 0; // (Startpunkt; Tilgungsverlauf visualisiert Restschuld linear)
-      const months = k.tilgungMonate || 0;
-      const restNow = s.kredit.summe;
-      // linear tilgung spark
-      const steps = [];
-      let rest = s.kredit.summe;
-      for (let i = 0; i <= Math.min(months, 60); i += Math.max(1, Math.round(months / 24))) { steps.push(Math.max(0, s.kredit.summe - s.kredit.abtragMonat * i)); }
+      const plan = k.kreditPlan;
+      const months = plan ? plan.monate : 0;
+      // Restschuld-Kurve (echte Werte, auf ~40 Stützpunkte reduziert)
+      const rowsPlan = plan ? plan.rows : [];
+      const curve = [];
+      const stepN = Math.min(rowsPlan.length, 40);
+      if (rowsPlan.length) {
+        curve.push(s.kredit.summe);
+        for (let x = 1; x <= stepN; x++) curve.push(rowsPlan[Math.min(rowsPlan.length - 1, Math.round(x * rowsPlan.length / stepN) - 1)].rest);
+      }
+      const stTxt = s.kredit.sondertilgung
+        ? `${eur(s.kredit.sondertilgung.betrag)} zum 01.06. & 01.12.`
+        : "keine";
       host.appendChild(el(`<div class="card"><div class="card-h"><div><div class="card-t">Kredittilgung</div>
-        <div class="card-s">${eur(s.kredit.summe)} Darlehen · ${eur(s.kredit.abtragMonat)}/Monat</div></div>
-        <div class="head-pill" style="padding:7px 13px">getilgt in ${k.tilgungJahre.toLocaleString("de-DE")} J.</div></div>
+        <div class="card-s">${eur(s.kredit.summe)} · ${s.kredit.zinsPa ? s.kredit.zinsPa.toLocaleString("de-DE") + " % Zins · " : ""}${eur(s.kredit.abtragMonat)}/Monat</div></div>
+        <div class="head-pill" style="padding:7px 13px">getilgt in ${plan ? plan.jahre.toLocaleString("de-DE") : "—"} J.</div></div>
         <div class="card-b">
           <div class="stat-strip" style="margin-bottom:16px">
-            <div class="s"><span>Restschuld</span><b>${eur(restNow)}</b></div>
-            <div class="s"><span>Abtrag/Monat</span><b>${eur(s.kredit.abtragMonat)}</b></div>
+            <div class="s"><span>Restschuld</span><b>${eur(s.kredit.summe)}</b></div>
+            <div class="s"><span>Rate/Monat</span><b>${eur(s.kredit.abtragMonat)}</b></div>
+            <div class="s"><span>Sondertilgung</span><b>${s.kredit.sondertilgung ? eur(s.kredit.sondertilgung.betrag) : "—"}</b></div>
             <div class="s"><span>Laufzeit</span><b>${months} Mon.</b></div>
-            <div class="s"><span>danach frei</span><b style="color:var(--mint-2)">+${eur(s.kredit.abtragMonat)}</b></div>
+            <div class="s"><span>Zinsen gesamt</span><b>${plan ? eur(plan.zinsGesamt) : "—"}</b></div>
+            <div class="s"><span>Σ Sondertilgung</span><b>${plan ? eur(plan.sonderGesamt) : "—"}</b></div>
           </div>
-          ${areaChart(steps, steps.map((_, i) => ""))}
-          <div class="note" style="margin-top:8px">Restschuld sinkt linear bis zur vollständigen Tilgung. Danach steigt der Netto-Cashflow um den Abtrag.</div>
+          ${areaChart(curve.length ? curve : [s.kredit.summe, 0])}
+          <div class="note" style="margin-top:8px">Restschuld inkl. ${s.kredit.zinsPa ? s.kredit.zinsPa.toLocaleString("de-DE") + " % Zins p.a." : "Zins"} und Sondertilgung (${stTxt}). Nach Tilgung steigt der Netto-Cashflow um ${eur(s.kredit.abtragMonat)}/Monat.</div>
         </div></div>`));
     }
 
