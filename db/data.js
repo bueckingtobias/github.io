@@ -57,7 +57,7 @@ window.DASHBOARD_DATA = {
       note: "1 Wohneinheit, 98 m². Nebenkosten werden vollständig als Puffer zurückgelegt.",
       nkAlsPuffer: true,
       invest: 60000,
-      kredit: { summe: 20000, abtragMonat: 400 },
+      kredit: { summe: 20000, abtragMonat: 400, zinsPa: 4.0, sondertilgung: { betrag: 1500, monate: [6, 12] } },
       einheiten: [
         { wohnung: "DHH", flaeche: 98, kaltFix: 1029, nkFix: 196, stellplatz: 50, mieter: "Stefanie Thode", status: "vermietet" }
       ]
