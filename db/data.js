@@ -15,11 +15,13 @@ window.DASHBOARD_DATA = {
       kind: "invest",
       ort: "ETF-Depot",
       icon: "chart",
-      note: "Monatlicher Vermögensaufbau per Sparplan (Zufluss ins Depot).",
+      note: "Monatlicher Vermögensaufbau per Sparplan. Prognose auf Basis der ø 5-Jahres-Rendite (Vergangenheit, keine Garantie).",
+      // Prognose-Stichtage
+      prognosen: ["2032-03-18", "2069-05-01"],
       positionen: [
-        { titel: "Core S&P 500 (Acc)", betrag: 500, sub: "iShares Core S&P 500" },
-        { titel: "Core EM Markets (Acc)", betrag: 250, sub: "iShares Core MSCI EM" },
-        { titel: "Core DAX (Acc)", betrag: 150, sub: "iShares Core DAX" }
+        { titel: "Core S&P 500 (Acc)", isin: "IE00B5BMR087", betrag: 500, aktuell: 905, cagr: 14.8, sub: "iShares Core S&P 500" },
+        { titel: "Core MSCI EM (Acc)", isin: "IE00B4L5YC18", betrag: 250, aktuell: 250, cagr: 6.5, sub: "iShares Core MSCI EM IMI" },
+        { titel: "Core DAX (Acc)", isin: "DE0005933931", betrag: 150, aktuell: 155, cagr: 11.0, sub: "iShares Core DAX" }
       ]
     },
     {
@@ -52,9 +54,26 @@ window.DASHBOARD_DATA = {
       kind: "miete",
       ort: "Syke",
       icon: "home",
-      note: "1 Wohneinheit, 98 m².",
+      note: "1 Wohneinheit, 98 m². Nebenkosten werden vollständig als Puffer zurückgelegt.",
+      nkAlsPuffer: true,
+      invest: 60000,
+      kredit: { summe: 20000, abtragMonat: 400 },
       einheiten: [
-        { wohnung: "DHH", flaeche: 98, kaltFix: 1029, nkFix: 196, stellplatz: 50, status: "vermietet" }
+        { wohnung: "DHH", flaeche: 98, kaltFix: 1029, nkFix: 196, stellplatz: 50, mieter: "Stefanie Thode", status: "vermietet" }
+      ]
+    },
+    {
+      id: "pacht",
+      name: "Landpacht",
+      kind: "pacht",
+      ort: "Ganderkesee · Blatt 10060",
+      icon: "sprout",
+      note: "Verpachtung landwirtschaftlicher Flächen. Pacht wird jährlich zum 01.12. gezahlt; hier auf den Monat umgerechnet.",
+      vertraege: [
+        { paechter: "Dieter von Seggern", jahr: 6251.50, flaeche: 8.66, art: "Grünland + Ackerland", start: "2016-11-01", ende: "2026-10-31" },
+        { paechter: "Heiko Petershagen", jahr: 1416.00, flaeche: 2.02, art: "Ackerland", start: "2004-11-01", ende: "2014-10-31" },
+        { paechter: "Hüneke GbR", jahr: 1090.00, flaeche: 2.19, art: "Grünland", start: "2016-11-01", ende: "2026-10-31" },
+        { paechter: "Heide & Christian Meyer", jahr: 200.00, flaeche: 1.00, art: "Grünland + Gehölz", start: "2021-11-01", ende: "jährlich" }
       ]
     }
   ],
