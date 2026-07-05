@@ -30,7 +30,8 @@
     euro: '<path d="M15 8a5 5 0 1 0 0 8M5 10h7M5 14h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
     layers: '<path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17l9 5 9-5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>',
     trend: '<path d="M3 17l6-6 4 4 8-8M15 7h6v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
-    key: '<circle cx="8" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M11 11l7 7M16 16l2-2M14 18l2-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
+    key: '<circle cx="8" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M11 11l7 7M16 16l2-2M14 18l2-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    sprout: '<path d="M12 20v-8M12 12c0-3 2-5 5-5 0 3-2 5-5 5zM12 13c0-2.5-2-4.5-5-4.5 0 2.5 2 4.5 5 4.5z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 20h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'
   };
   const svg = (k, cls) => `<svg viewBox="0 0 24 24" fill="none" class="${cls || ''}">${IC[k] || IC.grid}</svg>`;
 
@@ -197,9 +198,14 @@
     (D.streams || []).forEach(s => {
       const m = FE.streamMonthly(s);
       let meta = "";
-      if (s.kind === "miete") meta = `<span class="pillet on">${m.vermietet}/${m.einheiten} vermietet</span><span class="pillet">Potenzial ${eur(m.gesamtPotenzial)}</span>`;
+      if (s.kind === "miete") {
+        const tenant = (s.einheiten || []).find(u => u.mieter);
+        if (s.invest) meta = `<span class="pillet on">Netto ${eur(m.netto)}</span><span class="pillet">ROI ${FE.immoKPIs(s).cashflowRoi.toLocaleString("de-DE")}%</span>`;
+        else meta = `<span class="pillet on">${m.vermietet}/${m.einheiten} vermietet</span><span class="pillet">Potenzial ${eur(m.gesamtPotenzial)}</span>`;
+      }
       else if (s.kind === "airbnb") meta = `<span class="pillet on">${m.detail.naechte} Nächte/Mon.</span><span class="pillet">${s.airbnb.auslastung}% Auslastung</span>`;
-      else meta = `<span class="pillet invest">Sparplan</span><span class="pillet">${(s.positionen || []).length} Positionen</span>`;
+      else if (s.kind === "pacht") meta = `<span class="pillet on">${m.anzahl} Verträge</span><span class="pillet">${m.flaeche.toLocaleString("de-DE")} ha</span>`;
+      else meta = `<span class="pillet invest">Sparplan</span><span class="pillet">Depot ${eur(FE.depotWert(s))}</span>`;
       const t = el(`<div class="tile" data-id="${s.id}">
         <div class="tile-go">${svg("trend")}</div>
         <div class="tile-head"><div class="tile-ic">${svg(s.icon || "euro")}</div>
@@ -217,25 +223,39 @@
     const s = (D.streams || []).find(x => x.id === id);
     if (!s) { host.appendChild(el(`<div class="card pad note">Quelle nicht gefunden.</div>`)); return; }
     const m = FE.streamMonthly(s);
-    $("#eyebrow").textContent = s.kind === "invest" ? "Vermögensaufbau" : s.kind === "airbnb" ? "Kurzzeitvermietung" : "Vermietung";
+    $("#eyebrow").textContent = s.kind === "invest" ? "Vermögensaufbau" : s.kind === "airbnb" ? "Kurzzeitvermietung" : s.kind === "pacht" ? "Landpacht" : "Vermietung";
     $("#pageTitle").textContent = s.name;
     $("#pageSub").textContent = s.ort || "";
     $("#headPill").innerHTML = `${s.kind === "invest" ? "Sparrate" : "Einnahmen"} <b>${eur(m.gesamt)}</b> / Monat`;
 
     if (s.kind === "invest") return renderInvest(host, s, m);
     if (s.kind === "airbnb") return renderAirbnb(host, s, m);
+    if (s.kind === "pacht") return renderPacht(host, s, m);
     return renderMiete(host, s, m);
   }
 
   function renderInvest(host, s, m) {
+    const depot = FE.depotWert(s);
     host.appendChild(el(`<div class="grid g-kpi">
       ${kpiCard("coins", eur(m.gesamt), "Sparrate / Monat", "gesamt", true)}
-      ${kpiCard("trend", eur(m.gesamt * 12), "pro Jahr", "hochgerechnet")}
+      ${kpiCard("euro", eur(depot), "Depotwert", "aktueller Stand")}
       ${kpiCard("layers", (s.positionen || []).length, "Positionen", "ETF-Sparpläne")}
-      ${kpiCard("chart", "ACC", "Thesaurierend", "reinvestiert")}
+      ${kpiCard("trend", eur(m.gesamt * 12), "pro Jahr", "Sparrate")}
     </div>`));
 
-    // Donut of positions
+    // Live-Kurse / Positionen als Karten (Referenz-Stil)
+    const posCards = (s.positionen || []).map((p, i) => `<div class="card pad etf-card">
+      <div class="etf-top"><div class="etf-badge" style="background:${PALETTE[i % PALETTE.length]}22;color:${PALETTE[i % PALETTE.length]}">${svg("chart")}</div>
+        <div class="etf-cagr">Ø ${p.cagr.toLocaleString("de-DE")}% p.a.</div></div>
+      <div class="etf-name">${esc(p.titel)}</div>
+      <div class="etf-sub">${esc(p.sub || "")} · ${esc(p.isin || "")}</div>
+      <div class="etf-val">${eur(p.aktuell)}</div>
+      <div class="etf-foot"><span>Sparrate</span><b>${eur(p.betrag)}/Mon.</b></div>
+    </div>`).join("");
+    host.appendChild(el(`<div><div class="card-t" style="margin:4px 0 12px">Positionen · Kurse</div>
+      <div class="grid g-3 etf-grid">${posCards}</div></div>`));
+
+    // Donut Sparplan-Aufteilung
     const segs = (s.positionen || []).map((p, i) => ({ name: p.titel, value: p.betrag, color: PALETTE[i % PALETTE.length] }));
     const legend = segs.map(x => `<div class="leg"><span class="sw" style="background:${x.color}"></span>
       <span class="lt">${esc(x.name)}</span><span class="lv">${eur(x.value)}</span></div>`).join("");
@@ -244,14 +264,47 @@
       <div class="card-s" style="margin-bottom:18px">${esc(s.note || "")}</div>
       <div class="donut-row">${donut(segs)}<div class="legend">${legend}</div></div></div>`));
 
-    // Positions detail
-    const rows = (s.positionen || []).map((p, i) => `<div class="drow">
-      <div class="drow-l"><div class="drow-badge" style="color:${PALETTE[i % PALETTE.length]}">${i + 1}</div>
-        <div><div class="drow-name">${esc(p.titel)}</div><div class="drow-sub">${esc(p.sub || "")}</div></div></div>
-      <div class="drow-val"><b>${eur2(p.betrag)}</b><span>monatlich</span></div></div>`).join("");
-    host.appendChild(el(`<div class="card"><div class="card-h"><div><div class="card-t">Positionen</div>
-      <div class="card-s">Monatliche Sparraten</div></div></div><div class="card-b">${rows}</div></div>`));
+    // Prognosen je Stichtag
+    (s.prognosen || []).forEach(datum => {
+      const pr = FE.investProjection(s, datum);
+      const jahre = (pr.rows[0] ? pr.rows[0].months : 0) / 12;
+      const rows = pr.rows.map((r, i) => `<div class="drow">
+        <div class="drow-l"><div class="drow-badge" style="color:${PALETTE[i % PALETTE.length]}">${svg("chart")}</div>
+          <div><div class="drow-name">${esc(r.pos.titel)}</div>
+            <div class="drow-sub">eingezahlt ${eur(r.eingezahlt)} · Gewinn ${eur(r.gewinn)} · ROI ${r.roi.toLocaleString("de-DE")}%</div></div></div>
+        <div class="drow-val"><b>${eur(r.wert)}</b><span>Depotwert</span></div></div>`).join("");
+      // wachstumskurve gesamt
+      const from = new Date().toISOString().slice(0, 10);
+      const totalMonths = FE.monthsBetween(from, datum);
+      const curve = [];
+      const stepN = 40;
+      for (let i = 0; i <= stepN; i++) {
+        const mm = Math.round(totalMonths * i / stepN);
+        let v = 0;
+        (s.positionen || []).forEach(p => {
+          const r = (p.cagr / 100) / 12; let val = p.aktuell;
+          for (let x = 0; x < mm; x++) val = val * (1 + r) + p.betrag;
+          v += val;
+        });
+        curve.push(v);
+      }
+      host.appendChild(el(`<div class="card"><div class="card-h"><div>
+        <div class="card-t">Prognose ${dateDE(datum)}</div>
+        <div class="card-s">bei gleichbleibender Sparrate · ${jahre.toLocaleString("de-DE", { maximumFractionDigits: 1 })} Jahre · ø 5-Jahres-Rendite</div></div>
+        <div class="head-pill" style="padding:7px 13px">ROI <b style="margin-left:4px">${pr.roi.toLocaleString("de-DE", { maximumFractionDigits: 0 })}%</b></div></div>
+        <div class="card-b">
+          <div class="stat-strip" style="margin-bottom:16px">
+            <div class="s"><span>Depotwert</span><b style="color:var(--mint-2)">${eur(pr.wert)}</b></div>
+            <div class="s"><span>Eingezahlt</span><b>${eur(pr.eingezahlt)}</b></div>
+            <div class="s"><span>Gewinn</span><b style="color:var(--mint-2)">${eur(pr.gewinn)}</b></div>
+          </div>
+          ${areaChart(curve, [dateDE(from), dateDE(datum)])}
+          <div style="margin-top:16px">${rows}</div>
+          <div class="note" style="margin-top:12px">Modellrechnung auf Basis der durchschnittlichen 5-Jahres-Rendite (S&P 500 14,8 %, MSCI EM 6,5 %, DAX 11,0 % p.a.). Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</div>
+        </div></div>`));
+    });
   }
+  function dateDE(iso) { const d = new Date(iso); return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }); }
 
   function renderAirbnb(host, s, m) {
     const a = m.detail;
@@ -283,22 +336,119 @@
       <div class="card-b">${areaChart(vals, occs.map(o => o + "%"))}</div></div>`));
   }
 
-  function renderMiete(host, s, m) {
+  function renderPacht(host, s, m) {
+    const jahr = m.jahr, flaeche = m.flaeche;
+    const proHa = flaeche ? jahr / flaeche : 0;
     host.appendChild(el(`<div class="grid g-kpi">
-      ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
-      ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
-      ${kpiCard("home", m.einheiten, "Einheiten", (s.einheiten || []).reduce((a, u) => a + (Number(u.flaeche) || 0), 0) + " m² gesamt")}
-      ${kpiCard("trend", eur(m.gesamt * 12), "pro Jahr", "aktuell vermietet")}
+      ${kpiCard("sprout", eur(m.gesamt), "Pacht / Monat", "umgerechnet", true)}
+      ${kpiCard("euro", eur(jahr), "Pacht / Jahr", "Zahlung zum 01.12.")}
+      ${kpiCard("layers", flaeche.toLocaleString("de-DE") + " ha", "Fläche gesamt", m.anzahl + " Verträge")}
+      ${kpiCard("trend", eur(proHa), "Ø pro Hektar", "Jahrespacht / ha")}
     </div>`));
 
-    // Per-unit horizontal bars (potential vs actual)
+    // Verteilung nach Pächter (Balken)
+    const sorted = (s.vertraege || []).slice().sort((a, b) => b.jahr - a.jahr);
+    const maxJ = Math.max(...sorted.map(v => v.jahr), 1);
+    const bars = sorted.map(v => {
+      const w = Math.round(v.jahr / maxJ * 100);
+      const abgelaufen = v.ende && v.ende !== "jährlich" && new Date(v.ende) < new Date();
+      return `<div>
+        <div class="hbar-top"><div class="hbar-name">${esc(v.paechter)}<span class="loc">${v.flaeche.toLocaleString("de-DE")} ha · ${esc(v.art)}</span></div>
+          <div class="hbar-val">${eur(v.jahr)}/J ${abgelaufen ? '<span class="badge b-off">läuft aus</span>' : '<span class="badge b-on">aktiv</span>'}</div></div>
+        <div class="track"><span style="width:${w}%"></span></div></div>`;
+    }).join("");
+    host.appendChild(el(`<div class="card pad">
+      <div class="card-t" style="margin-bottom:4px">Pacht je Pächter</div>
+      <div class="card-s" style="margin-bottom:18px">${esc(s.note || "")}</div>
+      <div class="hbars">${bars}</div></div>`));
+
+    // Donut nach Fläche/Ertrag
+    const segs = sorted.map((v, i) => ({ name: v.paechter, value: v.jahr, color: PALETTE[i % PALETTE.length] }));
+    const legend = segs.map(x => `<div class="leg"><span class="sw" style="background:${x.color}"></span>
+      <span class="lt">${esc(x.name)}</span><span class="lv">${eur(x.value)}</span></div>`).join("");
+    host.appendChild(el(`<div class="card pad">
+      <div class="card-t" style="margin-bottom:4px">Anteil am Pachtertrag</div>
+      <div class="card-s" style="margin-bottom:18px">Jahrespacht je Vertrag</div>
+      <div class="donut-row">${donut(segs)}<div class="legend">${legend}</div></div></div>`));
+
+    // Vertragstabelle
+    const rows = sorted.map((v, i) => {
+      const abgelaufen = v.ende && v.ende !== "jährlich" && new Date(v.ende) < new Date();
+      const laufzeit = v.ende === "jährlich" ? "jährlich verlängert" : `${dateDE(v.start)} – ${v.ende.match(/\d{4}-\d{2}-\d{2}/) ? dateDE(v.ende) : esc(v.ende)}`;
+      return `<div class="drow"><div class="drow-l"><div class="drow-badge">${svg("sprout")}</div>
+        <div><div class="drow-name">${esc(v.paechter)}</div>
+        <div class="drow-sub">${v.flaeche.toLocaleString("de-DE")} ha · ${esc(v.art)} · ${laufzeit}</div></div></div>
+        <div class="drow-val"><b>${eur(v.jahr / 12)}</b><span>${eur(v.jahr)}/Jahr${abgelaufen ? " · verlängert" : ""}</span></div></div>`;
+    }).join("");
+    host.appendChild(el(`<div class="card"><div class="card-h"><div><div class="card-t">Pachtverträge</div>
+      <div class="card-s">${m.anzahl} Verträge · Zahlung jährlich zum 01.12.</div></div></div><div class="card-b">${rows}</div></div>`));
+  }
+
+  function renderMiete(host, s, m) {
+    const hasImmo = s.invest || s.kredit || s.nkAlsPuffer;
+    const k = hasImmo ? FE.immoKPIs(s) : null;
+
+    // KPIs — für Immobilien mit Invest zeigen wir Rendite-Kennzahlen
+    if (k && s.invest) {
+      host.appendChild(el(`<div class="grid g-kpi">
+        ${kpiCard("euro", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditabtrag", true)}
+        ${kpiCard("trend", k.bruttoRendite.toLocaleString("de-DE") + " %", "Bruttomietrendite", "Kaltmiete / Invest")}
+        ${kpiCard("chart", k.cashflowRoi.toLocaleString("de-DE") + " %", "Cashflow-ROI", "netto / Invest p.a.")}
+        ${kpiCard("coins", eur(k.invest), "Investition", "eingesetztes Kapital")}
+      </div>`));
+    } else {
+      host.appendChild(el(`<div class="grid g-kpi">
+        ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
+        ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
+        ${kpiCard("home", m.einheiten, "Einheiten", (s.einheiten || []).reduce((a, u) => a + (Number(u.flaeche) || 0), 0) + " m² gesamt")}
+        ${kpiCard("trend", eur(m.gesamt * 12), "pro Jahr", "aktuell vermietet")}
+      </div>`));
+    }
+
+    // Kredit-Tilgung Karte
+    if (k && s.kredit) {
+      const paid = 0; // (Startpunkt; Tilgungsverlauf visualisiert Restschuld linear)
+      const months = k.tilgungMonate || 0;
+      const restNow = s.kredit.summe;
+      // linear tilgung spark
+      const steps = [];
+      let rest = s.kredit.summe;
+      for (let i = 0; i <= Math.min(months, 60); i += Math.max(1, Math.round(months / 24))) { steps.push(Math.max(0, s.kredit.summe - s.kredit.abtragMonat * i)); }
+      host.appendChild(el(`<div class="card"><div class="card-h"><div><div class="card-t">Kredittilgung</div>
+        <div class="card-s">${eur(s.kredit.summe)} Darlehen · ${eur(s.kredit.abtragMonat)}/Monat</div></div>
+        <div class="head-pill" style="padding:7px 13px">getilgt in ${k.tilgungJahre.toLocaleString("de-DE")} J.</div></div>
+        <div class="card-b">
+          <div class="stat-strip" style="margin-bottom:16px">
+            <div class="s"><span>Restschuld</span><b>${eur(restNow)}</b></div>
+            <div class="s"><span>Abtrag/Monat</span><b>${eur(s.kredit.abtragMonat)}</b></div>
+            <div class="s"><span>Laufzeit</span><b>${months} Mon.</b></div>
+            <div class="s"><span>danach frei</span><b style="color:var(--mint-2)">+${eur(s.kredit.abtragMonat)}</b></div>
+          </div>
+          ${areaChart(steps, steps.map((_, i) => ""))}
+          <div class="note" style="margin-top:8px">Restschuld sinkt linear bis zur vollständigen Tilgung. Danach steigt der Netto-Cashflow um den Abtrag.</div>
+        </div></div>`));
+    }
+
+    // NK-Puffer Hinweis
+    if (m.nkPuffer > 0) {
+      host.appendChild(el(`<div class="card pad" style="border-color:rgba(216,185,120,.28)">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div class="tile-ic" style="color:var(--gold);border-color:rgba(216,185,120,.3)">${svg("layers")}</div>
+          <div style="flex:1;min-width:180px"><div class="card-t">Nebenkosten als Puffer</div>
+            <div class="note">${eur(m.nkPuffer)}/Monat (${eur(m.nkPuffer * 12)}/Jahr) werden vollständig zurückgelegt – nicht als Ertrag gewertet.</div></div>
+          <div style="text-align:right"><div class="tile-num" style="color:var(--gold)">${eur(m.nkPuffer)}</div><div class="note">Rücklage/Mon.</div></div>
+        </div></div>`));
+    }
+
+    // Per-unit horizontal bars
     const maxUnit = Math.max(...(s.einheiten || []).map(u => FE.unitIncome(u).gesamt), 1);
     const bars = (s.einheiten || []).map(u => {
       const inc = FE.unitIncome(u);
       const on = u.status === "vermietet";
       const w = Math.round(inc.gesamt / maxUnit * 100);
+      const mieterTxt = u.mieter ? ` · ${esc(u.mieter)}` : "";
       return `<div>
-        <div class="hbar-top"><div class="hbar-name">${esc(u.wohnung)}<span class="loc">${u.flaeche} m²</span></div>
+        <div class="hbar-top"><div class="hbar-name">${esc(u.wohnung)}<span class="loc">${u.flaeche} m²${mieterTxt}</span></div>
           <div class="hbar-val">${eur(inc.gesamt)} ${on ? '<span class="badge b-on">vermietet</span>' : '<span class="badge b-off">frei</span>'}</div></div>
         <div class="track ${on ? '' : 'ghost'}"><span style="width:${w}%"></span></div></div>`;
     }).join("");
@@ -307,7 +457,7 @@
       <div class="card-s" style="margin-bottom:18px">${esc(s.note || "")}</div>
       <div class="hbars">${bars}</div></div>`));
 
-    // Composition of a representative rent (kalt / nk / küche / strom / stellplatz)
+    // Composition donut
     const totalKalt = (s.einheiten || []).reduce((a, u) => a + FE.unitIncome(u).kalt, 0);
     const totalNk = (s.einheiten || []).reduce((a, u) => a + FE.unitIncome(u).nk, 0);
     const totalKueche = (s.einheiten || []).reduce((a, u) => a + (Number(u.kueche) || 0), 0);
@@ -315,7 +465,7 @@
     const totalStell = (s.einheiten || []).reduce((a, u) => a + (Number(u.stellplatz) || 0), 0);
     const comp = [
       { name: "Kaltmiete", value: totalKalt, color: PALETTE[0] },
-      { name: "Nebenkosten", value: totalNk, color: PALETTE[1] },
+      { name: s.nkAlsPuffer ? "Nebenkosten (Puffer)" : "Nebenkosten", value: totalNk, color: PALETTE[1] },
       { name: "Küche", value: totalKueche, color: PALETTE[3] },
       { name: "Strom", value: totalStrom, color: PALETTE[4] },
       { name: "Stellplatz", value: totalStell, color: PALETTE[5] }
@@ -323,15 +473,15 @@
     const legend = comp.map(x => `<div class="leg"><span class="sw" style="background:${x.color}"></span>
       <span class="lt">${esc(x.name)}</span><span class="lv">${eur(x.value)}</span></div>`).join("");
     host.appendChild(el(`<div class="card pad">
-      <div class="card-t" style="margin-bottom:4px">Zusammensetzung (Potenzial)</div>
-      <div class="card-s" style="margin-bottom:18px">Alle Einheiten bei Vollvermietung</div>
+      <div class="card-t" style="margin-bottom:4px">Zusammensetzung</div>
+      <div class="card-s" style="margin-bottom:18px">${s.nkAlsPuffer ? "Warmmiete inkl. NK-Puffer" : "Alle Einheiten bei Vollvermietung"}</div>
       <div class="donut-row">${donut(comp)}<div class="legend">${legend}</div></div></div>`));
 
     // Detail table per unit
     const rows = (s.einheiten || []).map((u, i) => {
       const inc = FE.unitIncome(u);
-      return `<div class="drow"><div class="drow-l"><div class="drow-badge">${esc(u.wohnung.replace(/\D/g, "") || (i + 1))}</div>
-        <div><div class="drow-name">${esc(u.wohnung)} · ${u.flaeche} m²</div>
+      return `<div class="drow"><div class="drow-l"><div class="drow-badge">${esc((u.wohnung.match(/\d+/) || [i + 1])[0])}</div>
+        <div><div class="drow-name">${esc(u.wohnung)} · ${u.flaeche} m²${u.mieter ? " · " + esc(u.mieter) : ""}</div>
         <div class="drow-sub">kalt ${eur(inc.kalt)} · NK ${eur(inc.nk)}${inc.kueche ? " · Küche " + eur(inc.kueche) : ""}${inc.strom ? " · Strom " + eur(inc.strom) : ""}${inc.stell ? " · Stellpl. " + eur(inc.stell) : ""}</div></div></div>
         <div class="drow-val"><b>${eur(inc.gesamt)}</b><span>${u.status === "vermietet" ? "vermietet" : "frei"}</span></div></div>`;
     }).join("");
