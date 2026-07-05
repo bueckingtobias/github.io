@@ -199,6 +199,18 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;
 
 .stat-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--stroke);
   border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--stroke)}
+/* ETF live-cards */
+.etf-grid{gap:var(--gap)}
+.etf-card{display:flex;flex-direction:column}
+.etf-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.etf-badge{width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+.etf-badge svg{width:20px;height:20px}
+.etf-cagr{font-size:11.5px;font-weight:600;color:var(--mint-2);background:rgba(74,222,158,.1);border:1px solid var(--stroke-2);padding:5px 11px;border-radius:99px}
+.etf-name{font-family:var(--fdisp);font-weight:600;font-size:16px}
+.etf-sub{font-size:11px;color:var(--softer);margin-top:3px}
+.etf-val{font-family:var(--fdisp);font-weight:600;font-size:30px;letter-spacing:-.02em;margin:14px 0 4px}
+.etf-foot{display:flex;justify-content:space-between;align-items:baseline;margin-top:auto;padding-top:12px;border-top:1px solid var(--stroke);font-size:12px;color:var(--soft)}
+.etf-foot b{font-family:var(--fdisp);color:var(--text)}
 .stat-strip .s{background:var(--glass-2);padding:16px 18px}
 .stat-strip .s span{font-size:11px;color:var(--soft);display:block}
 .stat-strip .s b{font-family:var(--fdisp);font-weight:600;font-size:20px;margin-top:5px;display:block;font-variant-numeric:tabular-nums}
