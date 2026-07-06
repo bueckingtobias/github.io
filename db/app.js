@@ -159,12 +159,11 @@
   function renderOverview(host) {
     const t = FE.totals(D);
     // Portfolio-Kredite aggregieren
-    let debtMonth = 0, debtRest = 0, zinsGesamt = 0;
+    let debtMonth = 0, debtRest = 0;
     (D.streams || []).forEach(s => {
       FE.creditsOf(s).forEach(kr => {
         debtMonth += Number(kr.abtragMonat) || 0;
         debtRest += Number(kr.summe) || 0;
-        const pl = FE.creditPlan(kr); if (pl) zinsGesamt += pl.zinsGesamt;
       });
     });
     const nettoMonth = t.ist - debtMonth;
@@ -187,8 +186,8 @@
     const kpis2 = el(`<div class="grid g-kpi">
       ${kpiCard("trend", eur(t.jahrIst), "Einnahmen / Jahr", "hochgerechnet")}
       ${kpiCard("trend", eur(nettoMonth * 12), "Netto / Jahr", "nach Tilgung", nettoMonth >= 0)}
+      ${kpiCard("bank", eur(debtMonth * 12), "Tilgung / Jahr", "alle Kreditraten")}
       ${kpiCard("debt", eur(debtRest), "Restschuld gesamt", "über alle Kredite")}
-      ${kpiCard("euro", eur(zinsGesamt), "Zinskosten gesamt", "über Laufzeit")}
     </div>`);
     host.appendChild(kpis2);
 
@@ -394,7 +393,7 @@
       host.appendChild(el(`<div class="grid g-kpi">
         ${kpiCard("home", m.einheiten, "Einheiten", (s.einheiten || []).reduce((a, u) => a + (Number(u.flaeche) || 0), 0) + " m² gesamt")}
         ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld gesamt", "beide Kredite")}
-        ${kpiCard("euro", eur(k.zinsGesamt), "Zinskosten gesamt", "über Laufzeit")}
+        ${kpiCard("layers", eur(m.nkPuffer), "NK-Puffer / Monat", "Rücklage")}
         ${kpiCard("trend", eur(m.gesamt * 12), "Einnahmen / Jahr", "aktuell vermietet")}
       </div>`));
     } else {
