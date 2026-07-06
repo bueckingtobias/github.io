@@ -31,7 +31,10 @@
     layers: '<path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17l9 5 9-5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>',
     trend: '<path d="M3 17l6-6 4 4 8-8M15 7h6v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
     key: '<circle cx="8" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M11 11l7 7M16 16l2-2M14 18l2-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
-    sprout: '<path d="M12 20v-8M12 12c0-3 2-5 5-5 0 3-2 5-5 5zM12 13c0-2.5-2-4.5-5-4.5 0 2.5 2 4.5 5 4.5z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 20h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'
+    sprout: '<path d="M12 20v-8M12 12c0-3 2-5 5-5 0 3-2 5-5 5zM12 13c0-2.5-2-4.5-5-4.5 0 2.5 2 4.5 5 4.5z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 20h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+    bank: '<path d="M4 10l8-5 8 5M5 10v8M19 10v8M9 10v8M15 10v8M3 20h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+    wallet: '<path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3M3 7h16M16 12h5v4h-5a2 2 0 0 1 0-4z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+    debt: '<path d="M12 3v18M8 7h6a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 0 0 5h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
   };
   const svg = (k, cls) => `<svg viewBox="0 0 24 24" fill="none" class="${cls || ''}">${IC[k] || IC.grid}</svg>`;
 
@@ -155,19 +158,39 @@
   /* ---------- OVERVIEW ---------- */
   function renderOverview(host) {
     const t = FE.totals(D);
+    // Portfolio-Kredite aggregieren
+    let debtMonth = 0, debtRest = 0, zinsGesamt = 0;
+    (D.streams || []).forEach(s => {
+      FE.creditsOf(s).forEach(kr => {
+        debtMonth += Number(kr.abtragMonat) || 0;
+        debtRest += Number(kr.summe) || 0;
+        const pl = FE.creditPlan(kr); if (pl) zinsGesamt += pl.zinsGesamt;
+      });
+    });
+    const nettoMonth = t.ist - debtMonth;
+
     $("#eyebrow").textContent = "Portfolio";
     $("#pageTitle").textContent = "Übersicht";
     $("#pageSub").textContent = "Alle Einnahmequellen auf einen Blick";
     $("#headPill").innerHTML = `Ist-Einnahmen <b>${eur(t.ist)}</b> / Monat`;
 
-    // KPIs (reference style)
+    // KPIs — Einnahmen & Tilgung im Fokus
     const kpis = el(`<div class="grid g-kpi">
       ${kpiCard("euro", eur(t.ist), "Einnahmen / Monat", "vermietet · real", true)}
-      ${kpiCard("trend", eur(t.jahrIst), "Einnahmen / Jahr", "hochgerechnet")}
       ${kpiCard("layers", eur(t.potenzial), "Potenzial / Monat", "bei Vollvermietung")}
-      ${kpiCard("coins", eur(t.invest), "Sparrate / Monat", "Depot-Zufluss")}
+      ${kpiCard("bank", eur(debtMonth), "Tilgung / Monat", "alle Kreditraten")}
+      ${kpiCard("wallet", eur(nettoMonth), "Netto-Cashflow", "nach Tilgung", nettoMonth >= 0)}
     </div>`);
     host.appendChild(kpis);
+
+    // zweite KPI-Reihe: Jahr + Restschuld
+    const kpis2 = el(`<div class="grid g-kpi">
+      ${kpiCard("trend", eur(t.jahrIst), "Einnahmen / Jahr", "hochgerechnet")}
+      ${kpiCard("trend", eur(nettoMonth * 12), "Netto / Jahr", "nach Tilgung", nettoMonth >= 0)}
+      ${kpiCard("debt", eur(debtRest), "Restschuld gesamt", "über alle Kredite")}
+      ${kpiCard("euro", eur(zinsGesamt), "Zinskosten gesamt", "über Laufzeit")}
+    </div>`);
+    host.appendChild(kpis2);
 
     // Big cashflow chart
     const hist = D.historie || [];
@@ -178,18 +201,18 @@
       <div class="card-b">${areaChart(hist.map(r => r.betrag), hist.map(r => monthShort(r.monat)))}</div></div>`);
     host.appendChild(chartCard);
 
-    // Composition donut + legend
+    // Composition donut + legend (nur echte Einnahmen)
     const segs = (D.streams || []).map((s, i) => {
       const m = FE.streamMonthly(s);
-      return { name: s.name, value: s.kind === "invest" ? m.gesamt : m.gesamt, color: PALETTE[i % PALETTE.length], kind: s.kind };
-    });
+      return { name: s.name, value: m.gesamt, color: PALETTE[i % PALETTE.length], kind: s.kind };
+    }).filter(x => x.value > 0);
     const legend = segs.map(s => `<div class="leg">
       <span class="sw" style="background:${s.color}"></span>
-      <span class="lt">${esc(s.name)}${s.kind === "invest" ? " · Sparrate" : ""}</span>
+      <span class="lt">${esc(s.name)}</span>
       <span class="lv">${eur(s.value)}</span></div>`).join("");
     const compCard = el(`<div class="card pad">
       <div class="card-t" style="margin-bottom:4px">Zusammensetzung</div>
-      <div class="card-s" style="margin-bottom:18px">Beitrag je Quelle (inkl. Sparrate)</div>
+      <div class="card-s" style="margin-bottom:18px">Beitrag je Einnahmequelle / Monat</div>
       <div class="donut-row">${donut(segs)}<div class="legend">${legend}</div></div></div>`);
     host.appendChild(compCard);
 
@@ -199,13 +222,15 @@
       const m = FE.streamMonthly(s);
       let meta = "";
       if (s.kind === "miete") {
-        const tenant = (s.einheiten || []).find(u => u.mieter);
-        if (s.invest) meta = `<span class="pillet on">Netto ${eur(m.netto)}</span><span class="pillet">ROI ${FE.immoKPIs(s).cashflowRoi.toLocaleString("de-DE")}%</span>`;
+        const kr = FE.creditsOf(s);
+        if (kr.length) {
+          const k = FE.immoKPIs(s);
+          meta = `<span class="pillet on">Netto ${eur(m.netto)}</span><span class="pillet">${kr.length} Kredit${kr.length > 1 ? "e" : ""}</span>`;
+        }
         else meta = `<span class="pillet on">${m.vermietet}/${m.einheiten} vermietet</span><span class="pillet">Potenzial ${eur(m.gesamtPotenzial)}</span>`;
       }
       else if (s.kind === "airbnb") meta = `<span class="pillet on">${m.detail.naechte} Nächte/Mon.</span><span class="pillet">${s.airbnb.auslastung}% Auslastung</span>`;
       else if (s.kind === "pacht") meta = `<span class="pillet on">${m.anzahl} Verträge</span><span class="pillet">${m.flaeche.toLocaleString("de-DE")} ha</span>`;
-      else meta = `<span class="pillet invest">Sparplan</span><span class="pillet">Depot ${eur(FE.depotWert(s))}</span>`;
       const t = el(`<div class="tile" data-id="${s.id}">
         <div class="tile-go">${svg("trend")}</div>
         <div class="tile-head"><div class="tile-ic">${svg(s.icon || "euro")}</div>
@@ -223,87 +248,16 @@
     const s = (D.streams || []).find(x => x.id === id);
     if (!s) { host.appendChild(el(`<div class="card pad note">Quelle nicht gefunden.</div>`)); return; }
     const m = FE.streamMonthly(s);
-    $("#eyebrow").textContent = s.kind === "invest" ? "Vermögensaufbau" : s.kind === "airbnb" ? "Kurzzeitvermietung" : s.kind === "pacht" ? "Landpacht" : "Vermietung";
+    $("#eyebrow").textContent = s.kind === "airbnb" ? "Kurzzeitvermietung" : s.kind === "pacht" ? "Landpacht" : "Vermietung";
     $("#pageTitle").textContent = s.name;
     $("#pageSub").textContent = s.ort || "";
-    $("#headPill").innerHTML = `${s.kind === "invest" ? "Sparrate" : "Einnahmen"} <b>${eur(m.gesamt)}</b> / Monat`;
+    $("#headPill").innerHTML = `Einnahmen <b>${eur(m.gesamt)}</b> / Monat`;
 
-    if (s.kind === "invest") return renderInvest(host, s, m);
     if (s.kind === "airbnb") return renderAirbnb(host, s, m);
     if (s.kind === "pacht") return renderPacht(host, s, m);
     return renderMiete(host, s, m);
   }
 
-  function renderInvest(host, s, m) {
-    const depot = FE.depotWert(s);
-    host.appendChild(el(`<div class="grid g-kpi">
-      ${kpiCard("coins", eur(m.gesamt), "Sparrate / Monat", "gesamt", true)}
-      ${kpiCard("euro", eur(depot), "Depotwert", "aktueller Stand")}
-      ${kpiCard("layers", (s.positionen || []).length, "Positionen", "ETF-Sparpläne")}
-      ${kpiCard("trend", eur(m.gesamt * 12), "pro Jahr", "Sparrate")}
-    </div>`));
-
-    // Live-Kurse / Positionen als Karten (Referenz-Stil)
-    const posCards = (s.positionen || []).map((p, i) => `<div class="card pad etf-card">
-      <div class="etf-top"><div class="etf-badge" style="background:${PALETTE[i % PALETTE.length]}22;color:${PALETTE[i % PALETTE.length]}">${svg("chart")}</div>
-        <div class="etf-cagr">Ø ${p.cagr.toLocaleString("de-DE")}% p.a.</div></div>
-      <div class="etf-name">${esc(p.titel)}</div>
-      <div class="etf-sub">${esc(p.sub || "")} · ${esc(p.isin || "")}</div>
-      <div class="etf-val">${eur(p.aktuell)}</div>
-      <div class="etf-foot"><span>Sparrate</span><b>${eur(p.betrag)}/Mon.</b></div>
-    </div>`).join("");
-    host.appendChild(el(`<div><div class="card-t" style="margin:4px 0 12px">Positionen · Kurse</div>
-      <div class="grid g-3 etf-grid">${posCards}</div></div>`));
-
-    // Donut Sparplan-Aufteilung
-    const segs = (s.positionen || []).map((p, i) => ({ name: p.titel, value: p.betrag, color: PALETTE[i % PALETTE.length] }));
-    const legend = segs.map(x => `<div class="leg"><span class="sw" style="background:${x.color}"></span>
-      <span class="lt">${esc(x.name)}</span><span class="lv">${eur(x.value)}</span></div>`).join("");
-    host.appendChild(el(`<div class="card pad">
-      <div class="card-t" style="margin-bottom:4px">Aufteilung Sparplan</div>
-      <div class="card-s" style="margin-bottom:18px">${esc(s.note || "")}</div>
-      <div class="donut-row">${donut(segs)}<div class="legend">${legend}</div></div></div>`));
-
-    // Prognosen je Stichtag
-    (s.prognosen || []).forEach(datum => {
-      const pr = FE.investProjection(s, datum);
-      const jahre = (pr.rows[0] ? pr.rows[0].months : 0) / 12;
-      const rows = pr.rows.map((r, i) => `<div class="drow">
-        <div class="drow-l"><div class="drow-badge" style="color:${PALETTE[i % PALETTE.length]}">${svg("chart")}</div>
-          <div><div class="drow-name">${esc(r.pos.titel)}</div>
-            <div class="drow-sub">eingezahlt ${eur(r.eingezahlt)} · Gewinn ${eur(r.gewinn)} · ROI ${r.roi.toLocaleString("de-DE")}%</div></div></div>
-        <div class="drow-val"><b>${eur(r.wert)}</b><span>Depotwert</span></div></div>`).join("");
-      // wachstumskurve gesamt
-      const from = new Date().toISOString().slice(0, 10);
-      const totalMonths = FE.monthsBetween(from, datum);
-      const curve = [];
-      const stepN = 40;
-      for (let i = 0; i <= stepN; i++) {
-        const mm = Math.round(totalMonths * i / stepN);
-        let v = 0;
-        (s.positionen || []).forEach(p => {
-          const r = (p.cagr / 100) / 12; let val = p.aktuell;
-          for (let x = 0; x < mm; x++) val = val * (1 + r) + p.betrag;
-          v += val;
-        });
-        curve.push(v);
-      }
-      host.appendChild(el(`<div class="card"><div class="card-h"><div>
-        <div class="card-t">Prognose ${dateDE(datum)}</div>
-        <div class="card-s">bei gleichbleibender Sparrate · ${jahre.toLocaleString("de-DE", { maximumFractionDigits: 1 })} Jahre · ø 5-Jahres-Rendite</div></div>
-        <div class="head-pill" style="padding:7px 13px">ROI <b style="margin-left:4px">${pr.roi.toLocaleString("de-DE", { maximumFractionDigits: 0 })}%</b></div></div>
-        <div class="card-b">
-          <div class="stat-strip" style="margin-bottom:16px">
-            <div class="s"><span>Depotwert</span><b style="color:var(--mint-2)">${eur(pr.wert)}</b></div>
-            <div class="s"><span>Eingezahlt</span><b>${eur(pr.eingezahlt)}</b></div>
-            <div class="s"><span>Gewinn</span><b style="color:var(--mint-2)">${eur(pr.gewinn)}</b></div>
-          </div>
-          ${areaChart(curve, [dateDE(from), dateDE(datum)])}
-          <div style="margin-top:16px">${rows}</div>
-          <div class="note" style="margin-top:12px">Modellrechnung auf Basis der durchschnittlichen 5-Jahres-Rendite (S&P 500 14,8 %, MSCI EM 6,5 %, DAX 11,0 % p.a.). Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</div>
-        </div></div>`));
-    });
-  }
   function dateDE(iso) { const d = new Date(iso); return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }); }
 
   function renderAirbnb(host, s, m) {
@@ -384,17 +338,64 @@
       <div class="card-s">${m.anzahl} Verträge · Zahlung jährlich zum 01.12.</div></div></div><div class="card-b">${rows}</div></div>`));
   }
 
+  // Eine Kredit-Tilgungskarte (Zins, optional Sondertilgung, Restschuld-Kurve)
+  function creditCard(kr) {
+    const plan = FE.creditPlan(kr);
+    const months = plan ? plan.monate : 0;
+    const rowsPlan = plan ? plan.rows : [];
+    const curve = [];
+    const stepN = Math.min(rowsPlan.length, 40);
+    if (rowsPlan.length) {
+      curve.push(kr.summe);
+      for (let x = 1; x <= stepN; x++) curve.push(rowsPlan[Math.min(rowsPlan.length - 1, Math.round(x * rowsPlan.length / stepN) - 1)].rest);
+    }
+    const hasSt = !!kr.sondertilgung;
+    const stTxt = hasSt ? `${eur(kr.sondertilgung.betrag)} zum 01.06. & 01.12.` : "keine";
+    const title = kr.name || "Kredit";
+    return el(`<div class="card"><div class="card-h"><div><div class="card-t">${esc(title)}</div>
+      <div class="card-s">${eur(kr.summe)} · ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins · " : ""}${eur(kr.abtragMonat)}/Monat</div></div>
+      <div class="head-pill" style="padding:7px 13px">${plan && plan.getilgt ? "getilgt in " + plan.jahre.toLocaleString("de-DE") + " J." : "läuft"}</div></div>
+      <div class="card-b">
+        <div class="stat-strip" style="margin-bottom:16px">
+          <div class="s"><span>Restschuld</span><b>${eur(kr.summe)}</b></div>
+          <div class="s"><span>Rate/Monat</span><b>${eur(kr.abtragMonat)}</b></div>
+          ${hasSt ? `<div class="s"><span>Sondertilgung</span><b>${eur(kr.sondertilgung.betrag)}</b></div>` : ""}
+          <div class="s"><span>Laufzeit</span><b>${months} Mon.</b></div>
+          <div class="s"><span>Zinsen gesamt</span><b>${plan ? eur(plan.zinsGesamt) : "—"}</b></div>
+          ${hasSt ? `<div class="s"><span>Σ Sondertilgung</span><b>${eur(plan.sonderGesamt)}</b></div>` : ""}
+        </div>
+        ${areaChart(curve.length ? curve : [kr.summe, 0])}
+        <div class="note" style="margin-top:8px">Restschuld inkl. ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins p.a." : "Zins"}${hasSt ? " und Sondertilgung (" + stTxt + ")" : ""}. Nach Tilgung steigt der Netto-Cashflow um ${eur(kr.abtragMonat)}/Monat.</div>
+      </div></div>`);
+  }
+
   function renderMiete(host, s, m) {
-    const hasImmo = s.invest || s.kredit || s.nkAlsPuffer;
+    const kredite = FE.creditsOf(s);
+    const hasImmo = s.invest || kredite.length || s.nkAlsPuffer;
     const k = hasImmo ? FE.immoKPIs(s) : null;
 
-    // KPIs — für Immobilien mit Invest zeigen wir Rendite-Kennzahlen
+    // KPIs
     if (k && s.invest) {
+      // Einzelobjekt mit Investitionssumme (Syke): Rendite-Kennzahlen
       host.appendChild(el(`<div class="grid g-kpi">
-        ${kpiCard("euro", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditabtrag", true)}
+        ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditrate", m.netto >= 0)}
         ${kpiCard("trend", k.bruttoRendite.toLocaleString("de-DE") + " %", "Bruttomietrendite", "Kaltmiete / Invest")}
         ${kpiCard("chart", k.cashflowRoi.toLocaleString("de-DE") + " %", "Cashflow-ROI", "netto / Invest p.a.")}
         ${kpiCard("coins", eur(k.invest), "Investition", "eingesetztes Kapital")}
+      </div>`));
+    } else if (k && kredite.length) {
+      // Mehrere Kredite (Baumstraße): Einnahmen & Tilgung
+      host.appendChild(el(`<div class="grid g-kpi">
+        ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
+        ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
+        ${kpiCard("bank", eur(k.kreditAbtrag), "Tilgung / Monat", kredite.length + " Kredite")}
+        ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow", "nach Tilgung", m.netto >= 0)}
+      </div>`));
+      host.appendChild(el(`<div class="grid g-kpi">
+        ${kpiCard("home", m.einheiten, "Einheiten", (s.einheiten || []).reduce((a, u) => a + (Number(u.flaeche) || 0), 0) + " m² gesamt")}
+        ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld gesamt", "beide Kredite")}
+        ${kpiCard("euro", eur(k.zinsGesamt), "Zinskosten gesamt", "über Laufzeit")}
+        ${kpiCard("trend", eur(m.gesamt * 12), "Einnahmen / Jahr", "aktuell vermietet")}
       </div>`));
     } else {
       host.appendChild(el(`<div class="grid g-kpi">
@@ -405,37 +406,8 @@
       </div>`));
     }
 
-    // Kredit-Tilgung Karte (mit Zins + Sondertilgung)
-    if (k && s.kredit) {
-      const plan = k.kreditPlan;
-      const months = plan ? plan.monate : 0;
-      // Restschuld-Kurve (echte Werte, auf ~40 Stützpunkte reduziert)
-      const rowsPlan = plan ? plan.rows : [];
-      const curve = [];
-      const stepN = Math.min(rowsPlan.length, 40);
-      if (rowsPlan.length) {
-        curve.push(s.kredit.summe);
-        for (let x = 1; x <= stepN; x++) curve.push(rowsPlan[Math.min(rowsPlan.length - 1, Math.round(x * rowsPlan.length / stepN) - 1)].rest);
-      }
-      const stTxt = s.kredit.sondertilgung
-        ? `${eur(s.kredit.sondertilgung.betrag)} zum 01.06. & 01.12.`
-        : "keine";
-      host.appendChild(el(`<div class="card"><div class="card-h"><div><div class="card-t">Kredittilgung</div>
-        <div class="card-s">${eur(s.kredit.summe)} · ${s.kredit.zinsPa ? s.kredit.zinsPa.toLocaleString("de-DE") + " % Zins · " : ""}${eur(s.kredit.abtragMonat)}/Monat</div></div>
-        <div class="head-pill" style="padding:7px 13px">getilgt in ${plan ? plan.jahre.toLocaleString("de-DE") : "—"} J.</div></div>
-        <div class="card-b">
-          <div class="stat-strip" style="margin-bottom:16px">
-            <div class="s"><span>Restschuld</span><b>${eur(s.kredit.summe)}</b></div>
-            <div class="s"><span>Rate/Monat</span><b>${eur(s.kredit.abtragMonat)}</b></div>
-            <div class="s"><span>Sondertilgung</span><b>${s.kredit.sondertilgung ? eur(s.kredit.sondertilgung.betrag) : "—"}</b></div>
-            <div class="s"><span>Laufzeit</span><b>${months} Mon.</b></div>
-            <div class="s"><span>Zinsen gesamt</span><b>${plan ? eur(plan.zinsGesamt) : "—"}</b></div>
-            <div class="s"><span>Σ Sondertilgung</span><b>${plan ? eur(plan.sonderGesamt) : "—"}</b></div>
-          </div>
-          ${areaChart(curve.length ? curve : [s.kredit.summe, 0])}
-          <div class="note" style="margin-top:8px">Restschuld inkl. ${s.kredit.zinsPa ? s.kredit.zinsPa.toLocaleString("de-DE") + " % Zins p.a." : "Zins"} und Sondertilgung (${stTxt}). Nach Tilgung steigt der Netto-Cashflow um ${eur(s.kredit.abtragMonat)}/Monat.</div>
-        </div></div>`));
-    }
+    // Kredit-Tilgung Karten — eine je Kredit
+    kredite.forEach(kr => host.appendChild(creditCard(kr)));
 
     // NK-Puffer Hinweis
     if (m.nkPuffer > 0) {
