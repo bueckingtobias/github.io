@@ -163,7 +163,8 @@
     (D.streams || []).forEach(s => {
       FE.creditsOf(s).forEach(kr => {
         debtMonth += Number(kr.abtragMonat) || 0;
-        debtRest += Number(kr.summe) || 0;
+        const pl = FE.creditPlan(kr);
+        debtRest += pl ? pl.restAktuell : (Number(kr.summe) || 0);
       });
     });
     const nettoMonth = t.ist - debtMonth;
@@ -351,22 +352,27 @@
     const hasSt = !!kr.sondertilgung;
     const stTxt = hasSt ? `${eur(kr.sondertilgung.betrag)} zum 01.06. & 01.12.` : "keine";
     const title = kr.name || "Kredit";
+    const restNow = plan ? plan.restAktuell : kr.summe;
+    const paid = plan ? plan.getilgtBisher : 0;
+    const startTxt = plan && plan.startKey ? monthYear(plan.startKey) : "";
+    const startFuture = plan && plan.startKey > new Date().toISOString().slice(0, 7);
     return el(`<div class="card"><div class="card-h"><div><div class="card-t">${esc(title)}</div>
-      <div class="card-s">${eur(kr.summe)} · ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins · " : ""}${eur(kr.abtragMonat)}/Monat</div></div>
-      <div class="head-pill" style="padding:7px 13px">${plan && plan.getilgt ? "getilgt in " + plan.jahre.toLocaleString("de-DE") + " J." : "läuft"}</div></div>
+      <div class="card-s">${eur(kr.summe)} · ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins · " : ""}${eur(kr.abtragMonat)}/Monat · Start ${startTxt}</div></div>
+      <div class="head-pill" style="padding:7px 13px">${plan && plan.getilgt ? "Laufzeit " + plan.jahre.toLocaleString("de-DE") + " J." : "läuft"}</div></div>
       <div class="card-b">
         <div class="stat-strip" style="margin-bottom:16px">
-          <div class="s"><span>Restschuld</span><b>${eur(kr.summe)}</b></div>
+          <div class="s"><span>Restschuld heute</span><b>${eur(restNow)}</b></div>
+          <div class="s"><span>getilgt bisher</span><b>${startFuture ? "—" : eur(paid)}</b></div>
           <div class="s"><span>Rate/Monat</span><b>${eur(kr.abtragMonat)}</b></div>
           ${hasSt ? `<div class="s"><span>Sondertilgung</span><b>${eur(kr.sondertilgung.betrag)}</b></div>` : ""}
           <div class="s"><span>Laufzeit</span><b>${months} Mon.</b></div>
-          <div class="s"><span>Zinsen gesamt</span><b>${plan ? eur(plan.zinsGesamt) : "—"}</b></div>
           ${hasSt ? `<div class="s"><span>Σ Sondertilgung</span><b>${eur(plan.sonderGesamt)}</b></div>` : ""}
         </div>
         ${areaChart(curve.length ? curve : [kr.summe, 0])}
-        <div class="note" style="margin-top:8px">Restschuld inkl. ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins p.a." : "Zins"}${hasSt ? " und Sondertilgung (" + stTxt + ")" : ""}. Nach Tilgung steigt der Netto-Cashflow um ${eur(kr.abtragMonat)}/Monat.</div>
+        <div class="note" style="margin-top:8px">${startFuture ? "Tilgung beginnt " + startTxt + ". " : ""}Restschuld inkl. ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins p.a." : "Zins"}${hasSt ? " und Sondertilgung (" + stTxt + ")" : ""}. Nach Tilgung steigt der Netto-Cashflow um ${eur(kr.abtragMonat)}/Monat.</div>
       </div></div>`);
   }
+  function monthYear(key) { const d = new Date(key + "-01"); return d.toLocaleDateString("de-DE", { month: "2-digit", year: "numeric" }); }
 
   function renderMiete(host, s, m) {
     const kredite = FE.creditsOf(s);
