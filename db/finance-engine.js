@@ -102,10 +102,10 @@
   function depotWert(s) { return r2((s.positionen || []).reduce((a, p) => a + (Number(p.aktuell) || 0), 0)); }
 
   // Kredit-Tilgungsplan mit Zins + optionalen halbjährlichen Sondertilgungen.
-  // kredit: { summe, abtragMonat, zinsPa, sondertilgung:{betrag, monate:[6,12]} }
+  // kredit: { summe, abtragMonat, zinsPa, start, sondertilgung:{betrag, monate:[6,12]} }
   function creditPlan(kredit, startIso) {
     if (!kredit) return null;
-    const start = startIso ? new Date(startIso) : new Date();
+    const start = new Date(startIso || kredit.start || new Date());
     let rest = Number(kredit.summe) || 0;
     const rate = Number(kredit.abtragMonat) || 0;
     const i = (Number(kredit.zinsPa) || 0) / 100 / 12;
@@ -115,6 +115,10 @@
     const rows = [];
     let zinsGesamt = 0, sonderGesamt = 0, monat = 0;
     let d = new Date(start.getFullYear(), start.getMonth(), 1);
+    // aktueller Monat (für "Restschuld heute")
+    const nowKey = new Date().toISOString().slice(0, 7);
+    let restAktuell = Number(kredit.summe) || 0;   // Stand heute
+    let getilgtBisher = 0;                          // bereits getilgt (bis heute)
     while (rest > 0.005 && monat < 600) {
       const zins = rest * i;
       let tilgung = Math.min(rate - zins, rest);
@@ -126,15 +130,22 @@
         sonder = Math.min(stBetrag, rest);
         rest -= sonder; sonderGesamt += sonder;
       }
-      rows.push({ monat: d.toISOString().slice(0, 7), zins: r2(zins), tilgung: r2(tilgung), sonder: r2(sonder), rest: r2(Math.max(0, rest)) });
+      const key = d.toISOString().slice(0, 7);
+      rows.push({ monat: key, zins: r2(zins), tilgung: r2(tilgung), sonder: r2(sonder), rest: r2(Math.max(0, rest)) });
+      // Restschuld/Tilgung bis heute (einschließlich laufendem Monat)
+      if (key <= nowKey) { restAktuell = Math.max(0, rest); getilgtBisher = (Number(kredit.summe) || 0) - restAktuell; }
       monat++;
       d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
       if (tilgung === 0 && stBetrag === 0) break; // tilgt nie
     }
+    const startInFuture = start.toISOString().slice(0, 7) > nowKey;
     return {
       rows, monate: monat, jahre: r2(monat / 12),
       zinsGesamt: r2(zinsGesamt), sonderGesamt: r2(sonderGesamt),
       getilgt: rest <= 0.005, restEnde: r2(Math.max(0, rest)),
+      restAktuell: r2(startInFuture ? (Number(kredit.summe) || 0) : restAktuell),
+      getilgtBisher: r2(startInFuture ? 0 : getilgtBisher),
+      startKey: start.toISOString().slice(0, 7),
       abzahlDatum: rows.length ? rows[rows.length - 1].monat : null
     };
   }
@@ -149,7 +160,7 @@
     const kredite = creditsOf(s);
     const plans = kredite.map(kr => ({ kredit: kr, plan: creditPlan(kr) }));
     const kreditSummeGesamt = kredite.reduce((a, kr) => a + (Number(kr.summe) || 0), 0);
-    const restschuldGesamt = plans.reduce((a, p) => a + (p.plan ? p.plan.rows[0] ? (Number(p.kredit.summe) || 0) : 0 : 0), 0);
+    const restschuldGesamt = plans.reduce((a, p) => a + (p.plan ? p.plan.restAktuell : 0), 0);
     const zinsGesamt = plans.reduce((a, p) => a + (p.plan ? p.plan.zinsGesamt : 0), 0);
     const maxMonate = plans.reduce((a, p) => Math.max(a, p.plan ? p.plan.monate : 0), 0);
     // Für Einzelkredit-Streams (Syke) Rückwärtskompatibilität:
@@ -162,7 +173,7 @@
       nettoCashflowMonat: m.netto, nettoCashflowJahr: r2(nettoJahr),
       kreditAbtrag: m.kreditAbtrag,
       kreditSumme: kreditSummeGesamt,
-      restschuldGesamt: r2(kreditSummeGesamt),
+      restschuldGesamt: r2(restschuldGesamt),
       zinsGesamt: r2(zinsGesamt),
       tilgungMonate: maxMonate || null, tilgungJahre: maxMonate ? r2(maxMonate / 12) : null,
       kreditPlan: firstPlan, kreditPlans: plans,
