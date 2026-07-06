@@ -15,7 +15,8 @@ window.DASHBOARD_DATA = {
       kind: "miete",
       ort: "Elmeloh, Ganderkesee",
       icon: "home",
-      note: "Fünf Wohneinheiten. Kalt 12 €/m², NK 1,50 €/m², Küche 70 €, Strom 40 €.",
+      note: "Fünf Wohneinheiten. Kalt 12 €/m², NK 1,50 €/m², Küche 70 €, Strom 40 €. Nebenkosten werden vollständig als Puffer zurückgelegt.",
+      nkAlsPuffer: true,
       kredite: [
         { name: "KfW-Darlehen", summe: 500000, zinsPa: 2.98, abtragMonat: 2432.39 },
         { name: "VR-Darlehen",  summe: 422000, zinsPa: 3.48, abtragMonat: 1927.38 }
