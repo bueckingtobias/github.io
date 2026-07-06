@@ -10,27 +10,16 @@ window.DASHBOARD_DATA = {
   /* Einnahmequellen. Jede Quelle hat einen Typ, Kennzahlen und Positionen. */
   streams: [
     {
-      id: "aktien",
-      name: "Aktien-Sparplan",
-      kind: "invest",
-      ort: "ETF-Depot",
-      icon: "chart",
-      note: "Monatlicher Vermögensaufbau per Sparplan. Prognose auf Basis der ø 5-Jahres-Rendite (Vergangenheit, keine Garantie).",
-      // Prognose-Stichtage
-      prognosen: ["2032-03-18", "2069-05-01"],
-      positionen: [
-        { titel: "Core S&P 500 (Acc)", isin: "IE00B5BMR087", betrag: 500, aktuell: 905, cagr: 14.8, sub: "iShares Core S&P 500" },
-        { titel: "Core MSCI EM (Acc)", isin: "IE00B4L5YC18", betrag: 250, aktuell: 250, cagr: 6.5, sub: "iShares Core MSCI EM IMI" },
-        { titel: "Core DAX (Acc)", isin: "DE0005933931", betrag: 150, aktuell: 155, cagr: 11.0, sub: "iShares Core DAX" }
-      ]
-    },
-    {
       id: "baumstrasse-we",
       name: "Baumstraße · 5 WE",
       kind: "miete",
       ort: "Elmeloh, Ganderkesee",
       icon: "home",
       note: "Fünf Wohneinheiten. Kalt 12 €/m², NK 1,50 €/m², Küche 70 €, Strom 40 €.",
+      kredite: [
+        { name: "KfW-Darlehen", summe: 500000, zinsPa: 2.98, abtragMonat: 2432.39 },
+        { name: "VR-Darlehen",  summe: 422000, zinsPa: 3.48, abtragMonat: 1927.38 }
+      ],
       einheiten: [
         { wohnung: "WE 1", flaeche: 106, kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, status: "frei" },
         { wohnung: "WE 2", flaeche: 93,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, status: "vermietet" },
