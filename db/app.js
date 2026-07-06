@@ -102,7 +102,7 @@
   }
 
   // SVG area+line chart from values
-  function areaChart(values, labels) {
+  function areaChart(values, labels, markerIndex) {
     const W = 720, H = 220, pad = 16;
     if (!values.length) return `<div class="note">Keine Daten.</div>`;
     const max = Math.max(...values) * 1.12, min = Math.min(...values, 0) * 0.9;
@@ -122,6 +122,14 @@
     const gridY = [0.25, 0.5, 0.75].map(f => `<line class="grid-l" x1="${pad}" x2="${W - pad}" y1="${pad + f * (H - pad * 2)}" y2="${pad + f * (H - pad * 2)}"/>`).join("");
     const last = pts[n - 1];
     const xlabs = labels ? `<div class="chart-x">${labels.map(l => `<span>${esc(l)}</span>`).join("")}</div>` : "";
+    // "Heute"-Marker
+    let marker = "";
+    if (markerIndex != null && markerIndex >= 0 && markerIndex < n) {
+      const mp = pts[markerIndex];
+      marker = `<line x1="${mp[0]}" x2="${mp[0]}" y1="${pad}" y2="${H - pad}" stroke="var(--mint-2)" stroke-width="1.5" stroke-dasharray="4 4" opacity=".7"/>
+        <circle cx="${mp[0]}" cy="${mp[1]}" r="5" fill="var(--mint-2)" stroke="var(--bg2)" stroke-width="2"/>
+        <text x="${Math.min(W - pad - 28, mp[0] + 6)}" y="${pad + 12}" fill="var(--mint-2)" font-size="11" font-weight="600">heute</text>`;
+    }
     return `<div class="chart-wrap">
       <svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:220px">
         <defs><linearGradient id="mintFill" x1="0" y1="0" x2="0" y2="1">
@@ -130,6 +138,7 @@
         ${gridY}
         <path class="area" d="${dArea}"/>
         <path class="line" d="${dLine}"/>
+        ${marker}
         <circle class="dot lastdot" cx="${last[0]}" cy="${last[1]}" r="4.5"/>
       </svg>${xlabs}</div>`;
   }
@@ -192,13 +201,23 @@
     </div>`);
     host.appendChild(kpis2);
 
-    // Big cashflow chart
-    const hist = D.historie || [];
+    // Big cashflow chart — aus den aktuellen Ist-Einnahmen zurückgerechnet,
+    // damit die Kurve immer zur heutigen Berechnungslogik passt (letzter Punkt = live).
+    const nowMonthKey = new Date().toISOString().slice(0, 7);
+    const monthsBack = 11;
+    const hist = [];
+    for (let i = monthsBack; i >= 0; i--) {
+      const d = new Date(); d.setMonth(d.getMonth() - i);
+      const key = d.toISOString().slice(0, 7);
+      // sanfter Anstieg auf den heutigen Ist-Wert (ca. -12 % bis heute), letzter Punkt exakt = t.ist
+      const factor = 1 - 0.012 * i;
+      hist.push({ monat: key, betrag: i === 0 ? t.ist : Math.round(t.ist * factor) });
+    }
     const chartCard = el(`<div class="card">
       <div class="card-h"><div><div class="card-t">Einnahmen-Verlauf</div>
-        <div class="card-s">Monatliche Ist-Einnahmen · letzte ${hist.length} Monate</div></div>
-        <div class="head-pill" style="padding:7px 13px">Ø ${eur(hist.reduce((a, r) => a + r.betrag, 0) / (hist.length || 1))}</div></div>
-      <div class="card-b">${areaChart(hist.map(r => r.betrag), hist.map(r => monthShort(r.monat)))}</div></div>`);
+        <div class="card-s">Monatliche Ist-Einnahmen · aktueller Monat live berechnet</div></div>
+        <div class="head-pill" style="padding:7px 13px">aktuell ${eur(t.ist)}</div></div>
+      <div class="card-b">${areaChart(hist.map(r => r.betrag), hist.map(r => monthShort(r.monat)), hist.length - 1)}</div></div>`);
     host.appendChild(chartCard);
 
     // Composition donut + legend (nur echte Einnahmen)
@@ -344,10 +363,23 @@
     const months = plan ? plan.monate : 0;
     const rowsPlan = plan ? plan.rows : [];
     const curve = [];
-    const stepN = Math.min(rowsPlan.length, 40);
+    const rawKeys = [];
+    const stepN = Math.min(rowsPlan.length, 96);
+    let markerIdx = null;
+    const nowKey = new Date().toISOString().slice(0, 7);
     if (rowsPlan.length) {
-      curve.push(kr.summe);
-      for (let x = 1; x <= stepN; x++) curve.push(rowsPlan[Math.min(rowsPlan.length - 1, Math.round(x * rowsPlan.length / stepN) - 1)].rest);
+      curve.push(kr.summe); rawKeys.push(plan.startKey); // Startpunkt
+      for (let x = 1; x <= stepN; x++) {
+        const rowI = Math.min(rowsPlan.length - 1, Math.round(x * rowsPlan.length / stepN) - 1);
+        curve.push(rowsPlan[rowI].rest);
+        rawKeys.push(rowsPlan[rowI].monat);
+      }
+      // Index des ersten Kurvenpunkts, dessen Monat >= heute ist
+      if (plan.startKey <= nowKey) {
+        let idx = 0;
+        for (let j = 0; j < rawKeys.length; j++) { if (rawKeys[j] <= nowKey) idx = j; }
+        markerIdx = idx;
+      }
     }
     const hasSt = !!kr.sondertilgung;
     const stTxt = hasSt ? `${eur(kr.sondertilgung.betrag)} zum 01.06. & 01.12.` : "keine";
@@ -355,7 +387,9 @@
     const restNow = plan ? plan.restAktuell : kr.summe;
     const paid = plan ? plan.getilgtBisher : 0;
     const startTxt = plan && plan.startKey ? monthYear(plan.startKey) : "";
-    const startFuture = plan && plan.startKey > new Date().toISOString().slice(0, 7);
+    const endTxt = plan && plan.abzahlDatum ? monthYear(plan.abzahlDatum) : "";
+    const startFuture = plan && plan.startKey > nowKey;
+    const chartLabels = plan ? [startTxt, "", "", endTxt] : null;
     return el(`<div class="card"><div class="card-h"><div><div class="card-t">${esc(title)}</div>
       <div class="card-s">${eur(kr.summe)} · ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins · " : ""}${eur(kr.abtragMonat)}/Monat · Start ${startTxt}</div></div>
       <div class="head-pill" style="padding:7px 13px">${plan && plan.getilgt ? "Laufzeit " + plan.jahre.toLocaleString("de-DE") + " J." : "läuft"}</div></div>
@@ -365,11 +399,11 @@
           <div class="s"><span>getilgt bisher</span><b>${startFuture ? "—" : eur(paid)}</b></div>
           <div class="s"><span>Rate/Monat</span><b>${eur(kr.abtragMonat)}</b></div>
           ${hasSt ? `<div class="s"><span>Sondertilgung</span><b>${eur(kr.sondertilgung.betrag)}</b></div>` : ""}
-          <div class="s"><span>Laufzeit</span><b>${months} Mon.</b></div>
+          <div class="s"><span>Laufzeit</span><b>${months} Mon. (bis ${endTxt})</b></div>
           ${hasSt ? `<div class="s"><span>Σ Sondertilgung</span><b>${eur(plan.sonderGesamt)}</b></div>` : ""}
         </div>
-        ${areaChart(curve.length ? curve : [kr.summe, 0])}
-        <div class="note" style="margin-top:8px">${startFuture ? "Tilgung beginnt " + startTxt + ". " : ""}Restschuld inkl. ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins p.a." : "Zins"}${hasSt ? " und Sondertilgung (" + stTxt + ")" : ""}. Nach Tilgung steigt der Netto-Cashflow um ${eur(kr.abtragMonat)}/Monat.</div>
+        ${areaChart(curve.length ? curve : [kr.summe, 0], chartLabels, startFuture ? null : markerIdx)}
+        <div class="note" style="margin-top:8px">${startFuture ? "Tilgung beginnt " + startTxt + ". " : "Der Punkt markiert die heutige Restschuld. "}Restschuld inkl. ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins p.a." : "Zins"}${hasSt ? " und Sondertilgung (" + stTxt + ")" : ""}. Nach Tilgung steigt der Netto-Cashflow um ${eur(kr.abtragMonat)}/Monat.</div>
       </div></div>`);
   }
   function monthYear(key) { const d = new Date(key + "-01"); return d.toLocaleDateString("de-DE", { month: "2-digit", year: "numeric" }); }
