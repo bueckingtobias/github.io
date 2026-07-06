@@ -66,22 +66,5 @@ window.DASHBOARD_DATA = {
         { paechter: "Heide & Christian Meyer", jahr: 200.00, flaeche: 1.00, art: "Grünland + Gehölz", start: "2021-11-01", ende: "jährlich" }
       ]
     }
-  ],
-
-  /* Historie: monatliche Ist-Einnahmen gesamt (für den großen Cashflow-Chart).
-     Werte = tatsächlich zugeflossen. Prognose ergibt sich aus streams. */
-  historie: [
-    { monat: "2025-07", betrag: 8900 },
-    { monat: "2025-08", betrag: 9100 },
-    { monat: "2025-09", betrag: 9400 },
-    { monat: "2025-10", betrag: 9800 },
-    { monat: "2025-11", betrag: 10100 },
-    { monat: "2025-12", betrag: 10250 },
-    { monat: "2026-01", betrag: 10400 },
-    { monat: "2026-02", betrag: 10600 },
-    { monat: "2026-03", betrag: 10750 },
-    { monat: "2026-04", betrag: 10850 },
-    { monat: "2026-05", betrag: 10950 },
-    { monat: "2026-06", betrag: 11037 }
   ]
 };
