@@ -55,8 +55,9 @@
     const nkAlle = units.reduce((a, u) => a + u.nk, 0);
     const nkIst = (s.einheiten || []).reduce((a, u) => a + (u.status === "vermietet" ? unitIncome(u).nk : 0), 0);
     const kaltAlle = units.reduce((a, u) => a + u.kalt, 0);
-    const kreditAbtrag = s.kredit ? (Number(s.kredit.abtragMonat) || 0) : 0;
-    const nettoCashflow = gesamtIst - kreditAbtrag; // nach Kreditabtrag
+    const kreditListe = creditsOf(s);
+    const kreditAbtrag = kreditListe.reduce((a, kr) => a + (Number(kr.abtragMonat) || 0), 0);
+    const nettoCashflow = gesamtIst - kreditAbtrag; // nach allen Kreditraten
     return {
       gesamt: r2(gesamtIst),            // Ertrag (ohne NK-Puffer)
       gesamtPotenzial: r2(gesamtAlle),  // bei Vollvermietung
@@ -67,6 +68,14 @@
       einheiten: units.length, vermietet: vermietet.length,
       typ: "miete"
     };
+  }
+
+  // Liefert alle Kredite eines Streams als Array (unterstützt s.kredit ODER s.kredite[]).
+  function creditsOf(s) {
+    if (!s) return [];
+    if (Array.isArray(s.kredite)) return s.kredite;
+    if (s.kredit) return [s.kredit];
+    return [];
   }
 
   // Sparplan-Prognose je Position bis zu einem Stichtag.
@@ -137,18 +146,26 @@
     const kaltJahr = m.kalt * 12;
     const ertragJahr = m.gesamt * 12;
     const nettoJahr = m.netto * 12;
-    const kredit = s.kredit || null;
-    const plan = kredit ? creditPlan(kredit) : null;
-    const tilgungMonate = plan ? plan.monate : null;
+    const kredite = creditsOf(s);
+    const plans = kredite.map(kr => ({ kredit: kr, plan: creditPlan(kr) }));
+    const kreditSummeGesamt = kredite.reduce((a, kr) => a + (Number(kr.summe) || 0), 0);
+    const restschuldGesamt = plans.reduce((a, p) => a + (p.plan ? p.plan.rows[0] ? (Number(p.kredit.summe) || 0) : 0 : 0), 0);
+    const zinsGesamt = plans.reduce((a, p) => a + (p.plan ? p.plan.zinsGesamt : 0), 0);
+    const maxMonate = plans.reduce((a, p) => Math.max(a, p.plan ? p.plan.monate : 0), 0);
+    // Für Einzelkredit-Streams (Syke) Rückwärtskompatibilität:
+    const firstPlan = plans.length ? plans[0].plan : null;
     return {
       invest,
       bruttoRendite: invest ? r2(kaltJahr / invest * 100) : 0,
       nettoRendite: invest ? r2(ertragJahr / invest * 100) : 0,
       cashflowRoi: invest ? r2(nettoJahr / invest * 100) : 0,
       nettoCashflowMonat: m.netto, nettoCashflowJahr: r2(nettoJahr),
-      kreditAbtrag: m.kreditAbtrag, kreditSumme: kredit ? kredit.summe : 0,
-      tilgungMonate, tilgungJahre: plan ? plan.jahre : null,
-      kreditPlan: plan,
+      kreditAbtrag: m.kreditAbtrag,
+      kreditSumme: kreditSummeGesamt,
+      restschuldGesamt: r2(kreditSummeGesamt),
+      zinsGesamt: r2(zinsGesamt),
+      tilgungMonate: maxMonate || null, tilgungJahre: maxMonate ? r2(maxMonate / 12) : null,
+      kreditPlan: firstPlan, kreditPlans: plans,
       nkPuffer: m.nkPuffer, nkPufferJahr: r2(m.nkPuffer * 12)
     };
   }
@@ -172,5 +189,5 @@
   }
 
   window.FinanceEngine = { unitIncome, airbnbIncome, streamMonthly, totals, r2,
-    projectPosition, investProjection, depotWert, immoKPIs, creditPlan, monthsBetween };
+    projectPosition, investProjection, depotWert, immoKPIs, creditPlan, creditsOf, monthsBetween };
 })();
