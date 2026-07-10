@@ -167,58 +167,44 @@
   /* ---------- OVERVIEW ---------- */
   function renderOverview(host) {
     const t = FE.totals(D);
-    // Portfolio-Kredite aggregieren
-    let debtMonth = 0, debtRest = 0;
+    // Portfolio-Kredite + Einheiten aggregieren
+    let debtMonth = 0, debtRest = 0, debtOrig = 0, paidSoFar = 0;
+    let unitsTotal = 0, unitsLet = 0;
     (D.streams || []).forEach(s => {
       FE.creditsOf(s).forEach(kr => {
         debtMonth += Number(kr.abtragMonat) || 0;
+        debtOrig += Number(kr.summe) || 0;
         const pl = FE.creditPlan(kr);
         debtRest += pl ? pl.restAktuell : (Number(kr.summe) || 0);
+        paidSoFar += pl ? pl.getilgtBisher : 0;
       });
+      (s.einheiten || []).forEach(u => { unitsTotal++; if (u.status === "vermietet") unitsLet++; });
     });
     const nettoMonth = t.ist - debtMonth;
+    const occ = unitsTotal ? Math.round(unitsLet / unitsTotal * 100) : 0;
+    const upside = t.potenzial - t.ist;          // ungenutztes Einnahmenpotenzial
+    const nettoPot = t.potenzial - debtMonth;    // Netto bei Vollvermietung
 
     $("#eyebrow").textContent = "Portfolio";
     $("#pageTitle").textContent = "Übersicht";
     $("#pageSub").textContent = "Alle Einnahmequellen auf einen Blick";
     $("#headPill").innerHTML = `Ist-Einnahmen <b>${eur(t.ist)}</b> / Monat`;
 
-    // KPIs — Einnahmen & Tilgung im Fokus
-    const kpis = el(`<div class="grid g-kpi">
-      ${kpiCard("euro", eur(t.ist), "Einnahmen / Monat", "vermietet · real", true)}
-      ${kpiCard("layers", eur(t.potenzial), "Potenzial / Monat", "bei Vollvermietung")}
-      ${kpiCard("bank", eur(debtMonth), "Tilgung / Monat", "alle Kreditraten")}
+    // KPI-Reihe 1 — Einnahmen & Cashflow
+    host.appendChild(el(`<div class="grid g-kpi">
+      ${kpiCard("euro", eur(t.ist), "Einnahmen / Monat", "aktuell vermietet", true)}
+      ${kpiCard("layers", eur(t.potenzial), "Potenzial / Monat", "+" + eur(upside) + " ungenutzt")}
       ${kpiCard("wallet", eur(nettoMonth), "Netto-Cashflow", "nach Tilgung", nettoMonth >= 0)}
-    </div>`);
-    host.appendChild(kpis);
+      ${kpiCard("home", occ + " %", "Auslastung", unitsLet + " / " + unitsTotal + " Einheiten", occ >= 60)}
+    </div>`));
 
-    // zweite KPI-Reihe: Jahr + Restschuld
-    const kpis2 = el(`<div class="grid g-kpi">
+    // KPI-Reihe 2 — Jahr, Tilgung, Schuldenstand
+    host.appendChild(el(`<div class="grid g-kpi">
       ${kpiCard("trend", eur(t.jahrIst), "Einnahmen / Jahr", "hochgerechnet")}
-      ${kpiCard("trend", eur(nettoMonth * 12), "Netto / Jahr", "nach Tilgung", nettoMonth >= 0)}
-      ${kpiCard("bank", eur(debtMonth * 12), "Tilgung / Jahr", "alle Kreditraten")}
-      ${kpiCard("debt", eur(debtRest), "Restschuld gesamt", "über alle Kredite")}
-    </div>`);
-    host.appendChild(kpis2);
-
-    // Big cashflow chart — aus den aktuellen Ist-Einnahmen zurückgerechnet,
-    // damit die Kurve immer zur heutigen Berechnungslogik passt (letzter Punkt = live).
-    const nowMonthKey = new Date().toISOString().slice(0, 7);
-    const monthsBack = 11;
-    const hist = [];
-    for (let i = monthsBack; i >= 0; i--) {
-      const d = new Date(); d.setMonth(d.getMonth() - i);
-      const key = d.toISOString().slice(0, 7);
-      // sanfter Anstieg auf den heutigen Ist-Wert (ca. -12 % bis heute), letzter Punkt exakt = t.ist
-      const factor = 1 - 0.012 * i;
-      hist.push({ monat: key, betrag: i === 0 ? t.ist : Math.round(t.ist * factor) });
-    }
-    const chartCard = el(`<div class="card">
-      <div class="card-h"><div><div class="card-t">Einnahmen-Verlauf</div>
-        <div class="card-s">Monatliche Ist-Einnahmen · aktueller Monat live berechnet</div></div>
-        <div class="head-pill" style="padding:7px 13px">aktuell ${eur(t.ist)}</div></div>
-      <div class="card-b">${areaChart(hist.map(r => r.betrag), hist.map(r => monthShort(r.monat)), hist.length - 1)}</div></div>`);
-    host.appendChild(chartCard);
+      ${kpiCard("chart", eur(nettoPot), "Netto-Potenzial / Mon.", "bei Vollvermietung", nettoPot >= 0)}
+      ${kpiCard("bank", eur(debtMonth), "Tilgung / Monat", eur(debtMonth * 12) + " / Jahr")}
+      ${kpiCard("debt", eur(debtRest), "Restschuld heute", "getilgt " + eur(paidSoFar))}
+    </div>`));
 
     // Composition donut + legend (nur echte Einnahmen)
     const segs = (D.streams || []).map((s, i) => {
@@ -415,15 +401,21 @@
 
     // KPIs
     if (k && s.invest) {
-      // Einzelobjekt mit Investitionssumme (Syke): Rendite-Kennzahlen
+      // Rendite-Kennzahlen (Syke-Stil) — auch für Baumstraße
       host.appendChild(el(`<div class="grid g-kpi">
         ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditrate", m.netto >= 0)}
         ${kpiCard("trend", k.bruttoRendite.toLocaleString("de-DE") + " %", "Bruttomietrendite", "Kaltmiete / Invest")}
         ${kpiCard("chart", k.cashflowRoi.toLocaleString("de-DE") + " %", "Cashflow-ROI", "netto / Invest p.a.")}
         ${kpiCard("coins", eur(k.invest), "Investition", "eingesetztes Kapital")}
       </div>`));
+      // Zweite Reihe mit Einnahmen/Tilgung/Restschuld (nützlich bei mehreren Krediten)
+      host.appendChild(el(`<div class="grid g-kpi">
+        ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
+        ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
+        ${kpiCard("bank", eur(k.kreditAbtrag), "Tilgung / Monat", kredite.length + (kredite.length === 1 ? " Kredit" : " Kredite"))}
+        ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld heute", "über alle Kredite")}
+      </div>`));
     } else if (k && kredite.length) {
-      // Mehrere Kredite (Baumstraße): Einnahmen & Tilgung
       host.appendChild(el(`<div class="grid g-kpi">
         ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
         ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
