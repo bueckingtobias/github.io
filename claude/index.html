@@ -1,275 +1,932 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bücking Immobilien GmbH & Co. KG</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#01190f">
+<title>Königs-Risiko · Schützenfest</title>
+<style>
+:root{
+  --g950:#01190f; --g900:#00301d; --g700:#004225; --g500:#0e6b3e;
+  --gold:#d4af37; --gold-hi:#f7e08b; --gold-deep:#8f741f;
+  --chalk:#fbfaf4; --red:#e0483e; --red-deep:#8f150d;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Avenir Next','Avenir',-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:radial-gradient(130% 90% at 50% -10%, var(--g500) 0%, var(--g900) 42%, var(--g950) 100%);
+  color:var(--chalk);
+  min-height:100dvh;
+  touch-action:manipulation;
+  user-select:none;-webkit-user-select:none;
+  overflow-x:hidden;
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;z-index:1;
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/></filter><rect width="140" height="140" filter="url(%23n)" opacity="0.55"/></svg>');
+}
+.app{max-width:430px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 16px);
+  position:relative;z-index:2}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.active{display:flex}
+.spacer{flex:1}
 
-  <!-- ===== SEO GRUNDDATEN ===== -->
-  <meta name="description" content="Bücking Immobilien GmbH & Co. KG – Moderne Wohnprojekte, nachhaltige Bestandshaltung und klare Vermietungsprozesse in Ganderkesee.">
-  <meta name="keywords" content="Immobilien Ganderkesee, Wohnung mieten, Neubau, Vermietung, Immobilienverwaltung, Bücking Immobilien">
-  <meta name="author" content="Bücking Immobilien GmbH & Co. KG">
+/* ---------- Gold-Text ---------- */
+.goldtext{
+  background:linear-gradient(100deg,var(--gold-deep) 0%,var(--gold) 30%,#fff3c4 50%,var(--gold) 70%,var(--gold-deep) 100%);
+  background-size:200% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shine 3.2s linear infinite;
+  filter:drop-shadow(0 4px 12px rgba(212,175,55,.35));
+}
+@keyframes shine{to{background-position:200% 0}}
 
-  <link rel="canonical" href="https://www.buecking-immobilien.de/" />
+/* ---------- Startscreen ---------- */
+.crest{width:76px;height:76px;border-radius:50%;
+  background:radial-gradient(circle at 30% 25%, #0f7a45, var(--g700) 65%);
+  border:2px solid var(--gold);
+  box-shadow:0 0 0 6px rgba(212,175,55,.14), 0 14px 30px rgba(0,0,0,.45);
+  display:flex;align-items:center;justify-content:center;font-size:37px;margin:0 auto 10px;
+  cursor:pointer;transition:transform .12s}
+.crest:active{transform:scale(.94)}
 
-  <meta property="og:title" content="Bücking Immobilien GmbH & Co. KG">
-  <meta property="og:description" content="Moderne Immobilienprojekte, klare Strukturen und nachhaltige Vermietung in Ganderkesee.">
-  <meta property="og:url" content="https://www.buecking-immobilien.de/">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://www.buecking-immobilien.de/og-image.jpg">
+/* ---------- Demo-Banner ---------- */
+.demobanner{display:none;align-items:center;justify-content:center;gap:8px;
+  background:repeating-linear-gradient(45deg,rgba(212,175,55,.22) 0 14px,rgba(212,175,55,.10) 14px 28px);
+  border:1px solid var(--gold);border-radius:12px;padding:8px 12px;margin-bottom:6px;
+  font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--gold-hi);text-transform:uppercase}
+body.demo .demobanner{display:flex}
+.demobanner .dot{width:8px;height:8px;border-radius:50%;background:var(--gold-hi);
+  box-shadow:0 0 8px var(--gold-hi);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+.demohint{font-size:11px;letter-spacing:.5px;color:rgba(212,175,55,.85);
+  font-weight:700;margin-top:4px;text-align:center}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(251,250,244,.62);text-align:center;margin-bottom:5px}
+.title{font-size:34px;font-weight:900;letter-spacing:.5px;text-align:center;line-height:1.05}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;
+  padding:6px 16px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.rule{display:flex;gap:11px;align-items:flex-start;font-size:14px;line-height:1.45;padding:9px 0}
+.rule + .rule{border-top:1px dashed rgba(255,255,255,.12)}
+.rule .ic{font-size:16px;line-height:1.3}
+.name{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(0,0,0,.25);color:var(--chalk);font:inherit;font-size:16px;text-align:center;outline:none}
+.name:focus{border-color:var(--gold)}
+.btn-gold{display:block;width:100%;padding:15px;border:none;border-radius:15px;font:inherit;
+  font-weight:800;font-size:17px;letter-spacing:.4px;color:#0b2c1a;cursor:pointer;
+  background:linear-gradient(180deg,var(--gold-hi),var(--gold) 55%,#b8932a);
+  box-shadow:0 6px 0 #7a611c, 0 14px 26px rgba(0,0,0,.4)}
+.btn-gold:active{transform:translateY(3px);box-shadow:0 3px 0 #7a611c, 0 8px 16px rgba(0,0,0,.4)}
+.foot{margin-top:11px;text-align:center;font-size:12px;color:rgba(251,250,244,.5);letter-spacing:.3px}
+.ghost{background:none;border:none;color:rgba(251,250,244,.5);font:inherit;font-size:12.5px;
+  font-weight:700;letter-spacing:.5px;padding:5px 8px;cursor:pointer}
+.ghost:active{color:var(--gold-hi)}
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Bücking Immobilien GmbH & Co. KG">
-  <meta name="twitter:description" content="Moderne Immobilienprojekte in der Region Ganderkesee.">
-  <meta name="twitter:image" content="https://www.buecking-immobilien.de/og-image.jpg">
+/* ---------- Bestenliste ---------- */
+.boardhead{display:flex;justify-content:space-between;align-items:center;padding:9px 0 3px}
+.brow{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14.5px}
+.brow + .brow{border-top:1px dashed rgba(255,255,255,.1)}
+.brank{width:26px;height:26px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12.5px;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.4);color:var(--gold-hi)}
+.brank.first{background:linear-gradient(180deg,var(--gold-hi),var(--gold));border-color:#fff3c4;color:#0b2c1a}
+.bname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.bamt{font-weight:800;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;padding:4px 2px 8px}
+.emptystate{text-align:center;color:rgba(251,250,244,.55);font-size:14px;padding:26px 10px;line-height:1.5}
 
-  <link rel="sitemap" type="application/xml" title="Sitemap" href="https://www.buecking-immobilien.de/sitemap.xml" />
+/* ---------- Spielscreen ---------- */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.player{font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(251,250,244,.75)}
+.mute{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--chalk);
+  border-radius:10px;padding:6px 11px;font-size:14px;font:inherit;font-weight:700;cursor:pointer}
+.pot{text-align:center;margin:2px 0 8px}
+.pot .lbl{font-size:10.5px;letter-spacing:3px;font-weight:700;color:rgba(251,250,244,.6)}
+.pot .val{font-size:50px;font-weight:900;line-height:1.08}
+.pot .sub{font-size:12.5px;color:rgba(251,250,244,.65);min-height:17px}
 
-  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <!-- ===== ENDE SEO ===== -->
+.ladder{flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:4px 0}
+.row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-radius:13px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);position:relative;
+  transition:background .12s,border-color .12s,box-shadow .12s,transform .15s,opacity .3s}
+.row .amt{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.row .tag{font-size:11px;font-weight:700;letter-spacing:1.5px;color:rgba(251,250,244,.5)}
+.row.special .tag{color:var(--gold)}
+.row.zero{background:rgba(0,0,0,.28);border-style:dashed}
+.row.passed{opacity:.38}
+.row.current{background:linear-gradient(180deg,var(--gold-hi),var(--gold));border-color:#fff3c4;
+  color:#0b2c1a;transform:scale(1.035);
+  box-shadow:0 0 22px rgba(212,175,55,.55), 0 6px 18px rgba(0,0,0,.4)}
+.row.current .tag{color:#5c4a12}
+.row.lit-gold{background:rgba(212,175,55,.24);border-color:var(--gold);box-shadow:0 0 18px rgba(212,175,55,.55)}
+.row.lit-red{background:rgba(224,72,62,.24);border-color:var(--red);box-shadow:0 0 18px rgba(224,72,62,.55)}
+.row.pop{animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1.035)}}
 
-  <style>
-    :root{
-      --brand:#004225;
-      --brand-700:#00361e;
-      --text:#ffffff;
-      --bg:#004225;
-      --muted:#ffffff1a;
-      --shadow:0 2px 10px rgba(0,0,0,.25);
-      --radius:12px;
-      --maxw:1200px;
-      --nav-h:46px;
+.controls{display:flex;align-items:center;gap:14px;margin-top:10px}
+.btn-collect{flex:1;padding:15px 10px;border-radius:14px;border:1.5px solid var(--gold);
+  background:rgba(212,175,55,.12);color:var(--gold-hi);font:inherit;font-weight:800;font-size:15px;
+  letter-spacing:.5px;cursor:pointer}
+.btn-collect:active{background:rgba(212,175,55,.28)}
+.btn-collect:disabled{opacity:.35;border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.5)}
+.btn-risk{width:106px;height:106px;border-radius:50%;border:4px solid rgba(255,255,255,.28);
+  background:radial-gradient(circle at 32% 26%, #ff8a7d, var(--red) 45%, var(--red-deep) 100%);
+  color:#fff;font:inherit;font-weight:900;cursor:pointer;flex:none;
+  box-shadow:0 8px 0 #6d0f08, 0 18px 30px rgba(0,0,0,.5), inset 0 3px 8px rgba(255,255,255,.35);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.btn-risk .big{font-size:18px;letter-spacing:1.2px}
+.btn-risk .small{font-size:11.5px;font-weight:700;opacity:.92}
+.btn-risk:active{transform:translateY(5px);
+  box-shadow:0 3px 0 #6d0f08, 0 8px 16px rgba(0,0,0,.5), inset 0 3px 8px rgba(255,255,255,.35)}
+.btn-risk:disabled{filter:saturate(.4) brightness(.75);animation:none}
+.btn-risk.tease{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{
+  0%,100%{box-shadow:0 8px 0 #6d0f08, 0 18px 30px rgba(0,0,0,.5), 0 0 0 0 rgba(224,72,62,.55), inset 0 3px 8px rgba(255,255,255,.35)}
+  50%{box-shadow:0 8px 0 #6d0f08, 0 18px 30px rgba(0,0,0,.5), 0 0 0 17px rgba(224,72,62,0), inset 0 3px 8px rgba(255,255,255,.35)}
+}
 
-      --header-h: 110px;
-      --footer-h: 64px;
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-    }
+/* ---------- Ergebnisscreen ---------- */
+.res-ic{font-size:56px;text-align:center;margin-bottom:6px}
+.res-val{font-size:70px;font-weight:900;text-align:center;line-height:1.05;margin:2px 0 8px}
+.res-val.zero{color:#ff8f86}
+.chipwrap{text-align:center}
+.chip{display:inline-block;padding:9px 18px;border-radius:999px;border:1px solid var(--gold);
+  background:rgba(212,175,55,.14);color:var(--gold-hi);font-weight:800;font-size:15px}
+.chip.bad{border-color:rgba(224,72,62,.7);background:rgba(224,72,62,.12);color:#ffb4ad}
+.res-rank{margin-top:12px;text-align:center;font-size:15px;font-weight:800;color:var(--gold-hi);min-height:20px}
+.res-note{margin-top:8px;text-align:center;font-size:13.5px;color:rgba(251,250,244,.65);line-height:1.55}
 
-    *{ box-sizing:border-box }
-    html,body{
-      margin:0; padding:0;
-      font-family:"Avenir",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
-      background:var(--bg);
-      scroll-behavior:smooth;
-    }
+/* ---------- Spielmacher ---------- */
+.asec{padding:13px 16px}
+.ah{font-size:11px;letter-spacing:2.5px;font-weight:800;color:rgba(251,250,244,.6);
+  margin-bottom:10px;text-transform:uppercase}
+.kassegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.kcell .kv{font-size:20px;font-weight:900;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.kcell .kv.neg{color:#ff8f86}
+.kcell .kl{font-size:10.5px;letter-spacing:1px;color:rgba(251,250,244,.55);font-weight:700;text-transform:uppercase;margin-top:2px}
+.slrow{padding:7px 0}
+.slrow + .slrow{border-top:1px dashed rgba(255,255,255,.1)}
+.sltop{display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;margin-bottom:4px}
+.sltop b{color:var(--gold-hi);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--gold);height:26px}
+.presets{display:flex;gap:8px;margin-top:11px}
+.presets button{flex:1;padding:9px 4px;border-radius:10px;border:1px solid rgba(212,175,55,.5);
+  background:rgba(212,175,55,.1);color:var(--gold-hi);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.presets button:active{background:rgba(212,175,55,.3)}
+.modeswitch{display:flex;gap:8px;margin-bottom:10px}
+.modeswitch button{flex:1;padding:10px 4px;border-radius:11px;border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.05);color:rgba(251,250,244,.7);font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:.12s}
+.modeswitch button.active{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#0b2c1a;border-color:#fff3c4}
+.demonote{display:none;font-size:12px;line-height:1.45;color:var(--gold-hi);
+  background:rgba(212,175,55,.1);border:1px dashed rgba(212,175,55,.5);border-radius:10px;padding:8px 11px;margin-bottom:11px}
+.demonote.show{display:block}
+.srow{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;padding:4.5px 0;gap:10px}
+.srow b{color:var(--gold-hi);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sdiv{border-top:1px dashed rgba(255,255,255,.12);margin:6px 0}
+.danger{width:100%;margin-top:11px;padding:12px;border-radius:12px;border:1px solid rgba(224,72,62,.6);
+  background:rgba(224,72,62,.12);color:#ffb4ad;font:inherit;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+.danger.arm{background:var(--red);color:#fff;border-color:#ff8f86}
 
-    html{ scroll-padding-top: calc(var(--header-h) + 10px) }
+/* ---------- PIN-Dialog ---------- */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(1,25,15,.78);z-index:70;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.modal.show{display:flex}
+.modalbox{width:min(320px,86vw);background:var(--g900);border:1px solid rgba(255,255,255,.16);
+  border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.modalbtns{display:flex;gap:10px}
 
-    header.site-header{
-      position:fixed; top:0; left:0; right:0; z-index:1000;
-      background:var(--brand-700);
-      color:var(--text);
-      box-shadow:var(--shadow);
-    }
+/* ---------- Effekte ---------- */
+#flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:40;transition:opacity .55s ease}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+#toast{position:fixed;top:calc(env(safe-area-inset-top) + 14px);left:50%;
+  transform:translateX(-50%) translateY(-16px);
+  background:rgba(0,48,29,.94);border:1px solid var(--gold);color:var(--gold-hi);
+  padding:10px 18px;border-radius:999px;font-weight:800;font-size:13.5px;opacity:0;
+  transition:.3s;pointer-events:none;z-index:80;box-shadow:0 10px 24px rgba(0,0,0,.5);white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.shake{animation:shake .55s}
+@keyframes shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-9px)}30%{transform:translateX(8px)}45%{transform:translateX(-6px)}60%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 
-    .header-top{ display:grid; place-items:center; padding:14px 16px; }
-    .brand-link{ display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; }
-    .brand-logo{ height:46px; width:auto; display:block; filter:brightness(0) invert(1); }
-
-    .header-nav{
-      display:flex; align-items:center; justify-content:center;
-      border-top:1px solid rgba(255,255,255,.15);
-      min-height:var(--nav-h); padding:0 8px; position:relative;
-    }
-    nav.primary{ display:none; }
-    nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
-    nav.primary a{ color:var(--text); text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; transition:opacity .2s ease; }
-    nav.primary a:hover{ opacity:.8; }
-    nav.primary a[aria-current="page"]{ text-decoration:underline; }
-
-    .menu-toggle{
-      position:absolute; right:8px; width:44px; height:44px;
-      border:0; background:transparent; color:var(--text);
-      display:grid; place-items:center; border-radius:8px; cursor:pointer;
-    }
-    .menu-icon, .menu-icon::before, .menu-icon::after{
-      content:""; display:block; width:22px; height:2px;
-      background:var(--text); border-radius:2px; transition:transform .25s ease, opacity .2s ease;
-    }
-    .menu-icon::before{ transform:translateY(-7px) } .menu-icon::after{ transform:translateY(5px) }
-    .menu-toggle[aria-expanded="true"] .menu-icon{ transform:rotate(45deg) }
-    .menu-toggle[aria-expanded="true"] .menu-icon::before{ transform:rotate(90deg) }
-    .menu-toggle[aria-expanded="true"] .menu-icon::after{ opacity:0 }
-
-    .drawer-backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.4);
-      opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999;
-    }
-    .drawer{
-      position:fixed;
-      left:0; right:0;
-      top:var(--header-h);
-      bottom:calc(var(--footer-h) + var(--safe-bottom));
-      background:var(--brand); color:var(--text);
-      transform:translateY(-8px); opacity:0; pointer-events:none;
-      border-bottom:1px solid rgba(255,255,255,.15);
-      box-shadow:0 10px 25px rgba(0,0,0,.25);
-      transition:transform .25s ease, opacity .25s ease; z-index:1001;
-      overflow:auto; -webkit-overflow-scrolling:touch;
-    }
-    .drawer.open, .drawer-backdrop.open{ pointer-events:auto }
-    .drawer.open{ transform:translateY(0); opacity:1 }
-    .drawer-backdrop.open{ opacity:1 }
-    .drawer nav{ padding:14px 16px 18px }
-    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
-    .drawer a{
-      display:block; text-decoration:none; color:var(--text); font-weight:700;
-      padding:12px 10px; border-radius:10px; background:var(--muted)
-    }
-
-    @media (min-width:900px){
-      nav.primary{ display:block } .menu-toggle{ display:none } .drawer, .drawer-backdrop{ display:none }
-    }
-
-    main{
-      max-width:var(--maxw);
-      margin:0 auto;
-      padding: calc(var(--header-h)) 0 calc(var(--footer-h) + var(--safe-bottom));
-    }
-    .section-host{ display:grid; gap:32px; }
-
-    footer.site-footer{
-      position:fixed; left:0; right:0; bottom:0; z-index:1000;
-      background:var(--brand-700); color:var(--text);
-      text-align:center; padding:14px 18px calc(14px + var(--safe-bottom));
-      font-size:.95rem; box-shadow:0 -2px 10px rgba(0,0,0,.25);
-    }
-  </style>
+@media (max-height:660px){
+  .pot .val{font-size:42px}
+  .row{padding:8px 14px}
+  .row .amt{font-size:17px}
+  .btn-risk{width:92px;height:92px}
+  .res-val{font-size:56px}
+  .ladder{gap:4px}
+  .crest{width:64px;height:64px;font-size:31px}
+  .title{font-size:29px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important}
+}
+</style>
 </head>
-
 <body>
-  <header class="site-header" role="banner">
-    <div class="header-top">
-      <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
-        <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
-      </a>
+<div id="flash"></div>
+<canvas id="confetti"></canvas>
+<div id="toast"></div>
+
+<!-- PIN -->
+<div class="modal" id="pinModal">
+  <div class="modalbox">
+    <div class="eyebrow" style="margin:0">⚙︎ Spielmacher</div>
+    <input id="pinInp" class="name" type="tel" inputmode="numeric" maxlength="4" placeholder="PIN" autocomplete="off">
+    <div class="modalbtns">
+      <button class="btn-collect" id="pinCancel">Abbrechen</button>
+      <button class="btn-gold" id="pinOk" style="flex:1;padding:12px">Öffnen</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app">
+
+  <!-- START -->
+  <section class="screen active" id="scr-start">
+    <div class="spacer" style="max-height:20px"></div>
+    <div class="crest" id="crest" title="Demo starten">🎯</div>
+    <div class="demohint" id="crestHint"></div>
+    <div class="eyebrow">Schützenfest · Königstipp-Booster</div>
+    <h1 class="title goldtext">KÖNIGS-RISIKO</h1>
+
+    <div class="card" style="margin:14px 0 12px">
+      <div class="rule"><span class="ic">🪜</span><span>1&nbsp;€ Einsatz · Stufe für Stufe hoch bis <b>64&nbsp;€</b>.</span></div>
+      <div class="rule"><span class="ic">🛡️</span><span>Ab <b>8&nbsp;€</b> gesichert · 💰 <b>Sammeln ab 4&nbsp;€</b> jederzeit.</span></div>
+      <div class="rule"><span class="ic">👑</span><span>Dein Gewinn <b>vervielfacht deinen Königstipp</b>.</span></div>
     </div>
 
-    <div class="header-nav">
-      <nav class="primary" aria-label="Hauptnavigation">
-        <ul>
-          <li><a href="index.html#home" aria-current="page">Home</a></li>
-          <li><a href="projekte.html">Projekte</a></li>
-          <li><a href="unternehmen.html">Unternehmen</a></li>
-          <li><a href="kontakt.html">Kontakt</a></li>
-          <li><a href="impressum.html">Impressum</a></li>
-        </ul>
-      </nav>
+    <div class="card" id="miniBoard" style="display:none;margin-bottom:12px;padding-bottom:10px">
+      <div class="boardhead">
+        <span class="ah" style="margin:0">🏆 Tagesbeste</span>
+        <button class="ghost" id="btnAllScores" style="padding:2px 4px">Alle ansehen →</button>
+      </div>
+      <div id="miniRows"></div>
+    </div>
 
-      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
-        <span class="menu-icon"></span>
+    <input id="inpName" class="name" placeholder="Dein Name (für die Bestenliste)" maxlength="16" autocomplete="off">
+    <button class="btn-gold" id="btnStart" style="margin-top:11px">1&nbsp;€ Einsatz gezahlt – LOS!</button>
+    <div class="foot" id="footLine">Nur zum Spaß · Überschuss für den guten Zweck</div>
+    <div style="text-align:center;margin-top:1px"><button class="ghost" id="btnAdmin">⚙︎ Spielmacher</button></div>
+    <div class="spacer" style="max-height:20px"></div>
+  </section>
+
+  <!-- SPIEL -->
+  <section class="screen" id="scr-game">
+    <div class="demobanner"><span class="dot"></span>Demo · Übung · kein Einsatz</div>
+    <div class="topbar">
+      <div class="player" id="lblPlayer">Viel Glück!</div>
+      <button class="mute" id="btnMute" aria-label="Ton an/aus">🔊</button>
+    </div>
+    <div class="pot">
+      <div class="lbl">DEIN GEWINN</div>
+      <div class="val goldtext" id="curAmt">1 €</div>
+      <div class="sub" id="lblStatus"></div>
+    </div>
+    <div class="ladder" id="ladder"></div>
+    <div class="controls">
+      <button class="btn-collect" id="btnCollect">SAMMELN</button>
+      <button class="btn-risk tease" id="btnRisk">
+        <span class="big">RISIKO</span>
+        <span class="small" id="riskTarget">auf 2 €</span>
       </button>
     </div>
+  </section>
 
-    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
-    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
-      <nav aria-label="Mobile Navigation">
-        <ul>
-          <li><a href="index.html#home" aria-current="page">Home</a></li>
-          <li><a href="projekte.html">Projekte</a></li>
-          <li><a href="unternehmen.html">Unternehmen</a></li>
-          <li><a href="kontakt.html">Kontakt</a></li>
-          <li><a href="impressum.html">Impressum</a></li>
-        </ul>
-      </nav>
+  <!-- ERGEBNIS -->
+  <section class="screen" id="scr-result">
+    <div class="demobanner"><span class="dot"></span>Demo-Ergebnis · zählt nicht für Liste &amp; Kasse</div>
+    <div class="spacer"></div>
+    <div class="res-ic" id="resIc">👑</div>
+    <div class="eyebrow" id="resEyebrow">DEIN GEWINN</div>
+    <div class="res-val goldtext" id="resVal">8 €</div>
+    <div class="chipwrap"><span class="chip" id="resChip">Königstipp zählt 8-fach</span></div>
+    <div class="res-rank" id="resRank"></div>
+    <div class="res-note" id="resNote">📸 Screenshot zeigen &amp; am Stand eintragen lassen</div>
+    <button class="btn-gold" id="btnAgain" style="margin-top:20px">Neue Runde · 1 €</button>
+    <div class="spacer"></div>
+  </section>
+
+  <!-- BESTENLISTE -->
+  <section class="screen" id="scr-scores">
+    <div class="topbar">
+      <div class="player">🏆 Tagesbestenliste</div>
+      <button class="mute" id="scoresBack">Zurück</button>
     </div>
-  </header>
+    <div class="eyebrow" id="scoresSub" style="text-align:left;margin:2px 0 8px"></div>
+    <div class="scroll">
+      <div class="card" style="padding:6px 16px">
+        <div id="scoreRows"></div>
+        <div class="emptystate" id="scoresEmpty">Noch keine Gewinne heute.<br>Sei der Erste auf der Liste! 🎯</div>
+      </div>
+    </div>
+  </section>
 
-  <main id="top">
-    <div id="section-host" class="section-host" aria-live="polite"></div>
-  </main>
+  <!-- SPIELMACHER -->
+  <section class="screen" id="scr-admin">
+    <div class="topbar">
+      <div class="player">⚙︎ Spielmacher</div>
+      <button class="mute" id="admBack">Fertig</button>
+    </div>
+    <div class="scroll">
+      <div class="card asec">
+        <div class="ah">Kasse heute</div>
+        <div class="kassegrid">
+          <div class="kcell"><div class="kv" id="kRounds">0</div><div class="kl">Runden</div></div>
+          <div class="kcell"><div class="kv" id="kPaid">0 €</div><div class="kl">Ausgezahlt</div></div>
+          <div class="kcell"><div class="kv" id="kProfit">0 €</div><div class="kl">Überschuss</div></div>
+        </div>
+        <button class="danger" id="btnReset">Tag zurücksetzen (Liste + Kasse)</button>
+      </div>
+      <div class="card asec">
+        <div class="ah">Gewinnchance je Stufe</div>
+        <div class="modeswitch">
+          <button data-mode="real" class="active">🎯 Echtes Spiel</button>
+          <button data-mode="demo">▶︎ Demo</button>
+        </div>
+        <div class="demonote" id="demoNote">Demo-Chancen: nur zum Vorführen. Diese Runden zählen nicht für Bestenliste oder Kasse.</div>
+        <div id="sliders"></div>
+        <div class="presets" id="presetRow">
+          <button data-p="gross">Großzügig</button>
+          <button data-p="std">Standard</button>
+          <button data-p="kirmes">Kirmes</button>
+        </div>
+      </div>
+      <div class="card asec">
+        <div class="ah">Was dabei rauskommt</div>
+        <div id="statBox"></div>
+      </div>
+      <div class="card asec">
+        <div class="ah">Guter Zweck (Fußzeile)</div>
+        <input class="name" id="inpCharity" maxlength="40" style="text-align:left">
+        <button class="btn-gold" id="btnSaveCfg" style="margin-top:11px;padding:13px">Einstellungen speichern</button>
+      </div>
+    </div>
+  </section>
 
-  <footer class="site-footer">
-    &copy; 2025 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
-  </footer>
+</div>
 
-  <script>
-    /* ===== Höhen dynamisch als Variablen setzen ===== */
-    function updateChromeVars(){
-      const header = document.querySelector('.site-header');
-      const footer = document.querySelector('.site-footer');
-      const root   = document.documentElement;
-      const headerH = header?.offsetHeight || 110;
-      const footerH = footer?.offsetHeight || 64;
-      root.style.setProperty('--header-h', headerH + 'px');
-      root.style.setProperty('--footer-h', footerH + 'px');
+<script>
+(function(){
+"use strict";
+
+/* ================= Grundwerte ================= */
+var AMOUNTS=[0,1,2,4,8,16,32,64];
+var TOP=7, SAFE=4, SAFEPAY=8, MINC=3;      // MINC: Sammeln ab 4 € (Index 3)
+var PIN="4225";
+var PRESETS={
+  std:   [0.60,0.40,0.30,0.40,0.35,0.30],  // Auszahlungsquote ca. 75–96 %
+  gross: [0.62,0.40,0.32,0.40,0.36,0.32],  // ca. 84–99 %
+  kirmes:[0.55,0.38,0.26,0.36,0.32,0.28]   // ca. 53–84 %
+};
+var DEMO_DEFAULT=[0.92,0.90,0.88,0.90,0.88,0.85]; // Vorführ-Chancen: geht fast immer hoch
+var DEFAULT_CFG={probs:PRESETS.std.slice(), demo:DEMO_DEFAULT.slice(), charity:"den guten Zweck im Verein"};
+var cfg={probs:DEFAULT_CFG.probs.slice(), demo:DEFAULT_CFG.demo.slice(), charity:DEFAULT_CFG.charity};
+var log=[];                                 // {n,a,t} je beendeter (echter) Runde
+var demoMode=false;                          // läuft die aktuelle Runde als Demo?
+var adminMode="real";                        // welcher Satz wird im Menü bearbeitet
+
+function $(id){return document.getElementById(id);}
+var rows=[];
+var idx=1, playing=false, spinning=false, muted=false, phase=false, safeShown=false, name="";
+
+/* ================= Speicher (Artefakt → Browser → Sitzung) ================= */
+var mem={};
+var backend=(function(){
+  try{if(window.storage&&typeof window.storage.get==="function")return"artifact";}catch(e){}
+  try{localStorage.setItem("__kr","1");localStorage.removeItem("__kr");return"local";}catch(e){}
+  return"memory";
+})();
+async function stGet(k){
+  if(backend==="artifact"){try{var r=await window.storage.get(k);return(r&&r.value!=null)?r.value:null;}catch(e){return null;}}
+  if(backend==="local"){try{return localStorage.getItem(k);}catch(e){return null;}}
+  return(mem[k]!=null)?mem[k]:null;
+}
+async function stSet(k,v){
+  if(backend==="artifact"){try{await window.storage.set(k,v);}catch(e){}}
+  else if(backend==="local"){try{localStorage.setItem(k,v);}catch(e){}}
+  else{mem[k]=v;}
+}
+function saveLog(){stSet("kr_log",JSON.stringify(log));}
+function saveCfg(){stSet("kr_cfg",JSON.stringify(cfg));}
+/* ================= Quoten-Mathematik (exakt) ================= */
+function evPolicy(probs,pol){
+  function f(i){
+    if(i===TOP)return AMOUNTS[TOP];
+    if(i>=MINC&&pol(i)==="collect")return AMOUNTS[i];
+    var p=probs[i-1], fall=(i>=SAFE)?SAFEPAY:0;
+    return p*f(i+1)+(1-p)*fall;
+  }
+  return f(1);
+}
+function evOptimal(probs){
+  function f(i){
+    if(i===TOP)return AMOUNTS[TOP];
+    var p=probs[i-1], fall=(i>=SAFE)?SAFEPAY:0;
+    var r=p*f(i+1)+(1-p)*fall;
+    return(i>=MINC)?Math.max(AMOUNTS[i],r):r;
+  }
+  return f(1);
+}
+function calcStats(probs){
+  return{
+    fs:evPolicy(probs,function(){return"risk";}),
+    c8:evPolicy(probs,function(i){return i>=4?"collect":"risk";}),
+    opt:evOptimal(probs),
+    p1:probs[0],
+    p8:probs[0]*probs[1]*probs[2],
+    p64:probs[0]*probs[1]*probs[2]*probs[3]*probs[4]*probs[5]
+  };
+}
+
+/* ================= Leiter aufbauen ================= */
+var meta={0:["NIETE","zero"],1:["START",""],4:["🛡 SICHER","special"],7:["👑 KRONE","special"]};
+var ladder=$("ladder");
+for(var i=TOP;i>=0;i--){
+  var r=document.createElement("div");
+  r.className="row"+(meta[i]&&meta[i][1]?" "+meta[i][1]:"");
+  var tag=meta[i]?meta[i][0]:("×"+AMOUNTS[i]);
+  r.innerHTML='<span class="amt">'+AMOUNTS[i]+' €</span><span class="tag">'+tag+'</span>';
+  ladder.appendChild(r);
+  rows[i]=r;
+}
+
+function fallIdx(i){return i>=SAFE?SAFE:0;}
+function clearLit(){rows.forEach(function(r){r.classList.remove("lit-gold","lit-red");});}
+
+function updateUI(){
+  $("curAmt").textContent=AMOUNTS[idx]+" €";
+  $("lblPlayer").textContent=name?name:"Viel Glück!";
+  if(idx<TOP){
+    $("lblStatus").textContent="Nächste Stufe: "+AMOUNTS[idx+1]+" € · bei Verlust: "+AMOUNTS[fallIdx(idx)]+" €";
+    $("riskTarget").textContent="auf "+AMOUNTS[idx+1]+" €";
+  }else{
+    $("lblStatus").textContent="Maximum erreicht! 👑";
+  }
+  var c=$("btnCollect");
+  c.textContent="SAMMELN · "+AMOUNTS[idx]+" €";
+  c.disabled=spinning||!playing||idx<MINC;
+  $("btnRisk").disabled=spinning||!playing||idx>=TOP;
+  rows.forEach(function(rw,i2){
+    rw.classList.toggle("current",i2===idx);
+    rw.classList.toggle("passed",i2>0&&i2<idx);
+  });
+}
+
+/* ================= Screens ================= */
+function show(id){
+  var s=document.querySelectorAll(".screen");
+  for(var k=0;k<s.length;k++){s[k].classList.toggle("active",s[k].id===id);}
+}
+
+/* ================= Audio ================= */
+var AC=null;
+function ensureAudio(){
+  try{
+    if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();}
+    if(AC.state==="suspended"){AC.resume();}
+  }catch(e){}
+}
+function tone(f,dur,type,vol,when){
+  if(muted||!AC)return;
+  try{
+    var t=(when!==undefined?when:AC.currentTime);
+    var o=AC.createOscillator(),g=AC.createGain();
+    o.type=type||"sine";
+    o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol||0.15,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g);g.connect(AC.destination);
+    o.start(t);o.stop(t+dur+0.05);
+  }catch(e){}
+}
+function tick(){tone(1500,0.05,"square",0.05);}
+function winSound(){if(!AC)return;[523,659,784,1047].forEach(function(f,i){tone(f,0.16,"triangle",0.16,AC.currentTime+i*0.085);});}
+function collectSound(){if(!AC)return;[784,1047].forEach(function(f,i){tone(f,0.2,"triangle",0.16,AC.currentTime+i*0.1);});}
+function fanfare(){if(!AC)return;[523,659,784,1047,1319,1568].forEach(function(f,i){tone(f,0.22,"triangle",0.17,AC.currentTime+i*0.1);});}
+function loseSound(){
+  if(muted||!AC)return;
+  try{
+    var t=AC.currentTime;
+    var o=AC.createOscillator(),g=AC.createGain();
+    o.type="sawtooth";
+    o.frequency.setValueAtTime(320,t);
+    o.frequency.exponentialRampToValueAtTime(90,t+0.6);
+    g.gain.setValueAtTime(0.14,t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.65);
+    o.connect(g);g.connect(AC.destination);
+    o.start(t);o.stop(t+0.7);
+  }catch(e){}
+}
+function vib(p){try{if(navigator.vibrate){navigator.vibrate(p);}}catch(e){}}
+
+/* ================= Effekte ================= */
+function flash(color){
+  var f=$("flash");
+  f.style.transition="none";
+  f.style.background=color;
+  f.style.opacity="1";
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    f.style.transition="opacity .55s ease";
+    f.style.opacity="0";
+  });});
+}
+function toast(msg){
+  var t=$("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  clearTimeout(t._h);
+  t._h=setTimeout(function(){t.classList.remove("show");},2200);
+}
+
+var cv=$("confetti"),cx=cv.getContext("2d"),parts=[],rafOn=false;
+function sizeCv(){
+  var d=window.devicePixelRatio||1;
+  cv.width=window.innerWidth*d;cv.height=window.innerHeight*d;
+  cx.setTransform(d,0,0,d,0,0);
+}
+sizeCv();window.addEventListener("resize",sizeCv);
+var COLORS=["#d4af37","#f7e08b","#ffffff","#0e6b3e","#b8860b"];
+function pick(){return COLORS[(Math.random()*COLORS.length)|0];}
+function burst(x,y,n){
+  for(var i=0;i<n;i++){
+    parts.push({x:x,y:y,vx:(Math.random()-0.5)*11,vy:-(3+Math.random()*8),g:0.25,
+      rot:Math.random()*6.3,vr:(Math.random()-0.5)*0.35,
+      w:5+Math.random()*6,h:3+Math.random()*5,c:pick(),l:110+Math.random()*40});
+  }
+  go();
+}
+function rain(){
+  var c=0;
+  var iv=setInterval(function(){
+    for(var i=0;i<7;i++){
+      parts.push({x:Math.random()*window.innerWidth,y:-15,vx:(Math.random()-0.5)*2.5,vy:2+Math.random()*3.5,g:0.045,
+        rot:Math.random()*6.3,vr:(Math.random()-0.5)*0.3,
+        w:5+Math.random()*6,h:3+Math.random()*5,c:pick(),l:200});
     }
-    window.addEventListener('load', updateChromeVars);
-    window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(updateChromeVars, 100); });
+    if(++c>26){clearInterval(iv);}
+  },70);
+  go();
+}
+function go(){if(rafOn)return;rafOn=true;requestAnimationFrame(loop);}
+function loop(){
+  cx.clearRect(0,0,window.innerWidth,window.innerHeight);
+  parts=parts.filter(function(p){return p.l>0&&p.y<window.innerHeight+30;});
+  for(var i=0;i<parts.length;i++){
+    var p=parts[i];
+    p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.l--;
+    cx.save();
+    cx.translate(p.x,p.y);cx.rotate(p.rot);
+    cx.globalAlpha=Math.max(0,Math.min(1,p.l/35));
+    cx.fillStyle=p.c;
+    cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    cx.restore();
+  }
+  if(parts.length){requestAnimationFrame(loop);}
+  else{rafOn=false;cx.clearRect(0,0,window.innerWidth,window.innerHeight);}
+}
 
-    /* ===== Mobiles Menü ===== */
-    const body=document.body, toggle=document.querySelector('.menu-toggle'),
-          drawer=document.getElementById('mobile-drawer'),
-          backdrop=document.getElementById('drawer-backdrop');
+/* ================= Ambientes Blinken ================= */
+setInterval(function(){
+  if(!playing||spinning||idx>=TOP)return;
+  phase=!phase;
+  clearLit();
+  if(phase){rows[idx+1].classList.add("lit-gold");}
+  else{rows[fallIdx(idx)].classList.add("lit-red");}
+},460);
 
-    const openMenu=()=>{
-      toggle.setAttribute('aria-expanded','true');
-      drawer.hidden=false; backdrop.hidden=false;
-      requestAnimationFrame(()=>{
-        drawer.classList.add('open'); backdrop.classList.add('open');
-        body.style.overflow='hidden';
-        const firstLink=drawer.querySelector('a'); firstLink&&firstLink.focus();
+/* ================= Spiellogik ================= */
+function risiko(){
+  if(spinning||!playing||idx>=TOP)return;
+  ensureAudio();
+  spinning=true;
+  $("btnRisk").classList.remove("tease");
+  updateUI();
+  var before=idx;
+  var probs=demoMode?cfg.demo:cfg.probs;
+  var win=Math.random()<probs[before-1];
+  var nxt=before+1, fall=fallIdx(before);
+  var steps=(win?11:12)+2*Math.floor(Math.random()*3);
+  var k=0;
+  function step(){
+    clearLit();
+    if(k%2===0){rows[nxt].classList.add("lit-gold");}
+    else{rows[fall].classList.add("lit-red");}
+    tick();
+    k++;
+    if(k<steps){
+      var t=k/(steps-1);
+      setTimeout(step,70+360*Math.pow(t,1.8));
+    }else{
+      setTimeout(function(){resolve(win,before);},620);
+    }
+  }
+  step();
+}
+
+function resolve(win,before){
+  clearLit();
+  if(win){
+    idx=before+1;
+    flash("rgba(212,175,55,.5)");
+    burst(window.innerWidth/2,window.innerHeight*0.35,70);
+    winSound();vib(60);
+    rows[idx].classList.add("pop");
+    (function(ri){setTimeout(function(){rows[ri].classList.remove("pop");},550);})(idx);
+    if(idx===SAFE&&!safeShown){safeShown=true;toast("🛡 8 € gesichert – da fällst du nicht mehr drunter!");}
+    if(idx===5){toast("🔥 16 € – jetzt wird's heiß!");}
+    if(idx===6){toast("😱 32 € – eine Stufe bis zur Krone!");}
+    spinning=false;
+    if(idx===TOP){
+      playing=false;updateUI();
+      setTimeout(function(){endRound(AMOUNTS[TOP],true,false);},1000);
+    }else{
+      updateUI();
+      $("btnRisk").classList.add("tease");
+    }
+  }else{
+    var fi=fallIdx(before);
+    idx=fi;
+    flash("rgba(224,60,50,.45)");
+    loseSound();vib([90,60,180]);
+    $("app").classList.add("shake");
+    setTimeout(function(){$("app").classList.remove("shake");},600);
+    spinning=false;playing=false;updateUI();
+    setTimeout(function(){endRound(AMOUNTS[fi],false,true);},1050);
+  }
+}
+
+function sammeln(){
+  if(spinning||!playing||idx<MINC)return;
+  ensureAudio();collectSound();
+  playing=false;clearLit();
+  endRound(AMOUNTS[idx],idx===TOP,false);
+}
+
+/* ================= Bestenliste & Kasse ================= */
+function bestList(){
+  var m={};
+  for(var i=0;i<log.length;i++){
+    var e=log[i];
+    if(e.a>0&&(!m[e.n]||e.a>m[e.n].a||(e.a===m[e.n].a&&e.t<m[e.n].t))){m[e.n]=e;}
+  }
+  var arr=Object.keys(m).map(function(k){return m[k];});
+  arr.sort(function(x,y){return y.a-x.a||x.t-y.t;});
+  return arr;
+}
+function boardRow(rank,e){
+  var d=document.createElement("div");
+  d.className="brow";
+  d.innerHTML='<span class="brank'+(rank===1?' first':'')+'">'+(rank===1?"👑":rank)+'</span>'+
+    '<span class="bname"></span><span class="bamt">'+e.a+' €</span>';
+  d.querySelector(".bname").textContent=e.n;
+  return d;
+}
+function renderBoards(){
+  var list=bestList();
+  var mini=$("miniRows");mini.innerHTML="";
+  $("miniBoard").style.display=list.length?"block":"none";
+  for(var i=0;i<Math.min(3,list.length);i++){mini.appendChild(boardRow(i+1,list[i]));}
+  var full=$("scoreRows");full.innerHTML="";
+  $("scoresEmpty").style.display=list.length?"none":"block";
+  for(var j=0;j<list.length;j++){full.appendChild(boardRow(j+1,list[j]));}
+  var paid=0;
+  for(var k2=0;k2<log.length;k2++){paid+=log[k2].a;}
+  var profit=log.length-paid;
+  $("scoresSub").textContent=log.length+" Runden heute";
+  $("kRounds").textContent=log.length;
+  $("kPaid").textContent=paid+" €";
+  var kp=$("kProfit");
+  kp.textContent=(profit>0?"+":"")+profit+" €";
+  kp.classList.toggle("neg",profit<0);
+}
+function rankOf(entry){
+  var list=bestList();
+  for(var i=0;i<list.length;i++){
+    if(list[i].n===entry.n&&list[i].a===entry.a){return i+1;}
+  }
+  return 0;
+}
+
+/* ================= Rundenende ================= */
+function endRound(amount,jackpot,wasLoss){
+  var win=amount>0;
+  var entry={n:(name||"Anonym"),a:amount,t:Date.now()};
+  if(!demoMode){log.push(entry);saveLog();renderBoards();}
+  $("resIc").textContent=jackpot?"👑":(win?(wasLoss?"🛡️":"⭐"):"💥");
+  $("resEyebrow").textContent=win?(wasLoss?"SICHERHEITSSTUFE GERETTET":"DEIN GEWINN"):"NIETE";
+  var rv=$("resVal");
+  rv.textContent=amount+" €";
+  rv.classList.toggle("goldtext",win);
+  rv.classList.toggle("zero",!win);
+  var chip=$("resChip");
+  chip.textContent=win?("Königstipp zählt "+amount+"-fach"):"Alles weg – Risiko eben 😬";
+  chip.classList.toggle("bad",!win);
+  if(demoMode){
+    $("resRank").textContent="";
+    $("resChip").textContent=win?("Demo · würde "+amount+"-fach zählen"):"Demo · nur zum Zeigen";
+    $("resNote").textContent="Vorführung – kein echter Gewinn. Zurück für die nächste Demo.";
+  }else{
+    var rk=win?rankOf(entry):0;
+    $("resRank").textContent=(rk>0&&rk<=10)?(rk===1?"👑 Platz 1 der Tagesliste!":"🏆 Platz "+rk+" der Tagesliste!"):"";
+    $("resNote").textContent=win
+      ?"📸 Screenshot zeigen & am Stand eintragen lassen"
+      :"Revanche gefällig? Der nächste Euro bringt's. 😏";
+  }
+  show("scr-result");
+  if(win){
+    if(jackpot){fanfare();rain();}
+    else{burst(window.innerWidth/2,window.innerHeight*0.3,60);}
+  }
+}
+
+function start(isDemo){
+  demoMode=!!isDemo;
+  document.body.classList.toggle("demo",demoMode);
+  name=demoMode?"DEMO":$("inpName").value.trim();
+  idx=1;playing=true;spinning=false;safeShown=false;
+  clearLit();
+  $("btnRisk").classList.add("tease");
+  updateUI();
+  show("scr-game");
+  ensureAudio();
+}
+
+/* ================= Spielmacher ================= */
+function fmtPct(x){return Math.round(x*100)+" %";}
+function fmt1(x){return (Math.round(x*10)/10).toFixed(1).replace(".",",");}
+function activeSet(){return adminMode==="demo"?cfg.demo:cfg.probs;}
+var sliderEls=[];
+function buildSliders(){
+  var box=$("sliders");box.innerHTML="";sliderEls=[];
+  var set=activeSet();
+  for(var s=0;s<6;s++){
+    (function(s2){
+      var d=document.createElement("div");
+      d.className="slrow";
+      d.innerHTML='<div class="sltop"><span>'+AMOUNTS[s2+1]+' € → '+AMOUNTS[s2+2]+' €</span><b></b></div>'+
+        '<input type="range" min="5" max="98" step="1">';
+      var inp=d.querySelector("input"),lbl=d.querySelector("b");
+      inp.value=Math.round(set[s2]*100);
+      lbl.textContent=inp.value+" %";
+      inp.addEventListener("input",function(){
+        lbl.textContent=inp.value+" %";
+        activeSet()[s2]=inp.value/100;
+        renderStats();
       });
-    };
-    const closeMenu=()=>{
-      toggle.setAttribute('aria-expanded','false');
-      drawer.classList.remove('open'); backdrop.classList.remove('open');
-      body.style.overflow='';
-      setTimeout(()=>{ drawer.hidden=true; backdrop.hidden=true; },200); toggle.focus();
-    };
-    toggle.addEventListener('click',()=>toggle.getAttribute('aria-expanded')==='true'?closeMenu():openMenu());
-    backdrop.addEventListener('click',closeMenu);
-    window.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
-
-    /* ===== Module: dynamisches Laden (mit Style- & Script-Hoisting) ===== */
-    const files = ['landing.html','leitbild.html','zitat.html'];
-    const host=document.getElementById('section-host');
-
-    // Führt ein <script> aus, das via innerHTML/Fragment eingefügt wurde
-    // (solche Scripts werden vom Browser sonst NICHT automatisch ausgeführt).
-    function runScript(oldScript){
-      const s = document.createElement('script');
-      // Attribute übernehmen (src, type, etc.)
-      for(const attr of oldScript.attributes){ s.setAttribute(attr.name, attr.value); }
-      s.textContent = oldScript.textContent;
-      document.body.appendChild(s);
+      sliderEls.push(inp);
+      box.appendChild(d);
+    })(s);
+  }
+}
+function syncSliders(){
+  var set=activeSet();
+  for(var s=0;s<6;s++){
+    sliderEls[s].value=Math.round(set[s]*100);
+    sliderEls[s].parentNode.querySelector("b").textContent=sliderEls[s].value+" %";
+  }
+}
+function renderStats(){
+  var st=calcStats(activeSet());
+  if(adminMode==="demo"){
+    $("statBox").innerHTML=
+      '<div class="srow"><span>Gewinnen den 1. Druck</span><b>'+Math.round(st.p1*10)+' von 10</b></div>'+
+      '<div class="srow"><span>Erreichen das 8-€-Schild</span><b>'+fmt1(st.p8*100)+' %</b></div>'+
+      '<div class="srow"><span>Kommen bis zur Krone (64 €)</span><b>'+fmt1(st.p64*100)+' %</b></div>'+
+      '<div class="sdiv"></div>'+
+      '<div class="srow"><span style="color:var(--gold-hi)">Nur Vorführung – zählt nicht für die Kasse.</span><b></b></div>';
+    return;
+  }
+  var pro100lo=Math.round(100*(1-st.fs)), pro100hi=Math.round(100*(1-st.opt));
+  var a=Math.min(pro100lo,pro100hi), b=Math.max(pro100lo,pro100hi);
+  var oneIn=st.p64>0?Math.round(1/st.p64):0;
+  $("statBox").innerHTML=
+    '<div class="srow"><span>Auszahlungsquote „Zocker" (immer Risiko)</span><b>'+fmtPct(st.fs)+'</b></div>'+
+    '<div class="srow"><span>Auszahlungsquote „Sammler" (bei 8 €)</span><b>'+fmtPct(st.c8)+'</b></div>'+
+    '<div class="srow"><span>Beste mögliche Strategie</span><b>'+fmtPct(st.opt)+'</b></div>'+
+    '<div class="sdiv"></div>'+
+    '<div class="srow"><span>Gewinnen den 1. Druck</span><b>'+Math.round(st.p1*10)+' von 10</b></div>'+
+    '<div class="srow"><span>Erreichen das 8-€-Schild</span><b>'+fmt1(st.p8*100)+' %</b></div>'+
+    '<div class="srow"><span>Holen die Krone (64 €)</span><b>1 zu '+oneIn+'</b></div>'+
+    '<div class="sdiv"></div>'+
+    '<div class="srow"><span>Vereins-Überschuss je 100 Runden</span><b>'+a+'–'+b+' €</b></div>';
+}
+function twoTap(btn,label,fn){
+  btn.addEventListener("click",function(){
+    if(btn.classList.contains("arm")){
+      btn.classList.remove("arm");btn.textContent=label;fn();
+    }else{
+      btn.classList.add("arm");btn.textContent="Wirklich? Nochmal tippen";
+      clearTimeout(btn._h);
+      btn._h=setTimeout(function(){btn.classList.remove("arm");btn.textContent=label;},2600);
     }
+  });
+}
+function renderCharity(){
+  $("footLine").textContent="Nur zum Spaß · Überschuss für "+cfg.charity;
+  $("inpCharity").value=cfg.charity;
+}
 
-    async function loadSection(file){
-      try{
-        const res=await fetch(file,{cache:'no-store'});
-        if(!res.ok) throw new Error(file+' '+res.status);
-        const html=await res.text();
+/* ================= Events ================= */
+$("btnStart").addEventListener("click",function(){start(false);});
+$("crest").addEventListener("click",function(){start(true);});
+$("btnRisk").addEventListener("click",risiko);
+$("btnCollect").addEventListener("click",sammeln);
+$("btnAgain").addEventListener("click",function(){
+  document.body.classList.remove("demo");
+  demoMode=false;
+  show("scr-start");
+});
+$("btnMute").addEventListener("click",function(){
+  muted=!muted;
+  $("btnMute").textContent=muted?"🔇":"🔊";
+  if(!muted){ensureAudio();}
+});
+$("inpName").addEventListener("keydown",function(e){if(e.key==="Enter"){start(false);}});
 
-        const range = document.createRange();
-        const frag  = range.createContextualFragment(html);
+$("btnAllScores").addEventListener("click",function(){renderBoards();show("scr-scores");});
+$("scoresBack").addEventListener("click",function(){show("scr-start");});
 
-        // Inline-Styles & Stylesheets in den Head heben
-        frag.querySelectorAll('style').forEach(styleTag=>{
-          document.head.appendChild(styleTag.cloneNode(true));
-          styleTag.remove();
-        });
-        frag.querySelectorAll('link[rel="stylesheet"]').forEach(linkTag=>{
-          document.head.appendChild(linkTag.cloneNode(true));
-          linkTag.remove();
-        });
+$("btnAdmin").addEventListener("click",function(){
+  $("pinInp").value="";
+  $("pinModal").classList.add("show");
+  setTimeout(function(){$("pinInp").focus();},60);
+});
+$("pinCancel").addEventListener("click",function(){$("pinModal").classList.remove("show");});
+function tryPin(){
+  if($("pinInp").value===PIN){
+    $("pinModal").classList.remove("show");
+    adminMode="real";
+    applyAdminMode();renderBoards();
+    show("scr-admin");
+  }else{
+    var box=$("pinModal").querySelector(".modalbox");
+    box.classList.add("shake");
+    setTimeout(function(){box.classList.remove("shake");},600);
+    $("pinInp").value="";
+  }
+}
+$("pinOk").addEventListener("click",tryPin);
+$("pinInp").addEventListener("keydown",function(e){if(e.key==="Enter"){tryPin();}});
 
-        // Scripts herausnehmen und separat ausführen (nach dem Einfügen des DOM)
-        const scripts = [...frag.querySelectorAll('script')];
-        scripts.forEach(s=>s.remove());
+function applyAdminMode(){
+  document.querySelectorAll(".modeswitch button").forEach(function(b){
+    b.classList.toggle("active",b.getAttribute("data-mode")===adminMode);
+  });
+  $("demoNote").classList.toggle("show",adminMode==="demo");
+  $("presetRow").style.display=(adminMode==="demo")?"none":"flex";
+  syncSliders();renderStats();
+}
+document.querySelectorAll(".modeswitch button").forEach(function(b){
+  b.addEventListener("click",function(){
+    adminMode=b.getAttribute("data-mode");
+    applyAdminMode();
+  });
+});
+$("admBack").addEventListener("click",function(){renderBoards();renderCharity();show("scr-start");});
+document.querySelectorAll(".presets button").forEach(function(b){
+  b.addEventListener("click",function(){
+    cfg.probs=PRESETS[b.getAttribute("data-p")].slice();
+    syncSliders();renderStats();
+    toast("Preset geladen – Speichern nicht vergessen");
+  });
+});
+$("btnSaveCfg").addEventListener("click",function(){
+  cfg.charity=$("inpCharity").value.trim()||DEFAULT_CFG.charity;
+  saveCfg();renderCharity();
+  toast("✅ Einstellungen gespeichert");
+});
+twoTap($("btnReset"),"Tag zurücksetzen (Liste + Kasse)",function(){
+  log=[];saveLog();renderBoards();
+  toast("🧹 Tag zurückgesetzt");
+});
 
-        const wrapper=document.createElement('div');
-        wrapper.className='module';
-        wrapper.appendChild(frag);
-        host.appendChild(wrapper);
-
-        // Erst src-Scripts (z.B. Three.js), dann Inline-Scripts – in Reihenfolge.
-        for(const s of scripts){ runScript(s); }
-      }catch(err){ console.error(err); }
+/* ================= Init ================= */
+buildSliders();
+updateUI();
+renderStats();
+(async function init(){
+  try{
+    var c=await stGet("kr_cfg");
+    if(c){
+      var o=JSON.parse(c);
+      if(o&&o.probs&&o.probs.length===6){cfg.probs=o.probs.map(Number);}
+      if(o&&o.demo&&o.demo.length===6){cfg.demo=o.demo.map(Number);}
+      if(o&&typeof o.charity==="string"&&o.charity){cfg.charity=o.charity;}
     }
-    (async()=>{ for(const f of files){ await loadSection(f); } })();
-  </script>
+  }catch(e){}
+  try{
+    var l=await stGet("kr_log");
+    if(l){
+      var arr=JSON.parse(l);
+      if(Array.isArray(arr)){log=arr;}
+    }
+  }catch(e){}
+  syncSliders();renderStats();renderBoards();renderCharity();
+})();
+})();
+</script>
 </body>
 </html>
