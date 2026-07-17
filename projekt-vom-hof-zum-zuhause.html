@@ -920,6 +920,34 @@
       box-shadow:0 -2px 10px rgba(0,0,0,.25);
       border-top:1px solid rgba(255,255,255,.08);
     }
+  
+    /* ===== Optimierung Header/Footer/Menü (minimal, additiv) ===== */
+    /* Logo bleibt mittig; Burger sitzt mobil rechts oben neben dem Logo */
+    header.site-header .header-top{ position:relative; }
+    header.site-header .menu-toggle{
+      position:absolute; top:50%; right:10px; transform:translateY(-50%);
+      left:auto; width:44px; height:44px;
+    }
+    /* Auf Mobil brauchen wir die separate Navi-Zeile nicht -> schmalerer Header */
+    @media (max-width:899px){
+      header.site-header .header-nav{ display:none; }
+    }
+
+
+    /* Menü-Icon (SVG, robust) */
+    header.site-header .menu-toggle{ color:var(--text,#fff); }
+    header.site-header .menu-toggle .menu-icon{ display:none !important; }
+    header.site-header .menu-toggle .ico-burger,
+    header.site-header .menu-toggle .ico-close{ display:block; }
+    header.site-header .menu-toggle .ico-close{ display:none; }
+    header.site-header .menu-toggle[aria-expanded="true"] .ico-burger{ display:none; }
+    header.site-header .menu-toggle[aria-expanded="true"] .ico-close{ display:block; }
+
+    /* Footer: Impressum-Link in eigener Zeile UNTER dem Disclaimer */
+    footer.site-footer .footer-impressum{ display:block; margin-top:6px; }
+    footer.site-footer .footer-impressum a{ color:var(--text); text-decoration:underline; font-weight:600; }
+    footer.site-footer .footer-impressum a:hover{ opacity:.8; }
+
   </style>
 </head>
 
@@ -929,6 +957,9 @@
       <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
         <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
       </a>
+      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
+        <svg class="ico-burger" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="ico-close" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
     </div>
     <div class="header-nav">
       <nav class="primary" aria-label="Hauptnavigation">
@@ -940,11 +971,10 @@
           <li><a href="impressum.html">Impressum</a></li>
         </ul>
       </nav>
-      <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
-        <span class="menu-icon"></span>
-      </button>
     </div>
-    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  </header>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
     <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
       <nav>
         <ul>
@@ -956,7 +986,6 @@
         </ul>
       </nav>
     </div>
-  </header>
   <main id="top">
     <section class="intro-wrap" aria-labelledby="projekt-title">
       <div class="kicker">Aktuelles Projekt</div>
@@ -1560,6 +1589,7 @@
   </main>
   <footer class="site-footer">
     &copy; 2026 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
+    <span class="footer-impressum"><a href="impressum.html">Impressum &amp; Datenschutz</a></span>
   </footer>
   <script>
     function updateChromeVars(){
