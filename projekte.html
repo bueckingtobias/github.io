@@ -67,117 +67,534 @@
     a,button{font:inherit}
 
     /* ===== Header ===== */
-
-    /* ===== Einheitlicher Header / Navigation / Footer ===== */
     header.site-header{
-      position:fixed; top:0; left:0; right:0; z-index:1000;
+      position:fixed;
+      top:0; left:0; right:0;
+      z-index:1000;
       background:rgba(0,54,30,.92);
-      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
       color:var(--text);
       box-shadow:var(--shadow);
       border-bottom:1px solid rgba(255,255,255,.08);
     }
-    /* Kopfzeile: auf Mobil Logo links + Burger rechts in EINER Zeile,
-       ab iPad/Desktop Logo mittig */
+
     .header-top{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding:10px 14px;
+      display:grid;
+      place-items:center;
+      padding:14px 16px;
     }
-    .brand-link{ display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; }
-    .brand-logo{ height:38px; width:auto; display:block; filter:brightness(0) invert(1); }
 
-    /* Burger sitzt in der Kopfzeile (Mobil) */
-    .menu-toggle{
-      flex:0 0 auto; width:42px; height:42px;
-      border:0; background:transparent; color:var(--text);
-      display:inline-grid; place-items:center; border-radius:8px; cursor:pointer;
-      -webkit-tap-highlight-color:transparent;
+    .brand-link{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      color:var(--text);
+      text-decoration:none;
     }
-    /* Sauberes Burger-/X-Icon ohne Überlappung */
-    .menu-icon{ position:relative; display:block; width:24px; height:18px; }
-    .menu-icon span{
-      position:absolute; left:0; height:2px; width:100%;
-      background:var(--text); border-radius:2px;
-      transition:transform .25s ease, opacity .2s ease, top .25s ease;
-    }
-    .menu-icon span:nth-child(1){ top:0 }
-    .menu-icon span:nth-child(2){ top:8px }
-    .menu-icon span:nth-child(3){ top:16px }
-    .menu-toggle[aria-expanded="true"] .menu-icon span:nth-child(1){ top:8px; transform:rotate(45deg) }
-    .menu-toggle[aria-expanded="true"] .menu-icon span:nth-child(2){ opacity:0 }
-    .menu-toggle[aria-expanded="true"] .menu-icon span:nth-child(3){ top:8px; transform:rotate(-45deg) }
 
-    /* Desktop-Navigationszeile (nur ab 900px sichtbar) */
+    .brand-logo{
+      height:46px;
+      width:auto;
+      display:block;
+      filter:brightness(0) invert(1);
+    }
+
     .header-nav{
-      display:none; align-items:center; justify-content:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       border-top:1px solid rgba(255,255,255,.12);
-      min-height:var(--nav-h); padding:0 8px; position:relative;
+      min-height:var(--nav-h);
+      padding:0 8px;
+      position:relative;
     }
-    nav.primary ul{ list-style:none; margin:0; padding:0; display:flex; gap:28px; align-items:center; }
-    nav.primary a{ color:var(--text); text-decoration:none; font-weight:700; padding:10px 6px; border-radius:8px; transition:opacity .2s ease; }
-    nav.primary a:hover{ opacity:.8 }
-    nav.primary a[aria-current="page"]{ text-decoration:underline }
+
+    nav.primary{display:none}
+
+    nav.primary ul{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:flex;
+      gap:28px;
+      align-items:center;
+    }
+
+    nav.primary a{
+      color:var(--text);
+      text-decoration:none;
+      font-weight:700;
+      padding:10px 6px;
+      border-radius:8px;
+      transition:opacity .2s ease;
+    }
+
+    nav.primary a:hover{opacity:.8}
+    nav.primary a[aria-current="page"]{text-decoration:underline}
+
+    .menu-toggle{
+      position:absolute;
+      right:8px;
+      width:44px;
+      height:44px;
+      border:0;
+      background:transparent;
+      color:var(--text);
+      display:grid;
+      place-items:center;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    .menu-icon,.menu-icon::before,.menu-icon::after{
+      content:"";
+      display:block;
+      width:22px;
+      height:2px;
+      background:var(--text);
+      border-radius:2px;
+      transition:transform .25s ease, opacity .2s ease;
+    }
+
+    .menu-icon::before{transform:translateY(-7px)}
+    .menu-icon::after{transform:translateY(5px)}
+    .menu-toggle[aria-expanded="true"] .menu-icon{transform:rotate(45deg)}
+    .menu-toggle[aria-expanded="true"] .menu-icon::before{transform:rotate(90deg)}
+    .menu-toggle[aria-expanded="true"] .menu-icon::after{opacity:0}
 
     .drawer-backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.45);
-      opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:999;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .25s ease;
+      z-index:999;
     }
+
     .drawer{
-      position:fixed; left:0; right:0;
+      position:fixed;
+      left:0;
+      right:0;
       top:var(--header-h);
       bottom:calc(var(--footer-h) + var(--safe-bottom));
-      background:var(--brand); color:var(--text);
-      transform:translateY(-8px); opacity:0; pointer-events:none;
+      background:var(--brand);
+      color:var(--text);
+      transform:translateY(-8px);
+      opacity:0;
+      pointer-events:none;
       border-bottom:1px solid rgba(255,255,255,.15);
       box-shadow:0 10px 25px rgba(0,0,0,.25);
-      transition:transform .25s ease, opacity .25s ease; z-index:1001;
-      overflow:auto; -webkit-overflow-scrolling:touch;
+      transition:transform .25s ease, opacity .25s ease;
+      z-index:1001;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
     }
-    .drawer.open,.drawer-backdrop.open{ pointer-events:auto }
-    .drawer.open{ transform:translateY(0); opacity:1 }
-    .drawer-backdrop.open{ opacity:1 }
-    .drawer nav{ padding:14px 16px 18px }
-    .drawer ul{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+
+    .drawer.open,.drawer-backdrop.open{pointer-events:auto}
+    .drawer.open{transform:translateY(0);opacity:1}
+    .drawer-backdrop.open{opacity:1}
+
+    .drawer nav{padding:14px 16px 18px}
+    .drawer ul{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:grid;
+      gap:8px;
+    }
+
     .drawer a{
-      display:block; text-decoration:none; color:var(--text); font-weight:700;
-      padding:12px 10px; border-radius:10px; background:var(--muted);
+      display:block;
+      text-decoration:none;
+      color:var(--text);
+      font-weight:700;
+      padding:12px 10px;
+      border-radius:10px;
+      background:var(--muted);
     }
 
-    /* Ab iPad / Desktop: mittiges Logo, Nav-Zeile sichtbar, Burger aus */
-    @media (min-width:768px){
-      .header-top{ justify-content:center; padding:14px 16px }
-      .brand-logo{ height:46px }
-      .header-nav{ display:flex }
-      .menu-toggle{ display:none }
-      .drawer,.drawer-backdrop{ display:none }
+    @media (min-width:900px){
+      nav.primary{display:block}
+      .menu-toggle{display:none}
+      .drawer,.drawer-backdrop{display:none}
     }
 
-    /* ===== Einheitlicher Footer (fix, mit Impressum-Link) ===== */
+    /* ===== Main ===== */
+    main{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:
+        calc(var(--header-h) + clamp(26px,4vw,42px))
+        16px
+        calc(var(--footer-h) + var(--safe-bottom) + 34px);
+    }
+
+    .intro-wrap{
+      max-width:920px;
+      margin:0 auto;
+      text-align:center;
+      padding:clamp(8px,2vw,16px) 0 0;
+    }
+
+    .kicker{
+      font-weight:700;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      opacity:.68;
+      font-size:.88rem;
+      text-align:center;
+      margin:clamp(12px,2vw,18px) 0 12px;
+    }
+
+    .title-stacked{
+      text-align:center;
+      margin-inline:auto;
+      max-width:100%;
+      line-height:1.08;
+      letter-spacing:.01em;
+      margin-bottom:clamp(12px,2.4vw,18px);
+    }
+
+    .title-stacked .line1{
+      display:block;
+      font-size:clamp(28px,4vw,44px);
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .title-stacked .line2{
+      display:block;
+      font-size:clamp(16px,2.2vw,22px);
+      font-weight:600;
+      opacity:.94;
+    }
+
+    .intro-text{
+      margin:12px auto 0;
+      max-width:76ch;
+      opacity:.95;
+      line-height:1.65;
+      font-size:1rem;
+    }
+
+    /* ===== Projekte ===== */
+    .projects-wrap{
+      margin-top:clamp(28px,4vw,40px);
+    }
+
+    .projects-grid{
+      display:grid;
+      gap:24px;
+      grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+      align-items:stretch;
+    }
+
+    .project-card{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+      min-height:100%;
+    }
+
+    .project-card:hover{
+      transform:translateY(-4px);
+      box-shadow:var(--shadow-strong);
+      border-color:rgba(255,255,255,.22);
+    }
+
+    .project-media{
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.04));
+      aspect-ratio:16 / 10;
+      isolation:isolate;
+    }
+
+    .project-slides{
+      position:absolute;
+      inset:0;
+    }
+
+    .project-slide{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transition:opacity .75s ease, transform 6s ease;
+    }
+
+    .project-slide.active{
+      opacity:1;
+      transform:scale(1.04);
+    }
+
+    .project-slide img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      filter:saturate(1.02) contrast(1.02);
+    }
+
+    .project-card:hover .project-slide.active{
+      transform:scale(1.07);
+    }
+
+    .project-media::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.1) 38%, rgba(0,0,0,.46) 100%);
+      pointer-events:none;
+      z-index:1;
+    }
+
+    .project-badge-wrap{
+      position:absolute;
+      top:14px;
+      left:14px;
+      z-index:2;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .media-badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:34px;
+      padding:7px 12px;
+      border-radius:999px;
+      font-size:.82rem;
+      font-weight:800;
+      letter-spacing:.02em;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:0 8px 18px rgba(0,0,0,.22);
+      white-space:nowrap;
+    }
+
+    .media-badge.success{
+      background:rgba(0,184,118,.18);
+      border-color:rgba(174,255,220,.28);
+    }
+
+    .media-badge.rented{
+      background:rgba(179,0,0,.28);
+      border-color:rgba(255,128,128,.38);
+    }
+
+    .media-badge.progress{
+      background:rgba(255,255,255,.12);
+      border-color:rgba(255,255,255,.2);
+    }
+
+    .project-dots{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:12px;
+      z-index:2;
+      display:flex;
+      gap:7px;
+      align-items:center;
+    }
+
+    .project-dots button{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      border:0;
+      padding:0;
+      background:rgba(255,255,255,.42);
+      cursor:pointer;
+      transition:transform .18s ease, background-color .18s ease;
+    }
+
+    .project-dots button.active{
+      background:#fff;
+      transform:scale(1.18);
+    }
+
+    .project-body{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      padding:20px 20px 22px;
+      flex:1;
+    }
+
+    .project-topline{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .project-kicker{
+      font-size:.78rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      opacity:.68;
+      font-weight:700;
+    }
+
+    .project-title{
+      font-size:1.28rem;
+      font-weight:800;
+      margin:0;
+      line-height:1.15;
+    }
+
+    .project-location{
+      font-size:.98rem;
+      opacity:.9;
+      margin:0;
+    }
+
+    .project-text{
+      margin:0;
+      font-size:.96rem;
+      line-height:1.62;
+      opacity:.96;
+    }
+
+    .project-keyfacts{
+      display:grid;
+      gap:10px;
+      margin-top:2px;
+      padding-top:2px;
+    }
+
+    .keyfact-row{
+      display:grid;
+      grid-template-columns:140px 1fr;
+      gap:10px;
+      align-items:start;
+      padding:9px 0;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+
+    .keyfact-row:first-child{
+      border-top:1px solid rgba(255,255,255,.12);
+    }
+
+    .keyfact-label{
+      font-size:.8rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      opacity:.62;
+      font-weight:700;
+    }
+
+    .keyfact-value{
+      font-size:.95rem;
+      line-height:1.45;
+      font-weight:600;
+      opacity:.97;
+    }
+
+    .project-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:auto;
+      padding-top:6px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:46px;
+      padding:11px 16px;
+      border-radius:12px;
+      text-decoration:none;
+      color:var(--text);
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.2);
+      font-weight:800;
+      font-size:.94rem;
+      transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+      box-shadow:var(--shadow);
+    }
+
+    .btn:hover{
+      transform:translateY(-2px);
+      background:rgba(255,255,255,.2);
+      box-shadow:var(--shadow-strong);
+      border-color:rgba(255,255,255,.28);
+    }
+
+    @media (max-width:560px){
+      .keyfact-row{
+        grid-template-columns:1fr;
+        gap:4px;
+      }
+    }
+
+    /* ===== Footer ===== */
     footer.site-footer{
-      position:fixed; left:0; right:0; bottom:0; z-index:1000;
+      position:fixed;
+      left:0; right:0; bottom:0;
+      z-index:1000;
       background:rgba(0,54,30,.94);
-      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-      color:var(--text); text-align:center;
-      padding:12px 18px calc(12px + var(--safe-bottom));
-      font-size:.9rem; line-height:1.5;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      color:var(--text);
+      text-align:center;
+      padding:14px 18px calc(14px + var(--safe-bottom));
+      font-size:.95rem;
       box-shadow:0 -2px 10px rgba(0,0,0,.25);
       border-top:1px solid rgba(255,255,255,.08);
     }
-    footer.site-footer a{ color:var(--text); text-decoration:underline; font-weight:600 }
-    footer.site-footer a:hover{ opacity:.8 }
-    .footer-inner{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 14px }
-    .footer-sep{ opacity:.5 }
+  
+    /* ===== Optimierung Header/Footer/Menü (minimal, additiv) ===== */
+    /* Logo bleibt mittig; Burger sitzt mobil rechts oben neben dem Logo */
+    header.site-header .header-top{ position:relative; }
+    header.site-header .menu-toggle{
+      position:absolute; top:50%; right:10px; transform:translateY(-50%);
+      left:auto; width:44px; height:44px;
+    }
+    /* Auf Mobil brauchen wir die separate Navi-Zeile nicht -> schmalerer Header */
+    @media (max-width:899px){
+      header.site-header .header-nav{ display:none; }
+    }
+
+
+    /* Menü-Icon (SVG, robust) */
+    header.site-header .menu-toggle{ color:var(--text,#fff); }
+    header.site-header .menu-toggle .menu-icon{ display:none !important; }
+    header.site-header .menu-toggle .ico-burger,
+    header.site-header .menu-toggle .ico-close{ display:block; }
+    header.site-header .menu-toggle .ico-close{ display:none; }
+    header.site-header .menu-toggle[aria-expanded="true"] .ico-burger{ display:none; }
+    header.site-header .menu-toggle[aria-expanded="true"] .ico-close{ display:block; }
+
+    /* Footer: Impressum-Link in eigener Zeile UNTER dem Disclaimer */
+    footer.site-footer .footer-impressum{ display:block; margin-top:6px; }
+    footer.site-footer .footer-impressum a{ color:var(--text); text-decoration:underline; font-weight:600; }
+    footer.site-footer .footer-impressum a:hover{ opacity:.8; }
 
   </style>
 </head>
 <body>
-    <header class="site-header" role="banner">
+  <header class="site-header" role="banner">
     <div class="header-top">
       <a class="brand-link" href="index.html#top" aria-label="Zur Startseite">
         <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
       </a>
       <button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mobile-drawer">
-        <span class="menu-icon"><span></span><span></span><span></span></span>
+        <svg class="ico-burger" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="ico-close" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
       </button>
     </div>
 
@@ -195,17 +612,17 @@
   </header>
 
   <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
-  <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
-    <nav aria-label="Mobile Navigation">
-      <ul>
+    <div class="drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" hidden>
+      <nav>
+        <ul>
           <li><a href="index.html#home">Home</a></li>
           <li><a href="projekte.html" aria-current="page">Projekte</a></li>
           <li><a href="unternehmen.html">Unternehmen</a></li>
           <li><a href="kontakt.html">Kontakt</a></li>
           <li><a href="impressum.html">Impressum</a></li>
-      </ul>
-    </nav>
-  </div>
+        </ul>
+      </nav>
+    </div>
 
   <main id="top">
     <section class="intro-wrap" aria-labelledby="projekte-title">
@@ -351,56 +768,74 @@
     </section>
   </main>
 
-    <footer class="site-footer">
-    <div class="footer-inner">
-      <span>&copy; 2026 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten</span>
-      <span class="footer-sep">·</span>
-      <a href="impressum.html">Impressum &amp; Datenschutz</a>
-    </div>
+  <footer class="site-footer">
+    &copy; 2026 Bücking Immobilien GmbH &amp; Co. KG – Alle Rechte vorbehalten
+    <span class="footer-impressum"><a href="impressum.html">Impressum &amp; Datenschutz</a></span>
   </footer>
 
-    <script>
-    /* ===== Höhen von Header/Footer dynamisch setzen ===== */
+  <script>
     function updateChromeVars(){
       const header = document.querySelector('.site-header');
       const footer = document.querySelector('.site-footer');
-      const root   = document.documentElement;
-      root.style.setProperty('--header-h', (header?.offsetHeight || 84) + 'px');
-      root.style.setProperty('--footer-h', (footer?.offsetHeight || 56) + 'px');
+      const root = document.documentElement;
+      const headerH = header?.offsetHeight || 110;
+      const footerH = footer?.offsetHeight || 64;
+      root.style.setProperty('--header-h', headerH + 'px');
+      root.style.setProperty('--footer-h', footerH + 'px');
     }
+
     window.addEventListener('load', updateChromeVars);
-    window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(updateChromeVars, 100); });
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__rz);
+      window.__rz = setTimeout(updateChromeVars, 100);
+    });
 
-    /* ===== Mobiles Menü ===== */
-    (function(){
-      const body = document.body;
-      const toggle = document.querySelector('.menu-toggle');
-      const drawer = document.getElementById('mobile-drawer');
-      const backdrop = document.getElementById('drawer-backdrop');
-      if(!toggle || !drawer || !backdrop) return;
+    const body = document.body;
+    const toggle = document.querySelector('.menu-toggle');
+    const drawer = document.getElementById('mobile-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
 
-      function openMenu(){
-        toggle.setAttribute('aria-expanded','true');
-        drawer.hidden = false; backdrop.hidden = false;
-        requestAnimationFrame(() => {
-          drawer.classList.add('open'); backdrop.classList.add('open');
-          body.style.overflow = 'hidden';
-          const first = drawer.querySelector('a'); if(first) first.focus();
-        });
-      }
-      function closeMenu(){
-        toggle.setAttribute('aria-expanded','false');
-        drawer.classList.remove('open'); backdrop.classList.remove('open');
-        body.style.overflow = '';
-        setTimeout(() => { drawer.hidden = true; backdrop.hidden = true; }, 220);
-      }
+    function openMenu(){
+      toggle.setAttribute('aria-expanded', 'true');
+      drawer.hidden = false;
+      backdrop.hidden = false;
+
+      requestAnimationFrame(() => {
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+        body.style.overflow = 'hidden';
+        const firstLink = drawer.querySelector('a');
+        if(firstLink) firstLink.focus();
+      });
+    }
+
+    function closeMenu(){
+      toggle.setAttribute('aria-expanded', 'false');
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      body.style.overflow = '';
+      setTimeout(() => {
+        drawer.hidden = true;
+        backdrop.hidden = true;
+      }, 200);
+      toggle.focus();
+    }
+
+    if(toggle){
       toggle.addEventListener('click', () => {
         toggle.getAttribute('aria-expanded') === 'true' ? closeMenu() : openMenu();
       });
+    }
+
+    if(backdrop){
       backdrop.addEventListener('click', closeMenu);
-      drawer.addEventListener('click', e => { if(e.target.closest('a')) closeMenu(); });
-      window.addEventListener('keydown', e => { if(e.key === 'Escape') closeMenu(); });
-    })();
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true'){
+        closeMenu();
+      }
+    });
 
     document.querySelectorAll('.project-slider').forEach((slider) => {
       const slides = slider.querySelectorAll('.project-slide');
