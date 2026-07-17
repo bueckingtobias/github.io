@@ -64,6 +64,9 @@
     }
 
     html{scroll-padding-top:calc(var(--header-h) + 14px)}
+    /* Grüner Grund bis ganz nach oben (Safe-Area/Overscroll), kein Weiß mehr */
+    html{ background-color:var(--brand-700); }
+    body{ background-color:var(--brand-700); min-height:100vh; }
     a,button{font:inherit}
 
     /* ===== Header ===== */
