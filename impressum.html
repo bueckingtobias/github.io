@@ -143,6 +143,30 @@
       text-align:center; padding:18px; font-size:.95rem;
       box-shadow:0 -2px 10px rgba(0,0,0,.25);
     }
+  
+    /* ===== Optimierung Header/Footer/Menü (minimal, additiv) ===== */
+    header.site-header .header-top{ position:relative; }
+    header.site-header .menu-toggle{
+      position:absolute; top:50%; right:10px; transform:translateY(-50%);
+      left:auto; width:44px; height:44px;
+    }
+    @media (max-width:899px){
+      header.site-header .header-nav{ display:none; }
+    }
+    footer.site-footer .footer-impressum{ display:block; margin-top:6px; }
+    footer.site-footer .footer-impressum a{ color:var(--text,#fff); text-decoration:underline; font-weight:600; }
+    footer.site-footer .footer-impressum a:hover{ opacity:.8; }
+
+  
+      /* Menü-Icon (SVG, robust) */
+    header.site-header .menu-toggle{ color:var(--text,#fff); }
+    header.site-header .menu-toggle .menu-icon{ display:none !important; }
+    header.site-header .menu-toggle .ico-burger,
+    header.site-header .menu-toggle .ico-close{ display:block; }
+    header.site-header .menu-toggle .ico-close{ display:none; }
+    header.site-header .menu-toggle[aria-expanded="true"] .ico-burger{ display:none; }
+    header.site-header .menu-toggle[aria-expanded="true"] .ico-close{ display:block; }
+
   </style>
 </head>
 
@@ -152,6 +176,9 @@
     <a class="brand-link" href="index.html#top">
       <img class="brand-logo" src="logo.png" alt="Bücking Immobilien Logo" />
     </a>
+    <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Menü öffnen">
+      <svg class="ico-burger" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="ico-close" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+    </button>
   </div>
   <div class="header-nav">
     <nav class="primary">
@@ -163,9 +190,6 @@
         <li><a href="impressum.html" aria-current="page">Impressum</a></li>
       </ul>
     </nav>
-    <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Menü öffnen">
-      <span class="menu-icon"></span>
-    </button>
   </div>
 </header>
 
@@ -244,7 +268,9 @@
   <p><em>Stand: Oktober 2025</em></p>
 </main>
 
-<footer class="site-footer">&copy; 2025 Bücking Immobilien GmbH & Co. KG – Alle Rechte vorbehalten</footer>
+<footer class="site-footer">&copy; 2025 Bücking Immobilien GmbH & Co. KG – Alle Rechte vorbehalten
+    <span class="footer-impressum"><a href="impressum.html">Impressum &amp; Datenschutz</a></span>
+  </footer>
 
 <script>
   // Mobiles Menü
