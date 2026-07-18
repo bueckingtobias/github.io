@@ -1,5 +1,5 @@
 /* ============================================================================
-   finance-engine.js — Einnahmen-Berechnung je Quelle (reine Logik, ohne DOM)
+   finance-engine.js — Einnahmen-Berechnung je Quelle test (reine Logik, ohne DOM)
    window.FinanceEngine
    ============================================================================ */
 (function () {
