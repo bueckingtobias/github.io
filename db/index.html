@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover" />
 <title>Bücking · Einnahmen</title>
 <meta name="robots" content="noindex,nofollow" />
 <meta name="theme-color" content="#081813" />
@@ -36,8 +36,9 @@
   --fbody:"Inter",system-ui,-apple-system,sans-serif;
 }
 *{box-sizing:border-box}html,body{height:100%}
-html{background:#081813;overscroll-behavior:none}
+html{background:#081813;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscroll-behavior:none;
+  touch-action:pan-x pan-y;-webkit-touch-callout:none;
   background:
     radial-gradient(1100px 640px at 8% -8%,rgba(74,222,158,.10),transparent 55%),
     radial-gradient(900px 560px at 100% 0%,rgba(31,122,90,.18),transparent 52%),
@@ -203,18 +204,32 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .b-on{background:rgba(74,222,158,.16);color:var(--mint-2)}
 .b-off{background:rgba(216,185,120,.16);color:var(--gold)}
 
-/* Kalender */
-.cal-row{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--stroke)}
-.cal-row:last-child{border-bottom:none}
-.cal-date{flex:0 0 auto;width:48px;text-align:center;background:rgba(6,20,16,.5);border:1px solid var(--stroke);border-radius:12px;padding:7px 0}
-.cal-date b{display:block;font-family:var(--fdisp);font-size:18px;font-weight:600;line-height:1}
-.cal-date span{display:block;font-size:10px;color:var(--soft);text-transform:uppercase;margin-top:2px}
-.cal-body{flex:1;min-width:0}
-.cal-title{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cal-info{font-size:11.5px;color:var(--softer);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cal-side{flex:0 0 auto;display:flex;align-items:center;gap:7px}
-.cal-dot{width:8px;height:8px;border-radius:50%}
-.cal-rel{font-size:11px;color:var(--soft);white-space:nowrap}
+/* Kalender — Monatsansicht */
+.cal-nav{display:flex;gap:6px;align-items:center}
+.cal-btn{background:rgba(6,20,16,.5);border:1px solid var(--stroke-2);color:var(--soft);border-radius:10px;
+  min-width:30px;height:30px;padding:0 9px;font-size:13px;font-family:var(--fbody);cursor:pointer;transition:.15s;line-height:1}
+.cal-btn:hover{color:var(--text);border-color:var(--mint);background:rgba(74,222,158,.1)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dow{text-align:center;font-size:10.5px;color:var(--softer);text-transform:uppercase;letter-spacing:.06em;padding-bottom:4px}
+.cal-cell{position:relative;aspect-ratio:1/1;border-radius:11px;border:1px solid transparent;
+  background:rgba(6,20,16,.32);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  cursor:pointer;transition:.14s;-webkit-tap-highlight-color:transparent}
+.cal-cell.empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+.cal-cell:not(.empty):hover{border-color:var(--stroke-2)}
+.cal-cell.has{font-weight:600}
+.cal-cell.today{outline:1.5px solid var(--mint);outline-offset:-1.5px}
+.cal-cell.sel{border-color:var(--mint-2)!important;box-shadow:0 0 0 2px rgba(126,240,189,.28)}
+.cal-n{font-family:var(--fdisp);font-size:14px;line-height:1;font-variant-numeric:tabular-nums}
+.cal-dots{display:flex;gap:3px;height:5px;align-items:center}
+.cal-d{width:5px;height:5px;border-radius:50%}
+.cal-detail{margin-top:16px;padding-top:15px;border-top:1px solid var(--stroke)}
+.cal-detail-h{font-family:var(--fdisp);font-size:14px;font-weight:600;margin-bottom:11px}
+.cal-ev{border-left:3px solid var(--mint);background:rgba(6,20,16,.4);border-radius:0 10px 10px 0;padding:10px 13px;margin-bottom:8px}
+.cal-ev:last-child{margin-bottom:0}
+.cal-ev-t{font-size:13px;font-weight:600}
+.cal-ev-i{font-size:11.5px;color:var(--softer);margin-top:2px}
+.cal-hint{font-size:12.5px;color:var(--softer);margin-top:14px;padding-top:14px;border-top:1px solid var(--stroke)}
+.cal-detail .cal-hint{margin-top:0;padding-top:0;border-top:none}
 /* Wetter */
 .w-now{display:flex;align-items:center;gap:16px;margin-bottom:18px}
 .w-now-ic{font-size:44px;line-height:1}
@@ -295,8 +310,11 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   .w-days{gap:6px}.w-day{padding:9px 3px}
   .w-ic{font-size:17px;margin:5px 0}
   .w-t b{font-size:12px}.w-t i{font-size:10.5px;margin-left:3px}
-  .cal-date{width:44px}
-  .cal-rel{font-size:10px}
+  .cal-grid{gap:4px}
+  .cal-n{font-size:12.5px}
+  .cal-cell{border-radius:9px}
+  .cal-d{width:4px;height:4px}
+  .cal-dow{font-size:9.5px}
   .tile-num{font-size:26px}
   .stat-strip{grid-template-columns:1fr 1fr}
 }
@@ -341,7 +359,6 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
         <h2 id="pageTitle">Übersicht</h2>
         <div class="sub" id="pageSub"></div>
       </div>
-      <div class="head-pill" id="headPill"></div>
     </header>
     <div class="scroll"><div class="wrap" id="views"></div></div>
   </section>
