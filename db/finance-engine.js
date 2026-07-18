@@ -133,7 +133,7 @@
       const key = d.toISOString().slice(0, 7);
       rows.push({ monat: key, zins: r2(zins), tilgung: r2(tilgung), sonder: r2(sonder), rest: r2(Math.max(0, rest)) });
       // Restschuld/Tilgung bis heute (einschließlich laufendem Monat)
-      if (key <= nowKey) { restAktuell = Math.max(0, rest); getilgtBisher = (Number(kredit.summe) || 0) - restAktuell; }
+      if (key < nowKey) { restAktuell = Math.max(0, rest); getilgtBisher = (Number(kredit.summe) || 0) - restAktuell; }
       monat++;
       d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
       if (tilgung === 0 && stBetrag === 0) break; // tilgt nie
