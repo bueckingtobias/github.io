@@ -188,7 +188,6 @@
     $("#eyebrow").textContent = "Portfolio";
     $("#pageTitle").textContent = "Übersicht";
     $("#pageSub").textContent = "Alle Einnahmequellen auf einen Blick";
-    $("#headPill").innerHTML = `Ist-Einnahmen <b>${eur(t.ist)}</b> / Monat`;
 
     // KPI-Reihe 1 — Einnahmen & Cashflow
     host.appendChild(el(`<div class="grid g-kpi">
@@ -254,62 +253,137 @@
     host.appendChild(tiles);
   }
 
-  /* ---------- KALENDER ---------- */
-  // Nächste Vorkommen aller Termine berechnen (inkl. Wiederholungen)
-  function upcomingEvents(limit) {
-    const out = [];
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const horizon = new Date(today); horizon.setMonth(horizon.getMonth() + 6);
+  /* ---------- KALENDER (Monatsansicht) ---------- */
+  // Alle Termine eines Monats als Map { "YYYY-MM-DD": [events] }
+  function eventsForMonth(year, month) {
+    const map = {};
+    const push = (d, t) => {
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      (map[key] = map[key] || []).push(t);
+    };
+    const first = new Date(year, month, 1), last = new Date(year, month + 1, 0);
     (D.termine || []).forEach(t => {
       const base = new Date(t.datum);
       if (t.wiederholung === "monatlich") {
-        let d = new Date(today.getFullYear(), today.getMonth(), base.getDate());
-        if (d < today) d.setMonth(d.getMonth() + 1);
-        for (let i = 0; i < 6 && d <= horizon; i++) {
-          out.push({ ...t, when: new Date(d) });
-          d = new Date(d.getFullYear(), d.getMonth() + 1, base.getDate());
-        }
+        const d = new Date(year, month, Math.min(base.getDate(), last.getDate()));
+        push(d, t);
       } else if (t.wiederholung === "jaehrlich") {
-        let d = new Date(today.getFullYear(), base.getMonth(), base.getDate());
-        if (d < today) d.setFullYear(d.getFullYear() + 1);
-        if (d <= horizon) out.push({ ...t, when: d });
+        if (base.getMonth() === month && new Date(year, month, 1) >= new Date(base.getFullYear(), base.getMonth(), 1))
+          push(new Date(year, month, base.getDate()), t);
+      } else if (t.wiederholung === "halbjaehrlich") {
+        // alle 6 Monate ab Basismonat
+        const diff = (year - base.getFullYear()) * 12 + (month - base.getMonth());
+        if (diff >= 0 && diff % 6 === 0) push(new Date(year, month, base.getDate()), t);
       } else {
-        if (base >= today && base <= horizon) out.push({ ...t, when: base });
+        if (base.getFullYear() === year && base.getMonth() === month) push(base, t);
       }
     });
-    out.sort((a, b) => a.when - b.when);
-    return out.slice(0, limit || 7);
+    return map;
   }
 
   const EVT = {
-    miete:   { ic: "euro",   col: "var(--mint)" },
-    einzug:  { ic: "home",   col: "var(--mint-2)" },
-    zahlung: { ic: "bank",   col: "var(--gold)" },
-    termin:  { ic: "layers", col: "var(--soft)" }
+    miete:   { col: "#4ade9e", bg: "rgba(74,222,158,.14)",  br: "rgba(74,222,158,.4)",  label: "Miete" },
+    einzug:  { col: "#7ef0bd", bg: "rgba(126,240,189,.14)", br: "rgba(126,240,189,.4)", label: "Einzug" },
+    zahlung: { col: "#d8b978", bg: "rgba(216,185,120,.16)", br: "rgba(216,185,120,.45)",label: "Zahlung" },
+    termin:  { col: "#59c9a0", bg: "rgba(89,201,160,.14)",  br: "rgba(89,201,160,.4)",  label: "Termin" }
   };
 
+  let calYear = null, calMonth = null, calSelected = null;
   function calendarCard() {
-    const evts = upcomingEvents(7);
-    const today = new Date();
-    const rows = evts.length ? evts.map(e => {
-      const cfg = EVT[e.typ] || EVT.termin;
-      const d = e.when;
-      const days = Math.round((d - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
-      const rel = days === 0 ? "heute" : days === 1 ? "morgen" : "in " + days + " Tg.";
-      return `<div class="cal-row">
-        <div class="cal-date"><b>${d.getDate()}</b><span>${d.toLocaleDateString("de-DE", { month: "short" })}</span></div>
-        <div class="cal-body">
-          <div class="cal-title">${esc(e.titel)}</div>
-          <div class="cal-info">${esc(e.info || "")}</div>
+    const now = new Date();
+    if (calYear == null) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+    const card = el(`<div class="card cal-card">
+      <div class="card-h">
+        <div><div class="card-t">Kalender</div><div class="card-s" id="calSub"></div></div>
+        <div class="cal-nav">
+          <button class="cal-btn" id="calPrev" aria-label="Vorheriger Monat">‹</button>
+          <button class="cal-btn" id="calToday">heute</button>
+          <button class="cal-btn" id="calNext" aria-label="Nächster Monat">›</button>
         </div>
-        <div class="cal-side"><span class="cal-dot" style="background:${cfg.col}"></span><span class="cal-rel">${rel}</span></div>
-      </div>`;
-    }).join("") : `<div class="note">Keine anstehenden Termine.</div>`;
-    return el(`<div class="card">
-      <div class="card-h"><div><div class="card-t">Kalender</div>
-        <div class="card-s">Anstehende Termine & Zahlungen</div></div>
-        <div class="head-pill" style="padding:7px 13px">${evts.length} Termine</div></div>
-      <div class="card-b">${rows}</div></div>`);
+      </div>
+      <div class="card-b"><div id="calGridHost"></div><div id="calDetail"></div></div></div>`);
+
+    const draw = () => {
+      const host = card.querySelector("#calGridHost");
+      const detail = card.querySelector("#calDetail");
+      const map = eventsForMonth(calYear, calMonth);
+      const first = new Date(calYear, calMonth, 1);
+      const daysIn = new Date(calYear, calMonth + 1, 0).getDate();
+      const startDow = (first.getDay() + 6) % 7; // Montag = 0
+      const todayKey = new Date().toISOString().slice(0, 10);
+
+      card.querySelector("#calSub").textContent =
+        first.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+
+      const dows = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+        .map(d => `<div class="cal-dow">${d}</div>`).join("");
+      let cells = "";
+      for (let i = 0; i < startDow; i++) cells += `<div class="cal-cell empty"></div>`;
+      for (let day = 1; day <= daysIn; day++) {
+        const key = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const evts = map[key] || [];
+        const isToday = key === todayKey;
+        const isSel = key === calSelected;
+        // Farbe nach höchster Priorität: einzug > zahlung > miete
+        let cfg = null;
+        if (evts.length) {
+          const order = ["einzug", "zahlung", "miete", "termin"];
+          const typ = order.find(o => evts.some(e => e.typ === o)) || "termin";
+          cfg = EVT[typ];
+        }
+        const style = cfg ? `background:${cfg.bg};border-color:${cfg.br}` : "";
+        const dots = evts.slice(0, 3).map(e => {
+          const c = EVT[e.typ] || EVT.termin;
+          return `<span class="cal-d" style="background:${c.col}"></span>`;
+        }).join("");
+        cells += `<div class="cal-cell${evts.length ? " has" : ""}${isToday ? " today" : ""}${isSel ? " sel" : ""}"
+          data-key="${key}" style="${style}">
+          <span class="cal-n">${day}</span>
+          <span class="cal-dots">${dots}</span></div>`;
+      }
+      host.innerHTML = `<div class="cal-grid">${dows}${cells}</div>`;
+
+      // Detailbereich
+      const renderDetail = (key) => {
+        const evts = (map[key] || []);
+        if (!key) { detail.innerHTML = `<div class="cal-hint">Tag antippen, um Ereignisse zu sehen.</div>`; return; }
+        const d = new Date(key);
+        const head = d.toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long" });
+        if (!evts.length) {
+          detail.innerHTML = `<div class="cal-detail"><div class="cal-detail-h">${esc(head)}</div>
+            <div class="cal-hint">Keine Ereignisse an diesem Tag.</div></div>`;
+          return;
+        }
+        const list = evts.map(e => {
+          const c = EVT[e.typ] || EVT.termin;
+          return `<div class="cal-ev" style="border-left-color:${c.col}">
+            <div class="cal-ev-t">${esc(e.titel)}</div>
+            <div class="cal-ev-i">${esc(e.info || c.label)}</div></div>`;
+        }).join("");
+        detail.innerHTML = `<div class="cal-detail"><div class="cal-detail-h">${esc(head)}</div>${list}</div>`;
+      };
+      renderDetail(calSelected);
+
+      host.querySelectorAll(".cal-cell[data-key]").forEach(c => {
+        c.onclick = () => {
+          calSelected = (calSelected === c.dataset.key) ? null : c.dataset.key;
+          draw();
+        };
+      });
+    };
+
+    card.querySelector("#calPrev").onclick = () => {
+      calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } calSelected = null; draw();
+    };
+    card.querySelector("#calNext").onclick = () => {
+      calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } calSelected = null; draw();
+    };
+    card.querySelector("#calToday").onclick = () => {
+      const n = new Date(); calYear = n.getFullYear(); calMonth = n.getMonth();
+      calSelected = n.toISOString().slice(0, 10); draw();
+    };
+    draw();
+    return card;
   }
 
   /* ---------- WETTER ---------- */
@@ -366,7 +440,6 @@
     $("#eyebrow").textContent = s.kind === "airbnb" ? "Kurzzeitvermietung" : s.kind === "pacht" ? "Landpacht" : "Vermietung";
     $("#pageTitle").textContent = s.name;
     $("#pageSub").textContent = s.ort || "";
-    $("#headPill").innerHTML = `Einnahmen <b>${eur(m.gesamt)}</b> / Monat`;
 
     if (s.kind === "airbnb") return renderAirbnb(host, s, m);
     if (s.kind === "pacht") return renderPacht(host, s, m);
@@ -611,7 +684,23 @@
   }
 
   /* ---------- BOOT ---------- */
+  // Zoom unterbinden (iOS ignoriert user-scalable=no)
+  function blockZoom() {
+    document.addEventListener("gesturestart", e => e.preventDefault(), { passive: false });
+    document.addEventListener("gesturechange", e => e.preventDefault(), { passive: false });
+    document.addEventListener("gestureend", e => e.preventDefault(), { passive: false });
+    document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+    let lastTouch = 0;
+    document.addEventListener("touchend", e => {
+      const now = Date.now();
+      if (now - lastTouch <= 320) e.preventDefault(); // Doppeltipp-Zoom
+      lastTouch = now;
+    }, { passive: false });
+    document.addEventListener("wheel", e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    blockZoom();
     $("#loginBtn").addEventListener("click", tryLogin);
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
     $("#logoutBtn").addEventListener("click", logout);
