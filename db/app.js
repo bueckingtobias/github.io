@@ -221,6 +221,12 @@
       <div class="donut-row">${donut(segs)}<div class="legend">${legend}</div></div></div>`);
     host.appendChild(compCard);
 
+    // Kalender + Wetter nebeneinander
+    const row = el(`<div class="grid g-2"></div>`);
+    row.appendChild(calendarCard());
+    row.appendChild(weatherCard());
+    host.appendChild(row);
+
     // Stream tiles
     const tiles = el(`<div class="tiles"></div>`);
     (D.streams || []).forEach(s => {
@@ -246,6 +252,110 @@
       tiles.appendChild(t);
     });
     host.appendChild(tiles);
+  }
+
+  /* ---------- KALENDER ---------- */
+  // Nächste Vorkommen aller Termine berechnen (inkl. Wiederholungen)
+  function upcomingEvents(limit) {
+    const out = [];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const horizon = new Date(today); horizon.setMonth(horizon.getMonth() + 6);
+    (D.termine || []).forEach(t => {
+      const base = new Date(t.datum);
+      if (t.wiederholung === "monatlich") {
+        let d = new Date(today.getFullYear(), today.getMonth(), base.getDate());
+        if (d < today) d.setMonth(d.getMonth() + 1);
+        for (let i = 0; i < 6 && d <= horizon; i++) {
+          out.push({ ...t, when: new Date(d) });
+          d = new Date(d.getFullYear(), d.getMonth() + 1, base.getDate());
+        }
+      } else if (t.wiederholung === "jaehrlich") {
+        let d = new Date(today.getFullYear(), base.getMonth(), base.getDate());
+        if (d < today) d.setFullYear(d.getFullYear() + 1);
+        if (d <= horizon) out.push({ ...t, when: d });
+      } else {
+        if (base >= today && base <= horizon) out.push({ ...t, when: base });
+      }
+    });
+    out.sort((a, b) => a.when - b.when);
+    return out.slice(0, limit || 7);
+  }
+
+  const EVT = {
+    miete:   { ic: "euro",   col: "var(--mint)" },
+    einzug:  { ic: "home",   col: "var(--mint-2)" },
+    zahlung: { ic: "bank",   col: "var(--gold)" },
+    termin:  { ic: "layers", col: "var(--soft)" }
+  };
+
+  function calendarCard() {
+    const evts = upcomingEvents(7);
+    const today = new Date();
+    const rows = evts.length ? evts.map(e => {
+      const cfg = EVT[e.typ] || EVT.termin;
+      const d = e.when;
+      const days = Math.round((d - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
+      const rel = days === 0 ? "heute" : days === 1 ? "morgen" : "in " + days + " Tg.";
+      return `<div class="cal-row">
+        <div class="cal-date"><b>${d.getDate()}</b><span>${d.toLocaleDateString("de-DE", { month: "short" })}</span></div>
+        <div class="cal-body">
+          <div class="cal-title">${esc(e.titel)}</div>
+          <div class="cal-info">${esc(e.info || "")}</div>
+        </div>
+        <div class="cal-side"><span class="cal-dot" style="background:${cfg.col}"></span><span class="cal-rel">${rel}</span></div>
+      </div>`;
+    }).join("") : `<div class="note">Keine anstehenden Termine.</div>`;
+    return el(`<div class="card">
+      <div class="card-h"><div><div class="card-t">Kalender</div>
+        <div class="card-s">Anstehende Termine & Zahlungen</div></div>
+        <div class="head-pill" style="padding:7px 13px">${evts.length} Termine</div></div>
+      <div class="card-b">${rows}</div></div>`);
+  }
+
+  /* ---------- WETTER ---------- */
+  const WCODE = {
+    0: ["Klar", "☀️"], 1: ["Überwiegend klar", "🌤"], 2: ["Teils bewölkt", "⛅️"], 3: ["Bedeckt", "☁️"],
+    45: ["Nebel", "🌫"], 48: ["Reifnebel", "🌫"], 51: ["Leichter Niesel", "🌦"], 53: ["Niesel", "🌦"],
+    55: ["Starker Niesel", "🌧"], 61: ["Leichter Regen", "🌦"], 63: ["Regen", "🌧"], 65: ["Starker Regen", "🌧"],
+    71: ["Leichter Schnee", "🌨"], 73: ["Schnee", "🌨"], 75: ["Starker Schnee", "❄️"],
+    80: ["Schauer", "🌦"], 81: ["Schauer", "🌧"], 82: ["Starke Schauer", "⛈"],
+    95: ["Gewitter", "⛈"], 96: ["Gewitter mit Hagel", "⛈"], 99: ["Schweres Gewitter", "⛈"]
+  };
+  function weatherCard() {
+    const w = D.wetter || { ort: "—", lat: 53.0333, lon: 8.5333 };
+    const card = el(`<div class="card">
+      <div class="card-h"><div><div class="card-t">Wetter</div>
+        <div class="card-s">${esc(w.ort)}</div></div>
+        <div class="head-pill" style="padding:7px 13px" id="wNow">lädt…</div></div>
+      <div class="card-b" id="wBody"><div class="note">Wetterdaten werden geladen…</div></div></div>`);
+    // Open-Meteo (kein API-Key)
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${w.lat}&longitude=${w.lon}`
+      + `&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min`
+      + `&timezone=Europe%2FBerlin&forecast_days=5`;
+    fetch(url).then(r => r.json()).then(j => {
+      const body = card.querySelector("#wBody"), now = card.querySelector("#wNow");
+      if (!j || !j.current) throw new Error("keine Daten");
+      const c = j.current, cc = WCODE[c.weather_code] || ["—", "•"];
+      now.innerHTML = `${cc[1]} <b style="margin-left:5px">${Math.round(c.temperature_2m)}°</b>`;
+      const days = (j.daily && j.daily.time || []).map((t, i) => {
+        const dc = WCODE[j.daily.weather_code[i]] || ["—", "•"];
+        const dd = new Date(t);
+        return `<div class="w-day">
+          <span class="w-dow">${i === 0 ? "heute" : dd.toLocaleDateString("de-DE", { weekday: "short" })}</span>
+          <span class="w-ic">${dc[1]}</span>
+          <span class="w-t"><b>${Math.round(j.daily.temperature_2m_max[i])}°</b><i>${Math.round(j.daily.temperature_2m_min[i])}°</i></span>
+        </div>`;
+      }).join("");
+      body.innerHTML = `<div class="w-now">
+          <div class="w-now-ic">${cc[1]}</div>
+          <div><div class="w-now-t">${Math.round(c.temperature_2m)}°</div>
+            <div class="w-now-d">${esc(cc[0])}</div></div>
+        </div><div class="w-days">${days}</div>`;
+    }).catch(() => {
+      card.querySelector("#wNow").textContent = "offline";
+      card.querySelector("#wBody").innerHTML = `<div class="note">Wetterdaten konnten nicht geladen werden (keine Internetverbindung).</div>`;
+    });
+    return card;
   }
 
   /* ---------- STREAM DETAIL ---------- */
