@@ -23,10 +23,10 @@ window.DASHBOARD_DATA = {
         { name: "VR-Darlehen",  summe: 422000, zinsPa: 3.48, abtragMonat: 1927.38, start: "2026-04-30", sondertilgung: { betrag: 10000, monate: [12] } }
       ],
       einheiten: [
-        { wohnung: "WE 1", flaeche: 106, kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Joy Terborg & Tjark Möller", status: "vermietet" },
-        { wohnung: "WE 2", flaeche: 93,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Alexander Banse", status: "vermietet" },
-        { wohnung: "WE 3", flaeche: 92,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Karin Schröder", status: "vermietet" },
-        { wohnung: "WE 4", flaeche: 94,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Marleen Gieler", status: "vermietet" },
+        { wohnung: "WE 1", flaeche: 106, kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Joy Terborg & Tjark Möller", einzug: "2026-08-15", status: "vermietet" },
+        { wohnung: "WE 2", flaeche: 93,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Alexander Banse", einzug: "2026-07-01", status: "vermietet" },
+        { wohnung: "WE 3", flaeche: 92,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Karin Schröder", einzug: "2026-07-01", status: "vermietet" },
+        { wohnung: "WE 4", flaeche: 94,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Marleen Gieler", einzug: "2026-08-01", status: "vermietet" },
         { wohnung: "WE 5", flaeche: 124, kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, status: "frei" }
       ]
     },
@@ -76,14 +76,13 @@ window.DASHBOARD_DATA = {
      typ: "miete" | "einzug" | "termin" | "zahlung"
      wiederholung: "monatlich" (jeden Monat am Tag von datum) oder weglassen für einmalig */
   termine: [
-    { titel: "Mieteinnahmen Baumstraße", datum: "2026-07-01", typ: "miete", wiederholung: "monatlich", info: "Eingang aller Mieten" },
-    { titel: "Mieteinnahme Syke", datum: "2026-07-01", typ: "miete", wiederholung: "monatlich", info: "Stefanie Thode" },
-    { titel: "Einzug Joy Terborg & Tjark Möller", datum: "2026-08-01", typ: "einzug", info: "WE 1 · 106 m²" },
-    { titel: "Einzug Alexander Banse", datum: "2026-07-01", typ: "einzug", info: "WE 2 · 93 m²" },
-    { titel: "Einzug Karin Schröder", datum: "2026-07-01", typ: "einzug", info: "WE 3 · 92 m²" },
+    { titel: "Mieteingang", datum: "2026-07-01", typ: "miete", wiederholung: "monatlich", info: "Alle Mieten Baumstraße & Syke" },
+    { titel: "Einzug Karin Schröder", datum: "2026-07-01", typ: "einzug", info: "WE 3 · OG · 92 m²" },
+    { titel: "Einzug Alexander Banse", datum: "2026-07-01", typ: "einzug", info: "WE 2 · EG · 93 m²" },
     { titel: "Einzug Marleen Gieler", datum: "2026-08-01", typ: "einzug", info: "WE 4 · 94 m²" },
+    { titel: "Einzug Joy Terborg & Tjark Möller", datum: "2026-08-15", typ: "einzug", info: "WE 1 · 106 m²" },
     { titel: "Sondertilgung VR-Darlehen", datum: "2026-12-01", typ: "zahlung", wiederholung: "jaehrlich", info: "10.000 €" },
-    { titel: "Sondertilgung Syke", datum: "2026-12-01", typ: "zahlung", wiederholung: "jaehrlich", info: "1.500 €" },
-    { titel: "Pachtzahlung (jährlich)", datum: "2026-12-01", typ: "zahlung", wiederholung: "jaehrlich", info: "8.957,50 €" }
+    { titel: "Sondertilgung Syke", datum: "2026-06-01", typ: "zahlung", wiederholung: "halbjaehrlich", info: "1.500 € (01.06. & 01.12.)" },
+    { titel: "Pachtzahlung", datum: "2026-12-01", typ: "zahlung", wiederholung: "jaehrlich", info: "8.957,50 € gesamt" }
   ]
 };
