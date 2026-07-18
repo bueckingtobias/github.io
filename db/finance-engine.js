@@ -139,12 +139,39 @@
       if (tilgung === 0 && stBetrag === 0) break; // tilgt nie
     }
     const startInFuture = start.toISOString().slice(0, 7) > nowKey;
+    // Echter Kontostand hat Vorrang vor der Modellrechnung.
+    // restStand: { datum:"YYYY-MM-DD", betrag: 419883.13 }
+    let restHeute = startInFuture ? (Number(kredit.summe) || 0) : restAktuell;
+    let getilgtHeute = startInFuture ? 0 : getilgtBisher;
+    if (kredit.restStand && kredit.restStand.betrag != null) {
+      const anker = Number(kredit.restStand.betrag);
+      const ankerKey = String(kredit.restStand.datum || "").slice(0, 7);
+      // Raten, die seit dem Stichtag fällig wurden, zusätzlich abziehen
+      let r = anker, extra = 0;
+      const heute = new Date();
+      const zahltag = Number(String(kredit.start || "").slice(8, 10)) || 1;
+      rows.forEach(row => {
+        if (!ankerKey || row.monat <= ankerKey) return;
+        // tatsächliches Fälligkeitsdatum dieser Rate
+        const y = Number(row.monat.slice(0, 4)), mo = Number(row.monat.slice(5, 7));
+        const letzterTag = new Date(y, mo, 0).getDate();
+        const faellig = new Date(y, mo - 1, Math.min(zahltag, letzterTag));
+        if (faellig > heute) return; // noch nicht gebucht
+        const z = r * i;
+        const t = Math.min(rate - z, r);
+        r -= (t > 0 ? t : 0);
+        if (stBetrag && stMonate.includes(mo) && r > 0) r -= Math.min(stBetrag, r);
+        extra++;
+      });
+      restHeute = Math.max(0, r);
+      getilgtHeute = (Number(kredit.summe) || 0) - restHeute;
+    }
     return {
       rows, monate: monat, jahre: r2(monat / 12),
       zinsGesamt: r2(zinsGesamt), sonderGesamt: r2(sonderGesamt),
       getilgt: rest <= 0.005, restEnde: r2(Math.max(0, rest)),
-      restAktuell: r2(startInFuture ? (Number(kredit.summe) || 0) : restAktuell),
-      getilgtBisher: r2(startInFuture ? 0 : getilgtBisher),
+      restAktuell: r2(restHeute),
+      getilgtBisher: r2(getilgtHeute),
       startKey: start.toISOString().slice(0, 7),
       abzahlDatum: rows.length ? rows[rows.length - 1].monat : null
     };
