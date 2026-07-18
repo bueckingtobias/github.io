@@ -187,7 +187,7 @@
 
     $("#eyebrow").textContent = "Portfolio";
     $("#pageTitle").textContent = "Übersicht";
-    $("#pageSub").textContent = "Alle Einnahmequellen auf einen Blick";
+    $("#pageSub").textContent = "Alle Einnahmequellen auf einen Blick · Stand " + ((D.meta && D.meta.version) || "");
 
     // KPI-Reihe 1 — Einnahmen & Cashflow
     host.appendChild(el(`<div class="grid g-kpi">
@@ -202,7 +202,7 @@
       ${kpiCard("trend", eur(t.jahrIst), "Einnahmen / Jahr", "hochgerechnet")}
       ${kpiCard("chart", eur(nettoPot), "Netto-Potenzial / Mon.", "bei Vollvermietung", nettoPot >= 0)}
       ${kpiCard("bank", eur(debtMonth), "Tilgung / Monat", eur(debtMonth * 12) + " / Jahr")}
-      ${kpiCard("debt", eur(debtRest), "Restschuld heute", "getilgt " + eur(paidSoFar))}
+      ${kpiCard("debt", eur(debtRest), "Restschuld heute", "exakt " + eur2(debtRest))}
     </div>`));
 
     // Composition donut + legend (nur echte Einnahmen)
@@ -560,13 +560,13 @@
     const startFuture = plan && plan.startKey > nowKey;
     const chartLabels = plan ? [startTxt, "", "", endTxt] : null;
     return el(`<div class="card"><div class="card-h"><div><div class="card-t">${esc(title)}</div>
-      <div class="card-s">${eur(kr.summe)} · ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins · " : ""}${eur(kr.abtragMonat)}/Monat · Start ${startTxt}</div></div>
+      <div class="card-s">${eur(kr.summe)} · ${kr.zinsPa ? kr.zinsPa.toLocaleString("de-DE") + " % Zins · " : ""}${eur2(kr.abtragMonat)}/Monat · Start ${startTxt}</div></div>
       <div class="head-pill" style="padding:7px 13px">${plan && plan.getilgt ? "Laufzeit " + plan.jahre.toLocaleString("de-DE") + " J." : "läuft"}</div></div>
       <div class="card-b">
         <div class="stat-strip" style="margin-bottom:16px">
-          <div class="s"><span>Restschuld heute</span><b>${eur(restNow)}</b></div>
-          <div class="s"><span>getilgt bisher</span><b>${startFuture ? "—" : eur(paid)}</b></div>
-          <div class="s"><span>Rate/Monat</span><b>${eur(kr.abtragMonat)}</b></div>
+          <div class="s"><span>Restschuld heute</span><b>${eur2(restNow)}</b></div>
+          <div class="s"><span>getilgt bisher</span><b>${startFuture ? "—" : eur2(paid)}</b></div>
+          <div class="s"><span>Rate/Monat</span><b>${eur2(kr.abtragMonat)}</b></div>
           ${hasSt ? `<div class="s"><span>Sondertilgung</span><b>${eur(kr.sondertilgung.betrag)}</b></div>` : ""}
           <div class="s"><span>Laufzeit</span><b>${months} Mon. (bis ${endTxt})</b></div>
           ${hasSt ? `<div class="s"><span>Σ Sondertilgung</span><b>${eur(plan.sonderGesamt)}</b></div>` : ""}
@@ -596,7 +596,7 @@
         ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
         ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
         ${kpiCard("bank", eur(k.kreditAbtrag), "Tilgung / Monat", kredite.length + (kredite.length === 1 ? " Kredit" : " Kredite"))}
-        ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld heute", "über alle Kredite")}
+        ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld heute", "exakt " + eur2(k.restschuldGesamt))}
       </div>`));
     } else if (k && kredite.length) {
       host.appendChild(el(`<div class="grid g-kpi">
@@ -607,7 +607,7 @@
       </div>`));
       host.appendChild(el(`<div class="grid g-kpi">
         ${kpiCard("home", m.einheiten, "Einheiten", (s.einheiten || []).reduce((a, u) => a + (Number(u.flaeche) || 0), 0) + " m² gesamt")}
-        ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld gesamt", "beide Kredite")}
+        ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld gesamt", "exakt " + eur2(k.restschuldGesamt))}
         ${kpiCard("layers", eur(m.nkPuffer), "NK-Puffer / Monat", "Rücklage")}
         ${kpiCard("trend", eur(m.gesamt * 12), "Einnahmen / Jahr", "aktuell vermietet")}
       </div>`));
