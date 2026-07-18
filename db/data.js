@@ -4,7 +4,7 @@
    Pflege: Werte hier anpassen oder später über eine Maske. Kein Server nötig.
    ============================================================================ */
 window.DASHBOARD_DATA = {
-  meta: { org: "Bücking", title: "Einnahmen", version: "2026-06-01" },
+  meta: { org: "Bücking", title: "Einnahmen", version: "2026-07-18" },
   auth: { passwordHash: "774abd2c0374e9d3d262d1b7269ce9913f5333021ad6e7356261a2305638c1e8", sessionHours: 12 },
 
   /* Einnahmequellen. Jede Quelle hat einen Typ, Kennzahlen und Positionen. */
