@@ -17,7 +17,7 @@ window.DASHBOARD_DATA = {
       icon: "home",
       note: "Fünf Wohneinheiten. Kalt 12 €/m², NK 1,50 €/m², Küche 70 €, Strom 40 €. Nebenkosten werden vollständig als Puffer zurückgelegt.",
       nkAlsPuffer: true,
-      invest: 922000,
+      invest: 1200000,
       kredite: [
         { name: "KfW-Darlehen", summe: 500000, zinsPa: 2.98, abtragMonat: 2432.39, start: "2026-07-30", restStand: { datum: "2026-07-18", betrag: 500000.00 } },
         { name: "VR-Darlehen",  summe: 422000, zinsPa: 3.48, abtragMonat: 1927.38, start: "2026-04-30", restStand: { datum: "2026-07-18", betrag: 419883.13 }, sondertilgung: { betrag: 10000, monate: [12] } }
