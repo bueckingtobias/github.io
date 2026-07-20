@@ -18,6 +18,16 @@ window.DASHBOARD_DATA = {
       note: "Fünf Wohneinheiten. Kalt 12 €/m², NK 1,50 €/m², Küche 70 €, Strom 40 €. Nebenkosten werden vollständig als Puffer zurückgelegt.",
       nkAlsPuffer: true,
       invest: 1200000,
+      // Wofür die Nebenkosten-Rücklage verwendet wird (Anteile in % der NK-Summe)
+      nkPositionen: [
+        { titel: "Heizung & Warmwasser", anteil: 38 },
+        { titel: "Grundsteuer",          anteil: 14 },
+        { titel: "Gebäudeversicherung",  anteil: 12 },
+        { titel: "Müll & Entwässerung",  anteil: 11 },
+        { titel: "Allgemeinstrom",       anteil: 8 },
+        { titel: "Hausmeister & Pflege", anteil: 10 },
+        { titel: "Sonstiges / Puffer",   anteil: 7 }
+      ],
       kredite: [
         { name: "KfW-Darlehen", summe: 500000, zinsPa: 2.98, abtragMonat: 2432.39, start: "2026-07-30", restStand: { datum: "2026-07-18", betrag: 500000.00 } },
         { name: "VR-Darlehen",  summe: 422000, zinsPa: 3.48, abtragMonat: 1927.38, start: "2026-04-30", restStand: { datum: "2026-07-18", betrag: 419883.13 }, sondertilgung: { betrag: 10000, monate: [12] } }
@@ -42,7 +52,16 @@ window.DASHBOARD_DATA = {
       ort: "Elmeloh, Ganderkesee",
       icon: "bed",
       note: "1 WE als Kurzzeitvermietung. 75 €/Nacht, Auslastung realistisch, abzgl. AirBNB-Servicegebühr.",
-      airbnb: { nachtpreis: 75, auslastung: 65, servicegebuehrProzent: 3 }
+      airbnb: {
+        nachtpreis: 75,
+        auslastung: 65,
+        servicegebuehrProzent: 3,      // Host-Service-Fee (Modell "host"); bei "vereinfacht" ~15
+        gebuehrenmodell: "host",       // "host" = Gast zahlt Servicegebühr | "vereinfacht" = Host zahlt alles
+        aufenthaltsdauer: 3,           // Ø Nächte pro Buchung
+        reinigungsgebuehr: 50,         // wird dem Gast berechnet (zählt zum Umsatz)
+        reinigungskosten: 40,          // tatsächliche Kosten je Buchung
+        verbrauchProBuchung: 8         // Wäsche, Verbrauchsmaterial
+      }
     },
     {
       id: "syke",
@@ -53,6 +72,14 @@ window.DASHBOARD_DATA = {
       note: "1 Wohneinheit, 98 m². Nebenkosten werden vollständig als Puffer zurückgelegt.",
       nkAlsPuffer: true,
       invest: 60000,
+      nkPositionen: [
+        { titel: "Heizung & Warmwasser", anteil: 40 },
+        { titel: "Grundsteuer",          anteil: 16 },
+        { titel: "Gebäudeversicherung",  anteil: 13 },
+        { titel: "Müll & Entwässerung",  anteil: 13 },
+        { titel: "Schornsteinfeger",     anteil: 6 },
+        { titel: "Sonstiges / Puffer",   anteil: 12 }
+      ],
       kredit: { summe: 20000, abtragMonat: 400, zinsPa: 4.0, start: "2026-08-01", sondertilgung: { betrag: 1500, monate: [6, 12] } },
       einheiten: [
         { wohnung: "DHH", flaeche: 98, kaltFix: 1029, nkFix: 196, stellplatz: 50, mieter: "Stefanie Thode", status: "vermietet",
