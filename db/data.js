@@ -83,7 +83,7 @@ window.DASHBOARD_DATA = {
       kredit: { summe: 20000, abtragMonat: 400, zinsPa: 4.0, start: "2026-08-01", sondertilgung: { betrag: 1500, monate: [6, 12] } },
       einheiten: [
         { wohnung: "DHH", flaeche: 98, kaltFix: 1029, nkFix: 196, stellplatz: 50, mieter: "Stefanie Thode & Ricky Prus", status: "vermietet",
-          vertrag: { kaution: 3087, laufzeit: "unbefristet", kuendigungsfrist: "3 Monate", vertragsdatum: 03.07.2026, telefon: "", email: "", notiz: "" } }
+          vertrag: { kaution: 3087, laufzeit: "unbefristet", kuendigungsfrist: "3 Monate", vertragsdatum: 2026-07-03, telefon: "", email: "", notiz: "" } }
       ]
     },
     {
