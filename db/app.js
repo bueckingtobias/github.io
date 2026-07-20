@@ -364,21 +364,33 @@
     $("#pageTitle").textContent = "Übersicht";
     $("#pageSub").textContent = "Alle Einnahmequellen auf einen Blick · Stand " + ((D.meta && D.meta.version) || "");
 
+    const ctx = { t, debtMonth, debtRest, paidSoFar, debtOrig, unitsTotal, unitsLet, nettoMonth, nettoPot, upside };
+
     // KPI-Reihe 1 — Einnahmen & Cashflow
-    host.appendChild(el(`<div class="grid g-kpi">
-      ${kpiCard("euro", eur(t.ist), "Einnahmen / Monat", "aktuell vermietet", true)}
-      ${kpiCard("layers", eur(t.potenzial), "Potenzial / Monat", "+" + eur(upside) + " ungenutzt")}
-      ${kpiCard("wallet", eur(nettoMonth), "Netto-Cashflow", "nach Tilgung", nettoMonth >= 0)}
-      ${kpiCard("home", occ + " %", "Auslastung", unitsLet + " / " + unitsTotal + " Einheiten", occ >= 60)}
-    </div>`));
+    host.appendChild(wireActs(el(`<div class="grid g-kpi">
+      ${kpiCard("euro", eur(t.ist), "Einnahmen / Monat", "aktuell vermietet", true, "einnahmen")}
+      ${kpiCard("layers", eur(t.potenzial), "Potenzial / Monat", "+" + eur(upside) + " ungenutzt", false, "potenzial")}
+      ${kpiCard("wallet", eur(nettoMonth), "Netto-Cashflow", "nach Tilgung", nettoMonth >= 0, "netto")}
+      ${kpiCard("home", occ + " %", "Auslastung", unitsLet + " / " + unitsTotal + " Einheiten", occ >= 60, "auslastung")}
+    </div>`), {
+      einnahmen: () => openPortfolioSheet("einnahmen", ctx),
+      potenzial: () => openPortfolioSheet("potenzial", ctx),
+      netto: () => openPortfolioSheet("netto", ctx),
+      auslastung: () => openPortfolioSheet("auslastung", ctx)
+    }));
 
     // KPI-Reihe 2 — Jahr, Tilgung, Schuldenstand
-    host.appendChild(el(`<div class="grid g-kpi">
-      ${kpiCard("trend", eur(t.jahrIst), "Einnahmen / Jahr", "hochgerechnet")}
-      ${kpiCard("chart", eur(nettoPot), "Netto-Potenzial / Mon.", "bei Vollvermietung", nettoPot >= 0)}
-      ${kpiCard("bank", eur(debtMonth), "Tilgung / Monat", eur(debtMonth * 12) + " / Jahr")}
-      ${kpiCard("debt", eur(debtRest), "Restschuld heute", "exakt " + eur2(debtRest))}
-    </div>`));
+    host.appendChild(wireActs(el(`<div class="grid g-kpi">
+      ${kpiCard("trend", eur(t.jahrIst), "Einnahmen / Jahr", "hochgerechnet", false, "jahr")}
+      ${kpiCard("chart", eur(nettoPot), "Netto-Potenzial / Mon.", "bei Vollvermietung", nettoPot >= 0, "potenzial")}
+      ${kpiCard("bank", eur(debtMonth), "Tilgung / Monat", eur(debtMonth * 12) + " / Jahr", false, "tilgung")}
+      ${kpiCard("debt", eur(debtRest), "Restschuld heute", "exakt " + eur2(debtRest), false, "schuld")}
+    </div>`), {
+      jahr: () => openPortfolioSheet("einnahmen", ctx),
+      potenzial: () => openPortfolioSheet("potenzial", ctx),
+      tilgung: () => openPortfolioSheet("schuld", ctx),
+      schuld: () => openPortfolioSheet("schuld", ctx)
+    }));
 
     // Composition donut + legend (nur echte Einnahmen)
     const segs = (D.streams || []).map((s, i) => {
@@ -476,6 +488,7 @@
           <button class="cal-btn" id="calPrev" aria-label="Vorheriger Monat">‹</button>
           <button class="cal-btn" id="calToday">heute</button>
           <button class="cal-btn" id="calNext" aria-label="Nächster Monat">›</button>
+          <button class="cal-btn" id="calInfo" aria-label="Übersicht" title="Jahresübersicht">⋯</button>
         </div>
       </div>
       <div class="card-b"><div id="calGridHost"></div><div id="calDetail"></div></div></div>`);
@@ -531,13 +544,29 @@
             <div class="cal-hint">Keine Ereignisse an diesem Tag.</div></div>`;
           return;
         }
+        const t = FE.totals(D);
         const list = evts.map(e => {
           const c = EVT[e.typ] || EVT.termin;
+          // Betrag je Ereignistyp ableiten
+          let betrag = "";
+          if (e.typ === "miete") betrag = eur(t.miete + t.airbnb);
+          else if (e.typ === "zahlung" && e.info) {
+            const mm = String(e.info).match(/([\d.]+(?:,\d+)?)\s*€/);
+            if (mm) betrag = mm[0];
+          }
           return `<div class="cal-ev" style="border-left-color:${c.col}">
-            <div class="cal-ev-t">${esc(e.titel)}</div>
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
+              <div class="cal-ev-t">${esc(e.titel)}</div>
+              ${betrag ? `<div class="tl-v" style="color:${c.col}">${esc(betrag)}</div>` : ""}
+            </div>
             <div class="cal-ev-i">${esc(e.info || c.label)}</div></div>`;
         }).join("");
-        detail.innerHTML = `<div class="cal-detail"><div class="cal-detail-h">${esc(head)}</div>${list}</div>`;
+        // Tagessumme, falls Mieteingang dabei
+        const hatMiete = evts.some(e => e.typ === "miete");
+        const foot = hatMiete
+          ? `<div class="note" style="margin-top:10px">Zufluss an diesem Tag: ${eur(t.miete + t.airbnb)} aus ${mietStreams().length + 1} Quellen.</div>`
+          : "";
+        detail.innerHTML = `<div class="cal-detail"><div class="cal-detail-h">${esc(head)}</div>${list}${foot}</div>`;
       };
       renderDetail(calSelected);
 
@@ -555,6 +584,7 @@
     card.querySelector("#calNext").onclick = () => {
       calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } calSelected = null; draw();
     };
+    card.querySelector("#calInfo").onclick = () => openCalendarSheet();
     card.querySelector("#calToday").onclick = () => {
       const n = new Date(); calYear = n.getFullYear(); calMonth = n.getMonth();
       calSelected = n.toISOString().slice(0, 10); draw();
@@ -665,33 +695,128 @@
   function dateDE(iso) { const d = new Date(iso); return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }); }
 
   function renderAirbnb(host, s, m) {
-    const a = m.detail;
-    host.appendChild(el(`<div class="grid g-kpi">
-      ${kpiCard("bed", eur(m.gesamt), "Netto / Monat", "nach Gebühr", true)}
-      ${kpiCard("euro", eur(s.airbnb.nachtpreis), "pro Nacht", "Nachtpreis")}
-      ${kpiCard("trend", a.naechte, "Nächte / Monat", s.airbnb.auslastung + "% Auslastung")}
-      ${kpiCard("chart", eur(m.gesamt * 12), "pro Jahr", "hochgerechnet")}
-    </div>`));
+    const cfg = s.airbnb || {};
+    let occ = Number(cfg.auslastung) || 0;
 
-    // Breakdown bar: brutto -> fee -> netto
-    host.appendChild(el(`<div class="card pad">
-      <div class="card-t" style="margin-bottom:4px">Rechnung</div>
-      <div class="card-s" style="margin-bottom:18px">${esc(s.note || "")}</div>
-      <div class="stat-strip">
-        <div class="s"><span>Nachtpreis</span><b>${eur(s.airbnb.nachtpreis)}</b></div>
-        <div class="s"><span>Nächte/Monat</span><b>${a.naechte}</b></div>
-        <div class="s"><span>Brutto</span><b>${eur(a.brutto)}</b></div>
-        <div class="s"><span>AirBNB-Gebühr</span><b>−${eur(a.fee)}</b></div>
-        <div class="s"><span>Netto</span><b style="color:var(--mint-2)">${eur(a.netto)}</b></div>
-      </div></div>`));
+    const kpiHost = el(`<div id="abKpi"></div>`);
+    const calcHost = el(`<div id="abCalc"></div>`);
 
-    // Occupancy sensitivity chart
-    const occs = [40, 50, 60, 65, 70, 80, 90];
-    const vals = occs.map(o => { const nights = 30.4 * o / 100; const g = nights * s.airbnb.nachtpreis; return g - g * s.airbnb.servicegebuehrProzent / 100; });
+    // Slider
+    const sld = el(`<div class="card pad">
+      <div class="card-t" style="margin-bottom:4px">Auslastung simulieren</div>
+      <div class="card-s" style="margin-bottom:16px">Regler verschieben – alle Zahlen rechnen live mit</div>
+      <div class="sld-wrap">
+        <div class="sld-top"><span class="sld-lab">Belegung im Monat</span>
+          <span class="sld-val" id="abVal">${occ} %</span></div>
+        <input type="range" class="sld" id="abSld" min="0" max="100" step="1" value="${occ}" style="--p:${occ}%">
+        <div class="sld-marks"><span>0 %</span><span>25 %</span><span>50 %</span><span>75 %</span><span>100 %</span></div>
+      </div>
+      <div class="stat-strip" id="abQuick"></div>
+    </div>`);
+
+    const paint = () => {
+      const a = FE.airbnbIncome(cfg, occ);
+      kpiHost.innerHTML = `<div class="grid g-kpi">
+        ${kpiCard("bed", eur(a.netto), "Netto / Monat", "nach Gebühr & Kosten", true)}
+        ${kpiCard("euro", eur(cfg.nachtpreis), "pro Nacht", "Listenpreis")}
+        ${kpiCard("trend", a.naechte.toLocaleString("de-DE"), "Nächte / Monat", a.buchungen.toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " Buchungen")}
+        ${kpiCard("chart", eur(a.netto * 12), "pro Jahr", "hochgerechnet")}
+      </div>`;
+      const q = sld.querySelector("#abQuick");
+      q.innerHTML = `
+        <div class="s"><span>Umsatz</span><b>${eur(a.brutto)}</b></div>
+        <div class="s"><span>Gebühr</span><b>−${eur(a.fee)}</b></div>
+        <div class="s"><span>Kosten</span><b>−${eur(a.kosten)}</b></div>
+        <div class="s"><span>Netto</span><b style="color:var(--mint-2)">${eur(a.netto)}</b></div>`;
+      sld.querySelector("#abVal").textContent = occ + " %";
+      sld.querySelector("#abSld").style.setProperty("--p", occ + "%");
+
+      // Rechenweg
+      calcHost.innerHTML = `<div class="card pad clickable" id="abDetail">
+        <span class="tapme">Details ›</span>
+        <div class="card-t" style="margin-bottom:4px">Rechenweg</div>
+        <div class="card-s" style="margin-bottom:16px">bei ${occ} % Auslastung · Ø ${cfg.aufenthaltsdauer} Nächte pro Buchung</div>
+        ${kv("Übernachtungen (" + a.naechte.toLocaleString("de-DE") + " × " + eur(cfg.nachtpreis) + ")", eur(a.uebernachtung))}
+        ${kv("Reinigungsgebühr (" + a.buchungen.toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " × " + eur(cfg.reinigungsgebuehr) + ")", eur(a.reinigungUmsatz))}
+        ${kv("Umsatz gesamt", eur(a.brutto))}
+        ${kv("− Airbnb-Gebühr (" + a.feeProz + " %)", "−" + eur(a.fee))}
+        ${kv("− Reinigungskosten", "−" + eur(a.reinigungKosten))}
+        ${kv("− Wäsche & Verbrauch", "−" + eur(a.verbrauch))}
+        ${kv("Netto", eur(a.netto))}
+        <div class="note" style="margin-top:12px">Effektiv ${eur(a.proNacht)} je vermieteter Nacht.</div>
+      </div>`;
+      calcHost.querySelector("#abDetail").onclick = () => openAirbnbSheet(cfg, occ);
+    };
+
+    host.appendChild(kpiHost);
+    host.appendChild(sld);
+    host.appendChild(calcHost);
+    const input = sld.querySelector("#abSld");
+    input.addEventListener("input", e => { occ = Number(e.target.value); paint(); });
+    paint();
+
+    // Szenarien-Chart (echtes Modell inkl. Kosten)
+    const occs = [30, 40, 50, 60, 70, 80, 90, 100];
+    const vals = occs.map(o => FE.airbnbIncome(cfg, o).netto);
     host.appendChild(el(`<div class="card"><div class="card-h"><div><div class="card-t">Auslastungs-Szenarien</div>
-      <div class="card-s">Netto-Einnahmen je Auslastung</div></div>
-      <div class="head-pill" style="padding:7px 13px">aktuell ${s.airbnb.auslastung}%</div></div>
+      <div class="card-s">Netto nach Gebühren und Betriebskosten</div></div>
+      <div class="head-pill" style="padding:7px 13px">Basis ${cfg.auslastung} %</div></div>
       <div class="card-b">${areaChart(vals, occs.map(o => o + "%"))}</div></div>`));
+
+    // Break-even
+    let be = null;
+    for (let o = 0; o <= 100; o++) { if (FE.airbnbIncome(cfg, o).netto > 0) { be = o; break; } }
+    host.appendChild(el(`<div class="card pad">
+      <div class="card-t" style="margin-bottom:4px">Kennzahlen</div>
+      <div class="card-s" style="margin-bottom:14px">Modellannahmen und Schwellen</div>
+      ${kv("Ø Aufenthaltsdauer", cfg.aufenthaltsdauer + " Nächte")}
+      ${kv("Reinigungsgebühr (Gast)", eur(cfg.reinigungsgebuehr))}
+      ${kv("Reinigungskosten (real)", eur(cfg.reinigungskosten))}
+      ${kv("Verbrauch je Buchung", eur(cfg.verbrauchProBuchung))}
+      ${kv("Gebührenmodell", cfg.gebuehrenmodell === "vereinfacht" ? "Vereinfachte Preise (~15 %)" : "Host-Fee (" + cfg.servicegebuehrProzent + " %)")}
+      ${be != null ? kv("Kostendeckung ab", be + " % Auslastung") : ""}
+      <div class="note" style="margin-top:12px">Die Airbnb-Gebühr wird auf den Gesamtumsatz inkl. Reinigungsgebühr berechnet. Mehr Buchungen bei gleicher Nächtezahl erhöhen daher Umsatz <em>und</em> Kosten.</div>
+    </div>`));
+  }
+
+  function openAirbnbSheet(cfg, occ) {
+    const a = FE.airbnbIncome(cfg, occ);
+    const rows = [
+      { label: "Übernachtung", value: a.uebernachtung, color: PALETTE[0] },
+      { label: "Reinigung", value: a.reinigungUmsatz, color: PALETTE[2] }
+    ];
+    const abzug = [
+      { label: "Airbnb-Gebühr", value: a.fee, color: "linear-gradient(90deg,#8a6d2f,var(--gold))" },
+      { label: "Reinigung", value: a.reinigungKosten, color: "linear-gradient(90deg,#8a6d2f,var(--gold))" },
+      { label: "Verbrauch", value: a.verbrauch, color: "linear-gradient(90deg,#8a6d2f,var(--gold))" }
+    ];
+    // Vergleich Aufenthaltsdauer
+    const dauern = [2, 3, 5, 7, 14];
+    const trs = dauern.map(d => {
+      const alt = FE.airbnbIncome({ ...cfg, aufenthaltsdauer: d }, occ);
+      const cur = d === Number(cfg.aufenthaltsdauer);
+      return `<tr><td>${cur ? "<b>" + d + " N</b>" : d + " N"}</td>
+        <td>${alt.buchungen.toLocaleString("de-DE", { maximumFractionDigits: 1 })}</td>
+        <td>${eur(alt.brutto)}</td><td>${eur(alt.kosten + alt.fee)}</td>
+        <td class="${cur ? "hl" : ""}">${eur(alt.netto)}</td></tr>`;
+    }).join("");
+    const body = `
+      <div class="stat-strip" style="margin-bottom:18px">
+        <div class="s"><span>Nächte</span><b>${a.naechte.toLocaleString("de-DE")}</b></div>
+        <div class="s"><span>Buchungen</span><b>${a.buchungen.toLocaleString("de-DE", { maximumFractionDigits: 1 })}</b></div>
+        <div class="s"><span>Netto/Nacht</span><b>${eur(a.proNacht)}</b></div>
+        <div class="s"><span>Marge</span><b>${a.brutto ? Math.round(a.netto / a.brutto * 100) : 0} %</b></div>
+      </div>
+      <div class="card-t" style="font-size:14px;margin-bottom:10px">Umsatz</div>
+      ${miniBars(rows)}
+      <div class="card-t" style="font-size:14px;margin:20px 0 10px">Abzüge</div>
+      ${miniBars(abzug)}
+      <div class="card-t" style="font-size:14px;margin:20px 0 10px">Einfluss der Aufenthaltsdauer</div>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Ø Dauer</th><th>Buch.</th><th>Umsatz</th><th>Abzüge</th><th>Netto</th></tr></thead>
+        <tbody>${trs}</tbody></table></div>
+      <div class="note" style="margin-top:12px">Kürzere Aufenthalte bringen mehr Reinigungsgebühren, verursachen aber auch mehr Reinigungs- und Verbrauchskosten.</div>`;
+    openSheet("Airbnb-Kalkulation", occ + " % Auslastung · " + eur(cfg.nachtpreis) + "/Nacht", body);
   }
 
   function renderPacht(host, s, m) {
@@ -733,13 +858,82 @@
     const rows = sorted.map((v, i) => {
       const abgelaufen = v.ende && v.ende !== "jährlich" && new Date(v.ende) < new Date();
       const laufzeit = v.ende === "jährlich" ? "jährlich verlängert" : `${dateDE(v.start)} – ${v.ende.match(/\d{4}-\d{2}-\d{2}/) ? dateDE(v.ende) : esc(v.ende)}`;
-      return `<div class="drow"><div class="drow-l"><div class="drow-badge">${svg("sprout")}</div>
+      return `<div class="drow clickable" data-vi="${i}"><div class="drow-l"><div class="drow-badge">${svg("sprout")}</div>
         <div><div class="drow-name">${esc(v.paechter)}</div>
         <div class="drow-sub">${v.flaeche.toLocaleString("de-DE")} ha · ${esc(v.art)} · ${laufzeit}</div></div></div>
         <div class="drow-val"><b>${eur(v.jahr / 12)}</b><span>${eur(v.jahr)}/Jahr${abgelaufen ? " · verlängert" : ""}</span></div></div>`;
     }).join("");
-    host.appendChild(el(`<div class="card"><div class="card-h"><div><div class="card-t">Pachtverträge</div>
-      <div class="card-s">${m.anzahl} Verträge · Zahlung jährlich zum 01.12.</div></div></div><div class="card-b">${rows}</div></div>`));
+    const pTbl = el(`<div class="card"><div class="card-h"><div><div class="card-t">Pachtverträge</div>
+      <div class="card-s">Zeile antippen für Vertragsdetails</div></div></div><div class="card-b">${rows}</div></div>`);
+    pTbl.querySelectorAll(".drow[data-vi]").forEach(r =>
+      r.onclick = () => openPachtSheet(s, sorted[Number(r.dataset.vi)]));
+    host.appendChild(pTbl);
+
+    // Zusatz-Insights: Preisvergleich und Kündigungsfristen
+    const proHaListe = sorted.map((v, i) => ({
+      label: v.paechter.split(" ").slice(-1)[0], value: v.flaeche ? v.jahr / v.flaeche : 0,
+      color: PALETTE[i % PALETTE.length],
+      display: eur(v.flaeche ? v.jahr / v.flaeche : 0) + "/ha"
+    }));
+    const heute = new Date();
+    const fristen = sorted.filter(v => v.ende && v.ende !== "jährlich").map(v => {
+      const e = new Date(v.ende);
+      const kuend = new Date(e); kuend.setMonth(kuend.getMonth() - 6);
+      return { v, ende: e, kuend, offen: kuend > heute };
+    }).sort((a, b) => a.kuend - b.kuend);
+    host.appendChild(el(`<div class="grid g-2">
+      <div class="card pad"><div class="card-t" style="margin-bottom:4px">Pachtpreis je Hektar</div>
+        <div class="card-s" style="margin-bottom:16px">Ø ${eur(proHa)} · Spanne ${eur(Math.min(...proHaListe.map(x => x.value)))} – ${eur(Math.max(...proHaListe.map(x => x.value)))}</div>
+        ${miniBars(proHaListe)}
+        <div class="note" style="margin-top:12px">Ackerland erzielt höhere Pachten als Grünland – die Unterschiede spiegeln die Flächenart wider.</div></div>
+      <div class="card pad"><div class="card-t" style="margin-bottom:4px">Laufzeiten & Fristen</div>
+        <div class="card-s" style="margin-bottom:16px">Kündigung jeweils 6 Monate vor Ablauf</div>
+        <div class="tl">
+          ${fristen.length ? fristen.map(f => `<div class="tl-i">
+            <span class="tl-dot" style="background:${f.offen ? "var(--gold)" : "var(--mint)"}"></span>
+            <div class="tl-b"><div class="tl-t">${esc(f.v.paechter)}</div>
+              <div class="tl-s">Ende ${dateDE(f.v.ende)} · Kündigung bis ${dateDE(f.kuend.toISOString().slice(0, 10))}</div></div>
+            <span class="tl-v">${eur(f.v.jahr)}</span></div>`).join("")
+            : `<div class="note">Alle Verträge laufen jährlich weiter.</div>`}
+        </div>
+        <div class="note" style="margin-top:12px">Ohne fristgerechte Kündigung verlängern sich die Verträge automatisch um ein Jahr.</div></div>
+    </div>`));
+  }
+
+  function openPachtSheet(s, v) {
+    if (!v) return;
+    const m = FE.streamMonthly(s);
+    const anteil = m.jahr ? Math.round(v.jahr / m.jahr * 100) : 0;
+    const proHa = v.flaeche ? v.jahr / v.flaeche : 0;
+    const schnitt = m.flaeche ? m.jahr / m.flaeche : 0;
+    const laufzeit = v.ende === "jährlich" ? "jährlich verlängert"
+      : dateDE(v.start) + " – " + (v.ende.match(/\d{4}-\d{2}-\d{2}/) ? dateDE(v.ende) : v.ende);
+    let kuendTxt = "—";
+    if (v.ende && v.ende !== "jährlich") {
+      const k = new Date(v.ende); k.setMonth(k.getMonth() - 6);
+      kuendTxt = dateDE(k.toISOString().slice(0, 10));
+    }
+    const body = `
+      <div class="stat-strip" style="margin-bottom:18px">
+        <div class="s"><span>je Jahr</span><b style="color:var(--mint-2)">${eur(v.jahr)}</b></div>
+        <div class="s"><span>je Monat</span><b>${eur(v.jahr / 12)}</b></div>
+        <div class="s"><span>Fläche</span><b>${v.flaeche.toLocaleString("de-DE")} ha</b></div>
+        <div class="s"><span>je Hektar</span><b>${eur(proHa)}</b></div>
+      </div>
+      <div class="card-t" style="font-size:14px;margin-bottom:6px">Vertrag</div>
+      ${kv("Pächter", esc(v.paechter))}
+      ${kv("Flächenart", esc(v.art))}
+      ${kv("Laufzeit", laufzeit)}
+      ${kv("Kündigung bis", kuendTxt)}
+      ${kv("Zahlungstermin", "jährlich zum 01.12.")}
+      ${kv("Anteil am Pachtertrag", anteil + " %")}
+      <div class="card-t" style="font-size:14px;margin:20px 0 10px">Im Vergleich</div>
+      ${miniBars([
+        { label: "dieser Vertrag", value: proHa, color: PALETTE[0], display: eur(proHa) + "/ha" },
+        { label: "Ø alle Flächen", value: schnitt, color: PALETTE[4], display: eur(schnitt) + "/ha" }
+      ])}
+      <div class="note" style="margin-top:12px">${proHa >= schnitt ? "Über" : "Unter"} dem Durchschnitt von ${eur(schnitt)} je Hektar (${proHa >= schnitt ? "+" : ""}${eur(proHa - schnitt)}).</div>`;
+    openSheet(v.paechter, v.flaeche.toLocaleString("de-DE") + " ha · " + v.art, body);
   }
 
   // Eine Kredit-Tilgungskarte (Zins, optional Sondertilgung, Restschuld-Kurve)
@@ -844,15 +1038,18 @@
       host.appendChild(c);
     });
 
-    // NK-Puffer Hinweis
+    // NK-Puffer Hinweis (klickbar)
     if (m.nkPuffer > 0) {
-      host.appendChild(el(`<div class="card pad" style="border-color:rgba(216,185,120,.28)">
+      const nkCard = el(`<div class="card pad clickable" style="border-color:rgba(216,185,120,.28)">
+        <span class="tapme">Details ›</span>
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
           <div class="tile-ic" style="color:var(--gold);border-color:rgba(216,185,120,.3)">${svg("layers")}</div>
           <div style="flex:1;min-width:180px"><div class="card-t">Nebenkosten als Puffer</div>
-            <div class="note">${eur(m.nkPuffer)}/Monat (${eur(m.nkPuffer * 12)}/Jahr) werden vollständig zurückgelegt – nicht als Ertrag gewertet.</div></div>
+            <div class="note">${eur(m.nkPuffer)}/Monat (${eur(m.nkPuffer * 12)}/Jahr) werden vollständig zurückgelegt – antippen für Aufschlüsselung.</div></div>
           <div style="text-align:right"><div class="tile-num" style="color:var(--gold)">${eur(m.nkPuffer)}</div><div class="note">Rücklage/Mon.</div></div>
-        </div></div>`));
+        </div></div>`);
+      nkCard.onclick = () => openNkSheet(s, m);
+      host.appendChild(nkCard);
     }
 
     // Per-unit horizontal bars
@@ -1018,6 +1215,230 @@
       ${kv("Cashflow-ROI", s.invest ? ((m.gesamtPotenzial - m.kreditAbtrag) * 12 / s.invest * 100).toFixed(2) + " %" : "—")}
       <div class="note" style="margin-top:14px">Differenz zu heute: ${eur(m.gesamtPotenzial - m.gesamt)}/Monat aus leerstehenden Einheiten.</div>`;
     openSheet("Netto-Cashflow", s.name, body);
+  }
+
+  function openNkSheet(s, m) {
+    const verm = (s.einheiten || []).filter(u => u.status === "vermietet");
+    const proWohnung = verm.map((u, i) => {
+      const inc = FE.unitIncome(u);
+      return { label: u.wohnung, value: inc.nk, color: PALETTE[i % PALETTE.length],
+               display: eur(inc.nk) };
+    });
+    const jahr = m.nkPuffer * 12;
+    const pos = (s.nkPositionen || []).map((p, i) => ({
+      label: p.titel, value: m.nkPuffer * p.anteil / 100,
+      color: PALETTE[i % PALETTE.length],
+      display: eur(m.nkPuffer * p.anteil / 100) + "  ·  " + p.anteil + " %"
+    }));
+    const frei = (s.einheiten || []).filter(u => u.status !== "vermietet");
+    const entgangen = frei.reduce((a, u) => a + FE.unitIncome(u).nk, 0);
+
+    const body = `
+      <div class="stat-strip" style="margin-bottom:18px">
+        <div class="s"><span>je Monat</span><b style="color:var(--gold)">${eur(m.nkPuffer)}</b></div>
+        <div class="s"><span>je Jahr</span><b>${eur(jahr)}</b></div>
+        <div class="s"><span>je m²</span><b>${(s.einheiten || [])[0] ? ((s.einheiten[0].nkProM2 != null ? s.einheiten[0].nkProM2 : (FE.unitIncome(s.einheiten[0]).nk / (s.einheiten[0].flaeche || 1)))).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"} €</b></div>
+        <div class="s"><span>Einheiten</span><b>${verm.length} vermietet</b></div>
+      </div>
+      <div class="card-t" style="font-size:14px;margin-bottom:10px">Beitrag je Wohnung</div>
+      ${miniBars(proWohnung)}
+      ${entgangen > 0 ? `<div class="note" style="margin-top:10px">Durch Leerstand fehlen zusätzlich ${eur(entgangen)}/Monat an NK-Umlage.</div>` : ""}
+      ${pos.length ? `<div class="card-t" style="font-size:14px;margin:20px 0 10px">Wofür die Rücklage verwendet wird</div>
+      ${miniBars(pos)}
+      <div class="note" style="margin-top:10px">Richtwerte für die Verteilung. Die tatsächliche Abrechnung erfolgt jährlich gegenüber den Mietern.</div>` : ""}
+      <div class="card-t" style="font-size:14px;margin:20px 0 6px">Warum Puffer statt Ertrag</div>
+      <div class="note">Nebenkosten sind durchlaufende Posten: Die Mieter zahlen Vorauszahlungen, aus denen Heizung, Grundsteuer, Versicherung und Wartung beglichen werden. Über- oder Nachzahlungen werden jährlich ausgeglichen. Deshalb zählen sie hier nicht zum Ertrag – sonst würde der Cashflow zu hoch ausgewiesen.</div>
+      <div style="margin-top:16px">
+        ${kv("Rücklage über 3 Jahre", eur(jahr * 3))}
+        ${kv("Rücklage über 10 Jahre", eur(jahr * 10))}
+      </div>`;
+    openSheet("Nebenkosten-Puffer", s.name, body);
+  }
+
+  function openCalendarSheet() {
+    const now = new Date();
+    const y = now.getFullYear(), mo = now.getMonth();
+    // Jahresübersicht der Zahlungsströme
+    const monate = [];
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(y, mo + i, 1);
+      const map = eventsForMonth(d.getFullYear(), d.getMonth());
+      let anzahl = 0, typen = {};
+      Object.values(map).forEach(list => list.forEach(e => { anzahl++; typen[e.typ] = (typen[e.typ] || 0) + 1; }));
+      monate.push({ d, anzahl, typen });
+    }
+    const t = FE.totals(D);
+    // Sondertilgungen & Pacht im Jahresverlauf
+    let sonderJahr = 0;
+    (D.streams || []).forEach(s => FE.creditsOf(s).forEach(kr => {
+      if (kr.sondertilgung) sonderJahr += (kr.sondertilgung.betrag || 0) * (kr.sondertilgung.monate || []).length;
+    }));
+    const pachtStream = (D.streams || []).find(s => s.kind === "pacht");
+    const pachtJahr = pachtStream ? FE.streamMonthly(pachtStream).jahr : 0;
+
+    const trs = monate.map(x => `<tr>
+      <td>${x.d.toLocaleDateString("de-DE", { month: "short", year: "2-digit" })}</td>
+      <td>${x.typen.miete || 0}</td><td>${x.typen.einzug || 0}</td>
+      <td>${x.typen.zahlung || 0}</td><td class="hl">${x.anzahl}</td></tr>`).join("");
+
+    const body = `
+      <div class="stat-strip" style="margin-bottom:18px">
+        <div class="s"><span>Mieteingang/Mon.</span><b>${eur(t.miete + t.airbnb)}</b></div>
+        <div class="s"><span>Pacht/Jahr</span><b>${eur(pachtJahr)}</b></div>
+        <div class="s"><span>Sondertilgung/Jahr</span><b>${eur(sonderJahr)}</b></div>
+        <div class="s"><span>Termine 12 Mon.</span><b>${monate.reduce((a, x) => a + x.anzahl, 0)}</b></div>
+      </div>
+      <div class="card-t" style="font-size:14px;margin-bottom:10px">Wiederkehrende Ereignisse</div>
+      <div class="tl">
+        <div class="tl-i"><span class="tl-dot" style="background:${EVT.miete.col}"></span>
+          <div class="tl-b"><div class="tl-t">Mieteingang</div>
+            <div class="tl-s">jeden 1. des Monats · alle Objekte</div></div>
+          <span class="tl-v">${eur(t.miete + t.airbnb)}</span></div>
+        <div class="tl-i"><span class="tl-dot" style="background:${EVT.zahlung.col}"></span>
+          <div class="tl-b"><div class="tl-t">Sondertilgung Syke</div>
+            <div class="tl-s">1. Juni und 1. Dezember</div></div>
+          <span class="tl-v">${eur(1500)}</span></div>
+        <div class="tl-i"><span class="tl-dot" style="background:${EVT.zahlung.col}"></span>
+          <div class="tl-b"><div class="tl-t">Sondertilgung VR-Darlehen</div>
+            <div class="tl-s">jährlich im Dezember</div></div>
+          <span class="tl-v">${eur(10000)}</span></div>
+        <div class="tl-i"><span class="tl-dot" style="background:${EVT.zahlung.col}"></span>
+          <div class="tl-b"><div class="tl-t">Pachtzahlung</div>
+            <div class="tl-s">jährlich zum 1. Dezember</div></div>
+          <span class="tl-v">${eur(pachtJahr)}</span></div>
+      </div>
+      <div class="card-t" style="font-size:14px;margin:20px 0 10px">Termine je Monat</div>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Monat</th><th>Miete</th><th>Einzug</th><th>Zahlung</th><th>Gesamt</th></tr></thead>
+        <tbody>${trs}</tbody></table></div>
+      <div class="note" style="margin-top:12px">Der Dezember ist der zahlungsintensivste Monat: Pacht und beide Sondertilgungen fallen zusammen (${eur(pachtJahr + 11500)}).</div>`;
+    openSheet("Kalender-Übersicht", "Zahlungsströme der nächsten 12 Monate", body);
+  }
+
+  function openPortfolioSheet(kind, c) {
+    const t = c.t;
+    const streams = (D.streams || []);
+    if (kind === "einnahmen") {
+      const rows = streams.map((s, i) => {
+        const m = FE.streamMonthly(s);
+        return { label: shortLabel(s.name), value: m.gesamt, color: PALETTE[i % PALETTE.length] };
+      }).filter(x => x.value > 0);
+      const body = `
+        <div class="stat-strip" style="margin-bottom:18px">
+          <div class="s"><span>je Monat</span><b style="color:var(--mint-2)">${eur(t.ist)}</b></div>
+          <div class="s"><span>je Jahr</span><b>${eur(t.jahrIst)}</b></div>
+          <div class="s"><span>je Quartal</span><b>${eur(t.ist * 3)}</b></div>
+          <div class="s"><span>je Tag</span><b>${eur(t.ist * 12 / 365)}</b></div>
+        </div>
+        <div class="card-t" style="font-size:14px;margin-bottom:10px">Nach Quelle</div>
+        ${miniBars(rows)}
+        <div class="card-t" style="font-size:14px;margin:20px 0 10px">Nach Art</div>
+        ${miniBars([
+          { label: "Wohnraum", value: t.miete, color: PALETTE[0] },
+          { label: "Kurzzeit", value: t.airbnb, color: PALETTE[2] },
+          { label: "Landpacht", value: t.pacht, color: PALETTE[3] }
+        ].filter(x => x.value > 0))}
+        <div class="note" style="margin-top:12px">Nebenkosten sind nicht enthalten – sie laufen als Rücklage separat.</div>`;
+      return openSheet("Einnahmen", "Alle Quellen · Stand heute", body);
+    }
+    if (kind === "potenzial") {
+      const rows = streams.map((s, i) => {
+        const m = FE.streamMonthly(s);
+        const diff = (m.gesamtPotenzial || m.gesamt) - m.gesamt;
+        return { label: shortLabel(s.name), value: diff, color: PALETTE[i % PALETTE.length] };
+      }).filter(x => x.value > 0);
+      const frei = [];
+      streams.forEach(s => (s.einheiten || []).forEach(u => {
+        if (u.status !== "vermietet") frei.push({ s, u, inc: FE.unitIncome(u) });
+      }));
+      const body = `
+        <div class="stat-strip" style="margin-bottom:18px">
+          <div class="s"><span>Ist</span><b>${eur(t.ist)}</b></div>
+          <div class="s"><span>Potenzial</span><b style="color:var(--mint-2)">${eur(t.potenzial)}</b></div>
+          <div class="s"><span>Differenz</span><b>${eur(c.upside)}</b></div>
+          <div class="s"><span>je Jahr</span><b>${eur(c.upside * 12)}</b></div>
+        </div>
+        ${rows.length ? `<div class="card-t" style="font-size:14px;margin-bottom:10px">Ungenutztes Potenzial</div>${miniBars(rows)}` : ""}
+        ${frei.length ? `<div class="card-t" style="font-size:14px;margin:20px 0 10px">Leerstehende Einheiten</div>
+        ${frei.map(f => kv(f.u.wohnung + " · " + f.u.flaeche + " m² (" + shortLabel(f.s.name) + ")",
+          eur(f.s.nkAlsPuffer ? f.inc.gesamt - f.inc.nk : f.inc.gesamt))).join("")}` : ""}
+        <div class="card-t" style="font-size:14px;margin:20px 0 6px">Auswirkung bei Vollvermietung</div>
+        ${kv("Netto-Cashflow heute", eur(c.nettoMonth))}
+        ${kv("Netto-Cashflow voll", eur(c.nettoPot))}
+        ${kv("Zuwachs je Jahr", eur((c.nettoPot - c.nettoMonth) * 12))}`;
+      return openSheet("Einnahmen-Potenzial", "Was bei Vollvermietung möglich ist", body);
+    }
+    if (kind === "netto") {
+      const body = `
+        <div class="card-t" style="font-size:14px;margin-bottom:10px">Herleitung</div>
+        ${kv("Einnahmen gesamt", eur(t.ist))}
+        ${kv("− Tilgung alle Kredite", "−" + eur(c.debtMonth))}
+        ${kv("Netto-Cashflow", eur(c.nettoMonth))}
+        <div class="card-t" style="font-size:14px;margin:20px 0 10px">Tilgungsanteil je Kredit</div>
+        ${miniBars((() => {
+          const out = [];
+          streams.forEach((s, si) => FE.creditsOf(s).forEach((kr, ki) => out.push({
+            label: (kr.name || "Kredit"), value: Number(kr.abtragMonat) || 0,
+            color: PALETTE[(si + ki) % PALETTE.length]
+          })));
+          return out;
+        })())}
+        <div class="note" style="margin-top:12px">Die Tilgung ist kein Verlust – sie baut Eigenkapital auf. Aktuell fließen ${eur(c.debtMonth)}/Monat in die Entschuldung.</div>
+        <div class="card-t" style="font-size:14px;margin:20px 0 6px">Zeitraum</div>
+        ${kv("je Monat", eur(c.nettoMonth))}
+        ${kv("je Jahr", eur(c.nettoMonth * 12))}
+        ${kv("bei Vollvermietung / Jahr", eur(c.nettoPot * 12))}`;
+      return openSheet("Netto-Cashflow", "Nach allen Kreditraten", body);
+    }
+    if (kind === "auslastung") {
+      const rows = [];
+      streams.forEach(s => (s.einheiten || []).forEach(u => {
+        const inc = FE.unitIncome(u);
+        rows.push({ s, u, inc, on: u.status === "vermietet" });
+      }));
+      const frei = rows.filter(r => !r.on);
+      const body = `
+        <div class="stat-strip" style="margin-bottom:18px">
+          <div class="s"><span>Vermietet</span><b style="color:var(--mint-2)">${c.unitsLet}</b></div>
+          <div class="s"><span>Frei</span><b style="color:var(--gold)">${c.unitsTotal - c.unitsLet}</b></div>
+          <div class="s"><span>Quote</span><b>${Math.round(c.unitsLet / c.unitsTotal * 100)} %</b></div>
+          <div class="s"><span>Fläche gesamt</span><b>${rows.reduce((a, r) => a + (Number(r.u.flaeche) || 0), 0)} m²</b></div>
+        </div>
+        <div class="card-t" style="font-size:14px;margin-bottom:10px">Alle Einheiten</div>
+        ${rows.map(r => kv(
+          r.u.wohnung + " · " + r.u.flaeche + " m²" + (r.u.mieter ? " · " + r.u.mieter : ""),
+          r.on ? eur(r.s.nkAlsPuffer ? r.inc.gesamt - r.inc.nk : r.inc.gesamt)
+               : '<span style="color:var(--gold)">frei</span>')).join("")}
+        ${frei.length ? `<div class="note" style="margin-top:12px">Bei Vermietung der ${frei.length === 1 ? "freien Einheit" : frei.length + " freien Einheiten"} steigt der Ertrag um ${eur(c.upside)}/Monat.</div>` : `<div class="note" style="margin-top:12px">Alle Einheiten sind vermietet.</div>`}`;
+      return openSheet("Auslastung", c.unitsLet + " von " + c.unitsTotal + " Einheiten vermietet", body);
+    }
+    if (kind === "schuld") {
+      const list = [];
+      streams.forEach(s => FE.creditsOf(s).forEach(kr => {
+        const p = FE.creditPlan(kr);
+        list.push({ s, kr, p });
+      }));
+      const quote = c.debtOrig ? (c.paidSoFar / c.debtOrig * 100) : 0;
+      const trs = list.map(x => `<tr><td>${esc(x.kr.name || "Kredit")}</td>
+        <td>${eur(x.kr.summe)}</td><td>${eur(x.p.restAktuell)}</td>
+        <td>${(x.kr.zinsPa || 0).toLocaleString("de-DE")} %</td>
+        <td class="hl">${x.p.jahre.toLocaleString("de-DE")} J</td></tr>`).join("");
+      const body = `
+        <div class="stat-strip" style="margin-bottom:18px">
+          <div class="s"><span>Restschuld</span><b>${eur(c.debtRest)}</b></div>
+          <div class="s"><span>getilgt</span><b style="color:var(--mint-2)">${eur(c.paidSoFar)}</b></div>
+          <div class="s"><span>Tilgungsquote</span><b>${quote.toFixed(1)} %</b></div>
+          <div class="s"><span>Rate/Monat</span><b>${eur(c.debtMonth)}</b></div>
+        </div>
+        <div class="card-t" style="font-size:14px;margin-bottom:10px">Restschuld je Kredit</div>
+        ${miniBars(list.map((x, i) => ({ label: x.kr.name || "Kredit", value: x.p.restAktuell, color: PALETTE[i % PALETTE.length] })))}
+        <div class="card-t" style="font-size:14px;margin:20px 0 10px">Konditionen</div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Kredit</th><th>Ursprung</th><th>Rest</th><th>Zins</th><th>Laufzeit</th></tr></thead>
+          <tbody>${trs}</tbody></table></div>
+        <div class="note" style="margin-top:12px">Tilgung ${eur(c.debtMonth * 12)}/Jahr. Die Restschuld sinkt mit jeder Rate, der Tilgungsanteil steigt dabei kontinuierlich.</div>`;
+      return openSheet("Restschuld", "Alle Kredite im Portfolio", body);
+    }
   }
 
   /* ---------- BOOT ---------- */
