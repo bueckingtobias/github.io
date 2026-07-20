@@ -204,6 +204,86 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .b-on{background:rgba(74,222,158,.16);color:var(--mint-2)}
 .b-off{background:rgba(216,185,120,.16);color:var(--gold)}
 
+/* ===== SHEET / OVERLAY ===== */
+.sheet-bd{position:fixed;inset:0;z-index:70;background:rgba(3,12,9,.62);backdrop-filter:blur(6px);
+  opacity:0;transition:opacity .22s ease;display:flex;align-items:center;justify-content:center;padding:24px}
+.sheet-bd.on{opacity:1}
+.sheet{width:min(560px,100%);max-height:86vh;display:flex;flex-direction:column;
+  background:linear-gradient(165deg,rgba(22,52,42,.96),rgba(10,28,22,.98));
+  border:1px solid var(--stroke-2);border-radius:24px;box-shadow:0 40px 100px rgba(0,0,0,.6);
+  transform:translateY(14px) scale(.985);opacity:0;transition:.26s cubic-bezier(.22,.61,.36,1);overflow:hidden}
+.sheet-bd.on .sheet{transform:none;opacity:1}
+.sheet-h{display:flex;align-items:flex-start;gap:12px;padding:22px 22px 0}
+.sheet-h .st{flex:1;min-width:0}
+.sheet-t{font-family:var(--fdisp);font-size:19px;font-weight:600;letter-spacing:-.01em}
+.sheet-s{font-size:12.5px;color:var(--soft);margin-top:3px}
+.sheet-x{flex:0 0 auto;width:32px;height:32px;border-radius:10px;border:1px solid var(--stroke-2);
+  background:rgba(6,20,16,.5);color:var(--soft);cursor:pointer;font-size:17px;line-height:1;transition:.15s}
+.sheet-x:hover{color:var(--text);border-color:var(--mint)}
+.sheet-b{padding:18px 22px 24px;overflow-y:auto;overscroll-behavior:contain}
+.sheet-grip{display:none}
+.unit-bar{border-radius:12px;transition:.15s}
+.unit-bar:hover{background:rgba(74,222,158,.06);box-shadow:0 0 0 10px rgba(74,222,158,.06)}
+.drow.clickable{border-radius:10px;transition:.15s}
+.drow.clickable:hover{background:rgba(74,222,158,.06);box-shadow:0 0 0 8px rgba(74,222,158,.06)}
+.leg.clickable:hover .lt{color:var(--text)}
+.w-day.clickable:hover{border-color:var(--mint);background:rgba(74,222,158,.1)}
+.clickable{cursor:pointer;transition:.16s}
+.clickable:hover{border-color:var(--stroke-2);transform:translateY(-1px)}
+.clickable:active{transform:translateY(0) scale(.995)}
+.tapme{position:absolute;right:14px;top:14px;font-size:10px;color:var(--softer);opacity:0;transition:.16s}
+.card.clickable:hover .tapme{opacity:1}
+/* Datenzeilen im Sheet */
+.kv{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--stroke);font-size:13px}
+.kv:last-child{border-bottom:none}
+.kv span{color:var(--soft)}
+.kv b{font-family:var(--fdisp);font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.kv.muted b{color:var(--softer);font-weight:400;font-family:var(--fbody)}
+/* Mini-Bars im Sheet */
+.mini{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.mini-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.mini-lab{flex:0 0 84px;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini-track{flex:1;height:8px;border-radius:99px;background:rgba(6,20,16,.6);overflow:hidden}
+.mini-track>span{display:block;height:100%;border-radius:99px}
+.mini-val{flex:0 0 auto;font-family:var(--fdisp);font-weight:600;font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
+/* Tilgungstabelle */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.tbl th{text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--softer);
+  font-weight:600;padding:0 0 8px;border-bottom:1px solid var(--stroke)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td{padding:8px 0;border-bottom:1px solid rgba(120,200,165,.07)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl .hl{color:var(--mint-2);font-weight:600}
+/* Stundenverlauf Wetter */
+.hours{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.hour{flex:0 0 auto;width:58px;text-align:center;background:rgba(6,20,16,.45);border:1px solid var(--stroke);
+  border-radius:12px;padding:10px 4px}
+.hour .hh{font-size:10.5px;color:var(--softer)}
+.hour .hi{font-size:17px;margin:5px 0}
+.hour .ht{font-family:var(--fdisp);font-size:13px;font-weight:600}
+.hour .hr{font-size:10px;color:var(--mint-2);margin-top:2px}
+
+/* ===== SUBMENU (Vermietung) ===== */
+.sub-bd{position:fixed;inset:0;z-index:65;background:rgba(3,12,9,.5);backdrop-filter:blur(4px);
+  opacity:0;transition:opacity .2s ease}
+.sub-bd.on{opacity:1}
+.submenu{position:fixed;z-index:66;background:linear-gradient(165deg,rgba(22,52,42,.97),rgba(10,28,22,.99));
+  border:1px solid var(--stroke-2);border-radius:20px;box-shadow:0 30px 70px rgba(0,0,0,.55);
+  padding:10px;min-width:230px;opacity:0;transform:translateX(-8px);transition:.2s cubic-bezier(.22,.61,.36,1)}
+.submenu.on{opacity:1;transform:none}
+.submenu-t{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--softer);padding:6px 12px 8px}
+.sub-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:13px;cursor:pointer;
+  transition:.14s;color:var(--soft)}
+.sub-item:hover{background:rgba(74,222,158,.1);color:var(--text)}
+.sub-item.on{background:linear-gradient(150deg,rgba(74,222,158,.2),rgba(31,122,90,.14));color:var(--text)}
+.sub-ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
+  background:rgba(6,20,16,.55);border:1px solid var(--stroke);color:var(--mint-2)}
+.sub-ic svg{width:17px;height:17px}
+.sub-tx{flex:1;min-width:0}
+.sub-n{font-size:13.5px;font-weight:600;line-height:1.15}
+.sub-m{font-size:11px;color:var(--softer);margin-top:1px}
+.sub-v{font-family:var(--fdisp);font-size:13px;font-weight:600;flex:0 0 auto}
+
 /* Kalender — Monatsansicht */
 .cal-nav{display:flex;gap:6px;align-items:center}
 .cal-btn{background:rgba(6,20,16,.5);border:1px solid var(--stroke-2);color:var(--soft);border-radius:10px;
@@ -310,6 +390,20 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   .w-days{gap:6px}.w-day{padding:9px 3px}
   .w-ic{font-size:17px;margin:5px 0}
   .w-t b{font-size:12px}.w-t i{font-size:10.5px;margin-left:3px}
+  /* Sheet fährt von unten hoch */
+  .sheet-bd{align-items:flex-end;padding:0}
+  .sheet{width:100%;max-height:88vh;border-radius:24px 24px 0 0;transform:translateY(100%);
+    padding-bottom:env(safe-area-inset-bottom)}
+  .sheet-bd.on .sheet{transform:none}
+  .sheet-grip{display:block;width:38px;height:4px;border-radius:99px;background:rgba(120,200,165,.3);
+    margin:10px auto 2px}
+  .sheet-h{padding:8px 18px 0}
+  .sheet-b{padding:16px 18px 22px}
+  .sheet-t{font-size:17px}
+  /* Submenü als Bottom-Sheet */
+  .submenu{left:0;right:0;bottom:0;top:auto;border-radius:22px 22px 0 0;min-width:0;
+    padding:10px 12px calc(14px + env(safe-area-inset-bottom));transform:translateY(100%)}
+  .submenu.on{transform:none}
   .cal-grid{gap:4px}
   .cal-n{font-size:12.5px}
   .cal-cell{border-radius:9px}
