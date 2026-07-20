@@ -22,11 +22,32 @@
   }
 
   // AirBNB-Einnahmen
-  function airbnbIncome(a) {
-    const nights = 30.4 * ((Number(a.auslastung) || 0) / 100);
-    const brutto = nights * (Number(a.nachtpreis) || 0);
-    const fee = brutto * ((Number(a.servicegebuehrProzent) || 0) / 100);
-    return { naechte: r2(nights), brutto: r2(brutto), fee: r2(fee), netto: r2(brutto - fee) };
+  // AirBNB: berücksichtigt Buchungsanzahl, Reinigungsgebühren und Betriebskosten.
+  // Optionaler zweiter Parameter überschreibt die Auslastung (für Slider).
+  function airbnbIncome(a, auslastungOverride) {
+    const occ = auslastungOverride != null ? Number(auslastungOverride) : (Number(a.auslastung) || 0);
+    const nights = 30.4 * (occ / 100);
+    const nachtpreis = Number(a.nachtpreis) || 0;
+    const dauer = Math.max(1, Number(a.aufenthaltsdauer) || 1);
+    const buchungen = nights / dauer;
+    const reinigungsGeb = Number(a.reinigungsgebuehr) || 0;
+    const uebernachtung = nights * nachtpreis;
+    const reinigungUmsatz = buchungen * reinigungsGeb;
+    const brutto = uebernachtung + reinigungUmsatz;      // Gesamtumsatz, Basis der Gebühr
+    const feeProz = Number(a.servicegebuehrProzent) || 0;
+    const fee = brutto * (feeProz / 100);
+    // reale Betriebskosten je Buchung
+    const reinigungKosten = buchungen * (Number(a.reinigungskosten) || 0);
+    const verbrauch = buchungen * (Number(a.verbrauchProBuchung) || 0);
+    const kosten = reinigungKosten + verbrauch;
+    const netto = brutto - fee - kosten;
+    return {
+      auslastung: r2(occ), naechte: r2(nights), buchungen: r2(buchungen),
+      uebernachtung: r2(uebernachtung), reinigungUmsatz: r2(reinigungUmsatz),
+      brutto: r2(brutto), fee: r2(fee), feeProz,
+      reinigungKosten: r2(reinigungKosten), verbrauch: r2(verbrauch), kosten: r2(kosten),
+      netto: r2(netto), proNacht: nights ? r2(netto / nights) : 0
+    };
   }
 
   // Aggregierte Einnahme einer Quelle (monatlich)
