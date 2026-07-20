@@ -60,10 +60,16 @@
   }
 
   /* ---------- NAV ---------- */
+  // Alle Mietobjekte (kind === "miete") laufen unter einem Sammel-Reiter
+  function mietStreams() { return (D.streams || []).filter(s => s.kind === "miete"); }
+
   function navItems() {
+    const rest = (D.streams || []).filter(s => s.kind !== "miete")
+      .map(s => ({ id: s.id, label: shortLabel(s.name), icon: s.icon || "euro" }));
     return [
       { id: "overview", label: "Übersicht", icon: "grid" },
-      ...(D.streams || []).map(s => ({ id: s.id, label: shortLabel(s.name), icon: s.icon || "euro" }))
+      { id: "vermietung", label: "Vermietung", icon: "home", group: true },
+      ...rest
     ];
   }
   function shortLabel(n) { return n.replace("Baumstraße · ", "").replace("Doppelhaus ", ""); }
@@ -76,29 +82,94 @@
     navItems().forEach(it => {
       const b = el(`<button class="rail-btn" data-id="${it.id}" title="${esc(it.label)}">
         ${svg(it.icon)}<span class="tip">${esc(it.label)}</span></button>`);
-      b.onclick = () => route(it.id);
+      b.onclick = (e) => {
+        if (it.group) { e.stopPropagation(); openSubmenu(b); }
+        else route(it.id);
+      };
       rail.insertBefore(b, spacer);
+    });
+  }
+
+  /* ---------- SUBMENU (Mietobjekte) ---------- */
+  function openSubmenu(anchor) {
+    closeSubmenu();
+    const items = mietStreams().map(s => {
+      const m = FE.streamMonthly(s);
+      const on = currentView === s.id;
+      return `<div class="sub-item${on ? " on" : ""}" data-id="${s.id}">
+        <div class="sub-ic">${svg(s.icon || "home")}</div>
+        <div class="sub-tx"><div class="sub-n">${esc(s.name)}</div>
+          <div class="sub-m">${m.vermietet}/${m.einheiten} vermietet</div></div>
+        <div class="sub-v">${eur(m.gesamt)}</div></div>`;
+    }).join("");
+    const bd = el(`<div class="sub-bd"></div>`);
+    const menu = el(`<div class="submenu">
+      <div class="submenu-t">Vermietung</div>
+      <div class="sub-item${currentView === "vermietung" ? " on" : ""}" data-id="vermietung">
+        <div class="sub-ic">${svg("layers")}</div>
+        <div class="sub-tx"><div class="sub-n">Alle Objekte</div>
+          <div class="sub-m">Sammelübersicht</div></div></div>
+      ${items}</div>`);
+    document.body.appendChild(bd); document.body.appendChild(menu);
+
+    // Position: Desktop/iPad neben der Rail, Handy als Bottom-Sheet (per CSS)
+    if (window.innerWidth > 560) {
+      const r = anchor.getBoundingClientRect();
+      menu.style.left = (r.right + 10) + "px";
+      const h = menu.offsetHeight;
+      menu.style.top = Math.max(12, Math.min(r.top, window.innerHeight - h - 12)) + "px";
+    }
+    requestAnimationFrame(() => { bd.classList.add("on"); menu.classList.add("on"); });
+
+    menu.querySelectorAll(".sub-item").forEach(it => {
+      it.onclick = () => { const id = it.dataset.id; closeSubmenu(); route(id); };
+    });
+    bd.onclick = closeSubmenu;
+    document.addEventListener("keydown", subEsc);
+  }
+  function subEsc(e) { if (e.key === "Escape") closeSubmenu(); }
+  function closeSubmenu() {
+    document.removeEventListener("keydown", subEsc);
+    $$(".sub-bd, .submenu").forEach(n => {
+      n.classList.remove("on");
+      setTimeout(() => n.remove(), 220);
     });
   }
 
   const TITLES = {
     overview: ["Portfolio", "Übersicht", "Alle Einnahmequellen auf einen Blick"]
   };
+  let currentView = "overview";
   function route(id) {
-    $$("#rail .rail-btn").forEach(b => b.classList.toggle("on", b.dataset.id === id));
+    currentView = id;
+    const isMiete = mietStreams().some(s => s.id === id) || id === "vermietung";
+    $$("#rail .rail-btn").forEach(b => {
+      const d = b.dataset.id;
+      b.classList.toggle("on", d === id || (d === "vermietung" && isMiete));
+    });
     const host = $("#views"); host.innerHTML = "";
-    if (id === "overview") { renderOverview(host); }
-    else { renderStream(host, id); }
+    if (id === "overview") renderOverview(host);
+    else if (id === "vermietung") renderVermietung(host);
+    else renderStream(host, id);
     $(".scroll").scrollTop = 0;
   }
 
   /* ---------- shared bits ---------- */
-  function kpiCard(icon, num, lab, desc, accent) {
-    return `<div class="card kpi ${accent ? 'accent' : ''}"><div class="card-glow"></div>
+  function kpiCard(icon, num, lab, desc, accent, action) {
+    return `<div class="card kpi ${accent ? 'accent' : ''}${action ? ' clickable' : ''}"${action ? ` data-act="${action}"` : ''}><div class="card-glow"></div>
+      ${action ? '<span class="tapme">Details ›</span>' : ''}
       <div class="chip">${svg(icon)}</div>
       <div class="num">${esc(num)}</div>
       <div class="lab">${esc(lab)}</div>
       <div class="desc">${esc(desc)}</div></div>`;
+  }
+  // verdrahtet [data-act] innerhalb eines Containers
+  function wireActs(node, map) {
+    node.querySelectorAll("[data-act]").forEach(n => {
+      const fn = map[n.dataset.act];
+      if (fn) n.onclick = fn;
+    });
+    return node;
   }
 
   // SVG area+line chart from values
@@ -164,6 +235,110 @@
 
   const PALETTE = ["#4ade9e", "#2bb781", "#7ef0bd", "#d8b978", "#1f7a5a", "#59c9a0"];
 
+  /* ---------- SHEET (Detail-Overlay) ---------- */
+  function openSheet(title, subtitle, bodyHtml) {
+    closeSheet();
+    const bd = el(`<div class="sheet-bd">
+      <div class="sheet" role="dialog" aria-modal="true">
+        <div class="sheet-grip"></div>
+        <div class="sheet-h">
+          <div class="st"><div class="sheet-t">${esc(title)}</div>
+            ${subtitle ? `<div class="sheet-s">${esc(subtitle)}</div>` : ""}</div>
+          <button class="sheet-x" aria-label="Schließen">×</button>
+        </div>
+        <div class="sheet-b">${bodyHtml}</div>
+      </div></div>`);
+    document.body.appendChild(bd);
+    requestAnimationFrame(() => bd.classList.add("on"));
+    bd.addEventListener("click", e => { if (e.target === bd) closeSheet(); });
+    bd.querySelector(".sheet-x").onclick = closeSheet;
+    document.addEventListener("keydown", sheetEsc);
+    return bd;
+  }
+  function sheetEsc(e) { if (e.key === "Escape") closeSheet(); }
+  function closeSheet() {
+    document.removeEventListener("keydown", sheetEsc);
+    $$(".sheet-bd").forEach(n => { n.classList.remove("on"); setTimeout(() => n.remove(), 260); });
+  }
+  const kv = (k, v, muted) => `<div class="kv${muted ? " muted" : ""}"><span>${esc(k)}</span><b>${v}</b></div>`;
+  function miniBars(rows) {
+    const max = Math.max(...rows.map(r => r.value), 1);
+    return `<div class="mini">${rows.map(r => `<div class="mini-row">
+      <span class="mini-lab">${esc(r.label)}</span>
+      <span class="mini-track"><span style="width:${Math.round(r.value / max * 100)}%;background:${r.color || "linear-gradient(90deg,var(--deep),var(--mint))"}"></span></span>
+      <span class="mini-val">${r.display || eur(r.value)}</span></div>`).join("")}</div>`;
+  }
+
+  /* ---------- SAMMELSEITE VERMIETUNG ---------- */
+  function renderVermietung(host) {
+    $("#eyebrow").textContent = "Vermietung";
+    $("#pageTitle").textContent = "Alle Mietobjekte";
+    const streams = mietStreams();
+    $("#pageSub").textContent = streams.length + " Objekte im Bestand";
+
+    let ist = 0, pot = 0, tilg = 0, rest = 0, units = 0, let_ = 0, nkP = 0, invest = 0;
+    streams.forEach(s => {
+      const m = FE.streamMonthly(s);
+      ist += m.gesamt; pot += m.gesamtPotenzial; tilg += m.kreditAbtrag; nkP += m.nkPuffer;
+      units += m.einheiten; let_ += m.vermietet; invest += Number(s.invest) || 0;
+      FE.creditsOf(s).forEach(kr => { const p = FE.creditPlan(kr); rest += p ? p.restAktuell : (kr.summe || 0); });
+    });
+    const netto = ist - tilg, occ = units ? Math.round(let_ / units * 100) : 0;
+
+    host.appendChild(el(`<div class="grid g-kpi">
+      ${kpiCard("euro", eur(ist), "Einnahmen / Monat", "alle Objekte", true)}
+      ${kpiCard("layers", eur(pot), "Potenzial / Monat", "+" + eur(pot - ist) + " ungenutzt")}
+      ${kpiCard("wallet", eur(netto), "Netto-Cashflow", "nach Tilgung", netto >= 0)}
+      ${kpiCard("home", occ + " %", "Auslastung", let_ + " / " + units + " Einheiten", occ >= 60)}
+    </div>`));
+
+    // Kerninsights je Objekt
+    const cards = streams.map(s => {
+      const m = FE.streamMonthly(s);
+      const k = FE.immoKPIs(s);
+      const o = m.einheiten ? Math.round(m.vermietet / m.einheiten * 100) : 0;
+      const flaeche = (s.einheiten || []).reduce((a, u) => a + (Number(u.flaeche) || 0), 0);
+      return `<div class="card pad clickable obj-card" data-id="${s.id}">
+        <div class="tile-head"><div class="tile-ic">${svg(s.icon || "home")}</div>
+          <div><div class="tile-name">${esc(s.name)}</div><div class="tile-loc">${esc(s.ort || "")}</div></div></div>
+        <div class="stat-strip" style="margin-bottom:14px">
+          <div class="s"><span>Einnahmen</span><b>${eur(m.gesamt)}</b></div>
+          <div class="s"><span>Netto n. Tilgung</span><b style="color:${m.netto >= 0 ? "var(--mint-2)" : "var(--danger)"}">${eur(m.netto)}</b></div>
+          <div class="s"><span>Auslastung</span><b>${o} %</b></div>
+          <div class="s"><span>Fläche</span><b>${flaeche} m²</b></div>
+        </div>
+        <div class="mini">
+          <div class="mini-row"><span class="mini-lab">Vermietet</span>
+            <span class="mini-track"><span style="width:${o}%"></span></span>
+            <span class="mini-val">${m.vermietet}/${m.einheiten}</span></div>
+          <div class="mini-row"><span class="mini-lab">Rendite</span>
+            <span class="mini-track"><span style="width:${Math.min(100, k.bruttoRendite * 6)}%"></span></span>
+            <span class="mini-val">${k.bruttoRendite.toLocaleString("de-DE")} %</span></div>
+        </div></div>`;
+    }).join("");
+    const grid = el(`<div class="grid g-2">${cards}</div>`);
+    grid.querySelectorAll(".obj-card").forEach(c => c.onclick = () => route(c.dataset.id));
+    host.appendChild(grid);
+
+    // Verteilung + Kennzahlen
+    const segs = streams.map((s, i) => ({ name: s.name, value: FE.streamMonthly(s).gesamt, color: PALETTE[i % PALETTE.length] })).filter(x => x.value > 0);
+    const legend = segs.map(x => `<div class="leg"><span class="sw" style="background:${x.color}"></span>
+      <span class="lt">${esc(x.name)}</span><span class="lv">${eur(x.value)}</span></div>`).join("");
+    host.appendChild(el(`<div class="grid g-2">
+      <div class="card pad"><div class="card-t" style="margin-bottom:4px">Verteilung</div>
+        <div class="card-s" style="margin-bottom:18px">Einnahmen je Objekt</div>
+        <div class="donut-row">${donut(segs)}<div class="legend">${legend}</div></div></div>
+      <div class="card pad"><div class="card-t" style="margin-bottom:4px">Kennzahlen gesamt</div>
+        <div class="card-s" style="margin-bottom:14px">Über alle Mietobjekte</div>
+        ${kv("Investition", eur(invest))}
+        ${kv("Restschuld heute", eur(rest))}
+        ${kv("Tilgung / Monat", eur(tilg))}
+        ${kv("NK-Puffer / Monat", eur(nkP))}
+        ${kv("Einnahmen / Jahr", eur(ist * 12))}
+        ${kv("Netto / Jahr", eur(netto * 12))}
+      </div></div>`));
+  }
+
   /* ---------- OVERVIEW ---------- */
   function renderOverview(host) {
     const t = FE.totals(D);
@@ -208,9 +383,9 @@
     // Composition donut + legend (nur echte Einnahmen)
     const segs = (D.streams || []).map((s, i) => {
       const m = FE.streamMonthly(s);
-      return { name: s.name, value: m.gesamt, color: PALETTE[i % PALETTE.length], kind: s.kind };
+      return { id: s.id, name: s.name, value: m.gesamt, color: PALETTE[i % PALETTE.length], kind: s.kind };
     }).filter(x => x.value > 0);
-    const legend = segs.map(s => `<div class="leg">
+    const legend = segs.map(s => `<div class="leg clickable" data-sid="${esc(s.id)}">
       <span class="sw" style="background:${s.color}"></span>
       <span class="lt">${esc(s.name)}</span>
       <span class="lv">${eur(s.value)}</span></div>`).join("");
@@ -218,6 +393,8 @@
       <div class="card-t" style="margin-bottom:4px">Zusammensetzung</div>
       <div class="card-s" style="margin-bottom:18px">Beitrag je Einnahmequelle / Monat</div>
       <div class="donut-row">${donut(segs)}<div class="legend">${legend}</div></div></div>`);
+    compCard.querySelectorAll(".leg[data-sid]").forEach(l =>
+      l.onclick = () => route(l.dataset.sid));
     host.appendChild(compCard);
 
     // Kalender + Wetter nebeneinander
@@ -399,12 +576,14 @@
     const w = D.wetter || { ort: "—", lat: 53.0333, lon: 8.5333 };
     const card = el(`<div class="card">
       <div class="card-h"><div><div class="card-t">Wetter</div>
-        <div class="card-s">${esc(w.ort)}</div></div>
+        <div class="card-s">${esc(w.ort)} · Tag antippen für Stundenverlauf</div></div>
         <div class="head-pill" style="padding:7px 13px" id="wNow">lädt…</div></div>
       <div class="card-b" id="wBody"><div class="note">Wetterdaten werden geladen…</div></div></div>`);
-    // Open-Meteo (kein API-Key)
+    // Open-Meteo (kein API-Key) inkl. Stundenwerte
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${w.lat}&longitude=${w.lon}`
-      + `&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min`
+      + `&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m`
+      + `&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m`
+      + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunrise,sunset`
       + `&timezone=Europe%2FBerlin&forecast_days=5`;
     fetch(url).then(r => r.json()).then(j => {
       const body = card.querySelector("#wBody"), now = card.querySelector("#wNow");
@@ -414,7 +593,7 @@
       const days = (j.daily && j.daily.time || []).map((t, i) => {
         const dc = WCODE[j.daily.weather_code[i]] || ["—", "•"];
         const dd = new Date(t);
-        return `<div class="w-day">
+        return `<div class="w-day clickable" data-i="${i}">
           <span class="w-dow">${i === 0 ? "heute" : dd.toLocaleDateString("de-DE", { weekday: "short" })}</span>
           <span class="w-ic">${dc[1]}</span>
           <span class="w-t"><b>${Math.round(j.daily.temperature_2m_max[i])}°</b><i>${Math.round(j.daily.temperature_2m_min[i])}°</i></span>
@@ -423,13 +602,50 @@
       body.innerHTML = `<div class="w-now">
           <div class="w-now-ic">${cc[1]}</div>
           <div><div class="w-now-t">${Math.round(c.temperature_2m)}°</div>
-            <div class="w-now-d">${esc(cc[0])}</div></div>
+            <div class="w-now-d">${esc(cc[0])} · ${Math.round(c.wind_speed_10m)} km/h · ${Math.round(c.relative_humidity_2m)} % rF</div></div>
         </div><div class="w-days">${days}</div>`;
+      body.querySelectorAll(".w-day").forEach(d =>
+        d.onclick = () => openWeatherSheet(j, Number(d.dataset.i)));
     }).catch(() => {
       card.querySelector("#wNow").textContent = "offline";
       card.querySelector("#wBody").innerHTML = `<div class="note">Wetterdaten konnten nicht geladen werden (keine Internetverbindung).</div>`;
     });
     return card;
+  }
+
+  function openWeatherSheet(j, idx) {
+    const day = j.daily.time[idx];
+    const dc = WCODE[j.daily.weather_code[idx]] || ["—", "•"];
+    const d = new Date(day);
+    const head = d.toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long" });
+    // Stunden dieses Tages
+    const hrs = [];
+    (j.hourly && j.hourly.time || []).forEach((t, i) => {
+      if (t.slice(0, 10) !== day) return;
+      const h = Number(t.slice(11, 13));
+      if (h % 3 !== 0) return; // 3-Stunden-Schritte
+      const hc = WCODE[j.hourly.weather_code[i]] || ["—", "•"];
+      hrs.push(`<div class="hour"><div class="hh">${String(h).padStart(2, "0")}:00</div>
+        <div class="hi">${hc[1]}</div>
+        <div class="ht">${Math.round(j.hourly.temperature_2m[i])}°</div>
+        <div class="hr">${j.hourly.precipitation_probability ? Math.round(j.hourly.precipitation_probability[i]) + " %" : ""}</div></div>`);
+    });
+    const sr = j.daily.sunrise ? j.daily.sunrise[idx].slice(11, 16) : "—";
+    const ss = j.daily.sunset ? j.daily.sunset[idx].slice(11, 16) : "—";
+    const body = `
+      <div class="stat-strip" style="margin-bottom:18px">
+        <div class="s"><span>Höchst</span><b>${Math.round(j.daily.temperature_2m_max[idx])}°</b></div>
+        <div class="s"><span>Tiefst</span><b>${Math.round(j.daily.temperature_2m_min[idx])}°</b></div>
+        <div class="s"><span>Niederschlag</span><b>${(j.daily.precipitation_sum ? j.daily.precipitation_sum[idx] : 0).toLocaleString("de-DE")} mm</b></div>
+        <div class="s"><span>Wind max</span><b>${Math.round(j.daily.wind_speed_10m_max ? j.daily.wind_speed_10m_max[idx] : 0)} km/h</b></div>
+      </div>
+      <div class="card-t" style="font-size:14px;margin-bottom:10px">Tagesverlauf</div>
+      <div class="hours">${hrs.join("")}</div>
+      <div style="margin-top:18px">
+        ${kv("Sonnenaufgang", sr + " Uhr")}
+        ${kv("Sonnenuntergang", ss + " Uhr")}
+      </div>`;
+    openSheet(dc[1] + "  " + dc[0], head, body);
   }
 
   /* ---------- STREAM DETAIL ---------- */
@@ -585,43 +801,48 @@
     // KPIs
     if (k && s.invest) {
       // Rendite-Kennzahlen (Syke-Stil) — auch für Baumstraße
-      host.appendChild(el(`<div class="grid g-kpi">
-        ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditrate", m.netto >= 0)}
+      host.appendChild(wireActs(el(`<div class="grid g-kpi">
+        ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditrate", m.netto >= 0, "cf")}
         ${kpiCard("trend", k.bruttoRendite.toLocaleString("de-DE") + " %", "Bruttomietrendite", "Kaltmiete / Invest")}
         ${kpiCard("chart", k.cashflowRoi.toLocaleString("de-DE") + " %", "Cashflow-ROI", "netto / Invest p.a.")}
         ${kpiCard("coins", eur(k.invest), "Investition", "eingesetztes Kapital")}
-      </div>`));
+      </div>`), { cf: () => openCashflowSheet(s) }));
       // Zweite Reihe mit Einnahmen/Tilgung/Restschuld (nützlich bei mehreren Krediten)
-      host.appendChild(el(`<div class="grid g-kpi">
+      host.appendChild(wireActs(el(`<div class="grid g-kpi">
         ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
         ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
         ${kpiCard("bank", eur(k.kreditAbtrag), "Tilgung / Monat", kredite.length + (kredite.length === 1 ? " Kredit" : " Kredite"))}
         ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld heute", "exakt " + eur2(k.restschuldGesamt))}
-      </div>`));
+      </div>`), { cf: () => openCashflowSheet(s) }));
     } else if (k && kredite.length) {
-      host.appendChild(el(`<div class="grid g-kpi">
+      host.appendChild(wireActs(el(`<div class="grid g-kpi">
         ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
         ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
         ${kpiCard("bank", eur(k.kreditAbtrag), "Tilgung / Monat", kredite.length + " Kredite")}
-        ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow", "nach Tilgung", m.netto >= 0)}
-      </div>`));
-      host.appendChild(el(`<div class="grid g-kpi">
+        ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow", "nach Tilgung", m.netto >= 0, "cf")}
+      </div>`), { cf: () => openCashflowSheet(s) }));
+      host.appendChild(wireActs(el(`<div class="grid g-kpi">
         ${kpiCard("home", m.einheiten, "Einheiten", (s.einheiten || []).reduce((a, u) => a + (Number(u.flaeche) || 0), 0) + " m² gesamt")}
         ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld gesamt", "exakt " + eur2(k.restschuldGesamt))}
         ${kpiCard("layers", eur(m.nkPuffer), "NK-Puffer / Monat", "Rücklage")}
         ${kpiCard("trend", eur(m.gesamt * 12), "Einnahmen / Jahr", "aktuell vermietet")}
-      </div>`));
+      </div>`), { cf: () => openCashflowSheet(s) }));
     } else {
-      host.appendChild(el(`<div class="grid g-kpi">
+      host.appendChild(wireActs(el(`<div class="grid g-kpi">
         ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
         ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
         ${kpiCard("home", m.einheiten, "Einheiten", (s.einheiten || []).reduce((a, u) => a + (Number(u.flaeche) || 0), 0) + " m² gesamt")}
         ${kpiCard("trend", eur(m.gesamt * 12), "pro Jahr", "aktuell vermietet")}
-      </div>`));
+      </div>`), { cf: () => openCashflowSheet(s) }));
     }
 
     // Kredit-Tilgung Karten — eine je Kredit
-    kredite.forEach(kr => host.appendChild(creditCard(kr)));
+    kredite.forEach(kr => {
+      const c = creditCard(kr);
+      c.classList.add("clickable");
+      c.onclick = () => openCreditSheet(kr);
+      host.appendChild(c);
+    });
 
     // NK-Puffer Hinweis
     if (m.nkPuffer > 0) {
@@ -641,15 +862,18 @@
       const on = u.status === "vermietet";
       const w = Math.round(inc.gesamt / maxUnit * 100);
       const mieterTxt = u.mieter ? ` · ${esc(u.mieter)}` : "";
-      return `<div>
+      return `<div class="unit-bar clickable" data-i="${(s.einheiten||[]).indexOf(u)}" style="padding:2px 0">
         <div class="hbar-top"><div class="hbar-name">${esc(u.wohnung)}<span class="loc">${u.flaeche} m²${mieterTxt}</span></div>
           <div class="hbar-val">${eur(inc.gesamt)} ${on ? '<span class="badge b-on">vermietet</span>' : '<span class="badge b-off">frei</span>'}</div></div>
         <div class="track ${on ? '' : 'ghost'}"><span style="width:${w}%"></span></div></div>`;
     }).join("");
-    host.appendChild(el(`<div class="card pad">
+    const barCard = el(`<div class="card pad">
       <div class="card-t" style="margin-bottom:4px">Einnahmen je Wohnung</div>
-      <div class="card-s" style="margin-bottom:18px">${esc(s.note || "")}</div>
-      <div class="hbars">${bars}</div></div>`));
+      <div class="card-s" style="margin-bottom:18px">Einheit antippen für Details</div>
+      <div class="hbars">${bars}</div></div>`);
+    barCard.querySelectorAll(".unit-bar").forEach(b =>
+      b.onclick = () => openUnitSheet(s, (s.einheiten || [])[Number(b.dataset.i)]));
+    host.appendChild(barCard);
 
     // Composition donut
     const totalKalt = (s.einheiten || []).reduce((a, u) => a + FE.unitIncome(u).kalt, 0);
@@ -674,13 +898,126 @@
     // Detail table per unit
     const rows = (s.einheiten || []).map((u, i) => {
       const inc = FE.unitIncome(u);
-      return `<div class="drow"><div class="drow-l"><div class="drow-badge">${esc((u.wohnung.match(/\d+/) || [i + 1])[0])}</div>
+      return `<div class="drow clickable" data-i="${i}"><div class="drow-l"><div class="drow-badge">${esc((u.wohnung.match(/\d+/) || [i + 1])[0])}</div>
         <div><div class="drow-name">${esc(u.wohnung)} · ${u.flaeche} m²${u.mieter ? " · " + esc(u.mieter) : ""}</div>
         <div class="drow-sub">kalt ${eur(inc.kalt)} · NK ${eur(inc.nk)}${inc.kueche ? " · Küche " + eur(inc.kueche) : ""}${inc.strom ? " · Strom " + eur(inc.strom) : ""}${inc.stell ? " · Stellpl. " + eur(inc.stell) : ""}</div></div></div>
         <div class="drow-val"><b>${eur(inc.gesamt)}</b><span>${u.status === "vermietet" ? "vermietet" : "frei"}</span></div></div>`;
     }).join("");
-    host.appendChild(el(`<div class="card"><div class="card-h"><div><div class="card-t">Wohneinheiten</div>
-      <div class="card-s">Aufschlüsselung je WE</div></div></div><div class="card-b">${rows}</div></div>`));
+    const tblCard = el(`<div class="card"><div class="card-h"><div><div class="card-t">Wohneinheiten</div>
+      <div class="card-s">Zeile antippen für Mieter- und Vertragsdaten</div></div></div><div class="card-b">${rows}</div></div>`);
+    tblCard.querySelectorAll(".drow[data-i]").forEach(r =>
+      r.onclick = () => openUnitSheet(s, (s.einheiten || [])[Number(r.dataset.i)]));
+    host.appendChild(tblCard);
+  }
+
+  /* ---------- DETAIL-SHEETS ---------- */
+  function openUnitSheet(s, u) {
+    if (!u) return;
+    const inc = FE.unitIncome(u);
+    const alle = (s.einheiten || []).map(x => FE.unitIncome(x).gesamt);
+    const gesamtAlle = alle.reduce((a, b) => a + b, 0) || 1;
+    const anteil = Math.round(inc.gesamt / gesamtAlle * 100);
+    const proM2 = u.flaeche ? inc.kalt / u.flaeche : 0;
+    const schnitt = (s.einheiten || []).reduce((a, x) => {
+      const i2 = FE.unitIncome(x); return a + (x.flaeche ? i2.kalt / x.flaeche : 0);
+    }, 0) / ((s.einheiten || []).length || 1);
+    const v = u.vertrag || {};
+    const on = u.status === "vermietet";
+
+    // Mietdauer
+    let dauer = "—";
+    if (u.einzug) {
+      const d0 = new Date(u.einzug), now = new Date();
+      const mon = (now.getFullYear() - d0.getFullYear()) * 12 + (now.getMonth() - d0.getMonth());
+      dauer = d0 > now ? "Einzug steht bevor" : (mon < 1 ? "seit diesem Monat" : mon + " Monate");
+    }
+
+    const parts = [
+      { label: "Kaltmiete", value: inc.kalt, color: PALETTE[0] },
+      { label: s.nkAlsPuffer ? "NK (Puffer)" : "Nebenkosten", value: inc.nk, color: PALETTE[1] },
+      { label: "Küche", value: inc.kueche, color: PALETTE[3] },
+      { label: "Strom", value: inc.strom, color: PALETTE[4] },
+      { label: "Stellplatz", value: inc.stell, color: PALETTE[5] }
+    ].filter(x => x.value > 0);
+
+    const body = `
+      <div class="stat-strip" style="margin-bottom:18px">
+        <div class="s"><span>Warmmiete</span><b>${eur(inc.gesamt)}</b></div>
+        <div class="s"><span>Ertrag${s.nkAlsPuffer ? " (o. NK)" : ""}</span><b style="color:var(--mint-2)">${eur(s.nkAlsPuffer ? inc.gesamt - inc.nk : inc.gesamt)}</b></div>
+        <div class="s"><span>€ / m²</span><b>${proM2.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b></div>
+        <div class="s"><span>Anteil Objekt</span><b>${anteil} %</b></div>
+      </div>
+      <div class="card-t" style="font-size:14px;margin-bottom:10px">Zusammensetzung</div>
+      ${miniBars(parts)}
+      <div class="card-t" style="font-size:14px;margin:20px 0 6px">Mieter</div>
+      ${kv("Name", on ? esc(u.mieter || "—") : '<span style="color:var(--gold)">frei</span>')}
+      ${kv("Einzug", u.einzug ? dateDE(u.einzug) : "—")}
+      ${kv("Mietdauer", dauer)}
+      ${v.telefon ? kv("Telefon", esc(v.telefon)) : ""}
+      ${v.email ? kv("E-Mail", esc(v.email)) : ""}
+      <div class="card-t" style="font-size:14px;margin:20px 0 6px">Vertrag</div>
+      ${kv("Kaution", v.kaution != null ? eur(v.kaution) : "—", v.kaution == null)}
+      ${kv("Vertragsdatum", v.vertragsdatum ? dateDE(v.vertragsdatum) : "—", !v.vertragsdatum)}
+      ${kv("Laufzeit", v.laufzeit ? esc(v.laufzeit) : "—", !v.laufzeit)}
+      ${kv("Kündigungsfrist", v.kuendigungsfrist ? esc(v.kuendigungsfrist) : "—", !v.kuendigungsfrist)}
+      ${v.notiz ? `<div class="note" style="margin-top:14px">${esc(v.notiz)}</div>` : ""}
+      <div class="note" style="margin-top:16px">Vergleich: ${proM2 >= schnitt ? "über" : "unter"} dem Objektschnitt von ${schnitt.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €/m².</div>`;
+    openSheet(u.wohnung + " · " + u.flaeche + " m²", s.name, body);
+  }
+
+  function openCreditSheet(kr) {
+    const p = FE.creditPlan(kr);
+    if (!p) return;
+    const rows = p.rows;
+    // Jahresweise verdichten
+    const byYear = {};
+    rows.forEach(r => {
+      const y = r.monat.slice(0, 4);
+      byYear[y] = byYear[y] || { zins: 0, tilgung: 0, sonder: 0, rest: 0 };
+      byYear[y].zins += r.zins; byYear[y].tilgung += r.tilgung;
+      byYear[y].sonder += r.sonder; byYear[y].rest = r.rest;
+    });
+    const trs = Object.keys(byYear).sort().map(y => {
+      const b = byYear[y];
+      return `<tr><td>${y}</td><td>${eur(b.zins)}</td><td>${eur(b.tilgung + b.sonder)}</td>
+        <td class="hl">${eur(b.rest)}</td></tr>`;
+    }).join("");
+    const zinsAnteil = p.zinsGesamt / ((Number(kr.summe) || 1) + p.zinsGesamt) * 100;
+    const body = `
+      <div class="stat-strip" style="margin-bottom:18px">
+        <div class="s"><span>Restschuld heute</span><b>${eur(p.restAktuell)}</b></div>
+        <div class="s"><span>getilgt</span><b>${eur(p.getilgtBisher)}</b></div>
+        <div class="s"><span>Zinsen gesamt</span><b>${eur(p.zinsGesamt)}</b></div>
+        <div class="s"><span>Laufzeit</span><b>${p.jahre.toLocaleString("de-DE")} J.</b></div>
+      </div>
+      <div class="card-t" style="font-size:14px;margin-bottom:10px">Kostenverteilung</div>
+      ${miniBars([
+        { label: "Darlehen", value: Number(kr.summe) || 0, color: "linear-gradient(90deg,var(--deep),var(--mint))" },
+        { label: "Zinskosten", value: p.zinsGesamt, color: "linear-gradient(90deg,#8a6d2f,var(--gold))" }
+      ])}
+      <div class="note" style="margin-top:8px">${zinsAnteil.toFixed(1)} % der Gesamtkosten sind Zinsen.</div>
+      <div class="card-t" style="font-size:14px;margin:20px 0 10px">Tilgung je Jahr</div>
+      <table class="tbl"><thead><tr><th>Jahr</th><th>Zins</th><th>Tilgung</th><th>Restschuld</th></tr></thead>
+      <tbody>${trs}</tbody></table>`;
+    openSheet(kr.name || "Kredit", eur(kr.summe) + " · " + (kr.zinsPa || 0).toLocaleString("de-DE") + " % · " + eur(kr.abtragMonat) + "/Monat", body);
+  }
+
+  function openCashflowSheet(s) {
+    const m = FE.streamMonthly(s);
+    const k = FE.immoKPIs(s);
+    const kredite = FE.creditsOf(s);
+    const body = `
+      <div class="card-t" style="font-size:14px;margin-bottom:10px">Herleitung</div>
+      ${kv("Ertrag" + (s.nkAlsPuffer ? " (ohne NK)" : ""), eur(m.gesamt))}
+      ${kredite.map(kr => kv("− " + (kr.name || "Kredit"), "−" + eur(kr.abtragMonat))).join("")}
+      ${kv("Netto-Cashflow", eur(m.netto))}
+      ${s.nkAlsPuffer ? `<div class="note" style="margin-top:12px">Zusätzlich ${eur(m.nkPuffer)}/Monat Nebenkosten als Rücklage (nicht im Ertrag).</div>` : ""}
+      <div class="card-t" style="font-size:14px;margin:20px 0 10px">Wenn alles vermietet wäre</div>
+      ${kv("Potenzial-Ertrag", eur(m.gesamtPotenzial))}
+      ${kv("Netto-Cashflow", eur(m.gesamtPotenzial - m.kreditAbtrag))}
+      ${kv("Cashflow-ROI", s.invest ? ((m.gesamtPotenzial - m.kreditAbtrag) * 12 / s.invest * 100).toFixed(2) + " %" : "—")}
+      <div class="note" style="margin-top:14px">Differenz zu heute: ${eur(m.gesamtPotenzial - m.gesamt)}/Monat aus leerstehenden Einheiten.</div>`;
+    openSheet("Netto-Cashflow", s.name, body);
   }
 
   /* ---------- BOOT ---------- */
