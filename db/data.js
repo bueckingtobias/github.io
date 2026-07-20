@@ -17,17 +17,22 @@ window.DASHBOARD_DATA = {
       icon: "home",
       note: "Fünf Wohneinheiten. Kalt 12 €/m², NK 1,50 €/m², Küche 70 €, Strom 40 €. Nebenkosten werden vollständig als Puffer zurückgelegt.",
       nkAlsPuffer: true,
-      invest: 1200000,
+      invest: 922000,
       kredite: [
         { name: "KfW-Darlehen", summe: 500000, zinsPa: 2.98, abtragMonat: 2432.39, start: "2026-07-30", restStand: { datum: "2026-07-18", betrag: 500000.00 } },
         { name: "VR-Darlehen",  summe: 422000, zinsPa: 3.48, abtragMonat: 1927.38, start: "2026-04-30", restStand: { datum: "2026-07-18", betrag: 419883.13 }, sondertilgung: { betrag: 10000, monate: [12] } }
       ],
       einheiten: [
-        { wohnung: "WE 1", flaeche: 106, kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Joy Terborg & Tjark Möller", einzug: "2026-08-15", status: "vermietet" },
-        { wohnung: "WE 2", flaeche: 93,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Alexander Banse", einzug: "2026-07-01", status: "vermietet" },
-        { wohnung: "WE 3", flaeche: 92,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Karin Schröder", einzug: "2026-07-01", status: "vermietet" },
-        { wohnung: "WE 4", flaeche: 94,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Marleen Gieler", einzug: "2026-08-01", status: "vermietet" },
-        { wohnung: "WE 5", flaeche: 124, kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, status: "frei" }
+        { wohnung: "WE 1", flaeche: 106, kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Joy Terborg & Tjark Möller", einzug: "2026-08-15", status: "vermietet",
+          vertrag: { kaution: null, laufzeit: "unbefristet", kuendigungsfrist: "3 Monate", vertragsdatum: null, telefon: "", email: "", notiz: "" } },
+        { wohnung: "WE 2", flaeche: 93,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Alexander Banse", einzug: "2026-07-01", status: "vermietet",
+          vertrag: { kaution: null, laufzeit: "unbefristet", kuendigungsfrist: "3 Monate", vertragsdatum: null, telefon: "", email: "", notiz: "" } },
+        { wohnung: "WE 3", flaeche: 92,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Karin Schröder", einzug: "2026-07-01", status: "vermietet",
+          vertrag: { kaution: null, laufzeit: "unbefristet", kuendigungsfrist: "3 Monate", vertragsdatum: null, telefon: "", email: "", notiz: "" } },
+        { wohnung: "WE 4", flaeche: 94,  kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, mieter: "Marleen Gieler", einzug: "2026-08-01", status: "vermietet",
+          vertrag: { kaution: null, laufzeit: "unbefristet", kuendigungsfrist: "3 Monate", vertragsdatum: null, telefon: "", email: "", notiz: "" } },
+        { wohnung: "WE 5", flaeche: 124, kaltProM2: 12, nkProM2: 1.5, kueche: 70, strom: 40, status: "frei",
+          vertrag: { kaution: null, laufzeit: null, kuendigungsfrist: null, vertragsdatum: null, telefon: "", email: "", notiz: "" } }
       ]
     },
     {
@@ -50,7 +55,8 @@ window.DASHBOARD_DATA = {
       invest: 60000,
       kredit: { summe: 20000, abtragMonat: 400, zinsPa: 4.0, start: "2026-08-01", sondertilgung: { betrag: 1500, monate: [6, 12] } },
       einheiten: [
-        { wohnung: "DHH", flaeche: 98, kaltFix: 1029, nkFix: 196, stellplatz: 50, mieter: "Stefanie Thode", status: "vermietet" }
+        { wohnung: "DHH", flaeche: 98, kaltFix: 1029, nkFix: 196, stellplatz: 50, mieter: "Stefanie Thode", status: "vermietet",
+          vertrag: { kaution: null, laufzeit: "unbefristet", kuendigungsfrist: "3 Monate", vertragsdatum: null, telefon: "", email: "", notiz: "" } }
       ]
     },
     {
