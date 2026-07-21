@@ -5,7 +5,42 @@
    ============================================================================ */
 window.DASHBOARD_DATA = {
   meta: { org: "Bücking", title: "Einnahmen", version: "2026-07-18" },
-  auth: { passwordHash: "774abd2c0374e9d3d262d1b7269ce9913f5333021ad6e7356261a2305638c1e8", sessionHours: 12 },
+  auth: {
+    passwordHash: "774abd2c0374e9d3d262d1b7269ce9913f5333021ad6e7356261a2305638c1e8",
+    sessionHours: 12,
+    // Beide Zugänge nutzen dasselbe Passwort, unterscheiden sich nur in der Ansprache
+    benutzer: [
+      { id: "tobias",    name: "Tobias",    anrede: "Tobias" },
+      { id: "bernfried", name: "Bernfried", anrede: "Bernfried" }
+    ]
+  },
+
+  /* Begrüßungen nach Tageszeit. {name} wird ersetzt. */
+  begruessungen: {
+    morgen: [
+      "Guten Morgen, {name}!",
+      "Moin {name} – auf einen guten Tag!",
+      "Frühstück erledigt, {name}? Dann los.",
+      "Guten Morgen, {name}. Frisch ans Werk."
+    ],
+    tag: [
+      "Hallo {name}!",
+      "Schön, dass du da bist, {name}.",
+      "Moin {name}!",
+      "Hallo {name} – alles im Blick."
+    ],
+    abend: [
+      "Guten Abend, {name}!",
+      "Feierabend, {name}? Ein Blick lohnt sich.",
+      "Schönen Abend, {name}!",
+      "Guten Abend, {name}. Zeit für die Bilanz."
+    ],
+    nacht: [
+      "Noch wach, {name}?",
+      "Späte Runde, {name}?",
+      "Gute Nacht, {name} – oder noch kurz reinschauen?"
+    ]
+  },
 
   /* Einnahmequellen. Jede Quelle hat einen Typ, Kennzahlen und Positionen. */
   streams: [
@@ -80,7 +115,7 @@ window.DASHBOARD_DATA = {
         { titel: "Schornsteinfeger",     anteil: 6 },
         { titel: "Sonstiges / Puffer",   anteil: 12 }
       ],
-      kredit: { summe: 20000, abtragMonat: 400, zinsPa: 4.0, start: "2026-08-01", sondertilgung: { betrag: 1500, monate: [6, 12] } },
+      kredit: { name: "Sparkassen-Darlehen", summe: 20000, abtragMonat: 400, zinsPa: 4.0, start: "2026-08-01", sondertilgung: { betrag: 1500, monate: [6, 12] } },
       einheiten: [
         { wohnung: "DHH", flaeche: 98, kaltFix: 1029, nkFix: 196, stellplatz: 50, mieter: "Stefanie Thode", status: "vermietet",
           vertrag: { kaution: null, laufzeit: "unbefristet", kuendigungsfrist: "3 Monate", vertragsdatum: null, telefon: "", email: "", notiz: "" } }
