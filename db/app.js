@@ -3,7 +3,7 @@
    ============================================================================ */
 (function () {
   "use strict";
-  const D = window.DASHBOARD_DATA || {};
+  let D = window.DASHBOARD_DATA || {};
   const FE = window.FinanceEngine;
   const SESSION = "buecking_income_v1";
   const LASTUSER = "buecking_lastuser";
