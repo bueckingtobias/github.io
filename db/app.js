@@ -95,7 +95,9 @@
       D = window.DASHBOARD_DATA;
       enterApp();
     } catch (e) {
-      msg.textContent = "Daten konnten nicht geladen werden.";
+      // Klartext-Fehler direkt anzeigen (hilfreich ohne Konsole, z. B. auf dem iPad)
+      const txt = (e && (e.message || e.hint || e.details || e.code)) || JSON.stringify(e);
+      msg.textContent = "Fehler: " + txt;
       msg.className = "login-msg bad";
       console.error(e);
     }
@@ -1834,7 +1836,8 @@
         enterApp();
       } catch (e) {
         $("#login").classList.remove("hide");
-        $("#loginMsg").textContent = "Daten konnten nicht geladen werden.";
+        const txt = (e && (e.message || e.hint || e.details || e.code)) || JSON.stringify(e);
+        $("#loginMsg").textContent = "Fehler: " + txt;
         $("#loginMsg").className = "login-msg bad";
         console.error(e);
         setTimeout(() => $("#pw").focus(), 150);
