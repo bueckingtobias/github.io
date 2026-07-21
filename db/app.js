@@ -6,6 +6,7 @@
   const D = window.DASHBOARD_DATA || {};
   const FE = window.FinanceEngine;
   const SESSION = "buecking_income_v1";
+  const LASTUSER = "buecking_lastuser";
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -39,17 +40,41 @@
   const svg = (k, cls) => `<svg viewBox="0 0 24 24" fill="none" class="${cls || ''}">${IC[k] || IC.grid}</svg>`;
 
   /* ---------- AUTH ---------- */
+  let currentUser = null;   // { id, name, anrede }
+
+  function benutzerListe() {
+    return (D.auth && D.auth.benutzer) || [{ id: "gast", name: "Gast", anrede: "" }];
+  }
+  function benutzerById(id) {
+    return benutzerListe().find(b => b.id === id) || benutzerListe()[0];
+  }
+  function fuelleBenutzerAuswahl() {
+    const sel = $("#whoami");
+    if (!sel) return;
+    sel.innerHTML = benutzerListe().map(b =>
+      `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join("");
+    // zuletzt genutzten Benutzer vorauswählen
+    const last = localStorage.getItem(LASTUSER);
+    if (last && benutzerListe().some(b => b.id === last)) sel.value = last;
+  }
   function sessionOK() {
     try { const s = JSON.parse(localStorage.getItem(SESSION) || "null");
-      return s && s.ok && (Date.now() - s.ts) < ((D.auth && D.auth.sessionHours) || 12) * 3600e3;
+      if (!(s && s.ok && (Date.now() - s.ts) < ((D.auth && D.auth.sessionHours) || 12) * 3600e3))
+        return false;
+      currentUser = benutzerById(s.user);
+      return true;
     } catch { return false; }
   }
   async function tryLogin() {
     const msg = $("#loginMsg"), v = $("#pw").value;
+    const uid = $("#whoami") ? $("#whoami").value : "gast";
     if (!v) { msg.textContent = "Bitte Passwort eingeben."; msg.className = "login-msg bad"; return; }
     msg.textContent = "Prüfe…"; msg.className = "login-msg";
     if (await sha256(v) === (D.auth && D.auth.passwordHash)) {
-      localStorage.setItem(SESSION, JSON.stringify({ ok: true, ts: Date.now() })); enterApp();
+      currentUser = benutzerById(uid);
+      localStorage.setItem(SESSION, JSON.stringify({ ok: true, ts: Date.now(), user: uid }));
+      localStorage.setItem(LASTUSER, uid);
+      enterApp();
     } else { msg.textContent = "Falsches Passwort."; msg.className = "login-msg bad"; $("#pw").select(); }
   }
   function logout() { localStorage.removeItem(SESSION); location.reload(); }
@@ -269,6 +294,311 @@
       <span class="mini-val">${r.display || eur(r.value)}</span></div>`).join("")}</div>`;
   }
 
+  /* ---------- INTELLIGENTE SUCHE ---------- */
+  // Baut eine durchsuchbare Wissensbasis aus allen Dashboard-Daten
+  function wissensBasis() {
+    const eintraege = [];
+    const t = FE.totals(D);
+    const add = (titel, wert, detail, worte, aktion) =>
+      eintraege.push({ titel, wert, detail, worte: worte.toLowerCase(), aktion });
+
+    // Portfolio-Kennzahlen
+    let debtMonth = 0, debtRest = 0, units = 0, let_ = 0;
+    (D.streams || []).forEach(s => {
+      (s.einheiten || []).forEach(u => { units++; if (u.status === "vermietet") let_++; });
+      FE.creditsOf(s).forEach(kr => {
+        debtMonth += Number(kr.abtragMonat) || 0;
+        const p = FE.creditPlan(kr); debtRest += p ? p.restAktuell : 0;
+      });
+    });
+    add("Einnahmen gesamt", eur(t.ist), "pro Monat über alle Quellen",
+        "einnahmen gesamt monat portfolio umsatz miete summe wieviel verdiene ich einnahme",
+        () => route("overview"));
+    add("Einnahmen pro Jahr", eur(t.jahrIst), "hochgerechnet",
+        "einnahmen jahr jaehrlich jährlich hochgerechnet", () => route("overview"));
+    add("Netto-Cashflow", eur(t.ist - debtMonth), "nach allen Kreditraten",
+        "netto cashflow überschuss gewinn nach tilgung übrig bleibt",
+        () => route("overview"));
+    add("Auslastung", Math.round(let_ / (units || 1) * 100) + " %",
+        let_ + " von " + units + " Einheiten vermietet",
+        "auslastung vermietet frei leer belegung quote wieviele wohnungen",
+        () => route("overview"));
+    add("Restschuld", eur(debtRest), "über alle Kredite",
+        "restschuld schulden kredit darlehen offen rest tilgung schuld",
+        () => route("overview"));
+    add("Tilgung pro Monat", eur(debtMonth), "alle Kreditraten zusammen",
+        "tilgung rate monatlich kredit zahlung abtrag", () => route("overview"));
+    add("Potenzial", eur(t.potenzial), "bei Vollvermietung möglich",
+        "potenzial möglich maximal vollvermietung upside luft nach oben",
+        () => route("overview"));
+
+    // je Objekt
+    (D.streams || []).forEach(s => {
+      const m = FE.streamMonthly(s);
+      add(s.name, eur(m.gesamt), "Einnahmen pro Monat" + (s.ort ? " · " + s.ort : ""),
+          s.name + " " + (s.ort || "") + " " + s.kind + " objekt einnahmen",
+          () => route(s.id));
+
+      if (s.kind === "miete" && s.invest) {
+        const k = FE.immoKPIs(s);
+        add("Rendite " + shortLabel(s.name), k.bruttoRendite.toLocaleString("de-DE") + " %",
+            "Bruttomietrendite · Cashflow-ROI " + k.cashflowRoi.toLocaleString("de-DE") + " %",
+            "rendite " + s.name + " roi ertrag verzinsung prozent", () => route(s.id));
+      }
+      if (m.nkPuffer) {
+        add("Nebenkosten " + shortLabel(s.name), eur(m.nkPuffer), "Rücklage pro Monat",
+            "nebenkosten nk puffer rücklage " + s.name, () => route(s.id));
+      }
+
+      // Wohneinheiten und Mieter
+      (s.einheiten || []).forEach(u => {
+        const inc = FE.unitIncome(u);
+        const warm = eur(inc.gesamt);
+        if (u.mieter) {
+          add(u.mieter, warm, u.wohnung + " · " + u.flaeche + " m² · " + shortLabel(s.name)
+              + (u.einzug ? " · Einzug " + dateDE(u.einzug) : ""),
+              u.mieter + " " + u.wohnung + " mieter wohnt miete zahlt " + s.name,
+              () => { route(s.id); setTimeout(() => openUnitSheet(s, u), 260); });
+        } else {
+          add(u.wohnung + " (frei)", warm, "würde " + warm + " bringen · "
+              + u.flaeche + " m² · " + shortLabel(s.name),
+              u.wohnung + " frei leer unvermietet " + s.name,
+              () => { route(s.id); setTimeout(() => openUnitSheet(s, u), 260); });
+        }
+      });
+
+      // Kredite
+      FE.creditsOf(s).forEach(kr => {
+        const p = FE.creditPlan(kr);
+        add(kr.name, eur(p.restAktuell),
+            "Restschuld · " + eur(kr.abtragMonat) + "/Monat · " + kr.zinsPa.toLocaleString("de-DE")
+            + " % · abbezahlt " + (p.abzahlDatum ? monthYear(p.abzahlDatum) : "—"),
+            kr.name + " kredit darlehen restschuld zins laufzeit " + s.name,
+            () => { route(s.id); setTimeout(() => openCreditSheet(kr), 260); });
+      });
+
+      // Pacht
+      (s.vertraege || []).forEach(v => {
+        add(v.paechter, eur(v.jahr), "Pacht pro Jahr · " + v.flaeche.toLocaleString("de-DE")
+            + " ha · " + v.art,
+            v.paechter + " pacht pächter hektar acker grünland land",
+            () => { route(s.id); setTimeout(() => openPachtSheet(s, v), 260); });
+      });
+    });
+
+    // Termine
+    (D.termine || []).forEach(tm => {
+      add(tm.titel, dateDE(tm.datum), tm.info || "",
+          tm.titel + " " + (tm.info || "") + " termin datum wann einzug zahlung",
+          () => route("overview"));
+    });
+    return eintraege;
+  }
+
+  // Bewertet, wie gut ein Eintrag zur Frage passt
+  // Wörter, die in Fragen häufig vorkommen und nichts zur Auswahl beitragen
+  const STOPP = new Set(["was", "wer", "wie", "wo", "wann", "welche", "welcher", "welches",
+    "der", "die", "das", "den", "dem", "ein", "eine", "einen", "ist", "sind", "hat",
+    "habe", "haben", "wird", "werden", "für", "von", "mit", "und", "oder", "ich", "mir",
+    "mein", "meine", "viel", "hoch", "aktuell", "gerade", "bitte", "zeig", "zeige"]);
+
+  function bewerte(eintrag, frage) {
+    const q = frage.toLowerCase().replace(/[?.,!]/g, " ");
+    const roh = q.split(/\s+/).filter(w => w.length > 1);
+    const woerter = roh.filter(w => !STOPP.has(w) && w.length > 2);
+    if (!woerter.length && !roh.length) return 0;
+    let score = 0;
+    const titel = eintrag.titel.toLowerCase();
+    const heu = (eintrag.titel + " " + eintrag.worte + " " + eintrag.detail).toLowerCase();
+
+    // Wohnungsnummern gezielt behandeln: "we 2" / "we2" / "wohnung 2"
+    const nr = q.match(/\b(?:we|wohnung|einheit)\s*(\d+)\b/);
+    if (nr) {
+      const treffer = new RegExp("we\\s*" + nr[1] + "\\b").test(heu);
+      if (treffer) score += 30; else score -= 6;
+    }
+    woerter.forEach(w => {
+      if (titel.includes(w)) score += 10;
+      else if (heu.includes(w)) score += 4;
+      else if (w.length > 4) {
+        const stamm = w.slice(0, Math.max(4, w.length - 2));
+        if (heu.includes(stamm)) score += 2;
+      }
+    });
+    return score;
+  }
+
+  function sucheAntwort(frage) {
+    const basis = wissensBasis();
+    const treffer = basis
+      .map(e => ({ e, score: bewerte(e, frage) }))
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6);
+    return treffer;
+  }
+
+  function searchCard() {
+    const card = el(`<div class="card pad search-card">
+      <div class="card-t" style="margin-bottom:4px">Suche</div>
+      <div class="card-s" style="margin-bottom:14px">Frag nach Mietern, Zahlen oder Terminen</div>
+      <div class="search-box">
+        <span class="search-ic">${svg("chart")}</span>
+        <input id="qInput" type="search" placeholder="z. B. Was zahlt Karin Schröder?"
+               autocomplete="off" enterkeyhint="search">
+        <button class="mic-btn" id="micBtn" title="Spracheingabe" aria-label="Spracheingabe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+               stroke-linecap="round"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/>
+          <path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3"/></svg>
+        </button>
+      </div>
+      <div class="search-hint" id="qHint">Tipp: „Restschuld", „freie Wohnung", „Rendite Syke"</div>
+      <div id="qOut"></div>
+    </div>`);
+
+    const input = card.querySelector("#qInput");
+    const out = card.querySelector("#qOut");
+    const hint = card.querySelector("#qHint");
+
+    const zeige = (frage) => {
+      const q = frage.trim();
+      if (!q) { out.innerHTML = ""; hint.style.display = ""; return; }
+      hint.style.display = "none";
+      const treffer = sucheAntwort(q);
+      if (!treffer.length) {
+        out.innerHTML = `<div class="note" style="margin-top:12px">Dazu habe ich nichts gefunden.
+          Versuch es mit einem Namen, einer Wohnung oder einem Begriff wie „Restschuld".</div>`;
+        return;
+      }
+      out.innerHTML = `<div class="qres">${treffer.map((x, i) => `
+        <div class="qr${i === 0 ? " top" : ""}" data-i="${i}">
+          <div class="qr-l"><div class="qr-t">${esc(x.e.titel)}</div>
+            <div class="qr-d">${esc(x.e.detail)}</div></div>
+          <div class="qr-v">${x.e.wert}</div>
+        </div>`).join("")}</div>`;
+      out.querySelectorAll(".qr").forEach(n => n.onclick = () => {
+        const x = treffer[Number(n.dataset.i)];
+        if (x && x.e.aktion) x.e.aktion();
+      });
+    };
+
+    let timer = null;
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => zeige(input.value), 160);
+    });
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") { clearTimeout(timer); zeige(input.value); }
+      if (e.key === "Escape") { input.value = ""; zeige(""); }
+    });
+
+    // Spracheingabe (Web Speech API – im Browser eingebaut, kostenlos)
+    const mic = card.querySelector("#micBtn");
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      mic.style.display = "none";
+    } else {
+      let rec = null, laeuft = false;
+      mic.onclick = () => {
+        if (laeuft && rec) { rec.stop(); return; }
+        rec = new SR();
+        rec.lang = "de-DE";
+        rec.interimResults = true;
+        rec.continuous = false;
+        rec.onstart = () => { laeuft = true; mic.classList.add("on");
+          hint.style.display = ""; hint.textContent = "Ich höre zu…"; };
+        rec.onresult = (e) => {
+          let text = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript;
+          input.value = text;
+          if (e.results[e.results.length - 1].isFinal) zeige(text);
+        };
+        rec.onerror = (e) => {
+          mic.classList.remove("on"); laeuft = false;
+          hint.style.display = "";
+          hint.textContent = e.error === "not-allowed"
+            ? "Mikrofon-Zugriff wurde abgelehnt."
+            : "Spracheingabe nicht möglich.";
+        };
+        rec.onend = () => { mic.classList.remove("on"); laeuft = false;
+          if (hint.textContent === "Ich höre zu…") {
+            hint.textContent = 'Tipp: „Restschuld", „freie Wohnung", „Rendite Syke"';
+          }
+          if (input.value.trim()) zeige(input.value); };
+        try { rec.start(); } catch (_) {}
+      };
+    }
+    return card;
+  }
+
+  /* ---------- BEGRÜSSUNG ---------- */
+  function tagesZeit() {
+    const h = new Date().getHours();
+    if (h < 5)  return "nacht";
+    if (h < 11) return "morgen";
+    if (h < 18) return "tag";
+    if (h < 23) return "abend";
+    return "nacht";
+  }
+  // Sammelt ausschließlich erfreuliche Kennzahlen
+  function motivierendeFakten() {
+    const f = [];
+    const t = FE.totals(D);
+    let units = 0, let_ = 0, tilgGetilgt = 0, tilgMonat = 0, nkJahr = 0;
+    (D.streams || []).forEach(s => {
+      const m = FE.streamMonthly(s);
+      (s.einheiten || []).forEach(u => { units++; if (u.status === "vermietet") let_++; });
+      if (m.nkPuffer) nkJahr += m.nkPuffer * 12;
+      FE.creditsOf(s).forEach(kr => {
+        const p = FE.creditPlan(kr);
+        tilgGetilgt += p.getilgtBisher; tilgMonat += Number(kr.abtragMonat) || 0;
+      });
+    });
+
+    if (t.ist > 0) f.push(`Aktuell fließen <b>${eur(t.ist)}</b> pro Monat herein.`);
+    if (t.jahrIst > 0) f.push(`Hochgerechnet sind das <b>${eur(t.jahrIst)}</b> im Jahr.`);
+    if (units && let_ === units) f.push(`Alle <b>${units} Einheiten</b> sind vermietet – volle Auslastung.`);
+    else if (units && let_ / units >= 0.6)
+      f.push(`<b>${let_} von ${units}</b> Einheiten sind vermietet – ${Math.round(let_ / units * 100)} % Auslastung.`);
+    if (tilgMonat > 0) f.push(`Jeden Monat wandern <b>${eur(tilgMonat)}</b> in die Tilgung – das ist Vermögensaufbau.`);
+    if (tilgGetilgt > 0) f.push(`Bereits <b>${eur(tilgGetilgt)}</b> Schulden getilgt.`);
+    if (nkJahr > 0) f.push(`<b>${eur(nkJahr)}</b> Nebenkosten-Rücklage pro Jahr sorgen für Puffer.`);
+
+    // objektbezogene Fakten
+    (D.streams || []).forEach(s => {
+      const m = FE.streamMonthly(s);
+      if (s.kind === "miete" && s.invest) {
+        const k = FE.immoKPIs(s);
+        if (k.bruttoRendite > 0)
+          f.push(`${esc(shortLabel(s.name))} erzielt <b>${k.bruttoRendite.toLocaleString("de-DE")} %</b> Bruttomietrendite.`);
+      }
+      if (s.kind === "airbnb" && m.gesamt > 0)
+        f.push(`Die Ferienwohnung bringt <b>${eur(m.gesamt)}</b> im Monat.`);
+      if (s.kind === "pacht" && m.jahr > 0)
+        f.push(`Die Landpacht bringt <b>${eur(m.jahr)}</b> jährlich – ganz ohne Aufwand.`);
+    });
+
+    // freie Einheit als Chance formulieren, nicht als Mangel
+    const upside = t.potenzial - t.ist;
+    if (upside > 0) f.push(`Noch <b>${eur(upside)}</b> monatlich Luft nach oben bei Vollvermietung.`);
+    return f;
+  }
+  function begruessungsKarte() {
+    const zeit = tagesZeit();
+    const vorlagen = (D.begruessungen && D.begruessungen[zeit]) || ["Hallo {name}!"];
+    const name = (currentUser && currentUser.anrede) || "";
+    const gruss = vorlagen[Math.floor(Math.random() * vorlagen.length)]
+      .replace("{name}", name).replace(/\s*,\s*!/, "!").trim();
+    const fakten = motivierendeFakten();
+    const fakt = fakten.length ? fakten[Math.floor(Math.random() * fakten.length)] : "";
+    const datum = new Date().toLocaleDateString("de-DE",
+      { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+    return el(`<div class="card pad hello">
+      <div class="hello-t">${esc(gruss)}</div>
+      ${fakt ? `<div class="hello-f">${fakt}</div>` : ""}
+      <div class="hello-d">${esc(datum)}</div></div>`);
+  }
+
   /* ---------- SAMMELSEITE VERMIETUNG ---------- */
   function renderVermietung(host) {
     $("#eyebrow").textContent = "Vermietung";
@@ -365,6 +695,10 @@
     $("#pageSub").textContent = "Alle Einnahmequellen auf einen Blick · Stand " + ((D.meta && D.meta.version) || "");
 
     const ctx = { t, debtMonth, debtRest, paidSoFar, debtOrig, unitsTotal, unitsLet, nettoMonth, nettoPot, upside };
+
+    // Persönliche Begrüßung + Suche
+    host.appendChild(begruessungsKarte());
+    host.appendChild(searchCard());
 
     // KPI-Reihe 1 — Einnahmen & Cashflow
     host.appendChild(wireActs(el(`<div class="grid g-kpi">
@@ -1459,8 +1793,10 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     blockZoom();
+    fuelleBenutzerAuswahl();
     $("#loginBtn").addEventListener("click", tryLogin);
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
+    if ($("#whoami")) $("#whoami").addEventListener("change", () => $("#pw").focus());
     $("#logoutBtn").addEventListener("click", logout);
     if (sessionOK()) enterApp();
     else { $("#login").classList.remove("hide"); setTimeout(() => $("#pw").focus(), 150); }
