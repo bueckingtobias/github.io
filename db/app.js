@@ -1808,7 +1808,7 @@
     if ($("#whoami")) $("#whoami").addEventListener("change", () => $("#pw").focus());
     $("#logoutBtn").addEventListener("click", logout);
 
-    if (sessionOK()) {
+       if (await sessionOK()) {
       try {
         await window.ladeDaten();
         D = window.DASHBOARD_DATA;
