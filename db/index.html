@@ -285,6 +285,53 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .sub-m{font-size:11px;color:var(--softer);margin-top:1px}
 .sub-v{font-family:var(--fdisp);font-size:13px;font-weight:600;flex:0 0 auto}
 
+/* Begrüßung */
+.hello{background:linear-gradient(140deg,rgba(74,222,158,.14),rgba(31,122,90,.06) 60%,transparent);
+  border-color:rgba(74,222,158,.24)}
+.hello-t{font-family:var(--fdisp);font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.hello-f{font-size:13.5px;color:var(--soft);margin-top:9px;line-height:1.5}
+.hello-f b{color:var(--mint-2);font-family:var(--fdisp);font-weight:600}
+.hello-d{font-size:11.5px;color:var(--softer);margin-top:12px}
+/* Suche */
+.search-box{display:flex;align-items:center;gap:10px;background:rgba(6,20,16,.55);
+  border:1px solid var(--stroke-2);border-radius:14px;padding:4px 6px 4px 13px;transition:.16s}
+.search-box:focus-within{border-color:var(--mint);box-shadow:0 0 0 3px rgba(74,222,158,.14)}
+.search-ic{flex:0 0 auto;color:var(--softer);display:grid;place-items:center}
+.search-ic svg{width:17px;height:17px}
+.search-box input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--text);
+  font-family:var(--fbody);font-size:15px;padding:11px 0;-webkit-appearance:none}
+.search-box input::placeholder{color:var(--softer)}
+.search-box input::-webkit-search-cancel-button{-webkit-appearance:none}
+.mic-btn{flex:0 0 auto;width:38px;height:38px;border-radius:11px;border:1px solid var(--stroke-2);
+  background:rgba(6,20,16,.5);color:var(--soft);cursor:pointer;display:grid;place-items:center;transition:.16s}
+.mic-btn svg{width:17px;height:17px}
+.mic-btn:hover{color:var(--text);border-color:var(--mint)}
+.mic-btn.on{background:linear-gradient(140deg,var(--mint),var(--deep));color:#052018;
+  border-color:transparent;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,158,.5)}50%{box-shadow:0 0 0 7px rgba(74,222,158,0)}}
+.search-hint{font-size:11.5px;color:var(--softer);margin-top:10px}
+.qres{margin-top:14px;display:flex;flex-direction:column;gap:2px}
+.qr{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;cursor:pointer;
+  transition:.14s;border:1px solid transparent}
+.qr:hover{background:rgba(74,222,158,.08);border-color:var(--stroke-2)}
+.qr.top{background:rgba(74,222,158,.09);border-color:rgba(74,222,158,.26)}
+.qr-l{flex:1;min-width:0}
+.qr-t{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qr-d{font-size:11.5px;color:var(--softer);margin-top:2px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.qr-v{flex:0 0 auto;font-family:var(--fdisp);font-size:15px;font-weight:600;color:var(--mint-2);
+  font-variant-numeric:tabular-nums}
+/* Login-Dropdown */
+.field.sel{position:relative}
+.field.sel:after{content:"";position:absolute;right:16px;top:50%;width:7px;height:7px;
+  border-right:2px solid var(--soft);border-bottom:2px solid var(--soft);
+  transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.field.sel select{width:100%;background:rgba(6,20,16,.6);border:1px solid var(--stroke-2);
+  border-radius:13px;padding:14px 38px 14px 15px;color:var(--text);font-family:var(--fbody);
+  font-size:15px;outline:none;-webkit-appearance:none;appearance:none;cursor:pointer}
+.field.sel select:focus{border-color:var(--mint);box-shadow:0 0 0 3px rgba(74,222,158,.15)}
+.field.sel select option{background:#0d2a21;color:#e8f5ef}
+
 /* Slider (AirBNB-Auslastung) */
 .sld-wrap{background:rgba(6,20,16,.45);border:1px solid var(--stroke);border-radius:16px;padding:16px 18px;margin-bottom:16px}
 .sld-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
@@ -411,6 +458,10 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
   .kpi .lab{font-size:13px;margin-top:9px}
   .card.pad{padding:17px}
   .card-h{padding:17px 17px 0}.card-b{padding:15px 17px 18px}
+  .hello-t{font-size:22px}
+  .hello-f{font-size:12.5px}
+  .search-box input{font-size:16px}
+  .qr-v{font-size:14px}
   .donut-row{gap:16px}
   .w-now-t{font-size:32px}.w-now-ic{font-size:36px}
   .w-days{gap:6px}.w-day{padding:9px 3px}
@@ -454,6 +505,8 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
       <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#052018" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#052018"/></svg></div>
       <div><h1>Bücking</h1><p>Einnahmen-Übersicht</p></div>
     </div>
+    <label for="whoami">Benutzer</label>
+    <div class="field sel"><select id="whoami"></select></div>
     <label for="pw">Passwort</label>
     <div class="field"><input id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="login-btn" id="loginBtn">Anmelden</button>
