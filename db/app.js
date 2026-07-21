@@ -1791,14 +1791,29 @@
     document.addEventListener("wheel", e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     blockZoom();
     fuelleBenutzerAuswahl();
     $("#loginBtn").addEventListener("click", tryLogin);
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
     if ($("#whoami")) $("#whoami").addEventListener("change", () => $("#pw").focus());
     $("#logoutBtn").addEventListener("click", logout);
-    if (sessionOK()) enterApp();
-    else { $("#login").classList.remove("hide"); setTimeout(() => $("#pw").focus(), 150); }
+
+    if (sessionOK()) {
+      try {
+        await window.ladeDaten();
+        D = window.DASHBOARD_DATA;
+        enterApp();
+      } catch (e) {
+        $("#login").classList.remove("hide");
+        $("#loginMsg").textContent = "Daten konnten nicht geladen werden.";
+        $("#loginMsg").className = "login-msg bad";
+        console.error(e);
+      }
+    } else {
+      $("#login").classList.remove("hide");
+      setTimeout(() => $("#pw").focus(), 150);
+    }
   });
+
 })();
