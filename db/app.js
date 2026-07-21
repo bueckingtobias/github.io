@@ -72,9 +72,18 @@
     msg.textContent = "Prüfe…"; msg.className = "login-msg";
     if (await sha256(v) === (D.auth && D.auth.passwordHash)) {
       currentUser = benutzerById(uid);
-      localStorage.setItem(SESSION, JSON.stringify({ ok: true, ts: Date.now(), user: uid }));
+          localStorage.setItem(SESSION, JSON.stringify({ ok: true, ts: Date.now(), user: uid }));
       localStorage.setItem(LASTUSER, uid);
-      enterApp();
+      try {
+        await window.ladeDaten();
+        D = window.DASHBOARD_DATA;
+        enterApp();
+      } catch (e) {
+        msg.textContent = "Daten konnten nicht geladen werden.";
+        msg.className = "login-msg bad";
+        console.error(e);
+      }
+
     } else { msg.textContent = "Falsches Passwort."; msg.className = "login-msg bad"; $("#pw").select(); }
   }
   function logout() { localStorage.removeItem(SESSION); location.reload(); }
