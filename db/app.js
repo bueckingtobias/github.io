@@ -109,6 +109,16 @@
     location.reload();
   }
 
+  // Brücken für data-save.js
+  window.setD = (neu) => { D = neu; };
+  window.refreshView = () => {
+    // Falls das aktuelle Objekt gelöscht wurde: zurück zur Übersicht
+    const bekannt = currentView === "overview" || currentView === "vermietung"
+      || (D.streams || []).some(x => x.id === currentView);
+    buildRail();
+    route(bekannt ? currentView : "overview");
+  };
+
   function enterApp() {
     $("#login").classList.add("hide"); $("#app").classList.remove("hide");
     buildRail(); route("overview");
@@ -315,6 +325,102 @@
     document.removeEventListener("keydown", sheetEsc);
     $$(".sheet-bd").forEach(n => { n.classList.remove("on"); setTimeout(() => n.remove(), 260); });
   }
+  /* ---------- BEARBEITEN: Formular-Bausteine ---------- */
+  // Einzelnes Eingabefeld
+  function ef(label, name, wert, typ, opt) {
+    opt = opt || {};
+    const v = (wert === null || wert === undefined) ? "" : wert;
+    const step = typ === "number" ? ` step="${opt.step || "0.01"}"` : "";
+    const ph = opt.platzhalter ? ` placeholder="${esc(opt.platzhalter)}"` : "";
+    return `<div class="ef-row">
+      <label class="ef-l">${esc(label)}${opt.pflicht ? ' <span class="ef-req">*</span>' : ""}</label>
+      <input class="ef-i" data-f="${name}" type="${typ || "text"}"${step}${ph}
+             value="${esc(v)}"${opt.readonly ? " readonly" : ""}>
+      ${opt.hinweis ? `<div class="ef-h">${esc(opt.hinweis)}</div>` : ""}
+    </div>`;
+  }
+  // Auswahlfeld
+  function efSel(label, name, wert, optionen, opt) {
+    opt = opt || {};
+    return `<div class="ef-row">
+      <label class="ef-l">${esc(label)}</label>
+      <select class="ef-i" data-f="${name}">
+        ${optionen.map(o => `<option value="${esc(o.v)}"${o.v === wert ? " selected" : ""}>${esc(o.t)}</option>`).join("")}
+      </select>
+      ${opt.hinweis ? `<div class="ef-h">${esc(opt.hinweis)}</div>` : ""}
+    </div>`;
+  }
+  // Mehrzeiliges Feld
+  function efArea(label, name, wert) {
+    return `<div class="ef-row">
+      <label class="ef-l">${esc(label)}</label>
+      <textarea class="ef-i" data-f="${name}" rows="3">${esc(wert || "")}</textarea>
+    </div>`;
+  }
+  // Abschnittsüberschrift im Formular
+  const efTitel = (t) => `<div class="ef-sec">${esc(t)}</div>`;
+  // Knopfleiste
+  function efAktionen(opt) {
+    opt = opt || {};
+    return `<div class="ef-actions">
+      <button class="ef-save" id="efSave">${esc(opt.speichern || "Speichern")}</button>
+      ${opt.loeschen ? `<button class="ef-del" id="efDel">${esc(opt.loeschen)}</button>` : ""}
+    </div>
+    <div class="ef-msg" id="efMsg"></div>`;
+  }
+  // Werte aus dem Formular auslesen
+  function efWerte(wurzel) {
+    const o = {};
+    wurzel.querySelectorAll("[data-f]").forEach(n => { o[n.dataset.f] = n.value; });
+    return o;
+  }
+  const zahl = v => (v === "" || v === null || v === undefined) ? null : Number(v);
+  const text = v => (v === "" || v === null || v === undefined) ? null : String(v).trim();
+
+  // Speichern-Knopf verdrahten, inkl. Fehleranzeige
+  function efBind(sheet, speichernFn, loeschenFn, loeschFrage) {
+    const msg = sheet.querySelector("#efMsg");
+    const btn = sheet.querySelector("#efSave");
+    if (btn) btn.onclick = async () => {
+      msg.textContent = "Speichere…"; msg.className = "ef-msg";
+      btn.disabled = true;
+      try {
+        await speichernFn(efWerte(sheet));
+        closeSheet();
+        await window.nachSpeichern();
+      } catch (e) {
+        msg.textContent = "Fehler: " + window.fehlerText(e);
+        msg.className = "ef-msg bad";
+        btn.disabled = false;
+      }
+    };
+    const del = sheet.querySelector("#efDel");
+    if (del && loeschenFn) del.onclick = async () => {
+      if (del.dataset.sicher !== "1") {
+        del.dataset.sicher = "1";
+        del.textContent = loeschFrage || "Wirklich löschen?";
+        del.classList.add("armed");
+        setTimeout(() => {
+          if (del.dataset.sicher === "1") {
+            del.dataset.sicher = ""; del.textContent = "Löschen"; del.classList.remove("armed");
+          }
+        }, 4000);
+        return;
+      }
+      msg.textContent = "Lösche…"; msg.className = "ef-msg";
+      del.disabled = true;
+      try {
+        await loeschenFn();
+        closeSheet();
+        await window.nachSpeichern();
+      } catch (e) {
+        msg.textContent = "Fehler: " + window.fehlerText(e);
+        msg.className = "ef-msg bad";
+        del.disabled = false;
+      }
+    };
+  }
+
   const kv = (k, v, muted) => `<div class="kv${muted ? " muted" : ""}"><span>${esc(k)}</span><b>${v}</b></div>`;
   function miniBars(rows) {
     const max = Math.max(...rows.map(r => r.value), 1);
@@ -680,6 +786,10 @@
     grid.querySelectorAll(".obj-card").forEach(c => c.onclick = () => route(c.dataset.id));
     host.appendChild(grid);
 
+    const addObj = el(`<div class="card pad add-card"><button class="add-btn wide" id="addObjekt">+ Objekt anlegen</button></div>`);
+    addObj.querySelector("#addObjekt").onclick = () => openObjektEdit(null, true);
+    host.appendChild(addObj);
+
     // Verteilung + Kennzahlen
     const segs = streams.map((s, i) => ({ name: s.name, value: FE.streamMonthly(s).gesamt, color: PALETTE[i % PALETTE.length] })).filter(x => x.value > 0);
     const legend = segs.map(x => `<div class="leg"><span class="sw" style="background:${x.color}"></span>
@@ -852,6 +962,7 @@
           <button class="cal-btn" id="calPrev" aria-label="Vorheriger Monat">‹</button>
           <button class="cal-btn" id="calToday">heute</button>
           <button class="cal-btn" id="calNext" aria-label="Nächster Monat">›</button>
+          <button class="cal-btn" id="calAdd" aria-label="Termin anlegen" title="Termin anlegen">+</button>
           <button class="cal-btn" id="calInfo" aria-label="Übersicht" title="Jahresübersicht">⋯</button>
         </div>
       </div>
@@ -918,7 +1029,7 @@
             const mm = String(e.info).match(/([\d.]+(?:,\d+)?)\s*€/);
             if (mm) betrag = mm[0];
           }
-          return `<div class="cal-ev" style="border-left-color:${c.col}">
+          return `<div class="cal-ev${e._id ? " clickable" : ""}" ${e._id ? `data-ti="${evts.indexOf(e)}"` : ""} style="border-left-color:${c.col}">
             <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
               <div class="cal-ev-t">${esc(e.titel)}</div>
               ${betrag ? `<div class="tl-v" style="color:${c.col}">${esc(betrag)}</div>` : ""}
@@ -933,6 +1044,22 @@
         detail.innerHTML = `<div class="cal-detail"><div class="cal-detail-h">${esc(head)}</div>${list}${foot}</div>`;
       };
       renderDetail(calSelected);
+
+      // Termin anlegen / bearbeiten
+      const neuBtn = card.querySelector("#calAdd");
+      if (neuBtn) neuBtn.onclick = () => {
+        const vor = calSelected
+          ? { titel: "", datum: calSelected, typ: "termin" }
+          : null;
+        openTerminEdit(vor ? { titel: "", datum: calSelected, typ: "termin" } : null, true);
+      };
+      detail.querySelectorAll(".cal-ev[data-ti]").forEach(n => n.onclick = (ev) => {
+        ev.stopPropagation();
+        const key = calSelected;
+        const liste = (map[key] || []);
+        const t = liste[Number(n.dataset.ti)];
+        if (t && t._id) openTerminEdit(t, false);
+      });
 
       host.querySelectorAll(".cal-cell[data-key]").forEach(c => {
         c.onclick = () => {
@@ -1050,6 +1177,12 @@
     $("#eyebrow").textContent = s.kind === "airbnb" ? "Kurzzeitvermietung" : s.kind === "pacht" ? "Landpacht" : "Vermietung";
     $("#pageTitle").textContent = s.name;
     $("#pageSub").textContent = s.ort || "";
+
+    // Objektstammdaten bearbeiten
+    const bar = el(`<div class="obj-bar">
+      <button class="add-btn" id="editObj">Objekt bearbeiten</button></div>`);
+    bar.querySelector("#editObj").onclick = () => openObjektEdit(s, false);
+    host.appendChild(bar);
 
     if (s.kind === "airbnb") return renderAirbnb(host, s, m);
     if (s.kind === "pacht") return renderPacht(host, s, m);
@@ -1179,8 +1312,11 @@
       <div class="tbl-wrap"><table class="tbl">
         <thead><tr><th>Ø Dauer</th><th>Buch.</th><th>Umsatz</th><th>Abzüge</th><th>Netto</th></tr></thead>
         <tbody>${trs}</tbody></table></div>
-      <div class="note" style="margin-top:12px">Kürzere Aufenthalte bringen mehr Reinigungsgebühren, verursachen aber auch mehr Reinigungs- und Verbrauchskosten.</div>`;
-    openSheet("Airbnb-Kalkulation", occ + " % Auslastung · " + eur(cfg.nachtpreis) + "/Nacht", body);
+      <div class="note" style="margin-top:12px">Kürzere Aufenthalte bringen mehr Reinigungsgebühren, verursachen aber auch mehr Reinigungs- und Verbrauchskosten.</div>
+      <button class="ef-open" id="efEdit">Werte bearbeiten</button>`;
+    const sh = openSheet("Airbnb-Kalkulation", occ + " % Auslastung · " + eur(cfg.nachtpreis) + "/Nacht", body);
+    const astream = (D.streams || []).find(x => x.kind === "airbnb");
+    sh.querySelector("#efEdit").onclick = () => openAirbnbEdit(astream);
   }
 
   function renderPacht(host, s, m) {
@@ -1228,9 +1364,11 @@
         <div class="drow-val"><b>${eur(v.jahr / 12)}</b><span>${eur(v.jahr)}/Jahr${abgelaufen ? " · verlängert" : ""}</span></div></div>`;
     }).join("");
     const pTbl = el(`<div class="card"><div class="card-h"><div><div class="card-t">Pachtverträge</div>
-      <div class="card-s">Zeile antippen für Vertragsdetails</div></div></div><div class="card-b">${rows}</div></div>`);
+      <div class="card-s">Zeile antippen für Vertragsdetails</div></div>
+      <button class="add-btn" id="addPacht">+ Vertrag</button></div><div class="card-b">${rows}</div></div>`);
     pTbl.querySelectorAll(".drow[data-vi]").forEach(r =>
       r.onclick = () => openPachtSheet(s, sorted[Number(r.dataset.vi)]));
+    pTbl.querySelector("#addPacht").onclick = () => openPachtEdit(s, null, true);
     host.appendChild(pTbl);
 
     // Zusatz-Insights: Preisvergleich und Kündigungsfristen
@@ -1296,8 +1434,10 @@
         { label: "dieser Vertrag", value: proHa, color: PALETTE[0], display: eur(proHa) + "/ha" },
         { label: "Ø alle Flächen", value: schnitt, color: PALETTE[4], display: eur(schnitt) + "/ha" }
       ])}
-      <div class="note" style="margin-top:12px">${proHa >= schnitt ? "Über" : "Unter"} dem Durchschnitt von ${eur(schnitt)} je Hektar (${proHa >= schnitt ? "+" : ""}${eur(proHa - schnitt)}).</div>`;
-    openSheet(v.paechter, v.flaeche.toLocaleString("de-DE") + " ha · " + v.art, body);
+      <div class="note" style="margin-top:12px">${proHa >= schnitt ? "Über" : "Unter"} dem Durchschnitt von ${eur(schnitt)} je Hektar (${proHa >= schnitt ? "+" : ""}${eur(proHa - schnitt)}).</div>
+      <button class="ef-open" id="efEdit">Bearbeiten</button>`;
+    const sh = openSheet(v.paechter, v.flaeche.toLocaleString("de-DE") + " ha · " + v.art, body);
+    sh.querySelector("#efEdit").onclick = () => openPachtEdit(s, v, false);
   }
 
   // Eine Kredit-Tilgungskarte (Zins, optional Sondertilgung, Restschuld-Kurve)
@@ -1401,6 +1541,9 @@
       c.onclick = () => openCreditSheet(kr);
       host.appendChild(c);
     });
+    const addKr = el(`<div class="card pad add-card"><button class="add-btn wide" id="addCredit">+ Kredit hinzufügen</button></div>`);
+    addKr.querySelector("#addCredit").onclick = () => openCreditEdit(s, null, true);
+    host.appendChild(addKr);
 
     // NK-Puffer Hinweis (klickbar)
     if (m.nkPuffer > 0) {
@@ -1465,9 +1608,11 @@
         <div class="drow-val"><b>${eur(inc.gesamt)}</b><span>${u.status === "vermietet" ? "vermietet" : "frei"}</span></div></div>`;
     }).join("");
     const tblCard = el(`<div class="card"><div class="card-h"><div><div class="card-t">Wohneinheiten</div>
-      <div class="card-s">Zeile antippen für Mieter- und Vertragsdaten</div></div></div><div class="card-b">${rows}</div></div>`);
+      <div class="card-s">Zeile antippen für Mieter- und Vertragsdaten</div></div>
+      <button class="add-btn" id="addUnit">+ Einheit</button></div><div class="card-b">${rows}</div></div>`);
     tblCard.querySelectorAll(".drow[data-i]").forEach(r =>
       r.onclick = () => openUnitSheet(s, (s.einheiten || [])[Number(r.dataset.i)]));
+    tblCard.querySelector("#addUnit").onclick = () => openUnitEdit(s, null, true);
     host.appendChild(tblCard);
   }
 
@@ -1522,8 +1667,10 @@
       ${kv("Laufzeit", v.laufzeit ? esc(v.laufzeit) : "—", !v.laufzeit)}
       ${kv("Kündigungsfrist", v.kuendigungsfrist ? esc(v.kuendigungsfrist) : "—", !v.kuendigungsfrist)}
       ${v.notiz ? `<div class="note" style="margin-top:14px">${esc(v.notiz)}</div>` : ""}
-      <div class="note" style="margin-top:16px">Vergleich: ${proM2 >= schnitt ? "über" : "unter"} dem Objektschnitt von ${schnitt.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €/m².</div>`;
-    openSheet(u.wohnung + " · " + u.flaeche + " m²", s.name, body);
+      <div class="note" style="margin-top:16px">Vergleich: ${proM2 >= schnitt ? "über" : "unter"} dem Objektschnitt von ${schnitt.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €/m².</div>
+      <button class="ef-open" id="efEdit">Bearbeiten</button>`;
+    const sh = openSheet(u.wohnung + " · " + u.flaeche + " m²", s.name, body);
+    sh.querySelector("#efEdit").onclick = () => openUnitEdit(s, u, false);
   }
 
   function openCreditSheet(kr) {
@@ -1559,8 +1706,11 @@
       <div class="note" style="margin-top:8px">${zinsAnteil.toFixed(1)} % der Gesamtkosten sind Zinsen.</div>
       <div class="card-t" style="font-size:14px;margin:20px 0 10px">Tilgung je Jahr</div>
       <table class="tbl"><thead><tr><th>Jahr</th><th>Zins</th><th>Tilgung</th><th>Restschuld</th></tr></thead>
-      <tbody>${trs}</tbody></table>`;
-    openSheet(kr.name || "Kredit", eur(kr.summe) + " · " + (kr.zinsPa || 0).toLocaleString("de-DE") + " % · " + eur(kr.abtragMonat) + "/Monat", body);
+      <tbody>${trs}</tbody></table>
+      <button class="ef-open" id="efEdit">Bearbeiten</button>`;
+    const sh = openSheet(kr.name || "Kredit", eur(kr.summe) + " · " + (kr.zinsPa || 0).toLocaleString("de-DE") + " % · " + eur(kr.abtragMonat) + "/Monat", body);
+    const kstream = (D.streams || []).find(x => FE.creditsOf(x).some(c => c._id === kr._id));
+    sh.querySelector("#efEdit").onclick = () => openCreditEdit(kstream, kr, false);
   }
 
   function openCashflowSheet(s) {
@@ -1803,6 +1953,265 @@
         <div class="note" style="margin-top:12px">Tilgung ${eur(c.debtMonth * 12)}/Jahr. Die Restschuld sinkt mit jeder Rate, der Tilgungsanteil steigt dabei kontinuierlich.</div>`;
       return openSheet("Restschuld", "Alle Kredite im Portfolio", body);
     }
+  }
+
+  /* ---------- BEARBEITEN: Masken ---------- */
+
+  // --- Wohneinheit ---
+  function openUnitEdit(s, u, neu) {
+    const v = (u && u.vertrag) || {};
+    const fix = s.einheiten && s.einheiten.some(x => x.kaltFix != null);
+    const body = `
+      ${efTitel("Grunddaten")}
+      ${ef("Bezeichnung", "bezeichnung", u ? u.wohnung : "", "text", { pflicht: true, platzhalter: "z. B. WE 6" })}
+      ${ef("Fläche in m²", "flaeche", u ? u.flaeche : "", "number", { step: "0.01" })}
+      ${efSel("Status", "status", u ? u.status : "frei",
+        [{ v: "vermietet", t: "vermietet" }, { v: "frei", t: "frei" }])}
+      ${efTitel("Miete")}
+      ${fix
+        ? ef("Kaltmiete fix", "kalt_fix", u ? (u.kaltFix ?? "") : "", "number", { hinweis: "Fester Betrag statt €/m²" }) +
+          ef("Nebenkosten fix", "nk_fix", u ? (u.nkFix ?? "") : "", "number")
+        : ef("Kalt je m²", "kalt_pro_m2", u ? (u.kaltProM2 ?? "") : "", "number") +
+          ef("Nebenkosten je m²", "nk_pro_m2", u ? (u.nkProM2 ?? "") : "", "number")}
+      ${ef("Küche", "kueche", u ? (u.kueche ?? "") : "", "number")}
+      ${ef("Strom", "strom", u ? (u.strom ?? "") : "", "number")}
+      ${ef("Stellplatz", "stellplatz", u ? (u.stellplatz ?? "") : "", "number")}
+      ${efTitel("Mieter")}
+      ${ef("Name", "mieter", u ? (u.mieter || "") : "")}
+      ${ef("Einzug", "einzug", u ? (u.einzug || "") : "", "date")}
+      ${ef("Telefon", "v_telefon", v.telefon || "")}
+      ${ef("E-Mail", "v_email", v.email || "", "email")}
+      ${efTitel("Vertrag")}
+      ${ef("Kaution", "v_kaution", v.kaution ?? "", "number")}
+      ${ef("Vertragsdatum", "v_vertragsdatum", v.vertragsdatum || "", "date")}
+      ${ef("Laufzeit", "v_laufzeit", v.laufzeit || "", "text", { platzhalter: "z. B. unbefristet" })}
+      ${ef("Kündigungsfrist", "v_kuendigungsfrist", v.kuendigungsfrist || "", "text", { platzhalter: "z. B. 3 Monate" })}
+      ${efArea("Notiz", "v_notiz", v.notiz || "")}
+      ${efAktionen({ loeschen: neu ? null : "Löschen" })}`;
+
+    const sheet = openSheet(neu ? "Neue Einheit" : "Bearbeiten",
+      (neu ? "" : u.wohnung + " · ") + s.name, body);
+
+    const bauen = (w) => {
+      const o = {
+        bezeichnung: text(w.bezeichnung) || "Einheit",
+        flaeche: zahl(w.flaeche),
+        status: w.status,
+        kueche: zahl(w.kueche), strom: zahl(w.strom), stellplatz: zahl(w.stellplatz),
+        mieter: text(w.mieter), einzug: text(w.einzug),
+        vertrag: {
+          kaution: zahl(w.v_kaution),
+          vertragsdatum: text(w.v_vertragsdatum),
+          laufzeit: text(w.v_laufzeit),
+          kuendigungsfrist: text(w.v_kuendigungsfrist),
+          telefon: w.v_telefon || "", email: w.v_email || "", notiz: w.v_notiz || ""
+        }
+      };
+      if ("kalt_fix" in w) { o.kalt_fix = zahl(w.kalt_fix); o.nk_fix = zahl(w.nk_fix); }
+      else { o.kalt_pro_m2 = zahl(w.kalt_pro_m2); o.nk_pro_m2 = zahl(w.nk_pro_m2); }
+      return o;
+    };
+    efBind(sheet,
+      async (w) => neu ? await neueEinheit(s._id, bauen(w)) : await speichereEinheit(u._id, bauen(w)),
+      neu ? null : async () => await loescheEinheit(u._id),
+      "Einheit endgültig löschen?");
+  }
+
+  // --- Kredit ---
+  function openCreditEdit(s, kr, neu) {
+    const st = (kr && kr.sondertilgung) || null;
+    const body = `
+      ${efTitel("Grunddaten")}
+      ${ef("Bezeichnung", "name", kr ? kr.name : "", "text", { pflicht: true, platzhalter: "z. B. KfW-Darlehen" })}
+      ${ef("Darlehenssumme", "summe", kr ? kr.summe : "", "number", { pflicht: true })}
+      ${ef("Zinssatz % p. a.", "zins_pa", kr ? kr.zinsPa : "", "number", { step: "0.001", pflicht: true })}
+      ${ef("Rate je Monat", "rate_monat", kr ? kr.abtragMonat : "", "number", { pflicht: true })}
+      ${ef("Erste Rate am", "start", kr ? (kr.start || "") : "", "date",
+        { hinweis: "Bestimmt den Tilgungsverlauf" })}
+      ${efTitel("Kontostand")}
+      ${ef("Restschuld laut Bank", "rest_stand_betrag", kr && kr.restStand ? kr.restStand.betrag : "", "number",
+        { hinweis: "Maßgeblich für die Anzeige – überschreibt die Modellrechnung" })}
+      ${ef("Stand vom", "rest_stand_datum", kr && kr.restStand ? kr.restStand.datum : "", "date")}
+      ${efTitel("Sondertilgung")}
+      ${ef("Betrag je Zahlung", "st_betrag", st ? st.betrag : "", "number",
+        { hinweis: "Leer lassen, wenn keine Sondertilgung vereinbart ist" })}
+      ${ef("Monate", "st_monate", st ? (st.monate || []).join(", ") : "", "text",
+        { platzhalter: "z. B. 12  oder  6, 12", hinweis: "Monatsnummern durch Komma getrennt" })}
+      ${efAktionen({ loeschen: neu ? null : "Löschen" })}`;
+
+    const sheet = openSheet(neu ? "Neuer Kredit" : "Kredit bearbeiten",
+      (neu ? "" : (kr.name + " · ")) + s.name, body);
+
+    const bauen = (w) => {
+      const monate = String(w.st_monate || "").split(",")
+        .map(x => parseInt(x.trim(), 10)).filter(x => x >= 1 && x <= 12);
+      const betrag = zahl(w.st_betrag);
+      return {
+        name: text(w.name) || "Kredit",
+        summe: zahl(w.summe) || 0,
+        zins_pa: zahl(w.zins_pa) || 0,
+        rate_monat: zahl(w.rate_monat) || 0,
+        start: text(w.start),
+        rest_stand_betrag: zahl(w.rest_stand_betrag),
+        rest_stand_datum: text(w.rest_stand_datum),
+        sondertilgung: (betrag && monate.length) ? { betrag, monate } : null
+      };
+    };
+    efBind(sheet,
+      async (w) => neu ? await neuerKredit(s._id, bauen(w)) : await speichereKredit(kr._id, bauen(w)),
+      neu ? null : async () => await loescheKredit(kr._id),
+      "Kredit endgültig löschen?");
+  }
+
+  // --- Pachtvertrag ---
+  function openPachtEdit(s, v, neu) {
+    const body = `
+      ${efTitel("Vertrag")}
+      ${ef("Pächter", "paechter", v ? v.paechter : "", "text", { pflicht: true })}
+      ${ef("Pacht je Jahr", "jahr_betrag", v ? v.jahr : "", "number", { pflicht: true })}
+      ${ef("Fläche in ha", "flaeche", v ? v.flaeche : "", "number", { step: "0.01" })}
+      ${ef("Flächenart", "art", v ? (v.art || "") : "", "text", { platzhalter: "z. B. Ackerland" })}
+      ${efTitel("Laufzeit")}
+      ${ef("Beginn", "start", v ? (v.start || "") : "", "date")}
+      ${ef("Ende", "ende", v ? (v.ende || "") : "", "text",
+        { platzhalter: "JJJJ-MM-TT oder „jährlich“", hinweis: "„jährlich“ bei automatischer Verlängerung" })}
+      ${efAktionen({ loeschen: neu ? null : "Löschen" })}`;
+
+    const sheet = openSheet(neu ? "Neuer Pachtvertrag" : "Vertrag bearbeiten",
+      neu ? s.name : v.paechter, body);
+
+    const bauen = (w) => ({
+      paechter: text(w.paechter) || "Pächter",
+      jahr_betrag: zahl(w.jahr_betrag) || 0,
+      flaeche: zahl(w.flaeche),
+      art: text(w.art),
+      start: text(w.start),
+      ende: text(w.ende)
+    });
+    efBind(sheet,
+      async (w) => neu ? await neuerPachtvertrag(s._id, bauen(w)) : await speicherePacht(v._id, bauen(w)),
+      neu ? null : async () => await loeschePacht(v._id),
+      "Vertrag endgültig löschen?");
+  }
+
+  // --- Objekt ---
+  function openObjektEdit(s, neu) {
+    const nkPos = (s && s.nkPositionen) || [];
+    const body = `
+      ${efTitel("Grunddaten")}
+      ${ef("Name", "name", s ? s.name : "", "text", { pflicht: true })}
+      ${ef("Kurzname (intern)", "slug", s ? s.id : "", "text",
+        { pflicht: true, hinweis: "Ohne Leerzeichen, z. B. haus-nord" })}
+      ${efSel("Art", "art", s ? s.kind : "miete",
+        [{ v: "miete", t: "Vermietung" }, { v: "airbnb", t: "Kurzzeitvermietung" }, { v: "pacht", t: "Landpacht" }],
+        { hinweis: neu ? "" : "Nachträgliche Änderung kann Daten unbrauchbar machen" })}
+      ${ef("Ort", "ort", s ? (s.ort || "") : "")}
+      ${efArea("Notiz", "notiz", s ? (s.note || "") : "")}
+      ${efTitel("Wirtschaftlich")}
+      ${ef("Investitionssumme", "invest", s ? (s.invest ?? "") : "", "number",
+        { hinweis: "Basis für Rendite-Kennzahlen" })}
+      ${efSel("Nebenkosten", "nk_als_puffer", s && s.nkAlsPuffer ? "1" : "0",
+        [{ v: "1", t: "als Rücklage behandeln" }, { v: "0", t: "als Ertrag zählen" }])}
+      ${efArea("NK-Positionen", "nk_positionen",
+        nkPos.map(p => p.titel + " = " + p.anteil).join("\n"))}
+      <div class="ef-h" style="margin-top:-6px">Je Zeile: Bezeichnung = Anteil in Prozent</div>
+      ${efAktionen({ loeschen: neu ? null : "Objekt löschen" })}`;
+
+    const sheet = openSheet(neu ? "Neues Objekt" : "Objekt bearbeiten", neu ? "" : s.name, body);
+
+    const bauen = (w) => {
+      const pos = String(w.nk_positionen || "").split("\n")
+        .map(z => z.split("="))
+        .filter(t => t.length === 2 && t[0].trim())
+        .map(t => ({ titel: t[0].trim(), anteil: Number(t[1].trim()) || 0 }));
+      return {
+        name: text(w.name) || "Objekt",
+        slug: (text(w.slug) || "objekt").toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+        art: w.art,
+        ort: text(w.ort),
+        notiz: text(w.notiz),
+        invest: zahl(w.invest),
+        nk_als_puffer: w.nk_als_puffer === "1",
+        nk_positionen: pos.length ? pos : null
+      };
+    };
+    efBind(sheet,
+      async (w) => {
+        if (neu) { await neuesObjekt(bauen(w)); }
+        else { await speichereObjekt(s._id, bauen(w)); }
+      },
+      neu ? null : async () => { await loescheObjekt(s._id); currentView = "overview"; },
+      "Objekt mit allen Daten löschen?");
+  }
+
+  // --- AirBNB-Einstellungen ---
+  function openAirbnbEdit(s) {
+    const a = s.airbnb || {};
+    const body = `
+      ${efTitel("Preise")}
+      ${ef("Preis je Nacht", "nachtpreis", a.nachtpreis ?? "", "number", { pflicht: true })}
+      ${ef("Auslastung in %", "auslastung", a.auslastung ?? "", "number",
+        { hinweis: "Ausgangswert für den Regler" })}
+      ${ef("Reinigungsgebühr (Gast)", "reinigungsgebuehr", a.reinigungsgebuehr ?? "", "number")}
+      ${efTitel("Kosten")}
+      ${ef("Reinigungskosten je Buchung", "reinigungskosten", a.reinigungskosten ?? "", "number")}
+      ${ef("Verbrauch je Buchung", "verbrauchProBuchung", a.verbrauchProBuchung ?? "", "number",
+        { hinweis: "Wäsche, Verbrauchsmaterial" })}
+      ${efTitel("Buchungen")}
+      ${ef("Ø Aufenthaltsdauer", "aufenthaltsdauer", a.aufenthaltsdauer ?? "", "number",
+        { step: "1", hinweis: "Nächte je Buchung – bestimmt die Anzahl der Reinigungen" })}
+      ${ef("Servicegebühr in %", "servicegebuehrProzent", a.servicegebuehrProzent ?? "", "number", { step: "0.1" })}
+      ${efSel("Gebührenmodell", "gebuehrenmodell", a.gebuehrenmodell || "host",
+        [{ v: "host", t: "Host-Fee (Gast zahlt Servicegebühr)" },
+         { v: "vereinfacht", t: "Vereinfachte Preise (~15 %)" }])}
+      ${efAktionen({})}`;
+
+    const sheet = openSheet("Kalkulation bearbeiten", s.name, body);
+    efBind(sheet, async (w) => {
+      await speichereObjekt(s._id, {
+        airbnb_config: {
+          nachtpreis: zahl(w.nachtpreis) || 0,
+          auslastung: zahl(w.auslastung) || 0,
+          reinigungsgebuehr: zahl(w.reinigungsgebuehr) || 0,
+          reinigungskosten: zahl(w.reinigungskosten) || 0,
+          verbrauchProBuchung: zahl(w.verbrauchProBuchung) || 0,
+          aufenthaltsdauer: zahl(w.aufenthaltsdauer) || 1,
+          servicegebuehrProzent: zahl(w.servicegebuehrProzent) || 0,
+          gebuehrenmodell: w.gebuehrenmodell
+        }
+      });
+    });
+  }
+
+  // --- Termin ---
+  function openTerminEdit(t, neu) {
+    const body = `
+      ${ef("Titel", "titel", t ? t.titel : "", "text", { pflicht: true })}
+      ${ef("Datum", "datum", t ? t.datum : new Date().toISOString().slice(0, 10), "date", { pflicht: true })}
+      ${efSel("Art", "art", t ? t.typ : "termin",
+        [{ v: "miete", t: "Mieteingang" }, { v: "einzug", t: "Einzug" },
+         { v: "zahlung", t: "Zahlung" }, { v: "termin", t: "Termin" }])}
+      ${efSel("Wiederholung", "wiederholung", t ? (t.wiederholung || "") : "",
+        [{ v: "", t: "einmalig" }, { v: "monatlich", t: "monatlich" },
+         { v: "halbjaehrlich", t: "halbjährlich" }, { v: "jaehrlich", t: "jährlich" }])}
+      ${ef("Zusatz", "info", t ? (t.info || "") : "", "text",
+        { platzhalter: "z. B. 10.000 €", hinweis: "Erscheint in der Tagesansicht" })}
+      ${efAktionen({ loeschen: neu ? null : "Löschen" })}`;
+
+    const sheet = openSheet(neu ? "Neuer Termin" : "Termin bearbeiten",
+      neu ? "" : dateDE(t.datum), body);
+
+    const bauen = (w) => ({
+      titel: text(w.titel) || "Termin",
+      datum: text(w.datum),
+      art: w.art,
+      wiederholung: text(w.wiederholung),
+      info: text(w.info)
+    });
+    efBind(sheet,
+      async (w) => neu ? await neuerTermin(bauen(w)) : await speichereTermin(t._id, bauen(w)),
+      neu ? null : async () => await loescheTermin(t._id),
+      "Termin löschen?");
   }
 
   /* ---------- BOOT ---------- */
