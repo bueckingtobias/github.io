@@ -16,10 +16,6 @@
   const el = h => { const t = document.createElement("template"); t.innerHTML = h.trim(); return t.content.firstElementChild; };
   const monthShort = m => { const d = new Date(m + "-01"); return d.toLocaleDateString("de-DE", { month: "short" }); };
 
-  async function sha256(str) {
-    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, "0")).join("");
-  }
 
   /* ---------- ICONS ---------- */
   const IC = {
@@ -57,36 +53,59 @@
     const last = localStorage.getItem(LASTUSER);
     if (last && benutzerListe().some(b => b.id === last)) sel.value = last;
   }
-  function sessionOK() {
-    try { const s = JSON.parse(localStorage.getItem(SESSION) || "null");
-      if (!(s && s.ok && (Date.now() - s.ts) < ((D.auth && D.auth.sessionHours) || 12) * 3600e3))
-        return false;
-      currentUser = benutzerById(s.user);
+  // Prüft die Supabase-Sitzung
+  async function sessionOK() {
+    try {
+      if (!window.sb) return false;
+      const { data: { session } } = await window.sb.auth.getSession();
+      if (!session) return false;
+      const mail = ((session.user && session.user.email) || "").toLowerCase();
+      currentUser = benutzerListe().find(b =>
+        (b.email || "").toLowerCase() === mail) || benutzerListe()[0];
+      localStorage.setItem(LASTUSER, currentUser.id);
       return true;
     } catch { return false; }
   }
+
   async function tryLogin() {
     const msg = $("#loginMsg"), v = $("#pw").value;
-    const uid = $("#whoami") ? $("#whoami").value : "gast";
+    const uid = $("#whoami") ? $("#whoami").value : null;
+    const user = benutzerById(uid);
+    if (!user || !user.email) {
+      msg.textContent = "Für diesen Benutzer ist keine E-Mail hinterlegt.";
+      msg.className = "login-msg bad"; return;
+    }
     if (!v) { msg.textContent = "Bitte Passwort eingeben."; msg.className = "login-msg bad"; return; }
-    msg.textContent = "Prüfe…"; msg.className = "login-msg";
-    if (await sha256(v) === (D.auth && D.auth.passwordHash)) {
-      currentUser = benutzerById(uid);
-          localStorage.setItem(SESSION, JSON.stringify({ ok: true, ts: Date.now(), user: uid }));
-      localStorage.setItem(LASTUSER, uid);
-      try {
-        await window.ladeDaten();
-        D = window.DASHBOARD_DATA;
-        enterApp();
-      } catch (e) {
-        msg.textContent = "Daten konnten nicht geladen werden.";
-        msg.className = "login-msg bad";
-        console.error(e);
-      }
+    msg.textContent = "Anmeldung läuft…"; msg.className = "login-msg";
 
-    } else { msg.textContent = "Falsches Passwort."; msg.className = "login-msg bad"; $("#pw").select(); }
+    const { error } = await window.sb.auth.signInWithPassword({
+      email: user.email, password: v
+    });
+    if (error) {
+      msg.textContent = "Anmeldung fehlgeschlagen.";
+      msg.className = "login-msg bad";
+      $("#pw").select();
+      console.error(error);
+      return;
+    }
+    currentUser = user;
+    localStorage.setItem(LASTUSER, user.id);
+    try {
+      await window.ladeDaten();
+      D = window.DASHBOARD_DATA;
+      enterApp();
+    } catch (e) {
+      msg.textContent = "Daten konnten nicht geladen werden.";
+      msg.className = "login-msg bad";
+      console.error(e);
+    }
   }
-  function logout() { localStorage.removeItem(SESSION); location.reload(); }
+
+  async function logout() {
+    try { if (window.sb) await window.sb.auth.signOut(); } catch (_) {}
+    localStorage.removeItem(SESSION);
+    location.reload();
+  }
 
   function enterApp() {
     $("#login").classList.add("hide"); $("#app").classList.remove("hide");
@@ -1808,7 +1827,7 @@
     if ($("#whoami")) $("#whoami").addEventListener("change", () => $("#pw").focus());
     $("#logoutBtn").addEventListener("click", logout);
 
-       if (await sessionOK()) {
+    if (await sessionOK()) {
       try {
         await window.ladeDaten();
         D = window.DASHBOARD_DATA;
@@ -1818,11 +1837,11 @@
         $("#loginMsg").textContent = "Daten konnten nicht geladen werden.";
         $("#loginMsg").className = "login-msg bad";
         console.error(e);
+        setTimeout(() => $("#pw").focus(), 150);
       }
     } else {
       $("#login").classList.remove("hide");
       setTimeout(() => $("#pw").focus(), 150);
     }
   });
-
 })();
