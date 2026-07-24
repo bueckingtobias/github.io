@@ -134,16 +134,16 @@
   function setRegMode(on) {
     regMode = on;
     const zeig = (id, sichtbar) => { const n = $(id); if (n) n.classList.toggle("hide", !sichtbar); };
-    zeig("#rowWho", !on);
     zeig("#rowAvatar", on);
     zeig("#rowName", on);
-    zeig("#rowMail", on);
     zeig("#loginBtn", !on);
     zeig("#registerBtn", on);
-    $("#pwLabel").textContent = "Passwort";
+    // Reiter-Optik
+    $("#tabLogin").classList.toggle("active", !on);
+    $("#tabRegister").classList.toggle("active", on);
+    $("#tabInd").classList.toggle("right", on);
     $("#pw").setAttribute("autocomplete", on ? "new-password" : "current-password");
-    $("#switchText").textContent = on ? "Schon registriert?" : "Noch kein Konto?";
-    $("#switchMode").textContent = on ? "Zur Anmeldung" : "Jetzt registrieren";
+    $("#pw").value = "";
     $("#loginMsg").textContent = "";
     $("#loginMsg").className = "login-msg";
   }
@@ -162,9 +162,9 @@
     }
     avatarDatei = file;
     const url = URL.createObjectURL(file);
-    const prev = $("#avaPrev");
-    prev.style.backgroundImage = `url(${url})`;
-    prev.innerHTML = "";
+    $("#avaPrev").style.backgroundImage = `url(${url})`;
+    $("#avaBtn").classList.add("filled");
+    $("#avaCap").textContent = "Bild ändern";
   }
 
   async function tryRegister() {
@@ -2369,7 +2369,8 @@
 
     // Registrierung
     if ($("#registerBtn")) $("#registerBtn").addEventListener("click", tryRegister);
-    if ($("#switchMode")) $("#switchMode").addEventListener("click", () => setRegMode(!regMode));
+    if ($("#tabLogin")) $("#tabLogin").addEventListener("click", () => setRegMode(false));
+    if ($("#tabRegister")) $("#tabRegister").addEventListener("click", () => setRegMode(true));
     if ($("#avaBtn")) $("#avaBtn").addEventListener("click", waehleAvatar);
     if ($("#avaFile")) $("#avaFile").addEventListener("change", avatarGewaehlt);
 
