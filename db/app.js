@@ -53,49 +53,67 @@
     const last = localStorage.getItem(LASTUSER);
     if (last && benutzerListe().some(b => b.id === last)) sel.value = last;
   }
+  // Lädt das Profil des angemeldeten Nutzers aus der Datenbank
+  async function ladeProfil(session) {
+    const mail = ((session.user && session.user.email) || "");
+    let profil = null;
+    try {
+      const { data } = await window.sb.from("mitglieder")
+        .select("name, email, avatar_url, rolle").limit(1).single();
+      profil = data;
+    } catch (_) {}
+    const name = (profil && profil.name) || mail.split("@")[0];
+    currentUser = {
+      id: session.user.id,
+      name: name,
+      anrede: (name || "").split(" ")[0],
+      email: mail,
+      avatar: profil && profil.avatar_url || null,
+      rolle: profil && profil.rolle || "inhaber"
+    };
+  }
   // Prüft die Supabase-Sitzung
   async function sessionOK() {
     try {
       if (!window.sb) return false;
       const { data: { session } } = await window.sb.auth.getSession();
       if (!session) return false;
-      const mail = ((session.user && session.user.email) || "").toLowerCase();
-      currentUser = benutzerListe().find(b =>
-        (b.email || "").toLowerCase() === mail) || benutzerListe()[0];
-      localStorage.setItem(LASTUSER, currentUser.id);
+      await ladeProfil(session);
       return true;
     } catch { return false; }
   }
 
+  // E-Mail bestimmen: aus dem E-Mail-Feld, sonst über die (lokale) Benutzerauswahl
+  function loginEmail() {
+    const feld = $("#mail") && $("#mail").value.trim();
+    if (feld) return feld;
+    const uid = $("#whoami") ? $("#whoami").value : null;
+    const b = benutzerById(uid);
+    return (b && b.email) || "";
+  }
   async function tryLogin() {
     const msg = $("#loginMsg"), v = $("#pw").value;
-    const uid = $("#whoami") ? $("#whoami").value : null;
-    const user = benutzerById(uid);
-    if (!user || !user.email) {
-      msg.textContent = "Für diesen Benutzer ist keine E-Mail hinterlegt.";
-      msg.className = "login-msg bad"; return;
-    }
+    const mail = loginEmail();
+    if (!mail) { msg.textContent = "Bitte E-Mail eingeben."; msg.className = "login-msg bad"; return; }
     if (!v) { msg.textContent = "Bitte Passwort eingeben."; msg.className = "login-msg bad"; return; }
     msg.textContent = "Anmeldung läuft…"; msg.className = "login-msg";
 
-    const { error } = await window.sb.auth.signInWithPassword({
-      email: user.email, password: v
+    const { data, error } = await window.sb.auth.signInWithPassword({
+      email: mail, password: v
     });
     if (error) {
-      msg.textContent = "Anmeldung fehlgeschlagen.";
+      msg.textContent = "Anmeldung fehlgeschlagen. E-Mail oder Passwort falsch.";
       msg.className = "login-msg bad";
       $("#pw").select();
       console.error(error);
       return;
     }
-    currentUser = user;
-    localStorage.setItem(LASTUSER, user.id);
     try {
+      await ladeProfil(data.session);
       await window.ladeDaten();
       D = window.DASHBOARD_DATA;
       enterApp();
     } catch (e) {
-      // Klartext-Fehler direkt anzeigen (hilfreich ohne Konsole, z. B. auf dem iPad)
       const txt = (e && (e.message || e.hint || e.details || e.code)) || JSON.stringify(e);
       msg.textContent = "Fehler: " + txt;
       msg.className = "login-msg bad";
@@ -107,6 +125,110 @@
     try { if (window.sb) await window.sb.auth.signOut(); } catch (_) {}
     localStorage.removeItem(SESSION);
     location.reload();
+  }
+
+  /* ---------- REGISTRIERUNG ---------- */
+  let regMode = false;            // false = anmelden, true = registrieren
+  let avatarDatei = null;         // gewählte Bilddatei
+
+  function setRegMode(on) {
+    regMode = on;
+    const zeig = (id, sichtbar) => { const n = $(id); if (n) n.classList.toggle("hide", !sichtbar); };
+    zeig("#rowWho", !on);
+    zeig("#rowAvatar", on);
+    zeig("#rowName", on);
+    zeig("#rowMail", on);
+    zeig("#loginBtn", !on);
+    zeig("#registerBtn", on);
+    $("#pwLabel").textContent = "Passwort";
+    $("#pw").setAttribute("autocomplete", on ? "new-password" : "current-password");
+    $("#switchText").textContent = on ? "Schon registriert?" : "Noch kein Konto?";
+    $("#switchMode").textContent = on ? "Zur Anmeldung" : "Jetzt registrieren";
+    $("#loginMsg").textContent = "";
+    $("#loginMsg").className = "login-msg";
+  }
+
+  function waehleAvatar() {
+    const f = $("#avaFile");
+    if (f) f.click();
+  }
+  function avatarGewaehlt(ev) {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      $("#loginMsg").textContent = "Bild ist zu groß (max. 5 MB).";
+      $("#loginMsg").className = "login-msg bad";
+      return;
+    }
+    avatarDatei = file;
+    const url = URL.createObjectURL(file);
+    const prev = $("#avaPrev");
+    prev.style.backgroundImage = `url(${url})`;
+    prev.innerHTML = "";
+  }
+
+  async function tryRegister() {
+    const msg = $("#loginMsg");
+    const name = $("#regName").value.trim();
+    const mail = $("#mail").value.trim();
+    const pw = $("#pw").value;
+    if (!name) { msg.textContent = "Bitte Namen eingeben."; msg.className = "login-msg bad"; return; }
+    if (!mail) { msg.textContent = "Bitte E-Mail eingeben."; msg.className = "login-msg bad"; return; }
+    if (pw.length < 6) { msg.textContent = "Passwort mindestens 6 Zeichen."; msg.className = "login-msg bad"; return; }
+    msg.textContent = "Konto wird erstellt…"; msg.className = "login-msg";
+    $("#registerBtn").disabled = true;
+
+    // 1. Konto anlegen. Der Datenbank-Trigger legt automatisch die eigene Organisation an.
+    const { data, error } = await window.sb.auth.signUp({
+      email: mail, password: pw,
+      options: { data: { name: name } }
+    });
+    if (error) {
+      msg.textContent = "Registrierung fehlgeschlagen: " + (error.message || "");
+      msg.className = "login-msg bad";
+      $("#registerBtn").disabled = false;
+      return;
+    }
+
+    // 2. Ohne aktive Sitzung (E-Mail-Bestätigung nötig): Hinweis zeigen
+    if (!data.session) {
+      msg.textContent = "Fast fertig — bitte bestätige die E-Mail, die wir dir geschickt haben.";
+      msg.className = "login-msg";
+      $("#registerBtn").disabled = false;
+      return;
+    }
+
+    // 3. Profilbild hochladen (falls gewählt)
+    try {
+      if (avatarDatei && data.user) {
+        const url = await ladeAvatarHoch(data.user.id, avatarDatei);
+        if (url) await window.sb.from("mitglieder")
+          .update({ avatar_url: url }).eq("auth_user_id", data.user.id);
+      }
+    } catch (e) { console.error("Avatar:", e); }
+
+    // 4. Direkt einloggen
+    try {
+      await ladeProfil(data.session);
+      await window.ladeDaten();
+      D = window.DASHBOARD_DATA;
+      enterApp();
+    } catch (e) {
+      const txt = (e && (e.message || e.hint || e.details || e.code)) || JSON.stringify(e);
+      msg.textContent = "Konto erstellt, aber: " + txt;
+      msg.className = "login-msg bad";
+      $("#registerBtn").disabled = false;
+    }
+  }
+
+  async function ladeAvatarHoch(userId, file) {
+    const endung = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const pfad = `${userId}/profil.${endung}`;
+    const { error } = await window.sb.storage.from("avatars")
+      .upload(pfad, file, { upsert: true, contentType: file.type });
+    if (error) throw error;
+    const { data } = window.sb.storage.from("avatars").getPublicUrl(pfad);
+    return data.publicUrl;
   }
 
   // Brücken für data-save.js
@@ -729,10 +851,17 @@
     const fakt = fakten.length ? fakten[Math.floor(Math.random() * fakten.length)] : "";
     const datum = new Date().toLocaleDateString("de-DE",
       { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
-    return el(`<div class="card pad hello">
-      <div class="hello-t">${esc(gruss)}</div>
-      ${fakt ? `<div class="hello-f">${fakt}</div>` : ""}
-      <div class="hello-d">${esc(datum)}</div></div>`);
+    const ava = currentUser && currentUser.avatar;
+    const avaHtml = ava
+      ? `<div class="hello-ava" style="background-image:url(${esc(ava)})"></div>`
+      : (name ? `<div class="hello-ava hello-ava-i">${esc(name.slice(0,1).toUpperCase())}</div>` : "");
+    return el(`<div class="card pad hello${avaHtml ? " has-ava" : ""}">
+      ${avaHtml}
+      <div class="hello-body">
+        <div class="hello-t">${esc(gruss)}</div>
+        ${fakt ? `<div class="hello-f">${fakt}</div>` : ""}
+        <div class="hello-d">${esc(datum)}</div>
+      </div></div>`);
   }
 
   /* ---------- SAMMELSEITE VERMIETUNG ---------- */
@@ -2234,9 +2363,15 @@
     blockZoom();
     fuelleBenutzerAuswahl();
     $("#loginBtn").addEventListener("click", tryLogin);
-    $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
+    $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") regMode ? tryRegister() : tryLogin(); });
     if ($("#whoami")) $("#whoami").addEventListener("change", () => $("#pw").focus());
     $("#logoutBtn").addEventListener("click", logout);
+
+    // Registrierung
+    if ($("#registerBtn")) $("#registerBtn").addEventListener("click", tryRegister);
+    if ($("#switchMode")) $("#switchMode").addEventListener("click", () => setRegMode(!regMode));
+    if ($("#avaBtn")) $("#avaBtn").addEventListener("click", waehleAvatar);
+    if ($("#avaFile")) $("#avaFile").addEventListener("change", avatarGewaehlt);
 
     if (await sessionOK()) {
       try {
