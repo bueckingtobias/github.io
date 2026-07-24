@@ -102,6 +102,6 @@ async function nachSpeichern() {
   window.refreshView();
 }
 
+window.meineOrgId = meineOrgId;
 window.nachSpeichern = nachSpeichern;
 window.fehlerText = fehlerText;
-
