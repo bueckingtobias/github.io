@@ -103,6 +103,144 @@
     location.reload();
   }
 
+  /* ---------- ABO / TARIF ---------- */
+  const TARIFE = {
+    basic:   { name: "Basic",   preis: "19,99 €", objekte: 3, einheiten: 10 },
+    premium: { name: "Premium", preis: "49,99 €", objekte: Infinity, einheiten: Infinity }
+  };
+  function abo() {
+    return (D && D.abo) || { tarif: "premium", roh_tarif: "test", objekte: 0, einheiten: 0 };
+  }
+  function istPremium() { return abo().tarif === "premium"; }
+  function istGesperrt() { return abo().tarif === "gesperrt"; }
+
+  // Prüft, ob eine Aktion erlaubt ist. Gibt true zurück oder zeigt den Upgrade-Hinweis.
+  function pruefeObjekt(art) {
+    const a = abo();
+    if (a.tarif === "gesperrt") { openUpgradeSheet("gesperrt"); return false; }
+    if (a.tarif === "premium") return true;
+    // basic
+    if (art && art !== "miete") { openUpgradeSheet("art"); return false; }
+    if (a.objekte >= 3) { openUpgradeSheet("objekte"); return false; }
+    return true;
+  }
+  function pruefeEinheit() {
+    const a = abo();
+    if (a.tarif === "gesperrt") { openUpgradeSheet("gesperrt"); return false; }
+    if (a.tarif === "premium") return true;
+    if (a.einheiten >= 10) { openUpgradeSheet("einheiten"); return false; }
+    return true;
+  }
+
+  function openUpgradeSheet(grund) {
+    const texte = {
+      objekte:   { t: "Objekt-Grenze erreicht", d: "Im Basic-Tarif kannst du bis zu 3 Objekte verwalten. Mit Premium werden es unbegrenzt viele." },
+      einheiten: { t: "Einheiten-Grenze erreicht", d: "Basic umfasst bis zu 10 Einheiten. Premium hebt die Grenze vollständig auf." },
+      art:       { t: "Nur mit Premium", d: "AirBNB- und Landpacht-Objekte sind Premium vorbehalten. Basic deckt die klassische Vermietung ab." },
+      gesperrt:  { t: "Bearbeiten pausiert", d: "Dein Testzeitraum ist abgelaufen oder es liegt keine gültige Zahlung vor. Deine Daten bleiben erhalten und lesbar — mit einem aktiven Abo kannst du sie wieder bearbeiten." }
+    };
+    const info = texte[grund] || texte.objekte;
+    const prem = TARIFE.premium;
+    const body = `
+      <div class="up-hero">
+        <div class="up-badge">${grund === "gesperrt" ? "Pausiert" : "Upgrade"}</div>
+        <div class="up-t">${esc(info.t)}</div>
+        <div class="up-d">${esc(info.d)}</div>
+      </div>
+      <div class="up-plan">
+        <div class="up-plan-h">
+          <div><div class="up-plan-n">Premium</div>
+            <div class="up-plan-s">Alles ohne Grenzen</div></div>
+          <div class="up-plan-p">${prem.preis}<span>/Monat</span></div>
+        </div>
+        <ul class="up-feats">
+          <li>Unbegrenzt Objekte und Einheiten</li>
+          <li>AirBNB- und Landpacht-Objekte</li>
+          <li>Alle Analysen und Auswertungen</li>
+        </ul>
+        <button class="up-cta" id="upCta">Auf Premium wechseln</button>
+        <div class="up-note">Erster Monat kostenlos · monatlich kündbar</div>
+      </div>`;
+    const sheet = openSheet(grund === "gesperrt" ? "Abo" : "Mehr freischalten", "", body);
+    sheet.querySelector("#upCta").onclick = () => { closeSheet(); openTarifSheet(); };
+  }
+
+  // Tarifübersicht (Vergleich beider Stufen)
+  function openTarifSheet() {
+    const a = abo();
+    const aktuell = a.tarif;
+    const body = `
+      <div class="tarif-grid">
+        <div class="tarif-card${aktuell === "basic" ? " current" : ""}">
+          <div class="tarif-n">Basic</div>
+          <div class="tarif-p">19,99 €<span>/Monat</span></div>
+          <ul class="tarif-feats">
+            <li>Bis zu 3 Objekte</li>
+            <li>Bis zu 10 Einheiten</li>
+            <li>Klassische Vermietung</li>
+            <li>Alle Analysen</li>
+          </ul>
+          ${aktuell === "basic" ? `<div class="tarif-badge">Dein Tarif</div>`
+            : `<button class="tarif-btn" data-plan="basic">Basic wählen</button>`}
+        </div>
+        <div class="tarif-card premium${aktuell === "premium" ? " current" : ""}">
+          <div class="tarif-flag">Empfohlen</div>
+          <div class="tarif-n">Premium</div>
+          <div class="tarif-p">49,99 €<span>/Monat</span></div>
+          <ul class="tarif-feats">
+            <li>Unbegrenzt Objekte</li>
+            <li>Unbegrenzt Einheiten</li>
+            <li>AirBNB & Landpacht</li>
+            <li>Alle Analysen</li>
+          </ul>
+          ${aktuell === "premium" ? `<div class="tarif-badge">Dein Tarif</div>`
+            : `<button class="tarif-btn prem" data-plan="premium">Premium wählen</button>`}
+        </div>
+      </div>
+      <div class="tarif-code">
+        <label class="ef-l">Rabattcode</label>
+        <div class="tarif-code-row">
+          <input class="ef-i" id="rabattCode" placeholder="Code eingeben">
+          <button class="tarif-code-btn" id="rabattBtn">Einlösen</button>
+        </div>
+        <div class="ef-msg" id="rabattMsg"></div>
+      </div>
+      <div class="up-note" style="margin-top:14px">Erster Monat kostenlos · jederzeit kündbar · Zahlung folgt im nächsten Schritt</div>`;
+    const sheet = openSheet("Tarif wählen", "Aktuell: " + (TARIFE[aktuell] ? TARIFE[aktuell].name : "Test"), body);
+
+    sheet.querySelectorAll(".tarif-btn").forEach(b => b.onclick = () => {
+      const msg = sheet.querySelector("#rabattMsg");
+      msg.textContent = "Die Zahlung richten wir im nächsten Schritt ein (Etappe 3).";
+      msg.className = "ef-msg";
+    });
+    sheet.querySelector("#rabattBtn").onclick = () => loeseRabattEin(sheet);
+  }
+
+  async function loeseRabattEin(sheet) {
+    const code = (sheet.querySelector("#rabattCode").value || "").trim();
+    const msg = sheet.querySelector("#rabattMsg");
+    if (!code) { msg.textContent = "Bitte Code eingeben."; msg.className = "ef-msg bad"; return; }
+    msg.textContent = "Prüfe Code…"; msg.className = "ef-msg";
+    try {
+      // Serverseitige Prüfung – Funktion kommt in Etappe 3 (Stripe). Vorab abgesichert.
+      const { data, error } = await window.sb.rpc("rabatt_einloesen", { p_code: code });
+      if (error) throw error;
+      if (data && data.ok) {
+        msg.textContent = "Code eingelöst: " + (data.hinweis || "freigeschaltet") + ".";
+        msg.className = "ef-msg";
+        await window.nachSpeichern();
+        closeSheet();
+      } else {
+        msg.textContent = (data && data.hinweis) || "Code ungültig.";
+        msg.className = "ef-msg bad";
+      }
+    } catch (e) {
+      // Fallback, solange die Serverfunktion noch nicht existiert
+      msg.textContent = "Die Code-Einlösung wird in Etappe 3 aktiviert.";
+      msg.className = "ef-msg";
+    }
+  }
+
   /* ---------- BILD ZUSCHNEIDEN ---------- */
   // Öffnet den Zuschneider und liefert per Callback eine quadratische Bilddatei
   function zuschneiden(file, fertig) {
@@ -216,11 +354,40 @@
         <button class="ef-save" id="pSave">Speichern</button>
       </div>
       <div class="ef-msg" id="pMsg"></div>
+      ${efTitel("Tarif")}
+      <div class="prof-tarif" id="pTarif"></div>
+      <button class="up-cta" id="pTarifBtn" style="margin-top:12px">Tarif verwalten</button>
       ${efTitel("Gefahrenzone")}
       <button class="ef-del" id="pDel" style="width:100%">Konto löschen</button>
       <div class="ef-h" style="margin-top:8px">Löscht dein Konto und alle zugehörigen Daten unwiderruflich.</div>`;
 
     const sheet = openSheet("Mein Profil", currentUser.email || "", body);
+
+    // Tarif-Status anzeigen
+    const a = abo();
+    const tarifName = a.tarif === "premium" ? "Premium"
+      : a.tarif === "basic" ? "Basic"
+      : a.tarif === "gesperrt" ? "Pausiert" : "Test";
+    const istTest = a.roh_tarif === "test";
+    let statusZeile = "";
+    if (istTest && a.tarif_bis) {
+      const tage = Math.max(0, Math.ceil((new Date(a.tarif_bis) - new Date()) / 86400000));
+      statusZeile = `Testphase · noch ${tage} Tag${tage === 1 ? "" : "e"}`;
+    } else if (a.tarif === "basic") {
+      statusZeile = `${a.objekte}/3 Objekte · ${a.einheiten}/10 Einheiten`;
+    } else if (a.tarif === "premium") {
+      statusZeile = "Unbegrenzt";
+    } else if (a.tarif === "gesperrt") {
+      statusZeile = "Bearbeiten pausiert — Daten bleiben lesbar";
+    }
+    const pt = sheet.querySelector("#pTarif");
+    if (pt) pt.innerHTML = `
+      <div class="pt-row">
+        <div class="pt-name ${a.tarif}">${esc(tarifName)}</div>
+        <div class="pt-status">${esc(statusZeile)}</div>
+      </div>`;
+    const ptb = sheet.querySelector("#pTarifBtn");
+    if (ptb) ptb.onclick = () => { closeSheet(); openTarifSheet(); };
 
     // Bildauswahl
     const avaBtn = sheet.querySelector("#pAvaBtn");
@@ -1093,7 +1260,7 @@
     host.appendChild(grid);
 
     const addObj = el(`<div class="card pad add-card"><button class="add-btn wide" id="addObjekt">+ Objekt anlegen</button></div>`);
-    addObj.querySelector("#addObjekt").onclick = () => openObjektEdit(null, true);
+    addObj.querySelector("#addObjekt").onclick = () => { if (pruefeObjekt("miete")) openObjektEdit(null, true); };
     host.appendChild(addObj);
 
     // Verteilung + Kennzahlen
@@ -1918,7 +2085,7 @@
       <button class="add-btn" id="addUnit">+ Einheit</button></div><div class="card-b">${rows}</div></div>`);
     tblCard.querySelectorAll(".drow[data-i]").forEach(r =>
       r.onclick = () => openUnitSheet(s, (s.einheiten || [])[Number(r.dataset.i)]));
-    tblCard.querySelector("#addUnit").onclick = () => openUnitEdit(s, null, true);
+    tblCard.querySelector("#addUnit").onclick = () => { if (pruefeEinheit()) openUnitEdit(s, null, true); };
     host.appendChild(tblCard);
   }
 
@@ -2443,7 +2610,14 @@
     };
     efBind(sheet,
       async (w) => {
-        if (neu) { await neuesObjekt(bauen(w)); }
+        if (neu) {
+          // Objektart gegen Tarif prüfen (AirBNB/Pacht nur Premium)
+          if (!istPremium() && w.art && w.art !== "miete") {
+            closeSheet(); openUpgradeSheet("art");
+            throw new Error("Diese Objektart ist Premium vorbehalten.");
+          }
+          await neuesObjekt(bauen(w));
+        }
         else { await speichereObjekt(s._id, bauen(w)); }
       },
       neu ? null : async () => { await loescheObjekt(s._id); currentView = "overview"; },
