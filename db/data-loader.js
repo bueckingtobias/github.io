@@ -6,8 +6,8 @@
    Zu finden unter: Project Settings -> API
    ============================================================= */
 
-const SB_URL = 'https://lxigpeasfnnmfvipckxp.supabase.co';   // Project URL
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aWdwZWFzZm5ubWZ2aXBja3hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2Mjc3MjMsImV4cCI6MjEwMDIwMzcyM30.XRN3fHbwTJt1qweyRgRdUFqdXq5-ZyKD_JyNuMO92LI';                     // anon public key (darf öffentlich sein)
+const SB_URL = 'https://DEINPROJEKT.supabase.co';   // Project URL
+const SB_KEY = 'DEIN-ANON-KEY';                     // anon public key (darf öffentlich sein)
 
 window.sb = supabase.createClient(SB_URL, SB_KEY);
 
@@ -23,11 +23,13 @@ const LOKAL = {
     // In Kapitel 6 wird das durch die Supabase-Anmeldung ersetzt.
     passwordHash: "774abd2c0374e9d3d262d1b7269ce9913f5333021ad6e7356261a2305638c1e8",
     sessionHours: 12,
-benutzer: [
+    // >>> E-Mails eintragen, die in Supabase unter Authentication -> Users
+    //     angelegt sind. Werden ab Kapitel 6 zur Anmeldung genutzt. <<<
+    benutzer: [
       { id: "tobias",    name: "Tobias",    anrede: "Tobias",
-        email: "bueckingtobias@gmail.com" },
+        email: "tobias@buecking-immobilien.de" },
       { id: "bernfried", name: "Bernfried", anrede: "Bernfried",
-        email: "" }
+        email: "bernfried@buecking-immobilien.de" }
     ]
   },
 
@@ -142,11 +144,19 @@ async function ladeDaten() {
     .from('termine').select('*').order('datum');
   if (e2) throw e2;
 
+  // Abo-Status laden (Tarif + Zählstände)
+  let abo = { tarif: 'premium', roh_tarif: 'test', objekte: 0, einheiten: 0 };
+  try {
+    const { data: aboData } = await window.sb.rpc('mein_abo');
+    if (aboData) abo = aboData;
+  } catch (_) {}
+
   window.DASHBOARD_DATA = {
     meta: { ...LOKAL.meta, version: new Date().toISOString().slice(0, 10) },
     auth: LOKAL.auth,
     begruessungen: LOKAL.begruessungen,
     wetter: LOKAL.wetter,
+    abo: abo,
     streams: (objekte || []).map(zuStream),
     termine: (termine || []).map(zuTermin)
   };
