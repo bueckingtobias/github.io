@@ -6,7 +6,6 @@
   let D = window.DASHBOARD_DATA || {};
   const FE = window.FinanceEngine;
   const SESSION = "buecking_income_v1";
-  const LASTUSER = "buecking_lastuser";
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -38,21 +37,6 @@
   /* ---------- AUTH ---------- */
   let currentUser = null;   // { id, name, anrede }
 
-  function benutzerListe() {
-    return (D.auth && D.auth.benutzer) || [{ id: "gast", name: "Gast", anrede: "" }];
-  }
-  function benutzerById(id) {
-    return benutzerListe().find(b => b.id === id) || benutzerListe()[0];
-  }
-  function fuelleBenutzerAuswahl() {
-    const sel = $("#whoami");
-    if (!sel) return;
-    sel.innerHTML = benutzerListe().map(b =>
-      `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join("");
-    // zuletzt genutzten Benutzer vorauswählen
-    const last = localStorage.getItem(LASTUSER);
-    if (last && benutzerListe().some(b => b.id === last)) sel.value = last;
-  }
   // Lädt das Profil des angemeldeten Nutzers aus der Datenbank
   async function ladeProfil(session) {
     const mail = ((session.user && session.user.email) || "");
@@ -83,17 +67,9 @@
     } catch { return false; }
   }
 
-  // E-Mail bestimmen: aus dem E-Mail-Feld, sonst über die (lokale) Benutzerauswahl
-  function loginEmail() {
-    const feld = $("#mail") && $("#mail").value.trim();
-    if (feld) return feld;
-    const uid = $("#whoami") ? $("#whoami").value : null;
-    const b = benutzerById(uid);
-    return (b && b.email) || "";
-  }
   async function tryLogin() {
     const msg = $("#loginMsg"), v = $("#pw").value;
-    const mail = loginEmail();
+    const mail = ($("#mail") && $("#mail").value.trim()) || "";
     if (!mail) { msg.textContent = "Bitte E-Mail eingeben."; msg.className = "login-msg bad"; return; }
     if (!v) { msg.textContent = "Bitte Passwort eingeben."; msg.className = "login-msg bad"; return; }
     msg.textContent = "Anmeldung läuft…"; msg.className = "login-msg";
@@ -127,7 +103,115 @@
     location.reload();
   }
 
-  /* ---------- REGISTRIERUNG ---------- */
+  /* ---------- PROFIL ---------- */
+  let profilAvatarDatei = null;
+
+  function openProfilSheet() {
+    if (!currentUser) return;
+    const ava = currentUser.avatar;
+    const initial = (currentUser.name || "?").slice(0, 1).toUpperCase();
+    const body = `
+      <div class="prof-head">
+        <button type="button" class="ava-circle ${ava ? "filled" : ""}" id="pAvaBtn" aria-label="Profilbild ändern">
+          <div class="ava-img" id="pAvaPrev" ${ava ? `style="background-image:url(${esc(ava)})"` : ""}></div>
+          ${ava ? "" : `<div class="ava-letter">${esc(initial)}</div>`}
+          <div class="ava-edit"><svg viewBox="0 0 24 24" fill="none" stroke="#052018" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+        </button>
+        <input type="file" id="pAvaFile" accept="image/*" class="hide">
+        <div class="prof-cap" id="pAvaCap">Zum Ändern tippen</div>
+      </div>
+      ${efTitel("Konto")}
+      ${ef("Name", "name", currentUser.name || "", "text", { pflicht: true })}
+      ${ef("E-Mail", "email", currentUser.email || "", "email", { readonly: true, hinweis: "E-Mail kann derzeit nicht geändert werden" })}
+      <div class="ef-actions">
+        <button class="ef-save" id="pSave">Speichern</button>
+      </div>
+      <div class="ef-msg" id="pMsg"></div>
+      ${efTitel("Gefahrenzone")}
+      <button class="ef-del" id="pDel" style="width:100%">Konto löschen</button>
+      <div class="ef-h" style="margin-top:8px">Löscht dein Konto und alle zugehörigen Daten unwiderruflich.</div>`;
+
+    const sheet = openSheet("Mein Profil", currentUser.email || "", body);
+
+    // Bildauswahl
+    const avaBtn = sheet.querySelector("#pAvaBtn");
+    const avaFile = sheet.querySelector("#pAvaFile");
+    avaBtn.onclick = () => avaFile.click();
+    avaFile.onchange = (ev) => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        const m = sheet.querySelector("#pMsg");
+        m.textContent = "Bild ist zu groß (max. 5 MB)."; m.className = "ef-msg bad"; return;
+      }
+      profilAvatarDatei = file;
+      const url = URL.createObjectURL(file);
+      const prev = sheet.querySelector("#pAvaPrev");
+      prev.style.backgroundImage = `url(${url})`;
+      avaBtn.classList.add("filled");
+      const letter = sheet.querySelector(".ava-letter");
+      if (letter) letter.remove();
+      sheet.querySelector("#pAvaCap").textContent = "Bild geändert";
+    };
+
+    // Speichern
+    sheet.querySelector("#pSave").onclick = async () => {
+      const msg = sheet.querySelector("#pMsg");
+      const name = sheet.querySelector('[data-f="name"]').value.trim();
+      if (!name) { msg.textContent = "Bitte Namen eingeben."; msg.className = "ef-msg bad"; return; }
+      msg.textContent = "Speichere…"; msg.className = "ef-msg";
+      try {
+        const werte = { name };
+        if (profilAvatarDatei) {
+          const url = await ladeAvatarHoch(currentUser.id, profilAvatarDatei);
+          if (url) werte.avatar_url = url;
+        }
+        const { error } = await window.sb.from("mitglieder")
+          .update(werte).eq("auth_user_id", currentUser.id);
+        if (error) throw error;
+        currentUser.name = name;
+        currentUser.anrede = name.split(" ")[0];
+        if (werte.avatar_url) currentUser.avatar = werte.avatar_url;
+        profilAvatarDatei = null;
+        closeSheet();
+        route(currentView);   // Begrüßung mit neuem Bild/Namen neu zeichnen
+      } catch (e) {
+        msg.textContent = "Fehler: " + window.fehlerText(e);
+        msg.className = "ef-msg bad";
+      }
+    };
+
+    // Löschen (zweistufig)
+    const del = sheet.querySelector("#pDel");
+    del.onclick = async () => {
+      if (del.dataset.sicher !== "1") {
+        del.dataset.sicher = "1";
+        del.textContent = "Wirklich? Konto endgültig löschen";
+        del.classList.add("armed");
+        setTimeout(() => {
+          if (del.dataset.sicher === "1") {
+            del.dataset.sicher = ""; del.textContent = "Konto löschen"; del.classList.remove("armed");
+          }
+        }, 4000);
+        return;
+      }
+      const msg = sheet.querySelector("#pMsg");
+      msg.textContent = "Konto wird gelöscht…"; msg.className = "ef-msg"; del.disabled = true;
+      try {
+        // Eigene Organisation entfernen (Objekte/Einheiten/Kredite/Pacht/Termine folgen per Kaskade,
+        // das Mitglied ebenfalls). Das Auth-Konto selbst wird beim nächsten Schritt abgemeldet.
+        const org = await window.meineOrgId();
+        const { error } = await window.sb.from("organisationen").delete().eq("id", org);
+        if (error) throw error;
+        await window.sb.auth.signOut();
+        location.reload();
+      } catch (e) {
+        msg.textContent = "Fehler: " + window.fehlerText(e);
+        msg.className = "ef-msg bad"; del.disabled = false;
+      }
+    };
+  }
+
   let regMode = false;            // false = anmelden, true = registrieren
   let avatarDatei = null;         // gewählte Bilddatei
 
@@ -2361,11 +2445,10 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     blockZoom();
-    fuelleBenutzerAuswahl();
     $("#loginBtn").addEventListener("click", tryLogin);
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") regMode ? tryRegister() : tryLogin(); });
-    if ($("#whoami")) $("#whoami").addEventListener("change", () => $("#pw").focus());
     $("#logoutBtn").addEventListener("click", logout);
+    if ($("#profileBtn")) $("#profileBtn").addEventListener("click", openProfilSheet);
 
     // Registrierung
     if ($("#registerBtn")) $("#registerBtn").addEventListener("click", tryRegister);
