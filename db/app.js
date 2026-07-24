@@ -348,8 +348,8 @@
   function buildRail() {
     const rail = $("#rail");
     const spacer = rail.querySelector(".rail-spacer");
-    // remove old nav buttons (keep mark, spacer, logout)
-    $$(".rail-btn:not(.logout)", rail).forEach(b => b.remove());
+    // remove old nav buttons (keep mark, spacer, profile, logout)
+    $$(".rail-btn:not(.logout):not(.profile)", rail).forEach(b => b.remove());
     navItems().forEach(it => {
       const b = el(`<button class="rail-btn" data-id="${it.id}" title="${esc(it.label)}">
         ${svg(it.icon)}<span class="tip">${esc(it.label)}</span></button>`);
