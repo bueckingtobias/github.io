@@ -55,6 +55,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 #login{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:22px;
   background:radial-gradient(800px 480px at 50% -10%,rgba(74,222,158,.16),transparent 60%),linear-gradient(180deg,#0a1f1a,#061410)}
 #login.hide{display:none}
+.hide{display:none!important}
 .login-card{width:min(400px,100%);background:linear-gradient(180deg,var(--glass),var(--glass-2));
   border:1px solid var(--stroke-2);border-radius:26px;padding:34px 30px;backdrop-filter:blur(30px);
   box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);position:relative;overflow:hidden}
@@ -314,6 +315,13 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .sub-v{font-family:var(--fdisp);font-size:13px;font-weight:600;flex:0 0 auto}
 
 /* ===== REGISTRIERUNG (Reste) ===== */
+
+/* ===== PROFIL ===== */
+.prof-head{display:flex;flex-direction:column;align-items:center;margin:6px 0 8px}
+.ava-letter{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--fdisp);
+  font-size:38px;font-weight:600;color:#052018;border-radius:50%;
+  background:linear-gradient(135deg,var(--mint),var(--deep))}
+.prof-cap{margin-top:11px;font-size:12.5px;color:var(--softer)}
 
 /* ===== BEARBEITEN ===== */
 .ef-row{margin-bottom:12px}
@@ -616,12 +624,6 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
       <div class="field"><input id="mail" type="email" autocomplete="email" placeholder="name@beispiel.de"></div>
     </div>
 
-    <!-- Benutzerauswahl (nur falls lokale Nutzer hinterlegt sind – bleibt versteckt bei E-Mail-Login) -->
-    <div id="rowWho" class="hide">
-      <label for="whoami">Benutzer</label>
-      <div class="field sel"><select id="whoami"></select></div>
-    </div>
-
     <label for="pw" id="pwLabel">Passwort</label>
     <div class="field"><input id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
 
@@ -637,6 +639,10 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
     <div class="rail-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#052018" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#052018"/></svg></div>
     <!-- nav buttons injected -->
     <div class="rail-spacer"></div>
+    <button class="rail-btn" id="profileBtn" title="Profil">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="tip">Profil</span>
+    </button>
     <button class="rail-btn logout" id="logoutBtn" title="Logout">
       <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="tip">Logout</span>
