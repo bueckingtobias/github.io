@@ -103,6 +103,95 @@
     location.reload();
   }
 
+  /* ---------- BILD ZUSCHNEIDEN ---------- */
+  // Öffnet den Zuschneider und liefert per Callback eine quadratische Bilddatei
+  function zuschneiden(file, fertig) {
+    const overlay = $("#cropper");
+    const stage = $("#cropStage");
+    const img = $("#cropImg");
+    const zoom = $("#cropZoom");
+    const AUSGABE = 512;              // Kantenlänge des fertigen Bildes
+    const RAHMEN = 260;              // Größe der Bühne (muss zum CSS passen)
+
+    let natW = 0, natH = 0, basis = 1, scale = 1;
+    let posX = 0, posY = 0;
+    let drag = false, sx = 0, sy = 0, px = 0, py = 0;
+
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      natW = img.naturalWidth; natH = img.naturalHeight;
+      // Basis-Skalierung: Bild füllt den Rahmen (kleinere Seite = Rahmen)
+      basis = Math.max(RAHMEN / natW, RAHMEN / natH);
+      zoom.value = "1";
+      scale = basis;
+      // zentrieren
+      posX = (RAHMEN - natW * scale) / 2;
+      posY = (RAHMEN - natH * scale) / 2;
+      anwenden();
+      overlay.classList.remove("hide");
+    };
+    img.src = url;
+
+    function grenzen() {
+      const w = natW * scale, h = natH * scale;
+      posX = Math.min(0, Math.max(RAHMEN - w, posX));
+      posY = Math.min(0, Math.max(RAHMEN - h, posY));
+    }
+    function anwenden() {
+      grenzen();
+      img.style.transform = `translate(${posX}px,${posY}px) scale(${scale})`;
+    }
+
+    zoom.oninput = () => {
+      const faktor = parseFloat(zoom.value);
+      const neu = basis * faktor;
+      // um die Bildmitte zoomen
+      const mx = RAHMEN / 2, my = RAHMEN / 2;
+      const bx = (mx - posX) / scale, by = (my - posY) / scale;
+      scale = neu;
+      posX = mx - bx * scale;
+      posY = my - by * scale;
+      anwenden();
+    };
+
+    const start = (x, y) => { drag = true; sx = x; sy = y; px = posX; py = posY; };
+    const move = (x, y) => { if (!drag) return; posX = px + (x - sx); posY = py + (y - sy); anwenden(); };
+    const ende = () => { drag = false; };
+
+    stage.onmousedown = e => { e.preventDefault(); start(e.clientX, e.clientY); };
+    window.addEventListener("mousemove", mm);
+    window.addEventListener("mouseup", mu);
+    function mm(e) { move(e.clientX, e.clientY); }
+    function mu() { ende(); }
+    stage.ontouchstart = e => { const t = e.touches[0]; start(t.clientX, t.clientY); };
+    stage.ontouchmove = e => { e.preventDefault(); const t = e.touches[0]; move(t.clientX, t.clientY); };
+    stage.ontouchend = ende;
+
+    function aufraeumen() {
+      overlay.classList.add("hide");
+      window.removeEventListener("mousemove", mm);
+      window.removeEventListener("mouseup", mu);
+      URL.revokeObjectURL(url);
+    }
+
+    $("#cropCancel").onclick = () => aufraeumen();
+    $("#cropOk").onclick = () => {
+      // Sichtbaren Kreisausschnitt in ein quadratisches Bild rendern
+      const cv = document.createElement("canvas");
+      cv.width = AUSGABE; cv.height = AUSGABE;
+      const ctx = cv.getContext("2d");
+      const f = AUSGABE / RAHMEN;
+      // Position/Skalierung vom Rahmen auf die Ausgabegröße umrechnen
+      ctx.drawImage(img, posX * f, posY * f, natW * scale * f, natH * scale * f);
+      aufraeumen();
+      cv.toBlob(blob => {
+        if (!blob) return;
+        const datei = new File([blob], "profil.jpg", { type: "image/jpeg" });
+        fertig(datei, cv.toDataURL("image/jpeg", 0.9));
+      }, "image/jpeg", 0.9);
+    };
+  }
+
   /* ---------- PROFIL ---------- */
   let profilAvatarDatei = null;
 
@@ -140,18 +229,20 @@
     avaFile.onchange = (ev) => {
       const file = ev.target.files && ev.target.files[0];
       if (!file) return;
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > 10 * 1024 * 1024) {
         const m = sheet.querySelector("#pMsg");
-        m.textContent = "Bild ist zu groß (max. 5 MB)."; m.className = "ef-msg bad"; return;
+        m.textContent = "Bild ist zu groß (max. 10 MB)."; m.className = "ef-msg bad"; return;
       }
-      profilAvatarDatei = file;
-      const url = URL.createObjectURL(file);
-      const prev = sheet.querySelector("#pAvaPrev");
-      prev.style.backgroundImage = `url(${url})`;
-      avaBtn.classList.add("filled");
-      const letter = sheet.querySelector(".ava-letter");
-      if (letter) letter.remove();
-      sheet.querySelector("#pAvaCap").textContent = "Bild geändert";
+      zuschneiden(file, (datei, vorschau) => {
+        profilAvatarDatei = datei;
+        const prev = sheet.querySelector("#pAvaPrev");
+        prev.style.backgroundImage = `url(${vorschau})`;
+        avaBtn.classList.add("filled");
+        const letter = sheet.querySelector(".ava-letter");
+        if (letter) letter.remove();
+        sheet.querySelector("#pAvaCap").textContent = "Bild geändert";
+      });
+      ev.target.value = "";   // erneutes Wählen desselben Bildes erlauben
     };
 
     // Speichern
@@ -239,16 +330,18 @@
   function avatarGewaehlt(ev) {
     const file = ev.target.files && ev.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      $("#loginMsg").textContent = "Bild ist zu groß (max. 5 MB).";
+    if (file.size > 10 * 1024 * 1024) {
+      $("#loginMsg").textContent = "Bild ist zu groß (max. 10 MB).";
       $("#loginMsg").className = "login-msg bad";
       return;
     }
-    avatarDatei = file;
-    const url = URL.createObjectURL(file);
-    $("#avaPrev").style.backgroundImage = `url(${url})`;
-    $("#avaBtn").classList.add("filled");
-    $("#avaCap").textContent = "Bild ändern";
+    zuschneiden(file, (datei, vorschau) => {
+      avatarDatei = datei;
+      $("#avaPrev").style.backgroundImage = `url(${vorschau})`;
+      $("#avaBtn").classList.add("filled");
+      $("#avaCap").textContent = "Bild ändern";
+    });
+    ev.target.value = "";
   }
 
   async function tryRegister() {
