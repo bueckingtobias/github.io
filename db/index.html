@@ -3,11 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Bücking · Einnahmen</title>
+<title>ESTRIQ · Immobilien im Blick</title>
 <meta name="robots" content="noindex,nofollow" />
 <meta name="theme-color" content="#16181d" />
+<link rel="manifest" href="manifest.json" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="ESTRIQ" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -58,12 +64,19 @@
 [data-accent="rose"]  {--mint:#ee7a9f;--mint-2:#f7a8c1;--deep:#b03d68;}
 [data-accent="rubin"] {--mint:#c0392b;--mint-2:#e05545;--deep:#7d1f16;}
 [data-accent="silber"]{--mint:#c8ccd4;--mint-2:#e4e7ec;--deep:#8b9099;}
-*{box-sizing:border-box}html,body{height:100%}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* UI-Elemente nicht markierbar (native App-Haptik); Fließtext/Eingaben schon */
+button,.rail-btn,.card,.kpi,.sub-item,.theme-chip,.accent-dot,.ltab,.tl-i,.w-day,
+.mini,.drow,.obj-card,.head-pill,.chip,.pillet,nav,.sheet-h,label{
+  -webkit-user-select:none;user-select:none}
+input,textarea,select,.sheet-b p,.note,.card-t,.num{-webkit-user-select:auto;user-select:auto}
+html,body{height:100%}
 html{background:var(--bg);overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* Solange der Login sichtbar ist, immer Graphit — kein grünes Durchscheinen */
 html.pre-login,html.pre-login body{background:#16181d!important}
 body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscroll-behavior:none;
-  touch-action:pan-x pan-y;-webkit-touch-callout:none;
+  position:fixed;inset:0;width:100%;height:100%;
+  touch-action:none;-webkit-touch-callout:none;
   background:
     radial-gradient(1100px 640px at 8% -8%,color-mix(in srgb,var(--mint) 10%,transparent),transparent 55%),
     radial-gradient(900px 560px at 100% 0%,color-mix(in srgb,var(--deep) 18%,transparent),transparent 52%),
@@ -97,7 +110,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   filter:blur(16px);opacity:.36;pointer-events:none}
 /* Logo mittig, prominenter — ersetzt den Schriftzug */
 .login-logo{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:26px;position:relative}
-.login-logo-img{max-width:288px;max-height:109px;object-fit:contain;
+.login-logo-img{max-width:300px;max-height:120px;width:78%;object-fit:contain;
   filter:drop-shadow(0 8px 22px color-mix(in srgb,#8b9099 35%,transparent))}
 .login-logo-fallback{display:flex;align-items:center;gap:11px}
 .login-logo-txt h1{font-family:var(--fdisp);font-size:22px;margin:0;font-weight:600;letter-spacing:.04em}
@@ -204,6 +217,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   padding:9px 15px;border-radius:99px;font-size:12.5px;color:var(--soft);backdrop-filter:blur(20px);white-space:nowrap}
 .head-pill b{color:var(--mint-2);font-family:var(--fdisp);font-weight:600}
 .scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
   overscroll-behavior-y:contain;scroll-behavior:smooth;scrollbar-gutter:stable;
   padding:22px 30px;padding-bottom:max(40px,env(safe-area-inset-bottom))}
 .wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:var(--gap)}
@@ -317,7 +331,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .sheet-x{flex:0 0 auto;width:32px;height:32px;border-radius:10px;border:1px solid var(--stroke-2);
   background:color-mix(in srgb,var(--bg) 50%,transparent);color:var(--soft);cursor:pointer;font-size:17px;line-height:1;transition:.15s}
 .sheet-x:hover{color:var(--text);border-color:var(--mint)}
-.sheet-b{padding:18px 22px 24px;overflow-y:auto;overscroll-behavior:contain}
+.sheet-b{padding:18px 22px 24px;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}
 .sheet-grip{display:none}
 .unit-bar{border-radius:12px;transition:.15s}
 .unit-bar:hover{background:color-mix(in srgb,var(--mint) 6%,transparent);box-shadow:0 0 0 10px color-mix(in srgb,var(--mint) 6%,transparent)}
@@ -351,7 +365,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .tbl td{padding:8px 0 8px 8px;border-bottom:1px solid color-mix(in srgb,var(--mint) 7%,transparent);text-align:right;white-space:nowrap}
 .tbl tr:last-child td{border-bottom:none}
 .tbl .hl{color:var(--mint-2);font-weight:600}
-.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x}
 /* Stundenverlauf Wetter */
 .hours{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
 .hour{flex:0 0 auto;width:58px;text-align:center;background:color-mix(in srgb,var(--bg) 45%,transparent);border:1px solid var(--stroke);
@@ -736,14 +750,14 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 
 /* ============================ iPhone 17 Pro Max ============================ */
 @media(max-width:560px){
-  #app{grid-template-columns:1fr;grid-template-rows:1fr auto}
-  .rail{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;width:100%;flex-direction:row;
-    justify-content:space-around;padding:5px 6px 0;
+  #app{grid-template-columns:1fr;grid-template-rows:1fr auto;height:100dvh;height:100svh}
+  .rail{position:static;left:auto;right:auto;bottom:auto;top:auto;height:auto;width:100%;flex-direction:row;
+    justify-content:space-around;padding:6px 6px 0;
     border-right:none;border-top:1px solid var(--stroke);z-index:40;gap:2px;
     box-sizing:border-box;
-    /* Sicherheitsabstand nur so groß wie die Geräteaussparung, Leiste selbst bündig unten */
-    min-height:calc(56px + env(safe-area-inset-bottom));
-    padding-bottom:env(safe-area-inset-bottom)}
+    /* Aussparung des iPhones (Home-Indicator) als Innenabstand — Leiste selbst bündig unten */
+    padding-bottom:max(6px,env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,color-mix(in srgb,var(--bg2) 92%,transparent),var(--bg))}
   .rail-mark,.rail-spacer{display:none}
   .rail-btn{width:auto;height:auto;flex:1 1 0;flex-direction:column;gap:3px;padding:6px 4px;border-radius:12px;font-size:9px}
   .rail-btn svg{width:20px;height:20px}
@@ -756,13 +770,13 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
   .rail-add .tip{color:var(--mint)!important}
   .rail-add svg{width:22px;height:22px}
 
-  .main{height:100dvh;height:100svh}
+  .main{height:auto;min-height:0}
   .head{padding:calc(10px + env(safe-area-inset-top)) 18px 2px;flex-direction:column;gap:6px}
   .head h2{font-size:23px;line-height:1.15;margin:1px 0 0}
   .head .eyebrow{font-size:11px}
   .head .sub{margin-top:1px}
   .head-pill{align-self:flex-start}
-  .scroll{padding:14px 16px;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+  .scroll{padding:14px 16px 18px}
   .g-kpi{grid-template-columns:1fr 1fr;gap:12px}
   .kpi{padding:16px}
   .kpi .chip{width:40px;height:40px;margin-bottom:14px}
@@ -819,6 +833,12 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
       document.documentElement.classList.add("pre-login");
     }catch(e){ document.documentElement.setAttribute("data-accent","silber"); document.documentElement.classList.add("pre-login"); }
   })();
+  // Service Worker registrieren (macht die App installierbar)
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
 </script>
 
 <!-- LOGIN -->
@@ -903,7 +923,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 
 <div id="app" class="hide">
   <nav class="rail" id="rail">
-    <div class="rail-mark"><img src="estriq.PNG" alt="ESTRIQ" class="rail-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg viewBox="0 0 24 24" fill="none" style="display:none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#052018" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#052018"/></svg></div>
+    <div class="rail-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#08120f" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#08120f"/></svg></div>
     <button class="rail-btn rail-add" id="railAdd" title="Neu anlegen">
       <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
       <span class="tip">Neu anlegen</span>
@@ -933,9 +953,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=18"></script>
-<script src="./data-save.js?v=18"></script>
-<script src="./finance-engine.js?v=18"></script>
-<script src="./app.js?v=18"></script>
+<script src="./data-loader.js?v=21"></script>
+<script src="./data-save.js?v=21"></script>
+<script src="./finance-engine.js?v=21"></script>
+<script src="./app.js?v=21"></script>
 </body>
 </html>
