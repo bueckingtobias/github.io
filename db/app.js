@@ -828,7 +828,7 @@
       off += len; return ring;
     }).join("");
     return `<svg width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" class="donut">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(6,20,16,.6)" stroke-width="14"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="color-mix(in srgb,var(--bg) 60%,transparent)" stroke-width="14"/>
       ${rings}
       <text x="${cx}" y="${cy - 4}" text-anchor="middle" fill="var(--text)" font-family="var(--fdisp)" font-size="26" font-weight="600">${eur(total).replace(/\s?€/, "")}</text>
       <text x="${cx}" y="${cy + 16}" text-anchor="middle" fill="var(--soft)" font-size="11">€ / Monat</text>
