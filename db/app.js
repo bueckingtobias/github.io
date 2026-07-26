@@ -30,7 +30,9 @@
     sprout: '<path d="M12 20v-8M12 12c0-3 2-5 5-5 0 3-2 5-5 5zM12 13c0-2.5-2-4.5-5-4.5 0 2.5 2 4.5 5 4.5z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 20h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
     bank: '<path d="M4 10l8-5 8 5M5 10v8M19 10v8M9 10v8M15 10v8M3 20h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
     wallet: '<path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3M3 7h16M16 12h5v4h-5a2 2 0 0 1 0-4z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
-    debt: '<path d="M12 3v18M8 7h6a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 0 0 5h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
+    debt: '<path d="M12 3v18M8 7h6a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 0 0 5h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+    plus: '<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    calendar: '<path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 9h16M8 3v3M16 3v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
   };
   const svg = (k, cls) => `<svg viewBox="0 0 24 24" fill="none" class="${cls || ''}">${IC[k] || IC.grid}</svg>`;
 
@@ -114,7 +116,9 @@
     { id: "blau",      name: "Blau",      farbe: "#4a9fee" },
     { id: "violett",   name: "Violett",   farbe: "#a98cf0" },
     { id: "bernstein", name: "Bernstein", farbe: "#e0a94a" },
-    { id: "rose",      name: "Rosé",      farbe: "#ee7a9f" }
+    { id: "rose",      name: "Rosé",      farbe: "#ee7a9f" },
+    { id: "rubin",     name: "Rubin",     farbe: "#c0392b" },
+    { id: "silber",    name: "Silber",    farbe: "#c8ccd4" }
   ];
   function themeAnwenden(theme, accent) {
     const el2 = document.documentElement;
@@ -680,7 +684,7 @@
     const rail = $("#rail");
     const spacer = rail.querySelector(".rail-spacer");
     // remove old nav buttons (keep mark, spacer, profile, logout)
-    $$(".rail-btn:not(.logout):not(.profile)", rail).forEach(b => b.remove());
+    $$(".rail-btn:not(.logout):not(.profile):not(.rail-add)", rail).forEach(b => b.remove());
     navItems().forEach(it => {
       const b = el(`<button class="rail-btn" data-id="${it.id}" title="${esc(it.label)}">
         ${svg(it.icon)}<span class="tip">${esc(it.label)}</span></button>`);
@@ -690,6 +694,64 @@
       };
       rail.insertBefore(b, spacer);
     });
+  }
+
+  /* ---------- ANLEGEN (zentrales +) ---------- */
+  // Icon je Objektart – neue Objekte bekommen automatisch das passende Symbol
+  const ART_ICON = { miete: "home", airbnb: "bed", pacht: "sprout" };
+  const ART_INFO = {
+    miete:  { icon: "home",   name: "Vermietung",      desc: "Wohnung oder Haus mit Mietern" },
+    airbnb: { icon: "bed",    name: "Kurzzeitvermietung", desc: "Ferienwohnung, AirBNB & Co." },
+    pacht:  { icon: "sprout", name: "Landpacht",       desc: "Acker- oder Grünland verpachten" }
+  };
+
+  function openAnlegenMenu(anchor) {
+    closeSubmenu();
+    const arten = ["miete", "airbnb", "pacht"].map(art => {
+      const i = ART_INFO[art];
+      const gesperrt = !istPremium() && art !== "miete";
+      return `<div class="sub-item anlegen-item${gesperrt ? " locked" : ""}" data-art="${art}">
+        <div class="sub-ic">${svg(i.icon)}</div>
+        <div class="sub-tx"><div class="sub-n">${esc(i.name)}${gesperrt ? ' <span class="lock-badge">Premium</span>' : ""}</div>
+          <div class="sub-m">${esc(i.desc)}</div></div>
+        <div class="sub-v">${svg("plus")}</div></div>`;
+    }).join("");
+    const bd = el(`<div class="sub-bd"></div>`);
+    const menu = el(`<div class="submenu anlegen-menu">
+      <div class="submenu-t">Neu anlegen</div>
+      ${arten}
+      <div class="anlegen-sep"></div>
+      <div class="sub-item anlegen-item" data-neu="termin">
+        <div class="sub-ic">${svg("calendar")}</div>
+        <div class="sub-tx"><div class="sub-n">Termin</div>
+          <div class="sub-m">Frist, Zahlung oder Notiz</div></div>
+        <div class="sub-v">${svg("plus")}</div></div>
+    </div>`);
+    document.body.appendChild(bd); document.body.appendChild(menu);
+    positioniereSubmenu(anchor, menu);
+
+    const schliessenUndTun = (fn) => { closeSubmenu(); fn(); };
+    menu.querySelectorAll(".anlegen-item[data-art]").forEach(n => n.onclick = () => {
+      const art = n.dataset.art;
+      if (!istPremium() && art !== "miete") { schliessenUndTun(() => openUpgradeSheet("art")); return; }
+      if (!pruefeObjekt(art)) { closeSubmenu(); return; }
+      schliessenUndTun(() => openObjektEdit(null, true, art));
+    });
+    const t = menu.querySelector('[data-neu="termin"]');
+    if (t) t.onclick = () => schliessenUndTun(() => openTerminEdit(null, true));
+    bd.onclick = closeSubmenu;
+  }
+
+  function positioniereSubmenu(anchor, menu) {
+    const bd = document.querySelector(".sub-bd");
+    if (window.innerWidth > 560) {
+      const r = anchor.getBoundingClientRect();
+      menu.style.left = (r.right + 10) + "px";
+      const h = menu.offsetHeight;
+      menu.style.top = Math.max(12, Math.min(r.top, window.innerHeight - h - 12)) + "px";
+    }
+    requestAnimationFrame(() => { if (bd) bd.classList.add("on"); menu.classList.add("on"); });
+    document.addEventListener("keydown", subEsc);
   }
 
   /* ---------- SUBMENU (Mietobjekte) ---------- */
@@ -1347,7 +1409,7 @@
     host.appendChild(grid);
 
     const addObj = el(`<div class="card pad add-card"><button class="add-btn wide" id="addObjekt">+ Objekt anlegen</button></div>`);
-    addObj.querySelector("#addObjekt").onclick = () => { if (pruefeObjekt("miete")) openObjektEdit(null, true); };
+    addObj.querySelector("#addObjekt").onclick = () => { if (pruefeObjekt("miete")) openObjektEdit(null, true, "miete"); };
     host.appendChild(addObj);
 
     // Verteilung + Kennzahlen
@@ -2655,16 +2717,19 @@
   }
 
   // --- Objekt ---
-  function openObjektEdit(s, neu) {
+  function openObjektEdit(s, neu, artVorgabe) {
     const nkPos = (s && s.nkPositionen) || [];
+    const art = neu ? (artVorgabe || "miete") : (s ? s.kind : "miete");
+    const artName = ART_INFO[art] ? ART_INFO[art].name : "Objekt";
     const body = `
+      ${neu ? `<div class="anlegen-kopf">${svg(ART_INFO[art] ? ART_INFO[art].icon : "home")}<span>${esc(artName)}</span></div>` : ""}
       ${efTitel("Grunddaten")}
-      ${ef("Name", "name", s ? s.name : "", "text", { pflicht: true })}
+      ${ef("Name", "name", s ? s.name : "", "text", { pflicht: true, platzhalter: art === "pacht" ? "z. B. Ackerland Nord" : "z. B. Haus Bergstraße 12" })}
       ${ef("Kurzname (intern)", "slug", s ? s.id : "", "text",
         { pflicht: true, hinweis: "Ohne Leerzeichen, z. B. haus-nord" })}
-      ${efSel("Art", "art", s ? s.kind : "miete",
+      ${neu ? "" : efSel("Art", "art", art,
         [{ v: "miete", t: "Vermietung" }, { v: "airbnb", t: "Kurzzeitvermietung" }, { v: "pacht", t: "Landpacht" }],
-        { hinweis: neu ? "" : "Nachträgliche Änderung kann Daten unbrauchbar machen" })}
+        { hinweis: "Nachträgliche Änderung kann Daten unbrauchbar machen" })}
       ${ef("Ort", "ort", s ? (s.ort || "") : "")}
       ${efArea("Notiz", "notiz", s ? (s.note || "") : "")}
       ${efTitel("Wirtschaftlich")}
@@ -2677,17 +2742,20 @@
       <div class="ef-h" style="margin-top:-6px">Je Zeile: Bezeichnung = Anteil in Prozent</div>
       ${efAktionen({ loeschen: neu ? null : "Objekt löschen" })}`;
 
-    const sheet = openSheet(neu ? "Neues Objekt" : "Objekt bearbeiten", neu ? "" : s.name, body);
+    const sheet = openSheet(neu ? "Neu: " + artName : "Objekt bearbeiten", neu ? "" : s.name, body);
 
     const bauen = (w) => {
       const pos = String(w.nk_positionen || "").split("\n")
         .map(z => z.split("="))
         .filter(t => t.length === 2 && t[0].trim())
         .map(t => ({ titel: t[0].trim(), anteil: Number(t[1].trim()) || 0 }));
+      // Art: bei Neuanlage aus Vorgabe, sonst aus Feld
+      const gewaehlteArt = neu ? art : (w.art || art);
       return {
         name: text(w.name) || "Objekt",
         slug: (text(w.slug) || "objekt").toLowerCase().replace(/[^a-z0-9-]/g, "-"),
-        art: w.art,
+        art: gewaehlteArt,
+        icon: ART_ICON[gewaehlteArt] || "home",   // automatisch passendes Symbol
         ort: text(w.ort),
         notiz: text(w.notiz),
         invest: zahl(w.invest),
@@ -2698,8 +2766,7 @@
     efBind(sheet,
       async (w) => {
         if (neu) {
-          // Objektart gegen Tarif prüfen (AirBNB/Pacht nur Premium)
-          if (!istPremium() && w.art && w.art !== "miete") {
+          if (!istPremium() && art !== "miete") {
             closeSheet(); openUpgradeSheet("art");
             throw new Error("Diese Objektart ist Premium vorbehalten.");
           }
@@ -2803,6 +2870,7 @@
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") regMode ? tryRegister() : tryLogin(); });
     $("#logoutBtn").addEventListener("click", logout);
     if ($("#profileBtn")) $("#profileBtn").addEventListener("click", openProfilSheet);
+    if ($("#railAdd")) $("#railAdd").addEventListener("click", (e) => { e.stopPropagation(); openAnlegenMenu($("#railAdd")); });
 
     // Registrierung
     if ($("#registerBtn")) $("#registerBtn").addEventListener("click", tryRegister);
