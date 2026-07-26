@@ -6,8 +6,8 @@
    Zu finden unter: Project Settings -> API
    ============================================================= */
 
-const SB_URL = 'https://DEINPROJEKT.supabase.co';   // Project URL
-const SB_KEY = 'DEIN-ANON-KEY';                     // anon public key (darf öffentlich sein)
+const SB_URL = 'https://lxigpeasfnnmfvipckxp.supabase.co';   // Project URL
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aWdwZWFzZm5ubWZ2aXBja3hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2Mjc3MjMsImV4cCI6MjEwMDIwMzcyM30.XRN3fHbwTJt1qweyRgRdUFqdXq5-ZyKD_JyNuMO92LI';                     // anon public key (darf öffentlich sein)
 
 window.sb = supabase.createClient(SB_URL, SB_KEY);
 
@@ -27,7 +27,7 @@ const LOKAL = {
     //     angelegt sind. Werden ab Kapitel 6 zur Anmeldung genutzt. <<<
     benutzer: [
       { id: "tobias",    name: "Tobias",    anrede: "Tobias",
-        email: "tobias@buecking-immobilien.de" },
+        email: "bueckingtobias@gmail.com" },
       { id: "bernfried", name: "Bernfried", anrede: "Bernfried",
         email: "bernfried@buecking-immobilien.de" }
     ]
