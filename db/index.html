@@ -60,6 +60,8 @@
 [data-accent="silber"]{--mint:#c8ccd4;--mint-2:#e4e7ec;--deep:#8b9099;}
 *{box-sizing:border-box}html,body{height:100%}
 html{background:var(--bg);overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* Solange der Login sichtbar ist, immer Graphit — kein grünes Durchscheinen */
+html.pre-login,html.pre-login body{background:#16181d!important}
 body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscroll-behavior:none;
   touch-action:pan-x pan-y;-webkit-touch-callout:none;
   background:
@@ -736,8 +738,12 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 @media(max-width:560px){
   #app{grid-template-columns:1fr;grid-template-rows:1fr auto}
   .rail{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;width:100%;flex-direction:row;
-    justify-content:space-around;padding:5px 6px;padding-bottom:calc(4px + env(safe-area-inset-bottom));
-    border-right:none;border-top:1px solid var(--stroke);z-index:40;gap:2px}
+    justify-content:space-around;padding:5px 6px 0;
+    border-right:none;border-top:1px solid var(--stroke);z-index:40;gap:2px;
+    box-sizing:border-box;
+    /* Sicherheitsabstand nur so groß wie die Geräteaussparung, Leiste selbst bündig unten */
+    min-height:calc(56px + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom)}
   .rail-mark,.rail-spacer{display:none}
   .rail-btn{width:auto;height:auto;flex:1 1 0;flex-direction:column;gap:3px;padding:6px 4px;border-radius:12px;font-size:9px}
   .rail-btn svg{width:20px;height:20px}
@@ -810,7 +816,8 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
       var a = localStorage.getItem("estriq_accent");
       if(t) document.documentElement.setAttribute("data-theme", t);
       document.documentElement.setAttribute("data-accent", a || "silber");
-    }catch(e){ document.documentElement.setAttribute("data-accent","silber"); }
+      document.documentElement.classList.add("pre-login");
+    }catch(e){ document.documentElement.setAttribute("data-accent","silber"); document.documentElement.classList.add("pre-login"); }
   })();
 </script>
 
@@ -926,9 +933,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=17"></script>
-<script src="./data-save.js?v=17"></script>
-<script src="./finance-engine.js?v=17"></script>
-<script src="./app.js?v=17"></script>
+<script src="./data-loader.js?v=18"></script>
+<script src="./data-save.js?v=18"></script>
+<script src="./finance-engine.js?v=18"></script>
+<script src="./app.js?v=18"></script>
 </body>
 </html>
