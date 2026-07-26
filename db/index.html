@@ -195,7 +195,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 /* KPI card — reference style: icon chip top-left, big number, small label */
 .kpi{position:relative;padding:22px}
 .kpi .chip{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
-  background:rgba(8,24,19,.6);border:1px solid var(--stroke-2);color:var(--mint-2);margin-bottom:20px}
+  background:color-mix(in srgb,var(--bg) 60%,transparent);border:1px solid var(--stroke-2);color:var(--mint-2);margin-bottom:20px}
 .kpi .chip svg{width:22px;height:22px}
 .kpi .num{font-family:var(--fdisp);font-weight:600;font-size:40px;line-height:1;letter-spacing:-.02em}
 .kpi .lab{font-size:14px;font-weight:600;margin-top:12px}
@@ -247,14 +247,14 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .tile:hover .tile-go{opacity:1;transform:translateX(0)}
 .tile-head{display:flex;align-items:center;gap:13px;margin-bottom:16px}
 .tile-ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;flex:0 0 auto;
-  background:rgba(8,24,19,.6);border:1px solid var(--stroke-2);color:var(--mint-2)}
+  background:color-mix(in srgb,var(--bg) 60%,transparent);border:1px solid var(--stroke-2);color:var(--mint-2)}
 .tile-ic svg{width:21px;height:21px}
 .tile-name{font-family:var(--fdisp);font-weight:600;font-size:15.5px;line-height:1.15}
 .tile-loc{font-size:11.5px;color:var(--softer);margin-top:2px}
 .tile-num{font-family:var(--fdisp);font-weight:600;font-size:30px;letter-spacing:-.02em}
 .tile-num small{font-size:14px;color:var(--soft);font-weight:500}
 .tile-meta{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-.pillet{font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;background:rgba(8,24,19,.55);border:1px solid var(--stroke);color:var(--soft)}
+.pillet{font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;background:color-mix(in srgb,var(--bg) 55%,transparent);border:1px solid var(--stroke);color:var(--soft)}
 .pillet.on{color:var(--mint-2);border-color:var(--stroke-2);background:color-mix(in srgb,var(--mint) 10%,transparent)}
 .pillet.invest{color:var(--gold);background:rgba(216,185,120,.1);border-color:rgba(216,185,120,.25)}
 .tile-go{position:absolute;right:18px;top:20px;color:var(--mint);opacity:0;transform:translateX(-4px);transition:.18s}
@@ -264,7 +264,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .drow:last-child{border-bottom:none}
 .drow-l{display:flex;align-items:center;gap:12px;min-width:0}
 .drow-badge{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
-  background:rgba(8,24,19,.6);border:1px solid var(--stroke);font-family:var(--fdisp);font-weight:600;font-size:14px;color:var(--mint-2)}
+  background:color-mix(in srgb,var(--bg) 60%,transparent);border:1px solid var(--stroke);font-family:var(--fdisp);font-weight:600;font-size:14px;color:var(--mint-2)}
 .drow-name{font-weight:600;font-size:14px}
 .drow-sub{font-size:11.5px;color:var(--softer)}
 .drow-val{text-align:right;flex:0 0 auto}
@@ -338,7 +338,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .sub-bd{position:fixed;inset:0;z-index:65;background:rgba(3,12,9,.5);backdrop-filter:blur(4px);
   opacity:0;transition:opacity .2s ease}
 .sub-bd.on{opacity:1}
-.submenu{position:fixed;z-index:66;background:linear-gradient(165deg,rgba(22,52,42,.97),rgba(10,28,22,.99));
+.submenu{position:fixed;z-index:66;background:linear-gradient(165deg,color-mix(in srgb,var(--panel-solid) 97%,transparent),color-mix(in srgb,var(--bg) 99%,transparent));
   border:1px solid var(--stroke-2);border-radius:20px;box-shadow:0 30px 70px rgba(0,0,0,.55);
   padding:10px;min-width:230px;opacity:0;transform:translateX(-8px);transition:.2s cubic-bezier(.22,.61,.36,1)}
 .submenu.on{opacity:1;transform:none}
@@ -488,7 +488,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .ef-i[readonly]{opacity:.55;cursor:not-allowed}
 textarea.ef-i{resize:vertical;line-height:1.45;font-size:14px}
 select.ef-i{cursor:pointer;background-image:none}
-select.ef-i option{background:#0d2a21;color:#e8f5ef}
+select.ef-i option{background:var(--panel-solid);color:var(--text)}
 .ef-h{font-size:11px;color:var(--softer);margin-top:5px;line-height:1.4}
 .ef-sec{font-family:var(--fdisp);font-size:12px;font-weight:600;color:var(--mint-2);
   text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px;padding-bottom:6px;
@@ -571,7 +571,7 @@ select.ef-i option{background:#0d2a21;color:#e8f5ef}
   border-radius:13px;padding:14px 38px 14px 15px;color:var(--text);font-family:var(--fbody);
   font-size:15px;outline:none;-webkit-appearance:none;appearance:none;cursor:pointer}
 .field.sel select:focus{border-color:var(--mint);box-shadow:0 0 0 3px color-mix(in srgb,var(--mint) 15%,transparent)}
-.field.sel select option{background:#0d2a21;color:#e8f5ef}
+.field.sel select option{background:var(--panel-solid);color:var(--text)}
 
 /* Slider (AirBNB-Auslastung) */
 .sld-wrap{background:color-mix(in srgb,var(--bg) 45%,transparent);border:1px solid var(--stroke);border-radius:16px;padding:16px 18px;margin-bottom:16px}
@@ -581,10 +581,10 @@ select.ef-i option{background:#0d2a21;color:#e8f5ef}
 input[type=range].sld{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;
   background:linear-gradient(90deg,var(--mint) var(--p,65%),color-mix(in srgb,var(--bg) 70%,transparent) var(--p,65%));outline:none;margin:0}
 input[type=range].sld::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
-  background:linear-gradient(150deg,var(--mint-2),var(--mint));border:2px solid #08221b;cursor:grab;
+  background:linear-gradient(150deg,var(--mint-2),var(--mint));border:2px solid var(--bg);cursor:grab;
   box-shadow:0 3px 10px rgba(0,0,0,.4)}
 input[type=range].sld::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.1)}
-input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%;border:2px solid #08221b;
+input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%;border:2px solid var(--bg);
   background:var(--mint);cursor:grab}
 .sld-marks{display:flex;justify-content:space-between;font-size:10.5px;color:var(--softer);margin-top:8px}
 /* Timeline (Kalender-Insights) */
@@ -592,7 +592,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 .tl-i{display:flex;gap:12px;padding-bottom:14px;position:relative}
 .tl-i:not(:last-child)::before{content:"";position:absolute;left:5px;top:14px;bottom:0;width:1px;background:var(--stroke)}
 .tl-dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;margin-top:3px;position:relative;z-index:1;
-  box-shadow:0 0 0 3px rgba(8,24,19,.9)}
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--bg) 90%,transparent)}
 .tl-b{flex:1;min-width:0}
 .tl-t{font-size:13px;font-weight:600}
 .tl-s{font-size:11.5px;color:var(--softer);margin-top:2px}
@@ -756,7 +756,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 
     <div class="login-logo">
       <img src="estriq.PNG" alt="ESTRIQ" class="login-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-      <div class="login-logo-fallback">
+      <div class="login-logo-fallback" style="display:none">
         <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#052018" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#052018"/></svg></div>
         <div class="login-logo-txt"><h1>ESTRIQ</h1></div>
       </div>
@@ -856,9 +856,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=12"></script>
-<script src="./data-save.js?v=12"></script>
-<script src="./finance-engine.js?v=12"></script>
-<script src="./app.js?v=12"></script>
+<script src="./data-loader.js?v=13"></script>
+<script src="./data-save.js?v=13"></script>
+<script src="./finance-engine.js?v=13"></script>
+<script src="./app.js?v=13"></script>
 </body>
 </html>
