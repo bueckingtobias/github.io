@@ -682,6 +682,7 @@
   };
 
   function enterApp() {
+    document.documentElement.classList.remove("pre-login");
     $("#login").classList.add("hide"); $("#app").classList.remove("hide");
     buildRail(); route("overview");
     // Neuen Nutzern das Abo-Willkommensmenü zeigen (einmalig, bis Tarif gewählt)
