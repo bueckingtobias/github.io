@@ -175,6 +175,10 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   background:color-mix(in srgb,var(--mint) 10%,transparent);border:1px solid color-mix(in srgb,var(--mint) 25%,transparent);
   border-radius:13px;font-family:var(--fdisp);font-weight:600;font-size:15px;color:var(--mint-2)}
 .anlegen-kopf svg{width:22px;height:22px}
+.sub-cat{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--softer);padding:10px 6px 5px}
+.sub-cat:first-child{padding-top:2px}
+.sub-empty{padding:18px 8px;text-align:center;font-size:13px;color:var(--softer);line-height:1.5}
 .rail-btn{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;cursor:pointer;position:relative;
   color:var(--soft);border:1px solid transparent;transition:.16s;background:transparent}
 .rail-btn svg{width:21px;height:21px}
@@ -458,6 +462,40 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .pt-name.gesperrt{color:var(--danger);background:rgba(224,110,95,.12)}
 .pt-status{font-size:12.5px;color:var(--soft)}
 
+/* ===== WILLKOMMEN / ONBOARDING ===== */
+.wc-hero{text-align:center;padding:4px 0 20px}
+.wc-badge{display:inline-block;background:color-mix(in srgb,var(--mint) 15%,transparent);color:var(--mint-2);
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:5px 13px;border-radius:20px;margin-bottom:13px}
+.wc-t{font-family:var(--fdisp);font-size:22px;font-weight:600;margin-bottom:9px}
+.wc-d{font-size:13.5px;color:var(--soft);line-height:1.55;max-width:330px;margin:0 auto}
+.wc-plans{display:flex;flex-direction:column;gap:13px}
+.wc-plan{position:relative;background:color-mix(in srgb,var(--bg) 50%,transparent);
+  border:1px solid var(--stroke-2);border-radius:18px;padding:20px}
+.wc-plan.premium{border-color:color-mix(in srgb,var(--mint) 40%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mint) 8%,transparent),color-mix(in srgb,var(--bg) 50%,transparent))}
+.wc-flag{position:absolute;top:-9px;right:18px;background:linear-gradient(135deg,var(--mint),var(--deep));
+  color:#08120f;font-size:10px;font-weight:700;padding:3px 11px;border-radius:12px}
+.wc-plan-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.wc-plan-n{font-family:var(--fdisp);font-size:18px;font-weight:600}
+.wc-plan-s{font-size:12px;color:var(--softer);margin-top:2px}
+.wc-plan-p{font-family:var(--fdisp);font-size:21px;font-weight:600;color:var(--mint-2)}
+.wc-plan-p span{font-size:11px;color:var(--softer);font-weight:400}
+.wc-feats{list-style:none;padding:0;margin:0 0 16px}
+.wc-feats li{position:relative;padding-left:24px;margin-bottom:8px;font-size:13px;color:var(--text)}
+.wc-feats li:before{content:"";position:absolute;left:0;top:3px;width:15px;height:15px;border-radius:50%;
+  background:var(--mint);
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6L9 17l-5-5'/></svg>") center/11px no-repeat;
+  mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6L9 17l-5-5'/></svg>") center/11px no-repeat}
+.wc-cta{width:100%;border:1px solid var(--stroke-2);border-radius:12px;cursor:pointer;
+  background:color-mix(in srgb,var(--bg) 50%,transparent);color:var(--mint-2);padding:13px;
+  font-size:14px;font-weight:700;font-family:var(--fbody);transition:.15s}
+.wc-cta:hover{border-color:var(--mint)}
+.wc-cta.prem{border:none;background:linear-gradient(135deg,var(--mint),var(--deep));color:#08120f;
+  box-shadow:0 10px 26px color-mix(in srgb,var(--deep) 40%,transparent)}
+.wc-cta:disabled{opacity:.6;cursor:wait}
+.wc-note{text-align:center;font-size:11.5px;color:var(--softer);margin-top:16px}
+
 /* ===== BILD ZUSCHNEIDEN ===== */
 #cropper{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:22px;
   background:rgba(4,12,9,.86);backdrop-filter:blur(8px)}
@@ -705,8 +743,12 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
   .rail-btn svg{width:22px;height:22px}
   .rail-btn .tip{position:static;transform:none;opacity:1;background:none;border:none;padding:0;color:inherit;
     font-size:9.5px;font-weight:600;pointer-events:none}
-  .rail-btn.on .tip{color:#052018}
+  .rail-btn.on .tip{color:var(--mint-2)}
   .rail-btn.logout .tip{color:var(--danger)}
+  /* Neu-Knopf reiht sich ein, nur Icon in Akzentfarbe */
+  .rail-add{background:none!important;color:var(--mint)!important;box-shadow:none!important;margin:0!important}
+  .rail-add .tip{color:var(--mint)!important}
+  .rail-add svg{width:22px;height:22px}
 
   .main{height:100dvh;height:100svh}
   .head{padding:calc(16px + env(safe-area-inset-top)) 18px 0;flex-direction:column;gap:10px}
@@ -882,9 +924,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=14"></script>
-<script src="./data-save.js?v=14"></script>
-<script src="./finance-engine.js?v=14"></script>
-<script src="./app.js?v=14"></script>
+<script src="./data-loader.js?v=15"></script>
+<script src="./data-save.js?v=15"></script>
+<script src="./finance-engine.js?v=15"></script>
+<script src="./app.js?v=15"></script>
 </body>
 </html>
