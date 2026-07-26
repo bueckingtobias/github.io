@@ -77,8 +77,8 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 /* ============================ LOGIN ============================ */
 #login{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:24px;
   background:
-    radial-gradient(680px 420px at 82% 6%,rgba(45,212,191,.09),transparent 58%),
-    radial-gradient(560px 380px at 12% 96%,rgba(15,118,110,.16),transparent 60%),
+    radial-gradient(680px 420px at 82% 6%,rgba(200,204,212,.09),transparent 58%),
+    radial-gradient(560px 380px at 12% 96%,rgba(139,144,153,.16),transparent 60%),
     linear-gradient(180deg,#1c1f26,#16181d)}
 #login.hide{display:none}
 .hide{display:none!important}
@@ -89,19 +89,19 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   box-shadow:0 32px 70px -22px rgba(0,0,0,.62),0 6px 20px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.07);
   position:relative;overflow:hidden}
 .login-card::before{content:"";position:absolute;top:0;left:24%;right:24%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(94,234,212,.5),transparent);pointer-events:none}
+  background:linear-gradient(90deg,transparent,rgba(228,231,236,.5),transparent);pointer-events:none}
 .login-orb{position:absolute;width:180px;height:180px;right:-58px;top:-64px;border-radius:50%;
-  background:radial-gradient(circle at 42% 42%,rgba(94,234,212,.32),transparent 68%);
+  background:radial-gradient(circle at 42% 42%,rgba(228,231,236,.32),transparent 68%);
   filter:blur(16px);opacity:.36;pointer-events:none}
 /* Logo mittig, prominenter — ersetzt den Schriftzug */
 .login-logo{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:26px;position:relative}
 .login-logo-img{max-width:240px;max-height:91px;object-fit:contain;
-  filter:drop-shadow(0 8px 22px color-mix(in srgb,#0f766e 35%,transparent))}
+  filter:drop-shadow(0 8px 22px color-mix(in srgb,#8b9099 35%,transparent))}
 .login-logo-fallback{display:flex;align-items:center;gap:11px}
 .login-logo-txt h1{font-family:var(--fdisp);font-size:22px;margin:0;font-weight:600;letter-spacing:.04em}
 .mark{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;position:relative;overflow:hidden;
-  background:linear-gradient(150deg,#2dd4bf,#0f766e);
-  box-shadow:0 8px 20px color-mix(in srgb,#0f766e 48%,transparent),inset 0 1px 0 rgba(255,255,255,.22)}
+  background:linear-gradient(150deg,#c8ccd4,#8b9099);
+  box-shadow:0 8px 20px color-mix(in srgb,#8b9099 48%,transparent),inset 0 1px 0 rgba(255,255,255,.22)}
 .mark svg{width:24px;height:24px}
 /* Reiter-Umschalter */
 .login-tabs{position:relative;display:flex;background:rgba(22,24,29,.55);
@@ -111,8 +111,8 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   transition:color .2s;border-radius:9px}
 .ltab.active{color:#08120f}
 .ltab-ind{position:absolute;z-index:1;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
-  background:linear-gradient(135deg,#2dd4bf,#0f766e);border-radius:9px;
-  box-shadow:0 5px 16px color-mix(in srgb,#0f766e 38%,transparent);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  background:linear-gradient(135deg,#c8ccd4,#8b9099);border-radius:9px;
+  box-shadow:0 5px 16px color-mix(in srgb,#8b9099 38%,transparent);transition:transform .28s cubic-bezier(.4,0,.2,1)}
 .ltab-ind.right{transform:translateX(100%)}
 /* Formular: einheitlich linksbündig */
 .login-form{display:flex;flex-direction:column}
@@ -121,28 +121,28 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .field-row input{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(180,190,205,.2);
   background:rgba(22,24,29,.55);color:#eef1f5;
   padding:13px 15px;font-size:15px;outline:none;font-family:var(--fbody);transition:.18s}
-.field-row input:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px color-mix(in srgb,#2dd4bf 15%,transparent)}
+.field-row input:focus{border-color:#c8ccd4;box-shadow:0 0 0 3px color-mix(in srgb,#c8ccd4 15%,transparent)}
 .field-row input::placeholder{color:rgba(220,226,235,.4)}
 /* Profilbild-Auswahl */
 #rowAvatar{display:flex;flex-direction:column;align-items:center;margin:2px 0 18px}
 .ava-circle{position:relative;width:88px;height:88px;border-radius:50%;cursor:pointer;padding:0;
   border:2px dashed var(--stroke-2);background:color-mix(in srgb,var(--bg) 50%,transparent);transition:.2s;overflow:visible}
-.ava-circle:hover{border-color:#2dd4bf}
-.ava-circle.filled{border-style:solid;border-color:color-mix(in srgb,#2dd4bf 50%,transparent)}
+.ava-circle:hover{border-color:#c8ccd4}
+.ava-circle.filled{border-style:solid;border-color:color-mix(in srgb,#c8ccd4 50%,transparent)}
 .ava-img{position:absolute;inset:0;border-radius:50%;background-size:cover;background-position:center}
 .ava-cam{position:absolute;top:50%;left:50%;width:26px;height:26px;transform:translate(-50%,-50%);
   color:var(--softer);transition:.2s}
-.ava-circle:hover .ava-cam{color:#5eead4}
+.ava-circle:hover .ava-cam{color:#e4e7ec}
 .ava-circle.filled .ava-cam{display:none}
 .ava-edit{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;border-radius:50%;
-  background:linear-gradient(135deg,#2dd4bf,#0f766e);display:none;place-items:center;
+  background:linear-gradient(135deg,#c8ccd4,#8b9099);display:none;place-items:center;
   box-shadow:0 4px 12px rgba(0,0,0,.4);border:2px solid var(--bg2)}
 .ava-edit svg{width:14px;height:14px}
 .ava-circle.filled .ava-edit{display:grid}
 .ava-cap{margin-top:11px;font-size:12.5px;color:var(--softer)}
 .login-btn{width:100%;margin-top:8px;cursor:pointer;border:none;border-radius:12px;
-  background:linear-gradient(135deg,#2dd4bf,#0f766e);color:#08120f;padding:15px;font-size:15px;font-weight:700;
-  font-family:var(--fbody);box-shadow:0 10px 26px color-mix(in srgb,#0f766e 40%,transparent);transition:.18s}
+  background:linear-gradient(135deg,#c8ccd4,#8b9099);color:#08120f;padding:15px;font-size:15px;font-weight:700;
+  font-family:var(--fbody);box-shadow:0 10px 26px color-mix(in srgb,#8b9099 40%,transparent);transition:.18s}
 .login-btn:hover{filter:brightness(1.06)}
 .login-btn:active{transform:scale(.98)}
 .login-msg{min-height:18px;margin-top:14px;font-size:12.5px;color:var(--soft);text-align:center;line-height:1.4}
@@ -924,9 +924,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=15"></script>
-<script src="./data-save.js?v=15"></script>
-<script src="./finance-engine.js?v=15"></script>
-<script src="./app.js?v=15"></script>
+<script src="./data-loader.js?v=16"></script>
+<script src="./data-save.js?v=16"></script>
+<script src="./finance-engine.js?v=16"></script>
+<script src="./app.js?v=16"></script>
 </body>
 </html>
