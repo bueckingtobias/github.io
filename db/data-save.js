@@ -14,7 +14,69 @@ async function meineOrgId() {
 }
 
 function fehlerText(e) {
-  return (e && (e.message || e.hint || e.details || e.code)) || JSON.stringify(e);
+  const roh = (e && (e.message || e.hint || e.details || e.code || e.error_description || e.error)) || "";
+  const s = String(roh).toLowerCase();
+
+  // Häufige technische Meldungen in verständliches Deutsch übersetzen
+  if (s.includes("violates row-level security") || s.includes("row-level security")) {
+    return "Diese Änderung ist mit deinem aktuellen Tarif nicht möglich. Ein Upgrade schaltet sie frei.";
+  }
+  if (s.includes("null value") && s.includes("column")) {
+    // Spaltenname herausziehen, falls vorhanden
+    const m = String(roh).match(/column "([^"]+)"/);
+    const feld = m ? feldName(m[1]) : "ein Pflichtfeld";
+    return "Bitte fülle " + feld + " aus.";
+  }
+  if (s.includes("duplicate key") || s.includes("already exists")) {
+    return "Dieser Eintrag existiert bereits. Bitte wähle einen anderen Namen oder Kurznamen.";
+  }
+  if (s.includes("violates check constraint")) {
+    return "Ein Wert ist ungültig. Bitte prüfe deine Eingaben.";
+  }
+  if (s.includes("violates foreign key")) {
+    return "Der Vorgang konnte nicht abgeschlossen werden, weil ein verknüpfter Eintrag fehlt.";
+  }
+  if (s.includes("invalid input syntax")) {
+    return "Ein Wert hat das falsche Format. Bitte prüfe Zahlen- und Datumsfelder.";
+  }
+  if (s.includes("numeric field overflow") || s.includes("out of range")) {
+    return "Eine Zahl ist zu groß. Bitte gib einen kleineren Wert ein.";
+  }
+  if (s.includes("permission denied")) {
+    return "Dir fehlt die Berechtigung für diese Aktion.";
+  }
+  if (s.includes("jwt") || s.includes("token") || s.includes("session")) {
+    return "Deine Sitzung ist abgelaufen. Bitte melde dich neu an.";
+  }
+  if (s.includes("failed to fetch") || s.includes("network")) {
+    return "Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.";
+  }
+  if (s.includes("invalid login credentials")) {
+    return "E-Mail oder Passwort ist falsch.";
+  }
+  if (s.includes("email not confirmed")) {
+    return "Bitte bestätige zuerst deine E-Mail-Adresse.";
+  }
+  if (s.includes("user already registered") || s.includes("already been registered")) {
+    return "Für diese E-Mail existiert bereits ein Konto. Bitte melde dich an.";
+  }
+  if (s.includes("over_email_send_rate_limit") || s.includes("rate limit")) {
+    return "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.";
+  }
+  // Nichts erkannt: freundliche Standardmeldung statt technischem Text
+  return roh ? "Es ist ein Fehler aufgetreten. Bitte versuche es erneut." : "Unbekannter Fehler.";
+}
+
+// Übersetzt Datenbank-Spaltennamen in verständliche Feldbezeichnungen
+function feldName(spalte) {
+  const map = {
+    bezeichnung: "die Bezeichnung", name: "den Namen", flaeche: "die Fläche",
+    summe: "die Darlehenssumme", zins_pa: "den Zinssatz", rate_monat: "die Monatsrate",
+    paechter: "den Pächter", jahr_betrag: "die Jahrespacht", titel: "den Titel",
+    datum: "das Datum", slug: "den Kurznamen", nachtpreis: "den Nachtpreis",
+    mieter: "den Mieter", status: "den Status"
+  };
+  return map[spalte] || "das Feld „" + spalte + "“";
 }
 
 // ---------- Einheiten ----------
