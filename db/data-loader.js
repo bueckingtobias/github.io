@@ -15,23 +15,7 @@ window.sb = supabase.createClient(SB_URL, SB_KEY);
    Lokale Einstellungen (liegen bewusst NICHT in der Datenbank)
    ------------------------------------------------------------- */
 const LOKAL = {
-  meta: { org: "Bücking", title: "Einnahmen" },
-
-  // Benutzer für die Auswahl auf dem Anmeldebildschirm
-  auth: {
-    // Passwort bleibt in Kapitel 5 noch lokal (Hash von "baumstrasse").
-    // In Kapitel 6 wird das durch die Supabase-Anmeldung ersetzt.
-    passwordHash: "774abd2c0374e9d3d262d1b7269ce9913f5333021ad6e7356261a2305638c1e8",
-    sessionHours: 12,
-    // >>> E-Mails eintragen, die in Supabase unter Authentication -> Users
-    //     angelegt sind. Werden ab Kapitel 6 zur Anmeldung genutzt. <<<
-    benutzer: [
-      { id: "tobias",    name: "Tobias",    anrede: "Tobias",
-        email: "bueckingtobias@gmail.com" },
-      { id: "bernfried", name: "Bernfried", anrede: "Bernfried",
-        email: "bernfried@buecking-immobilien.de" }
-    ]
-  },
+  meta: { org: "ESTRIQ", title: "Einnahmen" },
 
   // Begrüßungen nach Tageszeit. {name} wird ersetzt.
   begruessungen: {
@@ -60,7 +44,7 @@ const LOKAL = {
     ]
   },
 
-  wetter: { ort: "Ganderkesee", lat: 53.0333, lon: 8.5333 }
+  wetter: { ort: null, lat: null, lon: null }
 };
 
 /* -------------------------------------------------------------
@@ -153,7 +137,6 @@ async function ladeDaten() {
 
   window.DASHBOARD_DATA = {
     meta: { ...LOKAL.meta, version: new Date().toISOString().slice(0, 10) },
-    auth: LOKAL.auth,
     begruessungen: LOKAL.begruessungen,
     wetter: LOKAL.wetter,
     abo: abo,
@@ -165,7 +148,7 @@ async function ladeDaten() {
 
 // Damit die Benutzerauswahl schon vor dem Anmelden gefüllt werden kann
 window.DASHBOARD_DATA = {
-  meta: LOKAL.meta, auth: LOKAL.auth, begruessungen: LOKAL.begruessungen,
+  meta: LOKAL.meta, begruessungen: LOKAL.begruessungen,
   wetter: LOKAL.wetter, streams: [], termine: []
 };
 window.ladeDaten = ladeDaten;
