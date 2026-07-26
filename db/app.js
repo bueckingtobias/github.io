@@ -90,8 +90,7 @@
       D = window.DASHBOARD_DATA;
       enterApp();
     } catch (e) {
-      const txt = (e && (e.message || e.hint || e.details || e.code)) || JSON.stringify(e);
-      msg.textContent = "Fehler: " + txt;
+      msg.textContent = window.fehlerText(e);
       msg.className = "login-msg bad";
       console.error(e);
     }
@@ -101,6 +100,41 @@
     try { if (window.sb) await window.sb.auth.signOut(); } catch (_) {}
     localStorage.removeItem(SESSION);
     location.reload();
+  }
+
+  /* ---------- DESIGN / THEME ---------- */
+  const THEMES = [
+    { id: "graphit", name: "Graphit", bg: "#1c1f26" },
+    { id: "smaragd", name: "Smaragd", bg: "#0a1f1a" },
+    { id: "marine",  name: "Marine",  bg: "#111a2b" }
+  ];
+  const AKZENTE = [
+    { id: "teal",      name: "Teal",      farbe: "#2dd4bf" },
+    { id: "mint",      name: "Mint",      farbe: "#4ade9e" },
+    { id: "blau",      name: "Blau",      farbe: "#4a9fee" },
+    { id: "violett",   name: "Violett",   farbe: "#a98cf0" },
+    { id: "bernstein", name: "Bernstein", farbe: "#e0a94a" },
+    { id: "rose",      name: "Rosé",      farbe: "#ee7a9f" }
+  ];
+  function themeAnwenden(theme, accent) {
+    const el2 = document.documentElement;
+    if (theme === "graphit") el2.removeAttribute("data-theme");
+    else el2.setAttribute("data-theme", theme);
+    el2.setAttribute("data-accent", accent || "teal");
+  }
+  function themeSpeichern(theme, accent) {
+    try {
+      if (theme === "graphit") localStorage.removeItem("estriq_theme");
+      else localStorage.setItem("estriq_theme", theme);
+      localStorage.setItem("estriq_accent", accent || "teal");
+    } catch (_) {}
+  }
+  function aktThemeId() {
+    const t = document.documentElement.getAttribute("data-theme");
+    return t || "graphit";
+  }
+  function aktAccentId() {
+    return document.documentElement.getAttribute("data-accent") || "teal";
   }
 
   /* ---------- ABO / TARIF ---------- */
@@ -354,6 +388,17 @@
         <button class="ef-save" id="pSave">Speichern</button>
       </div>
       <div class="ef-msg" id="pMsg"></div>
+      ${efTitel("Darstellung")}
+      <div class="ef-l">Hintergrund</div>
+      <div class="theme-row" id="themeRow">
+        ${THEMES.map(t => `<button type="button" class="theme-chip" data-theme="${t.id}" style="--sw:${t.bg}">
+          <span class="theme-sw"></span>${esc(t.name)}</button>`).join("")}
+      </div>
+      <div class="ef-l" style="margin-top:14px">Akzentfarbe</div>
+      <div class="accent-row" id="accentRow">
+        ${AKZENTE.map(a => `<button type="button" class="accent-dot" data-accent="${a.id}"
+          style="--ac:${a.farbe}" title="${esc(a.name)}" aria-label="${esc(a.name)}"></button>`).join("")}
+      </div>
       ${efTitel("Tarif")}
       <div class="prof-tarif" id="pTarif"></div>
       <button class="up-cta" id="pTarifBtn" style="margin-top:12px">Tarif verwalten</button>
@@ -388,6 +433,26 @@
       </div>`;
     const ptb = sheet.querySelector("#pTarifBtn");
     if (ptb) ptb.onclick = () => { closeSheet(); openTarifSheet(); };
+
+    // Design: Hintergrund + Akzent, sofortige Vorschau, direkt gespeichert
+    function markiere() {
+      const tid = aktThemeId(), aid = aktAccentId();
+      sheet.querySelectorAll("#themeRow .theme-chip").forEach(b =>
+        b.classList.toggle("active", b.dataset.theme === tid));
+      sheet.querySelectorAll("#accentRow .accent-dot").forEach(b =>
+        b.classList.toggle("active", b.dataset.accent === aid));
+    }
+    sheet.querySelectorAll("#themeRow .theme-chip").forEach(b => b.onclick = () => {
+      themeAnwenden(b.dataset.theme, aktAccentId());
+      themeSpeichern(b.dataset.theme, aktAccentId());
+      markiere();
+    });
+    sheet.querySelectorAll("#accentRow .accent-dot").forEach(b => b.onclick = () => {
+      themeAnwenden(aktThemeId(), b.dataset.accent);
+      themeSpeichern(aktThemeId(), b.dataset.accent);
+      markiere();
+    });
+    markiere();
 
     // Bildauswahl
     const avaBtn = sheet.querySelector("#pAvaBtn");
@@ -434,7 +499,7 @@
         closeSheet();
         route(currentView);   // Begrüßung mit neuem Bild/Namen neu zeichnen
       } catch (e) {
-        msg.textContent = "Fehler: " + window.fehlerText(e);
+        msg.textContent = window.fehlerText(e);
         msg.className = "ef-msg bad";
       }
     };
@@ -464,7 +529,7 @@
         await window.sb.auth.signOut();
         location.reload();
       } catch (e) {
-        msg.textContent = "Fehler: " + window.fehlerText(e);
+        msg.textContent = window.fehlerText(e);
         msg.className = "ef-msg bad"; del.disabled = false;
       }
     };
@@ -478,6 +543,7 @@
     const zeig = (id, sichtbar) => { const n = $(id); if (n) n.classList.toggle("hide", !sichtbar); };
     zeig("#rowAvatar", on);
     zeig("#rowName", on);
+    zeig("#rowConsent", on);
     zeig("#loginBtn", !on);
     zeig("#registerBtn", on);
     // Reiter-Optik
@@ -518,7 +584,11 @@
     const pw = $("#pw").value;
     if (!name) { msg.textContent = "Bitte Namen eingeben."; msg.className = "login-msg bad"; return; }
     if (!mail) { msg.textContent = "Bitte E-Mail eingeben."; msg.className = "login-msg bad"; return; }
-    if (pw.length < 6) { msg.textContent = "Passwort mindestens 6 Zeichen."; msg.className = "login-msg bad"; return; }
+    if (pw.length < 6) { msg.textContent = "Das Passwort muss mindestens 6 Zeichen lang sein."; msg.className = "login-msg bad"; return; }
+    if (!$("#consentBox") || !$("#consentBox").checked) {
+      msg.textContent = "Bitte stimme der Speicherung deiner Daten zu, um fortzufahren.";
+      msg.className = "login-msg bad"; return;
+    }
     msg.textContent = "Konto wird erstellt…"; msg.className = "login-msg";
     $("#registerBtn").disabled = true;
 
@@ -528,7 +598,7 @@
       options: { data: { name: name } }
     });
     if (error) {
-      msg.textContent = "Registrierung fehlgeschlagen: " + (error.message || "");
+      msg.textContent = window.fehlerText(error);
       msg.className = "login-msg bad";
       $("#registerBtn").disabled = false;
       return;
@@ -558,8 +628,7 @@
       D = window.DASHBOARD_DATA;
       enterApp();
     } catch (e) {
-      const txt = (e && (e.message || e.hint || e.details || e.code)) || JSON.stringify(e);
-      msg.textContent = "Konto erstellt, aber: " + txt;
+      msg.textContent = "Dein Konto wurde erstellt. " + window.fehlerText(e);
       msg.className = "login-msg bad";
       $("#registerBtn").disabled = false;
     }
@@ -855,7 +924,7 @@
         closeSheet();
         await window.nachSpeichern();
       } catch (e) {
-        msg.textContent = "Fehler: " + window.fehlerText(e);
+        msg.textContent = window.fehlerText(e);
         msg.className = "ef-msg bad";
         btn.disabled = false;
       }
@@ -880,7 +949,7 @@
         closeSheet();
         await window.nachSpeichern();
       } catch (e) {
-        msg.textContent = "Fehler: " + window.fehlerText(e);
+        msg.textContent = window.fehlerText(e);
         msg.className = "ef-msg bad";
         del.disabled = false;
       }
@@ -2723,6 +2792,10 @@
     if ($("#tabRegister")) $("#tabRegister").addEventListener("click", () => setRegMode(true));
     if ($("#avaBtn")) $("#avaBtn").addEventListener("click", waehleAvatar);
     if ($("#avaFile")) $("#avaFile").addEventListener("change", avatarGewaehlt);
+    if ($("#datenschutzLink")) $("#datenschutzLink").addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("Datenschutzerklärung\n\nDeine Daten werden verschlüsselt gespeichert und sind ausschließlich für dich zugänglich. Der Betreiber kann deine Immobiliendaten nicht einsehen.\n\n(Dies ist ein Platzhalter. Eine vollständige Datenschutzerklärung wird vor dem öffentlichen Start hinterlegt.)");
+    });
 
     if (await sessionOK()) {
       try {
@@ -2731,8 +2804,7 @@
         enterApp();
       } catch (e) {
         $("#login").classList.remove("hide");
-        const txt = (e && (e.message || e.hint || e.details || e.code)) || JSON.stringify(e);
-        $("#loginMsg").textContent = "Fehler: " + txt;
+        $("#loginMsg").textContent = window.fehlerText(e);
         $("#loginMsg").className = "login-msg bad";
         console.error(e);
         setTimeout(() => $("#pw").focus(), 150);
