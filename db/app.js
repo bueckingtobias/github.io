@@ -32,7 +32,9 @@
     wallet: '<path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3M3 7h16M16 12h5v4h-5a2 2 0 0 1 0-4z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
     debt: '<path d="M12 3v18M8 7h6a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 0 0 5h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
     plus: '<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-    calendar: '<path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 9h16M8 3v3M16 3v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
+    calendar: '<path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 9h16M8 3v3M16 3v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+    user: '<circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
   };
   const svg = (k, cls) => `<svg viewBox="0 0 24 24" fill="none" class="${cls || ''}">${IC[k] || IC.grid}</svg>`;
 
@@ -663,6 +665,73 @@
   function enterApp() {
     $("#login").classList.add("hide"); $("#app").classList.remove("hide");
     buildRail(); route("overview");
+    // Neuen Nutzern das Abo-Willkommensmenü zeigen (einmalig, bis Tarif gewählt)
+    try {
+      const gewaehlt = localStorage.getItem("estriq_tarif_gewaehlt");
+      const a = abo();
+      if (!gewaehlt && a && a.roh_tarif === "test") {
+        setTimeout(() => openWelcomeSheet(), 400);
+      }
+    } catch (_) {}
+  }
+
+  // Willkommen: Abo wählen (30 Tage Test)
+  function openWelcomeSheet() {
+    const body = `
+      <div class="wc-hero">
+        <div class="wc-badge">Willkommen bei ESTRIQ</div>
+        <div class="wc-t">Wähle deinen Tarif</div>
+        <div class="wc-d">Beide Tarife starten mit <b>30 Tagen kostenlos</b>. Du kannst jederzeit wechseln oder kündigen.</div>
+      </div>
+      <div class="wc-plans">
+        <div class="wc-plan" data-plan="basic">
+          <div class="wc-plan-top">
+            <div><div class="wc-plan-n">Basic</div><div class="wc-plan-s">Für den Einstieg</div></div>
+            <div class="wc-plan-p">19,99 €<span>/Mon.</span></div>
+          </div>
+          <ul class="wc-feats">
+            <li>Bis zu 3 Objekte</li>
+            <li>Bis zu 10 Einheiten</li>
+            <li>Klassische Vermietung</li>
+            <li>Alle Analysen</li>
+          </ul>
+          <button class="wc-cta" data-plan="basic">30 Tage kostenlos testen</button>
+        </div>
+        <div class="wc-plan premium" data-plan="premium">
+          <div class="wc-flag">Empfohlen</div>
+          <div class="wc-plan-top">
+            <div><div class="wc-plan-n">Premium</div><div class="wc-plan-s">Ohne Grenzen</div></div>
+            <div class="wc-plan-p">49,99 €<span>/Mon.</span></div>
+          </div>
+          <ul class="wc-feats">
+            <li>Unbegrenzt Objekte & Einheiten</li>
+            <li>AirBNB & Landpacht</li>
+            <li>Alle Analysen</li>
+            <li>Alles freigeschaltet</li>
+          </ul>
+          <button class="wc-cta prem" data-plan="premium">30 Tage kostenlos testen</button>
+        </div>
+      </div>
+      <div class="wc-note">Zahlungsdaten werden später hinterlegt · fürs Erste direkt startklar</div>`;
+    const sheet = openSheet("Tarif wählen", "", body);
+    sheet.querySelectorAll(".wc-cta").forEach(b => b.onclick = async () => {
+      const plan = b.dataset.plan;
+      b.disabled = true; b.textContent = "Wird aktiviert…";
+      try {
+        // Fürs Erste: Tarif direkt in der DB setzen (30 Tage Test).
+        // Später übernimmt das der Stripe-Webhook.
+        const bis = new Date(Date.now() + 30 * 86400000).toISOString();
+        const org = await window.meineOrgId();
+        await window.sb.from("organisationen")
+          .update({ tarif: "test", tarif_bis: bis, stripe_status: "trialing_" + plan }).eq("id", org);
+        localStorage.setItem("estriq_tarif_gewaehlt", plan);
+        closeSheet();
+        await window.nachSpeichern();
+      } catch (e) {
+        b.disabled = false; b.textContent = "30 Tage kostenlos testen";
+        alert(window.fehlerText(e));
+      }
+    });
   }
 
   /* ---------- NAV ---------- */
@@ -678,12 +747,14 @@
       ...rest
     ];
   }
-  function shortLabel(n) { return n.replace("Baumstraße · ", "").replace("Doppelhaus ", ""); }
+  function shortLabel(n) { return (n || "").split(" · ")[0]; }
 
   function buildRail() {
     const rail = $("#rail");
+    const mobil = window.innerWidth <= 560;
+    if (mobil) { buildRailMobil(rail); return; }
     const spacer = rail.querySelector(".rail-spacer");
-    // remove old nav buttons (keep mark, spacer, profile, logout)
+    // remove old nav buttons (keep mark, spacer, profile, logout, add)
     $$(".rail-btn:not(.logout):not(.profile):not(.rail-add)", rail).forEach(b => b.remove());
     navItems().forEach(it => {
       const b = el(`<button class="rail-btn" data-id="${it.id}" title="${esc(it.label)}">
@@ -694,6 +765,58 @@
       };
       rail.insertBefore(b, spacer);
     });
+  }
+
+  // Handy: feste Leiste — Neu · Übersicht · Objekte · Profil · Logout
+  function buildRailMobil(rail) {
+    rail.innerHTML = "";
+    const mk = (cls, icon, label, fn, extra) => {
+      const b = el(`<button class="rail-btn ${cls}" title="${esc(label)}">
+        ${svg(icon)}<span class="tip">${esc(label)}</span></button>`);
+      b.onclick = fn;
+      rail.appendChild(b);
+      return b;
+    };
+    mk("rail-add", "plus", "Neu", (e) => { e.stopPropagation(); openAnlegenMenu(rail); });
+    mk("", "grid", "Übersicht", () => route("overview"));
+    const objBtn = mk("", "home", "Objekte", (e) => { e.stopPropagation(); openObjekteMenu(objBtn); });
+    mk("profile", "user", "Profil", () => openProfilSheet());
+    mk("logout", "logout", "Logout", () => logout());
+  }
+
+  // Handy: Objekte-Menü (Vermietung / AirBNB / Landpacht + einzelne Objekte)
+  function openObjekteMenu(anchor) {
+    closeSubmenu();
+    const streams = (D.streams || []);
+    const gruppe = (kind, icon, titel) => {
+      const list = streams.filter(s => s.kind === kind);
+      if (!list.length) return "";
+      return `<div class="sub-cat">${esc(titel)}</div>` + list.map(s => {
+        const m = FE.streamMonthly(s);
+        const on = currentView === s.id;
+        return `<div class="sub-item${on ? " on" : ""}" data-id="${s.id}">
+          <div class="sub-ic">${svg(s.icon || icon)}</div>
+          <div class="sub-tx"><div class="sub-n">${esc(s.name)}</div>
+            <div class="sub-m">${eur(m.gesamt)}/Monat</div></div></div>`;
+      }).join("");
+    };
+    const inhalt = gruppe("miete", "home", "Vermietung")
+      + gruppe("airbnb", "bed", "Kurzzeitvermietung")
+      + gruppe("pacht", "sprout", "Landpacht");
+    const bd = el(`<div class="sub-bd"></div>`);
+    const menu = el(`<div class="submenu obj-menu">
+      <div class="submenu-t">Objekte</div>
+      <div class="sub-item${currentView === "vermietung" ? " on" : ""}" data-id="vermietung">
+        <div class="sub-ic">${svg("layers")}</div>
+        <div class="sub-tx"><div class="sub-n">Alle Vermietungen</div>
+          <div class="sub-m">Sammelübersicht</div></div></div>
+      ${inhalt || `<div class="sub-empty">Noch keine Objekte. Tippe auf „Neu", um zu starten.</div>`}
+    </div>`);
+    document.body.appendChild(bd); document.body.appendChild(menu);
+    positioniereSubmenu(anchor, menu);
+    menu.querySelectorAll(".sub-item[data-id]").forEach(it =>
+      it.onclick = () => { const id = it.dataset.id; closeSubmenu(); route(id); });
+    bd.onclick = closeSubmenu;
   }
 
   /* ---------- ANLEGEN (zentrales +) ---------- */
@@ -1195,7 +1318,7 @@
       <div class="card-s" style="margin-bottom:14px">Frag nach Mietern, Zahlen oder Terminen</div>
       <div class="search-box">
         <span class="search-ic">${svg("chart")}</span>
-        <input id="qInput" type="search" placeholder="z. B. Was zahlt Karin Schröder?"
+        <input id="qInput" type="search" placeholder="z. B. Wie viel Miete nehme ich ein?"
                autocomplete="off" enterkeyhint="search">
         <button class="mic-btn" id="micBtn" title="Spracheingabe" aria-label="Spracheingabe">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
@@ -1203,7 +1326,7 @@
           <path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3"/></svg>
         </button>
       </div>
-      <div class="search-hint" id="qHint">Tipp: „Restschuld", „freie Wohnung", „Rendite Syke"</div>
+      <div class="search-hint" id="qHint">Tipp: „Restschuld", „freie Wohnung", „Rendite"</div>
       <div id="qOut"></div>
     </div>`);
 
@@ -1273,7 +1396,7 @@
         };
         rec.onend = () => { mic.classList.remove("on"); laeuft = false;
           if (hint.textContent === "Ich höre zu…") {
-            hint.textContent = 'Tipp: „Restschuld", „freie Wohnung", „Rendite Syke"';
+            hint.textContent = 'Tipp: „Restschuld", „freie Wohnung", „Rendite"';
           }
           if (input.value.trim()) zeige(input.value); };
         try { rec.start(); } catch (_) {}
@@ -1397,10 +1520,10 @@
         </div>
         <div class="mini">
           <div class="mini-row"><span class="mini-lab">Vermietet</span>
-            <span class="mini-track"><span style="width:${o}%"></span></span>
+            <span class="mini-track"><span style="width:${m.einheiten > 0 ? Math.round(m.vermietet / m.einheiten * 100) : 0}%"></span></span>
             <span class="mini-val">${m.vermietet}/${m.einheiten}</span></div>
           <div class="mini-row"><span class="mini-lab">Rendite</span>
-            <span class="mini-track"><span style="width:${Math.min(100, k.bruttoRendite * 6)}%"></span></span>
+            <span class="mini-track"><span style="width:${Math.max(2, Math.min(100, k.bruttoRendite / 10 * 100))}%"></span></span>
             <span class="mini-val">${k.bruttoRendite.toLocaleString("de-DE")} %</span></div>
         </div></div>`;
     }).join("");
@@ -1716,18 +1839,39 @@
     95: ["Gewitter", "⛈"], 96: ["Gewitter mit Hagel", "⛈"], 99: ["Schweres Gewitter", "⛈"]
   };
   function weatherCard() {
-    const w = D.wetter || { ort: "—", lat: 53.0333, lon: 8.5333 };
+    const w = D.wetter || { ort: null, lat: null, lon: null };
     const card = el(`<div class="card">
       <div class="card-h"><div><div class="card-t">Wetter</div>
-        <div class="card-s">${esc(w.ort)} · Tag antippen für Stundenverlauf</div></div>
+        <div class="card-s" id="wOrt">${w.ort ? esc(w.ort) + " · " : ""}Tag antippen für Stundenverlauf</div></div>
         <div class="head-pill" style="padding:7px 13px" id="wNow">lädt…</div></div>
       <div class="card-b" id="wBody"><div class="note">Wetterdaten werden geladen…</div></div></div>`);
-    // Open-Meteo (kein API-Key) inkl. Stundenwerte
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${w.lat}&longitude=${w.lon}`
+
+    function ladeWetter(lat, lon, ortName) {
+      const ortEl = card.querySelector("#wOrt");
+      if (ortName && ortEl) ortEl.textContent = ortName + " · Tag antippen für Stundenverlauf";
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
       + `&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m`
       + `&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m`
       + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunrise,sunset`
-      + `&timezone=Europe%2FBerlin&forecast_days=5`;
+      + `&timezone=auto&forecast_days=5`;
+      fetchWetter(url);
+    }
+
+    // Ort bestimmen: hinterlegter Ort > Gerätestandort > Karte ausblenden
+    if (w.lat && w.lon) {
+      ladeWetter(w.lat, w.lon, w.ort);
+    } else if (navigator.geolocation) {
+      card.querySelector("#wNow").textContent = "Standort…";
+      navigator.geolocation.getCurrentPosition(
+        pos => ladeWetter(pos.coords.latitude, pos.coords.longitude, "Dein Standort"),
+        ()  => { card.style.display = "none"; },
+        { timeout: 8000, maximumAge: 3600000 }
+      );
+    } else {
+      card.style.display = "none";
+    }
+
+    function fetchWetter(url) {
     fetch(url).then(r => r.json()).then(j => {
       const body = card.querySelector("#wBody"), now = card.querySelector("#wNow");
       if (!j || !j.current) throw new Error("keine Daten");
@@ -1753,6 +1897,7 @@
       card.querySelector("#wNow").textContent = "offline";
       card.querySelector("#wBody").innerHTML = `<div class="note">Wetterdaten konnten nicht geladen werden (keine Internetverbindung).</div>`;
     });
+    }
     return card;
   }
 
@@ -2120,7 +2265,7 @@
 
     // KPIs
     if (k && s.invest) {
-      // Rendite-Kennzahlen (Syke-Stil) — auch für Baumstraße
+      // Rendite-Kennzahlen für alle Objekte
       host.appendChild(wireActs(el(`<div class="grid g-kpi">
         ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditrate", m.netto >= 0, "cf")}
         ${kpiCard("trend", k.bruttoRendite.toLocaleString("de-DE") + " %", "Bruttomietrendite", "Kaltmiete / Invest")}
@@ -2426,28 +2571,28 @@
       </div>
       <div class="card-t" style="font-size:14px;margin-bottom:10px">Wiederkehrende Ereignisse</div>
       <div class="tl">
-        <div class="tl-i"><span class="tl-dot" style="background:${EVT.miete.col}"></span>
+        ${(t.miete + t.airbnb) > 0 ? `<div class="tl-i"><span class="tl-dot" style="background:${EVT.miete.col}"></span>
           <div class="tl-b"><div class="tl-t">Mieteingang</div>
             <div class="tl-s">jeden 1. des Monats · alle Objekte</div></div>
-          <span class="tl-v">${eur(t.miete + t.airbnb)}</span></div>
-        <div class="tl-i"><span class="tl-dot" style="background:${EVT.zahlung.col}"></span>
-          <div class="tl-b"><div class="tl-t">Sondertilgung Syke</div>
-            <div class="tl-s">1. Juni und 1. Dezember</div></div>
-          <span class="tl-v">${eur(1500)}</span></div>
-        <div class="tl-i"><span class="tl-dot" style="background:${EVT.zahlung.col}"></span>
-          <div class="tl-b"><div class="tl-t">Sondertilgung VR-Darlehen</div>
-            <div class="tl-s">jährlich im Dezember</div></div>
-          <span class="tl-v">${eur(10000)}</span></div>
-        <div class="tl-i"><span class="tl-dot" style="background:${EVT.zahlung.col}"></span>
+          <span class="tl-v">${eur(t.miete + t.airbnb)}</span></div>` : ""}
+        ${(D.streams || []).flatMap(s => FE.creditsOf(s).filter(kr => kr.sondertilgung).map(kr => {
+          const st = kr.sondertilgung;
+          const monLabel = (st.monate || []).map(m => ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"][m-1]).join(" und ");
+          return `<div class="tl-i"><span class="tl-dot" style="background:${EVT.zahlung.col}"></span>
+            <div class="tl-b"><div class="tl-t">Sondertilgung ${esc(kr.name || "")}</div>
+              <div class="tl-s">${monLabel || "jährlich"}</div></div>
+            <span class="tl-v">${eur(st.betrag || 0)}</span></div>`;
+        })).join("")}
+        ${pachtJahr > 0 ? `<div class="tl-i"><span class="tl-dot" style="background:${EVT.zahlung.col}"></span>
           <div class="tl-b"><div class="tl-t">Pachtzahlung</div>
-            <div class="tl-s">jährlich zum 1. Dezember</div></div>
-          <span class="tl-v">${eur(pachtJahr)}</span></div>
+            <div class="tl-s">jährlich</div></div>
+          <span class="tl-v">${eur(pachtJahr)}</span></div>` : ""}
       </div>
       <div class="card-t" style="font-size:14px;margin:20px 0 10px">Termine je Monat</div>
       <div class="tbl-wrap"><table class="tbl">
         <thead><tr><th>Monat</th><th>Miete</th><th>Einzug</th><th>Zahlung</th><th>Gesamt</th></tr></thead>
         <tbody>${trs}</tbody></table></div>
-      <div class="note" style="margin-top:12px">Der Dezember ist der zahlungsintensivste Monat: Pacht und beide Sondertilgungen fallen zusammen (${eur(pachtJahr + 11500)}).</div>`;
+      <div class="note" style="margin-top:12px">Sondertilgungen und Pacht summieren sich über das Jahr auf ${eur(sonderJahr + pachtJahr)}.</div>`;
     openSheet("Kalender-Übersicht", "Zahlungsströme der nächsten 12 Monate", body);
   }
 
@@ -2870,6 +3015,12 @@
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") regMode ? tryRegister() : tryLogin(); });
     $("#logoutBtn").addEventListener("click", logout);
     if ($("#profileBtn")) $("#profileBtn").addEventListener("click", openProfilSheet);
+    // Rail bei Wechsel zwischen Handy/Desktop neu aufbauen
+    let warMobil = window.innerWidth <= 560;
+    window.addEventListener("resize", () => {
+      const jetztMobil = window.innerWidth <= 560;
+      if (jetztMobil !== warMobil) { warMobil = jetztMobil; buildRail(); }
+    });
     if ($("#railAdd")) $("#railAdd").addEventListener("click", (e) => { e.stopPropagation(); openAnlegenMenu($("#railAdd")); });
 
     // Registrierung
