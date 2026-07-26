@@ -14,29 +14,50 @@
 <style>
 /* ============================ SMYRNA GREEN THEME ============================ */
 :root{
-  --bg:#081813;
-  --bg2:#0a1f1a;
-  --panel:rgba(18,44,36,.55);
-  --panel-solid:#0e2820;
-  --glass:rgba(20,48,39,.42);
-  --glass-2:rgba(14,36,29,.6);
-  --stroke:rgba(120,200,165,.14);
-  --stroke-2:rgba(120,200,165,.24);
-  --mint:#4ade9e;
-  --mint-2:#7ef0bd;
-  --deep:#1f7a5a;
+  /* Standard-Theme: Graphit + Teal-Akzent. Wird per data-theme / data-accent überschrieben. */
+  --bg:#16181d;
+  --bg2:#1c1f26;
+  --panel:rgba(42,46,54,.55);
+  --panel-solid:#22262e;
+  --glass:rgba(48,52,60,.42);
+  --glass-2:rgba(32,35,42,.6);
+  --stroke:rgba(180,190,205,.12);
+  --stroke-2:rgba(180,190,205,.2);
+  --mint:#2dd4bf;
+  --mint-2:#5eead4;
+  --deep:#0f766e;
   --gold:#d8b978;
-  --text:#eaf5ef;
-  --soft:rgba(210,232,222,.62);
-  --softer:rgba(210,232,222,.4);
+  --text:#eef1f5;
+  --soft:rgba(220,226,235,.62);
+  --softer:rgba(220,226,235,.4);
   --danger:#f0938a;
   --r:22px;--r-sm:16px;--gap:16px;
   --rail:78px;
   --fdisp:"Space Grotesk",system-ui,sans-serif;
   --fbody:"Inter",system-ui,-apple-system,sans-serif;
 }
+/* ---- Hintergrund-Themes ---- */
+[data-theme="smaragd"]{
+  --bg:#081813;--bg2:#0a1f1a;--panel:rgba(18,44,36,.55);--panel-solid:#0e2820;
+  --glass:rgba(20,48,39,.42);--glass-2:rgba(14,36,29,.6);
+  --stroke:rgba(120,200,165,.14);--stroke-2:rgba(120,200,165,.24);
+  --text:#eaf5ef;--soft:rgba(210,232,222,.62);--softer:rgba(210,232,222,.4);
+}
+[data-theme="marine"]{
+  --bg:#0d1420;--bg2:#111a2b;--panel:rgba(30,44,68,.55);--panel-solid:#182338;
+  --glass:rgba(34,50,76,.42);--glass-2:rgba(22,32,50,.6);
+  --stroke:rgba(150,180,220,.13);--stroke-2:rgba(150,180,220,.22);
+  --text:#eaf0f8;--soft:rgba(210,222,240,.62);--softer:rgba(210,222,240,.4);
+}
+/* ---- Akzentfarben ---- */
+[data-accent="teal"]  {--mint:#2dd4bf;--mint-2:#5eead4;--deep:#0f766e;}
+[data-accent="mint"]  {--mint:#4ade9e;--mint-2:#7ef0bd;--deep:#1f7a5a;}
+[data-accent="blau"]  {--mint:#4a9fee;--mint-2:#84c1f7;--deep:#1d5fa8;}
+[data-accent="violett"]{--mint:#a98cf0;--mint-2:#c6b2f7;--deep:#6d4bc0;}
+[data-accent="bernstein"]{--mint:#e0a94a;--mint-2:#f2c97e;--deep:#a8721d;}
+[data-accent="rose"]  {--mint:#ee7a9f;--mint-2:#f7a8c1;--deep:#b03d68;}
 *{box-sizing:border-box}html,body{height:100%}
-html{background:#081813;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html{background:var(--bg);overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscroll-behavior:none;
   touch-action:pan-x pan-y;-webkit-touch-callout:none;
   background:
@@ -61,7 +82,10 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);position:relative;overflow:hidden}
 .login-orb{position:absolute;width:200px;height:200px;right:-60px;top:-60px;border-radius:50%;
   background:radial-gradient(circle at 40% 40%,rgba(126,240,189,.5),rgba(31,122,90,.15) 55%,transparent 70%);filter:blur(6px);opacity:.55}
-.login-logo{display:flex;align-items:center;gap:13px;margin-bottom:24px;position:relative}
+.login-logo{display:flex;flex-direction:column;align-items:center;gap:13px;margin-bottom:24px;position:relative}
+.login-logo-img{max-width:180px;max-height:72px;object-fit:contain}
+.login-logo-fallback{display:flex;align-items:center;gap:13px}
+.login-logo-txt{text-align:left}
 .mark{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;position:relative;overflow:hidden;
   background:linear-gradient(150deg,var(--mint),var(--deep));box-shadow:0 10px 26px rgba(31,122,90,.5)}
 .mark svg{width:24px;height:24px}
@@ -115,6 +139,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .rail-mark{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;margin-bottom:16px;
   background:linear-gradient(150deg,var(--mint),var(--deep));box-shadow:0 10px 26px rgba(31,122,90,.5)}
 .rail-mark svg{width:24px;height:24px}
+.rail-logo-img{width:100%;height:100%;object-fit:contain;border-radius:12px}
 .rail-btn{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;cursor:pointer;position:relative;
   color:var(--soft);border:1px solid transparent;transition:.16s;background:transparent}
 .rail-btn svg{width:21px;height:21px}
@@ -128,7 +153,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .rail-btn.logout{color:var(--danger)}
 
 .main{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-.head{flex:0 0 auto;padding:22px 30px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.head{flex:0 0 auto;padding:calc(38px + env(safe-area-inset-top)) 30px 4px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
 .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mint);font-weight:600}
 .head h2{font-family:var(--fdisp);font-weight:600;font-size:30px;margin:6px 0 0;letter-spacing:-.02em}
 .head .sub{font-size:13px;color:var(--soft);margin-top:4px}
@@ -315,6 +340,27 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .sub-v{font-family:var(--fdisp);font-size:13px;font-weight:600;flex:0 0 auto}
 
 /* ===== REGISTRIERUNG (Reste) ===== */
+
+/* ===== DATENSCHUTZ-ZUSTIMMUNG ===== */
+.consent{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-top:4px}
+.consent input{width:20px;height:20px;flex:0 0 auto;margin-top:1px;accent-color:var(--mint);cursor:pointer}
+.consent span{font-size:12.5px;color:var(--soft);line-height:1.45}
+.consent a{color:var(--mint-2);text-decoration:underline}
+
+/* ===== DESIGN-AUSWAHL ===== */
+.theme-row{display:flex;gap:9px;flex-wrap:wrap}
+.theme-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--stroke-2);
+  border-radius:12px;background:rgba(255,255,255,.03);color:var(--soft);cursor:pointer;
+  padding:9px 13px;font-size:13px;font-weight:600;font-family:var(--fbody);transition:.15s}
+.theme-chip:hover{border-color:var(--mint)}
+.theme-chip.active{border-color:var(--mint);color:var(--text);background:rgba(255,255,255,.06)}
+.theme-sw{width:16px;height:16px;border-radius:50%;background:var(--sw);
+  border:1px solid rgba(255,255,255,.2);flex:0 0 auto}
+.accent-row{display:flex;gap:11px;flex-wrap:wrap}
+.accent-dot{width:32px;height:32px;border-radius:50%;background:var(--ac);cursor:pointer;
+  border:2px solid transparent;box-shadow:0 0 0 1px var(--stroke-2);transition:.15s;padding:0}
+.accent-dot:hover{transform:scale(1.1)}
+.accent-dot.active{border-color:var(--text);box-shadow:0 0 0 2px var(--ac)}
 
 /* ===== ABO / UPGRADE ===== */
 .up-hero{text-align:center;padding:6px 0 18px}
@@ -675,14 +721,26 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </style>
 </head>
 <body>
+<script>
+  // Theme sofort anwenden (vor dem Zeichnen), damit nichts flackert
+  (function(){
+    try{
+      var t = localStorage.getItem("estriq_theme");
+      var a = localStorage.getItem("estriq_accent");
+      if(t) document.documentElement.setAttribute("data-theme", t);
+      document.documentElement.setAttribute("data-accent", a || "teal");
+    }catch(e){ document.documentElement.setAttribute("data-accent","teal"); }
+  })();
+</script>
 
 <!-- LOGIN -->
 <div id="login">
   <div class="login-card">
     <div class="login-orb"></div>
     <div class="login-logo">
-      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#052018" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#052018"/></svg></div>
-      <div><h1>Bücking</h1><p>Einnahmen-Übersicht</p></div>
+      <img src="estriq.png" alt="ESTRIQ" class="login-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="login-logo-fallback"><div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#052018" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#052018"/></svg></div><div class="login-logo-txt"><h1>ESTRIQ</h1><p>Immobilien im Blick</p></div></div>
+    </div>
     </div>
 
     <!-- Umschalter Anmelden / Registrieren -->
@@ -720,6 +778,13 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
     <div class="field"><input id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
 
     <button class="login-btn" id="loginBtn">Anmelden</button>
+    <div id="rowConsent" class="rowreg hide">
+      <label class="consent">
+        <input type="checkbox" id="consentBox">
+        <span>Ich stimme der Speicherung meiner Daten gemäß der <a href="#" id="datenschutzLink">Datenschutzerklärung</a> zu.</span>
+      </label>
+    </div>
+
     <button class="login-btn hide" id="registerBtn">Konto erstellen</button>
     <div class="login-msg" id="loginMsg"></div>
   </div>
@@ -747,7 +812,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 
 <div id="app" class="hide">
   <nav class="rail" id="rail">
-    <div class="rail-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#052018" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#052018"/></svg></div>
+    <div class="rail-mark"><img src="estriq.png" alt="ESTRIQ" class="rail-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg viewBox="0 0 24 24" fill="none" style="display:none"><path d="M4 15c3-1 5-9 8-9s3 8 4 9" stroke="#052018" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.6" fill="#052018"/></svg></div>
     <!-- nav buttons injected -->
     <div class="rail-spacer"></div>
     <button class="rail-btn profile" id="profileBtn" title="Profil">
@@ -772,9 +837,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=6"></script>
-<script src="./data-save.js?v=6"></script>
-<script src="./finance-engine.js?v=6"></script>
-<script src="./app.js?v=6"></script>
+<script src="./data-loader.js?v=8"></script>
+<script src="./data-save.js?v=8"></script>
+<script src="./finance-engine.js?v=8"></script>
+<script src="./app.js?v=8"></script>
 </body>
 </html>
