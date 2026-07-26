@@ -121,6 +121,8 @@
     if (theme === "graphit") el2.removeAttribute("data-theme");
     else el2.setAttribute("data-theme", theme);
     el2.setAttribute("data-accent", accent || "teal");
+    PALETTE = palette();
+    if (typeof currentView !== "undefined" && currentView) { try { route(currentView); } catch (_) {} }
   }
   function themeSpeichern(theme, accent) {
     try {
@@ -804,7 +806,7 @@
     return `<div class="chart-wrap">
       <svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:220px">
         <defs><linearGradient id="mintFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="rgba(74,222,158,.34)"/><stop offset="100%" stop-color="rgba(74,222,158,0)"/>
+          <stop offset="0%" stop-color="color-mix(in srgb,var(--mint) 34%,transparent)"/><stop offset="100%" stop-color="transparent"/>
         </linearGradient></defs>
         ${gridY}
         <path class="area" d="${dArea}"/>
@@ -833,7 +835,23 @@
     </svg>`;
   }
 
-  const PALETTE = ["#4ade9e", "#2bb781", "#7ef0bd", "#d8b978", "#1f7a5a", "#59c9a0"];
+  // Palette folgt dem Akzent: liest die aktuellen CSS-Variablen zur Laufzeit
+  function cssVar(name, fallback) {
+    try {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return v || fallback;
+    } catch (_) { return fallback; }
+  }
+  function palette() {
+    const mint = cssVar("--mint", "#2dd4bf");
+    const mint2 = cssVar("--mint-2", "#5eead4");
+    const deep = cssVar("--deep", "#0f766e");
+    const gold = cssVar("--gold", "#d8b978");
+    return [mint, deep, mint2, gold,
+      "color-mix(in srgb," + mint + " 60%,#000)",
+      "color-mix(in srgb," + mint2 + " 70%," + deep + ")"];
+  }
+  let PALETTE = palette();  // wird bei Themewechsel neu befüllt
 
   /* ---------- SHEET (Detail-Overlay) ---------- */
   function openSheet(title, subtitle, bodyHtml) {
@@ -1487,10 +1505,10 @@
   }
 
   const EVT = {
-    miete:   { col: "#4ade9e", bg: "rgba(74,222,158,.14)",  br: "rgba(74,222,158,.4)",  label: "Miete" },
-    einzug:  { col: "#7ef0bd", bg: "rgba(126,240,189,.14)", br: "rgba(126,240,189,.4)", label: "Einzug" },
+    miete:   { col: "var(--mint)", bg: "color-mix(in srgb,var(--mint) 14%,transparent)",  br: "color-mix(in srgb,var(--mint) 40%,transparent)",  label: "Miete" },
+    einzug:  { col: "var(--mint-2)", bg: "color-mix(in srgb,var(--mint-2) 14%,transparent)", br: "color-mix(in srgb,var(--mint-2) 40%,transparent)", label: "Einzug" },
     zahlung: { col: "#d8b978", bg: "rgba(216,185,120,.16)", br: "rgba(216,185,120,.45)",label: "Zahlung" },
-    termin:  { col: "#59c9a0", bg: "rgba(89,201,160,.14)",  br: "rgba(89,201,160,.4)",  label: "Termin" }
+    termin:  { col: "var(--deep)", bg: "color-mix(in srgb,var(--deep) 20%,transparent)",  br: "color-mix(in srgb,var(--deep) 45%,transparent)",  label: "Termin" }
   };
 
   let calYear = null, calMonth = null, calSelected = null;
