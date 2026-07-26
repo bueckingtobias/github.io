@@ -47,7 +47,7 @@
     let profil = null;
     try {
       const { data } = await window.sb.from("mitglieder")
-        .select("name, email, avatar_url, rolle").limit(1).single();
+        .select("name, email, avatar_url, rolle, theme, accent").limit(1).single();
       profil = data;
     } catch (_) {}
     const name = (profil && profil.name) || mail.split("@")[0];
@@ -57,8 +57,16 @@
       anrede: (name || "").split(" ")[0],
       email: mail,
       avatar: profil && profil.avatar_url || null,
-      rolle: profil && profil.rolle || "inhaber"
+      rolle: profil && profil.rolle || "inhaber",
+      theme: profil && profil.theme || null,
+      accent: profil && profil.accent || null
     };
+    // Farbschema aus dem Profil anwenden (geräteübergreifend).
+    // Fällt auf den lokal gespeicherten Wert zurück, sonst Standard Graphit/Silber.
+    const theme = currentUser.theme || localStorage.getItem("estriq_theme") || "graphit";
+    const accent = currentUser.accent || localStorage.getItem("estriq_accent") || "silber";
+    themeAnwenden(theme, accent);
+    themeSpeichern(theme, accent);
   }
   // Prüft die Supabase-Sitzung
   async function sessionOK() {
@@ -134,7 +142,16 @@
     try {
       if (theme === "graphit") localStorage.removeItem("estriq_theme");
       else localStorage.setItem("estriq_theme", theme);
-      localStorage.setItem("estriq_accent", accent || "teal");
+      localStorage.setItem("estriq_accent", accent || "silber");
+    } catch (_) {}
+  }
+  // Farbschema am Nutzer in der Datenbank speichern (geräteübergreifend)
+  async function themeInDB(theme, accent) {
+    try {
+      if (!currentUser || !window.sb) return;
+      await window.sb.from("mitglieder")
+        .update({ theme: theme, accent: accent }).eq("auth_user_id", currentUser.id);
+      currentUser.theme = theme; currentUser.accent = accent;
     } catch (_) {}
   }
   function aktThemeId() {
@@ -453,11 +470,13 @@
     sheet.querySelectorAll("#themeRow .theme-chip").forEach(b => b.onclick = () => {
       themeAnwenden(b.dataset.theme, aktAccentId());
       themeSpeichern(b.dataset.theme, aktAccentId());
+      themeInDB(b.dataset.theme, aktAccentId());
       markiere();
     });
     sheet.querySelectorAll("#accentRow .accent-dot").forEach(b => b.onclick = () => {
       themeAnwenden(aktThemeId(), b.dataset.accent);
       themeSpeichern(aktThemeId(), b.dataset.accent);
+      themeInDB(aktThemeId(), b.dataset.accent);
       markiere();
     });
     markiere();
@@ -725,13 +744,50 @@
         await window.sb.from("organisationen")
           .update({ tarif: "test", tarif_bis: bis, stripe_status: "trialing_" + plan }).eq("id", org);
         localStorage.setItem("estriq_tarif_gewaehlt", plan);
-        closeSheet();
         await window.nachSpeichern();
+        openFarbwahlSheet();   // weiter zur Farbwahl
       } catch (e) {
         b.disabled = false; b.textContent = "30 Tage kostenlos testen";
         alert(window.fehlerText(e));
       }
     });
+  }
+
+  // Zweiter Onboarding-Schritt: Farbschema wählen
+  function openFarbwahlSheet() {
+    const themeChips = THEMES.map(t => `<button type="button" class="theme-chip" data-theme="${t.id}" style="--sw:${t.bg}">
+      <span class="theme-sw"></span>${esc(t.name)}</button>`).join("");
+    const accentDots = AKZENTE.map(a => `<button type="button" class="accent-dot" data-accent="${a.id}"
+      style="--ac:${a.farbe}" title="${esc(a.name)}" aria-label="${esc(a.name)}"></button>`).join("");
+    const body = `
+      <div class="wc-hero">
+        <div class="wc-badge">Fast fertig</div>
+        <div class="wc-t">Mach es zu deinem</div>
+        <div class="wc-d">Wähle Hintergrund und Akzentfarbe. Du kannst das jederzeit im Profil ändern — die Auswahl gilt auf all deinen Geräten.</div>
+      </div>
+      <div class="ef-l">Hintergrund</div>
+      <div class="theme-row" id="wcTheme">${themeChips}</div>
+      <div class="ef-l" style="margin-top:16px">Akzentfarbe</div>
+      <div class="accent-row" id="wcAccent">${accentDots}</div>
+      <button class="wc-cta prem" id="wcDone" style="margin-top:24px">Los geht's</button>`;
+    const sheet = openSheet("Darstellung", "", body);
+
+    function markiere() {
+      const tid = aktThemeId(), aid = aktAccentId();
+      sheet.querySelectorAll("#wcTheme .theme-chip").forEach(b => b.classList.toggle("active", b.dataset.theme === tid));
+      sheet.querySelectorAll("#wcAccent .accent-dot").forEach(b => b.classList.toggle("active", b.dataset.accent === aid));
+    }
+    sheet.querySelectorAll("#wcTheme .theme-chip").forEach(b => b.onclick = () => {
+      themeAnwenden(b.dataset.theme, aktAccentId()); themeSpeichern(b.dataset.theme, aktAccentId()); markiere();
+    });
+    sheet.querySelectorAll("#wcAccent .accent-dot").forEach(b => b.onclick = () => {
+      themeAnwenden(aktThemeId(), b.dataset.accent); themeSpeichern(aktThemeId(), b.dataset.accent); markiere();
+    });
+    markiere();
+    sheet.querySelector("#wcDone").onclick = async () => {
+      await themeInDB(aktThemeId(), aktAccentId());   // geräteübergreifend sichern
+      closeSheet();
+    };
   }
 
   /* ---------- NAV ---------- */
