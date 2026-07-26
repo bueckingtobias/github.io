@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>ESTRIQ</title>
+<title>Bücking · Einnahmen</title>
 <meta name="robots" content="noindex,nofollow" />
 <meta name="theme-color" content="#16181d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -95,7 +95,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   filter:blur(16px);opacity:.36;pointer-events:none}
 /* Logo mittig, prominenter — ersetzt den Schriftzug */
 .login-logo{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:26px;position:relative}
-.login-logo-img{max-width:240px;max-height:91px;object-fit:contain;
+.login-logo-img{max-width:288px;max-height:109px;object-fit:contain;
   filter:drop-shadow(0 8px 22px color-mix(in srgb,#8b9099 35%,transparent))}
 .login-logo-fallback{display:flex;align-items:center;gap:11px}
 .login-logo-txt h1{font-family:var(--fdisp);font-size:22px;margin:0;font-weight:600;letter-spacing:.04em}
@@ -736,11 +736,11 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 @media(max-width:560px){
   #app{grid-template-columns:1fr;grid-template-rows:1fr auto}
   .rail{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;width:100%;flex-direction:row;
-    justify-content:space-around;padding:8px 6px;padding-bottom:calc(8px + env(safe-area-inset-bottom));
+    justify-content:space-around;padding:5px 6px;padding-bottom:calc(4px + env(safe-area-inset-bottom));
     border-right:none;border-top:1px solid var(--stroke);z-index:40;gap:2px}
   .rail-mark,.rail-spacer{display:none}
-  .rail-btn{width:auto;height:auto;flex:1 1 0;flex-direction:column;gap:4px;padding:8px 4px;border-radius:14px;font-size:9.5px}
-  .rail-btn svg{width:22px;height:22px}
+  .rail-btn{width:auto;height:auto;flex:1 1 0;flex-direction:column;gap:3px;padding:6px 4px;border-radius:12px;font-size:9px}
+  .rail-btn svg{width:20px;height:20px}
   .rail-btn .tip{position:static;transform:none;opacity:1;background:none;border:none;padding:0;color:inherit;
     font-size:9.5px;font-weight:600;pointer-events:none}
   .rail-btn.on .tip{color:var(--mint-2)}
@@ -751,10 +751,12 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
   .rail-add svg{width:22px;height:22px}
 
   .main{height:100dvh;height:100svh}
-  .head{padding:calc(16px + env(safe-area-inset-top)) 18px 0;flex-direction:column;gap:10px}
-  .head h2{font-size:24px}
+  .head{padding:calc(10px + env(safe-area-inset-top)) 18px 2px;flex-direction:column;gap:6px}
+  .head h2{font-size:23px;line-height:1.15;margin:1px 0 0}
+  .head .eyebrow{font-size:11px}
+  .head .sub{margin-top:1px}
   .head-pill{align-self:flex-start}
-  .scroll{padding:16px 16px;padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+  .scroll{padding:14px 16px;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
   .g-kpi{grid-template-columns:1fr 1fr;gap:12px}
   .kpi{padding:16px}
   .kpi .chip{width:40px;height:40px;margin-bottom:14px}
@@ -807,8 +809,8 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
       var t = localStorage.getItem("estriq_theme");
       var a = localStorage.getItem("estriq_accent");
       if(t) document.documentElement.setAttribute("data-theme", t);
-      document.documentElement.setAttribute("data-accent", a || "teal");
-    }catch(e){ document.documentElement.setAttribute("data-accent","teal"); }
+      document.documentElement.setAttribute("data-accent", a || "silber");
+    }catch(e){ document.documentElement.setAttribute("data-accent","silber"); }
   })();
 </script>
 
@@ -924,9 +926,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=16"></script>
-<script src="./data-save.js?v=16"></script>
-<script src="./finance-engine.js?v=16"></script>
-<script src="./app.js?v=16"></script>
+<script src="./data-loader.js?v=17"></script>
+<script src="./data-save.js?v=17"></script>
+<script src="./finance-engine.js?v=17"></script>
+<script src="./app.js?v=17"></script>
 </body>
 </html>
