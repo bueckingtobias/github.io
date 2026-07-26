@@ -74,60 +74,63 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 
 /* ============================ LOGIN ============================ */
 #login{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:22px;
-  background:radial-gradient(800px 480px at 50% -10%,rgba(74,222,158,.16),transparent 60%),linear-gradient(180deg,#0a1f1a,#061410)}
+  background:radial-gradient(900px 500px at 50% -5%,color-mix(in srgb,var(--mint) 14%,transparent),transparent 62%),
+    linear-gradient(180deg,var(--bg2),var(--bg))}
 #login.hide{display:none}
 .hide{display:none!important}
-.login-card{width:min(400px,100%);background:linear-gradient(180deg,var(--glass),var(--glass-2));
-  border:1px solid var(--stroke-2);border-radius:26px;padding:34px 30px;backdrop-filter:blur(30px);
-  box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);position:relative;overflow:hidden}
-.login-orb{position:absolute;width:200px;height:200px;right:-60px;top:-60px;border-radius:50%;
-  background:radial-gradient(circle at 40% 40%,rgba(126,240,189,.5),rgba(31,122,90,.15) 55%,transparent 70%);filter:blur(6px);opacity:.55}
-.login-logo{display:flex;flex-direction:column;align-items:center;gap:13px;margin-bottom:24px;position:relative}
-.login-logo-img{max-width:180px;max-height:72px;object-fit:contain}
-.login-logo-fallback{display:flex;align-items:center;gap:13px}
-.login-logo-txt{text-align:left}
-.mark{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;position:relative;overflow:hidden;
-  background:linear-gradient(150deg,var(--mint),var(--deep));box-shadow:0 10px 26px rgba(31,122,90,.5)}
-.mark svg{width:24px;height:24px}
-.login-logo h1{font-family:var(--fdisp);font-size:21px;margin:0;font-weight:600;letter-spacing:-.01em}
-.login-logo p{margin:3px 0 0;font-size:12px;color:var(--soft)}
-.login-card label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--soft);display:block;margin:16px 0 8px}
+.login-card{width:min(390px,100%);background:linear-gradient(180deg,var(--glass),var(--glass-2));
+  border:1px solid var(--stroke-2);border-radius:24px;padding:36px 32px 30px;backdrop-filter:blur(30px);
+  box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden}
+.login-orb{position:absolute;width:220px;height:220px;right:-70px;top:-70px;border-radius:50%;
+  background:radial-gradient(circle at 40% 40%,color-mix(in srgb,var(--mint-2) 45%,transparent),transparent 70%);filter:blur(10px);opacity:.4;pointer-events:none}
+.login-logo{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:28px;position:relative}
+.login-logo-img{max-width:170px;max-height:64px;object-fit:contain}
+.login-logo-fallback{display:flex;flex-direction:column;align-items:center;gap:12px}
+.login-logo-txt{text-align:center}
+.mark{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,var(--mint),var(--deep));box-shadow:0 12px 30px color-mix(in srgb,var(--deep) 50%,transparent)}
+.mark svg{width:28px;height:28px}
+.login-logo h1{font-family:var(--fdisp);font-size:24px;margin:0;font-weight:600;letter-spacing:.02em}
+.login-logo p{margin:4px 0 0;font-size:12.5px;color:var(--soft);letter-spacing:.01em}
+.login-card label{font-size:12px;letter-spacing:.01em;color:var(--soft);display:block;margin:16px 0 7px;font-weight:500}
 /* Reiter-Umschalter */
-.login-tabs{position:relative;display:flex;background:rgba(6,20,16,.55);border:1px solid var(--stroke-2);
-  border-radius:14px;padding:4px;margin-bottom:6px}
+.login-tabs{position:relative;display:flex;background:color-mix(in srgb,var(--bg) 55%,transparent);
+  border:1px solid var(--stroke-2);border-radius:14px;padding:4px;margin-bottom:8px}
 .ltab{flex:1;position:relative;z-index:2;background:none;border:none;cursor:pointer;
   padding:11px;font-family:var(--fbody);font-size:14px;font-weight:600;color:var(--softer);
   transition:color .2s;border-radius:10px}
-.ltab.active{color:#052018}
+.ltab.active{color:#08120f}
 .ltab-ind{position:absolute;z-index:1;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
   background:linear-gradient(135deg,var(--mint),var(--deep));border-radius:10px;
-  box-shadow:0 6px 18px rgba(31,122,90,.4);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  box-shadow:0 6px 18px color-mix(in srgb,var(--deep) 40%,transparent);transition:transform .28s cubic-bezier(.4,0,.2,1)}
 .ltab-ind.right{transform:translateX(100%)}
 /* Profilbild-Auswahl */
-#rowAvatar{display:flex;flex-direction:column;align-items:center;margin:22px 0 6px}
-.ava-circle{position:relative;width:96px;height:96px;border-radius:50%;cursor:pointer;padding:0;
-  border:2px dashed var(--stroke-2);background:rgba(6,20,16,.5);transition:.2s;overflow:visible}
+#rowAvatar{display:flex;flex-direction:column;align-items:center;margin:24px 0 4px}
+.ava-circle{position:relative;width:92px;height:92px;border-radius:50%;cursor:pointer;padding:0;
+  border:2px dashed var(--stroke-2);background:color-mix(in srgb,var(--bg) 50%,transparent);transition:.2s;overflow:visible}
 .ava-circle:hover{border-color:var(--mint)}
-.ava-circle.filled{border-style:solid;border-color:rgba(74,222,158,.5)}
+.ava-circle.filled{border-style:solid;border-color:color-mix(in srgb,var(--mint) 50%,transparent)}
 .ava-img{position:absolute;inset:0;border-radius:50%;background-size:cover;background-position:center}
-.ava-cam{position:absolute;top:50%;left:50%;width:30px;height:30px;transform:translate(-50%,-50%);
+.ava-cam{position:absolute;top:50%;left:50%;width:28px;height:28px;transform:translate(-50%,-50%);
   color:var(--softer);transition:.2s}
 .ava-circle:hover .ava-cam{color:var(--mint-2)}
 .ava-circle.filled .ava-cam{display:none}
 .ava-edit{position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;
   background:linear-gradient(135deg,var(--mint),var(--deep));display:none;place-items:center;
-  box-shadow:0 4px 12px rgba(0,0,0,.4);border:2px solid #0a1f1a}
+  box-shadow:0 4px 12px rgba(0,0,0,.4);border:2px solid var(--bg2)}
 .ava-edit svg{width:15px;height:15px}
 .ava-circle.filled .ava-edit{display:grid}
-.ava-cap{margin-top:11px;font-size:12.5px;color:var(--softer)}
-.field input{width:100%;border-radius:14px;border:1px solid var(--stroke-2);background:rgba(6,20,16,.6);color:var(--text);
+.ava-cap{margin-top:12px;font-size:12.5px;color:var(--softer)}
+.field input{width:100%;border-radius:13px;border:1px solid var(--stroke-2);background:color-mix(in srgb,var(--bg) 55%,transparent);color:var(--text);
   padding:14px 16px;font-size:15px;outline:none;font-family:var(--fbody);transition:.2s}
-.field input:focus{border-color:var(--mint);box-shadow:0 0 0 4px rgba(74,222,158,.14)}
-.login-btn{width:100%;margin-top:20px;cursor:pointer;border:none;border-radius:14px;
-  background:linear-gradient(135deg,var(--mint),var(--deep));color:#052018;padding:15px;font-size:15px;font-weight:700;
-  font-family:var(--fbody);box-shadow:0 12px 30px rgba(31,122,90,.45);transition:.18s}
+.field input:focus{border-color:var(--mint);box-shadow:0 0 0 4px color-mix(in srgb,var(--mint) 16%,transparent)}
+.field input::placeholder{color:var(--softer)}
+.login-btn{width:100%;margin-top:22px;cursor:pointer;border:none;border-radius:13px;
+  background:linear-gradient(135deg,var(--mint),var(--deep));color:#08120f;padding:15px;font-size:15px;font-weight:700;
+  font-family:var(--fbody);box-shadow:0 12px 30px color-mix(in srgb,var(--deep) 42%,transparent);transition:.18s}
+.login-btn:hover{filter:brightness(1.06)}
 .login-btn:active{transform:scale(.98)}
-.login-msg{min-height:18px;margin-top:13px;font-size:12.5px;color:var(--soft);text-align:center}
+.login-msg{min-height:18px;margin-top:14px;font-size:12.5px;color:var(--soft);text-align:center;line-height:1.4}
 .login-msg.bad{color:var(--danger)}
 
 /* ============================ SHELL ============================ */
@@ -837,9 +840,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=8"></script>
-<script src="./data-save.js?v=8"></script>
-<script src="./finance-engine.js?v=8"></script>
-<script src="./app.js?v=8"></script>
+<script src="./data-loader.js?v=9"></script>
+<script src="./data-save.js?v=9"></script>
+<script src="./finance-engine.js?v=9"></script>
+<script src="./app.js?v=9"></script>
 </body>
 </html>
