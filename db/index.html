@@ -478,6 +478,40 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .pt-name.gesperrt{color:var(--danger);background:rgba(224,110,95,.12)}
 .pt-status{font-size:12.5px;color:var(--soft)}
 
+/* ===== ONBOARDING-FUNNEL ===== */
+.wc-steps{display:flex;justify-content:center;gap:7px;margin-bottom:16px}
+.wc-steps span{width:28px;height:4px;border-radius:2px;background:var(--stroke-2);transition:.3s}
+.wc-steps span.on{background:var(--mint);width:34px}
+.wc-steps span.done{background:color-mix(in srgb,var(--mint) 55%,transparent)}
+.ob-arten{display:flex;flex-direction:column;gap:11px}
+.ob-art{display:flex;align-items:center;gap:14px;width:100%;text-align:left;cursor:pointer;
+  background:color-mix(in srgb,var(--bg) 50%,transparent);border:1px solid var(--stroke-2);
+  border-radius:15px;padding:16px 18px;transition:.15s;color:var(--text);font-family:var(--fbody)}
+.ob-art:hover{border-color:var(--mint);background:color-mix(in srgb,var(--mint) 8%,transparent)}
+.ob-art svg{width:26px;height:26px;color:var(--mint-2);flex:0 0 auto}
+.ob-art-n{font-size:15px;font-weight:600}
+.ob-art-m{font-size:12.5px;color:var(--softer);margin-top:2px}
+.wc-skip{text-align:center;margin-top:18px}
+.wc-skip a{font-size:12.5px;color:var(--softer);text-decoration:underline;text-underline-offset:2px}
+.frage-opts{display:flex;flex-direction:column;gap:10px}
+.frage-opt{width:100%;text-align:left;cursor:pointer;background:color-mix(in srgb,var(--bg) 50%,transparent);
+  border:1px solid var(--stroke-2);border-radius:14px;padding:16px 18px;font-size:14.5px;font-weight:500;
+  color:var(--text);font-family:var(--fbody);transition:.15s}
+.frage-opt:hover{border-color:var(--mint);background:color-mix(in srgb,var(--mint) 10%,transparent);transform:translateX(3px)}
+.empf-plan{background:color-mix(in srgb,var(--bg) 50%,transparent);border:1px solid var(--stroke-2);
+  border-radius:18px;padding:20px;margin-bottom:6px}
+.empf-plan.premium{border-color:color-mix(in srgb,var(--mint) 45%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mint) 9%,transparent),color-mix(in srgb,var(--bg) 50%,transparent))}
+.empf-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.empf-n{font-family:var(--fdisp);font-size:19px;font-weight:600}
+.empf-p{font-family:var(--fdisp);font-size:20px;font-weight:600;color:var(--mint-2)}
+.empf-p span{font-size:11px;color:var(--softer);font-weight:400}
+
+/* ===== ABO VERWALTEN (dezent) ===== */
+.abo-verwalten{text-align:center;margin-top:16px}
+.abo-verwalten a{font-size:12px;color:var(--softer);text-decoration:underline;text-underline-offset:2px}
+.abo-verwalten a:hover{color:var(--soft)}
+
 /* ===== TOAST / EINBLENDUNG ===== */
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
   z-index:120;background:var(--panel-solid);color:var(--text);border:1px solid var(--stroke-2);
@@ -757,17 +791,19 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 
 /* ============================ iPhone 17 Pro Max ============================ */
 @media(max-width:560px){
-  #app{grid-template-columns:1fr;grid-template-rows:1fr auto;height:100dvh;height:100svh}
-  .rail{position:static;left:auto;right:auto;bottom:auto;top:auto;height:auto;width:100%;flex-direction:row;
-    justify-content:space-around;padding:6px 6px 0;
-    border-right:none;border-top:1px solid var(--stroke);z-index:40;gap:2px;
+  #app{grid-template-columns:1fr;grid-template-rows:1fr;height:100dvh;height:100svh}
+  /* Navigationsleiste fest am unteren Bildschirmrand (wie Instagram) */
+  .rail{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;width:100%;flex-direction:row;
+    justify-content:space-around;align-items:stretch;padding:8px 6px 0;
+    border-right:none;border-top:1px solid var(--stroke);z-index:50;gap:2px;
     box-sizing:border-box;
-    /* Aussparung des iPhones (Home-Indicator) als Innenabstand — Leiste selbst bündig unten */
-    padding-bottom:max(6px,env(safe-area-inset-bottom));
-    background:linear-gradient(180deg,color-mix(in srgb,var(--bg2) 92%,transparent),var(--bg))}
+    /* Home-Indicator-Aussparung des iPhones als Innenabstand, Leiste selbst bündig an der Kante */
+    padding-bottom:max(8px,env(safe-area-inset-bottom));
+    background:color-mix(in srgb,var(--bg2) 96%,transparent);
+    backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2)}
   .rail-mark,.rail-spacer{display:none}
-  .rail-btn{width:auto;height:auto;flex:1 1 0;flex-direction:column;gap:3px;padding:6px 4px;border-radius:12px;font-size:9px}
-  .rail-btn svg{width:20px;height:20px}
+  .rail-btn{width:auto;height:auto;flex:1 1 0;flex-direction:column;gap:3px;padding:5px 4px;border-radius:12px;font-size:9px}
+  .rail-btn svg{width:23px;height:23px}
   .rail-btn .tip{position:static;transform:none;opacity:1;background:none;border:none;padding:0;color:inherit;
     font-size:9.5px;font-weight:600;pointer-events:none}
   .rail-btn.on .tip{color:var(--mint-2)}
@@ -777,13 +813,13 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
   .rail-add .tip{color:var(--mint)!important}
   .rail-add svg{width:22px;height:22px}
 
-  .main{height:auto;min-height:0}
+  .main{height:100dvh;height:100svh;min-height:0}
   .head{padding:calc(10px + env(safe-area-inset-top)) 18px 2px;flex-direction:column;gap:6px}
   .head h2{font-size:23px;line-height:1.15;margin:1px 0 0}
   .head .eyebrow{font-size:11px}
   .head .sub{margin-top:1px}
   .head-pill{align-self:flex-start}
-  .scroll{padding:14px 16px 18px}
+  .scroll{padding:14px 16px;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
   .g-kpi{grid-template-columns:1fr 1fr;gap:12px}
   .kpi{padding:16px}
   .kpi .chip{width:40px;height:40px;margin-bottom:14px}
@@ -960,9 +996,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=22"></script>
-<script src="./data-save.js?v=22"></script>
-<script src="./finance-engine.js?v=22"></script>
-<script src="./app.js?v=22"></script>
+<script src="./data-loader.js?v=23"></script>
+<script src="./data-save.js?v=23"></script>
+<script src="./finance-engine.js?v=23"></script>
+<script src="./app.js?v=23"></script>
 </body>
 </html>
