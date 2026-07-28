@@ -741,10 +741,27 @@
     // Rückkehr von der Stripe-Bezahlseite auswerten
     const params = new URLSearchParams(location.search);
     if (params.get("bezahlt") === "1") {
-      // Tarif kann minimal verzögert sein (Webhook), daher kurz nachladen
       localStorage.setItem("estriq_tarif_gewaehlt", "1");
+      localStorage.setItem("estriq_onboarding_fertig", "1");
       geschichteBereinigen();
-      setTimeout(async () => { try { await window.nachSpeichern(); } catch (_) {} showToast("Zahlung erfolgreich – dein Tarif ist aktiv."); }, 1200);
+      // Der Webhook braucht evtl. 1–3 Sek. Mehrfach nachladen, bis der Tarif steht,
+      // und danach die Übersicht sicher neu zeichnen.
+      let versuche = 0;
+      const nachladen = async () => {
+        versuche++;
+        try {
+          await window.nachSpeichern();
+          route("overview");   // Ansicht mit frischen Daten neu rendern
+        } catch (_) {}
+        const a = abo();
+        // Weiter versuchen, solange Tarif noch nicht auf ein echtes Abo steht
+        if (versuche < 4 && a && a.roh_tarif === "test" && !a.hat_stripe) {
+          setTimeout(nachladen, 1500);
+        } else {
+          showToast("Zahlung erfolgreich – dein Tarif ist aktiv.");
+        }
+      };
+      setTimeout(nachladen, 1000);
       return;
     }
     if (params.get("abbruch") === "1") {
@@ -788,6 +805,7 @@
       style="--ac:${a.farbe}" title="${esc(a.name)}" aria-label="${esc(a.name)}"></button>`).join("");
     const body = `
       <div class="wc-hero">
+        ${opt.onboarding ? `<img src="estriq.PNG" alt="ESTRIQ" class="wc-logo" onerror="this.style.display='none'">` : ""}
         ${opt.onboarding ? `<div class="wc-steps"><span class="on"></span><span></span><span></span></div>` : ""}
         <div class="wc-badge">${opt.onboarding ? "Willkommen bei ESTRIQ" : "Darstellung"}</div>
         <div class="wc-t">Mach es zu deinem</div>
@@ -1320,10 +1338,12 @@
     </div>`;
   }
   // Mehrzeiliges Feld
-  function efArea(label, name, wert) {
+  function efArea(label, name, wert, opt) {
+    opt = opt || {};
     return `<div class="ef-row">
       <label class="ef-l">${esc(label)}</label>
       <textarea class="ef-i" data-f="${name}" rows="3">${esc(wert || "")}</textarea>
+      ${opt.hinweis ? `<div class="ef-h">${esc(opt.hinweis)}</div>` : ""}
     </div>`;
   }
   // Abschnittsüberschrift im Formular
@@ -2738,11 +2758,11 @@
                display: eur(inc.nk) };
     });
     const jahr = m.nkPuffer * 12;
-    const pos = (s.nkPositionen || []).map((p, i) => ({
-      label: p.titel, value: m.nkPuffer * p.anteil / 100,
-      color: PALETTE[i % PALETTE.length],
-      display: eur(m.nkPuffer * p.anteil / 100) + "  ·  " + p.anteil + " %"
-    }));
+    const pos = (s.nkPositionen || []).map((p, i) => {
+      // Neue Daten haben feste Beträge; alte hatten Prozent-Anteile
+      const wert = p.betrag != null ? Number(p.betrag) : (m.nkPuffer * (p.anteil || 0) / 100);
+      return { label: p.titel, value: wert, color: PALETTE[i % PALETTE.length], display: eur(wert) + " /Monat" };
+    });
     const frei = (s.einheiten || []).filter(u => u.status !== "vermietet");
     const entgangen = frei.reduce((a, u) => a + FE.unitIncome(u).nk, 0);
 
@@ -3112,21 +3132,23 @@
       ${efArea("Notiz", "notiz", s ? (s.note || "") : "")}
       ${efTitel("Wirtschaftlich")}
       ${ef("Investitionssumme", "invest", s ? (s.invest ?? "") : "", "number",
-        { hinweis: "Basis für Rendite-Kennzahlen" })}
+        { hinweis: "Kaufpreis inkl. Kaufnebenkosten – Basis für die Rendite", platzhalter: "z. B. 250000" })}
       ${efSel("Nebenkosten", "nk_als_puffer", s && s.nkAlsPuffer ? "1" : "0",
-        [{ v: "1", t: "als Rücklage behandeln" }, { v: "0", t: "als Ertrag zählen" }])}
-      ${efArea("NK-Positionen", "nk_positionen",
-        nkPos.map(p => p.titel + " = " + p.anteil).join("\n"))}
-      <div class="ef-h" style="margin-top:-6px">Je Zeile: Bezeichnung = Anteil in Prozent</div>
+        [{ v: "1", t: "als Rücklage behandeln" }, { v: "0", t: "als Ertrag zählen" }],
+        { hinweis: "Rücklage: NK werden für Ausgaben zurückgelegt. Ertrag: NK zählen zu den Einnahmen." })}
+      ${efArea("Nebenkosten-Arten", "nk_positionen",
+        nkPos.map(p => p.titel + " | " + (p.betrag != null ? p.betrag : (p.anteil || 0))).join("\n"),
+        { hinweis: "Je Zeile eine Position: Bezeichnung | Betrag pro Monat in €. Beispiel: Grundsteuer | 45" })}
       ${efAktionen({ loeschen: neu ? null : "Objekt löschen" })}`;
 
     const sheet = openSheet(neu ? "Neu: " + artName : "Objekt bearbeiten", neu ? "" : s.name, body);
 
     const bauen = (w) => {
+      // Nebenkosten-Zeilen "Bezeichnung | Betrag" einlesen (€ pro Monat)
       const pos = String(w.nk_positionen || "").split("\n")
-        .map(z => z.split("="))
+        .map(z => z.split("|"))
         .filter(t => t.length === 2 && t[0].trim())
-        .map(t => ({ titel: t[0].trim(), anteil: Number(t[1].trim()) || 0 }));
+        .map(t => ({ titel: t[0].trim(), betrag: Number(String(t[1]).replace(",", ".").trim()) || 0 }));
       // Art: bei Neuanlage aus Vorgabe, sonst aus Feld
       const gewaehlteArt = neu ? art : (w.art || art);
       return {
@@ -3155,7 +3177,62 @@
       },
       neu ? null : async () => { await loescheObjekt(s._id); currentView = "overview"; },
       "Objekt mit allen Daten löschen?",
-      opt.nachOnboarding ? () => { setTimeout(() => openTarifFragenSheet(), 250); } : null);
+      opt.nachOnboarding ? () => {
+        // Nach dem Objekt: bei Vermietung direkt eine Einheit anlegen (füllt das Dashboard),
+        // bei AirBNB/Pacht geht es weiter zu den Fragen.
+        const neuesObj = (D.streams || []).slice().sort((a, b) => (b._id > a._id ? 1 : -1))[0];
+        if (art === "miete" && neuesObj) {
+          setTimeout(() => openErsteEinheitSheet(neuesObj), 250);
+        } else {
+          setTimeout(() => openTarifFragenSheet(), 250);
+        }
+      } : null);
+  }
+
+  // Onboarding: erste Wohneinheit mit Details anlegen → sofort Zahlen im Dashboard
+  function openErsteEinheitSheet(s) {
+    const body = `
+      <div class="wc-hero">
+        <div class="wc-steps"><span class="done"></span><span class="on"></span><span></span></div>
+        <div class="wc-badge">Damit dein Dashboard sofort lebt</div>
+        <div class="wc-t">Erste Wohneinheit</div>
+        <div class="wc-d">Trag die wichtigsten Zahlen zu einer Wohnung ein. ESTRIQ berechnet daraus sofort deine Einnahmen, Rendite und den Cashflow.</div>
+      </div>
+      ${efTitel("Wohnung")}
+      ${ef("Bezeichnung", "bezeichnung", "", "text", { pflicht: true, platzhalter: "z. B. Erdgeschoss links" })}
+      ${ef("Fläche in m²", "flaeche", "", "number", { step: "0.01", platzhalter: "z. B. 72" })}
+      ${efSel("Status", "status", "vermietet",
+        [{ v: "vermietet", t: "vermietet" }, { v: "frei", t: "frei / in Vermarktung" }])}
+      ${efTitel("Miete pro Monat")}
+      ${ef("Kaltmiete", "kalt_fix", "", "number", { pflicht: true, platzhalter: "z. B. 650", hinweis: "Reine Miete ohne Nebenkosten" })}
+      ${ef("Nebenkosten", "nk_fix", "", "number", { platzhalter: "z. B. 180", hinweis: "Monatliche Vorauszahlung des Mieters" })}
+      ${efTitel("Mieter (optional)")}
+      ${ef("Name", "mieter", "", "text", { platzhalter: "z. B. Familie Müller" })}
+      ${ef("Einzug", "einzug", "", "date")}
+      <div class="wc-skip"><a href="#" id="ehSkip">Ohne Einheit weiter</a></div>`;
+    const sheet = openSheet("Erste Einheit", "", body);
+
+    // Speichern-Aktion einbauen (efAktionen-Leiste wird hier manuell ergänzt)
+    const foot = el(`<div class="ef-actions"><button class="ef-save" id="efSave">Speichern & weiter</button></div><div class="ef-msg" id="efMsg"></div>`);
+    sheet.querySelector(".sheet-b").appendChild(foot);
+
+    const bauen = (w) => {
+      const o = {
+        bezeichnung: text(w.bezeichnung) || "Einheit",
+        flaeche: zahl(w.flaeche),
+        status: w.status,
+        mieter: text(w.mieter), einzug: text(w.einzug),
+        kalt_fix: zahl(w.kalt_fix), nk_fix: zahl(w.nk_fix),
+        vertrag: {}
+      };
+      return o;
+    };
+    efBind(sheet,
+      async (w) => { await neueEinheit(s._id, bauen(w)); },
+      null, null,
+      () => { setTimeout(() => openTarifFragenSheet(), 250); });
+
+    sheet.querySelector("#ehSkip").onclick = (e) => { e.preventDefault(); closeSheet(); setTimeout(() => openTarifFragenSheet(), 200); };
   }
 
   // --- AirBNB-Einstellungen ---
