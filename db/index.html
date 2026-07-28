@@ -478,6 +478,13 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .pt-name.gesperrt{color:var(--danger);background:rgba(224,110,95,.12)}
 .pt-status{font-size:12.5px;color:var(--soft)}
 
+/* ===== TOAST / EINBLENDUNG ===== */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
+  z-index:120;background:var(--panel-solid);color:var(--text);border:1px solid var(--stroke-2);
+  padding:13px 20px;border-radius:14px;font-size:13.5px;font-weight:500;max-width:88vw;text-align:center;
+  box-shadow:0 16px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.3s cubic-bezier(.4,0,.2,1)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
 /* ===== WILLKOMMEN / ONBOARDING ===== */
 .wc-hero{text-align:center;padding:4px 0 20px}
 .wc-badge{display:inline-block;background:color-mix(in srgb,var(--mint) 15%,transparent);color:var(--mint-2);
@@ -953,9 +960,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=21"></script>
-<script src="./data-save.js?v=21"></script>
-<script src="./finance-engine.js?v=21"></script>
-<script src="./app.js?v=21"></script>
+<script src="./data-loader.js?v=22"></script>
+<script src="./data-save.js?v=22"></script>
+<script src="./finance-engine.js?v=22"></script>
+<script src="./app.js?v=22"></script>
 </body>
 </html>
