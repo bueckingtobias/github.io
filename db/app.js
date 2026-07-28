@@ -482,19 +482,22 @@
 
     // Tarif-Status anzeigen — bildet den echten (Stripe-)Zustand ab
     const a = abo();
-    const tarifName = a.tarif === "premium" ? "Premium"
+    const istOnboarding = a.roh_tarif === "onboarding";
+    const tarifName = istOnboarding ? "Kein Abo"
+      : a.tarif === "premium" ? "Premium"
       : a.tarif === "basic" ? "Basic"
       : a.tarif === "gesperrt" ? "Pausiert" : "Test";
     const ss = a.stripe_status || "";
-    const imTest = ss === "trialing" || (a.roh_tarif === "test");
+    // Nur ein echtes Stripe-Trialing ist eine Testphase – nicht der Onboarding-Zustand
+    const imTest = ss === "trialing";
     let statusZeile = "";
-    if (a.tarif === "gesperrt") {
+    if (istOnboarding) {
+      statusZeile = "Wähle einen Tarif, um alle Funktionen zu behalten";
+    } else if (a.tarif === "gesperrt") {
       statusZeile = "Bearbeiten pausiert — Daten bleiben lesbar";
     } else if (imTest && a.tarif_bis) {
       const tage = Math.max(0, Math.ceil((new Date(a.tarif_bis) - new Date()) / 86400000));
-      const grund = a.objekte || a.einheiten ? "" : "";
-      statusZeile = `Testphase · noch ${tage} Tag${tage === 1 ? "" : "e"}` +
-        (ss === "trialing" ? ", danach kostenpflichtig" : "");
+      statusZeile = `Testphase · noch ${tage} Tag${tage === 1 ? "" : "e"}, danach kostenpflichtig`;
     } else if (ss === "active" && a.tarif_bis) {
       const d = new Date(a.tarif_bis).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" });
       statusZeile = `Aktiv · verlängert sich am ${d}`;
@@ -743,6 +746,7 @@
     if (params.get("bezahlt") === "1") {
       localStorage.setItem("estriq_tarif_gewaehlt", "1");
       localStorage.setItem("estriq_onboarding_fertig", "1");
+      localStorage.removeItem("estriq_checkout_aus_onboarding");
       geschichteBereinigen();
       // Der Webhook braucht evtl. 1–3 Sek. Mehrfach nachladen, bis der Tarif steht,
       // und danach die Übersicht sicher neu zeichnen.
@@ -754,8 +758,8 @@
           route("overview");   // Ansicht mit frischen Daten neu rendern
         } catch (_) {}
         const a = abo();
-        // Weiter versuchen, solange Tarif noch nicht auf ein echtes Abo steht
-        if (versuche < 4 && a && a.roh_tarif === "test" && !a.hat_stripe) {
+        // Weiter versuchen, solange noch kein echtes Stripe-Abo greift
+        if (versuche < 4 && a && !a.hat_stripe) {
           setTimeout(nachladen, 1500);
         } else {
           showToast("Zahlung erfolgreich – dein Tarif ist aktiv.");
@@ -766,14 +770,34 @@
     }
     if (params.get("abbruch") === "1") {
       geschichteBereinigen();
-      showToast("Bezahlvorgang abgebrochen.");
+      // B1: Kam der Abbruch aus dem Onboarding, wird auf "nur lesen" gesetzt.
+      // Der Nutzer sieht sein gefülltes Dashboard, kann aber nicht bearbeiten,
+      // bis er einen Tarif wählt.
+      if (localStorage.getItem("estriq_checkout_aus_onboarding") === "1") {
+        localStorage.removeItem("estriq_checkout_aus_onboarding");
+        (async () => {
+          try {
+            const org = await window.meineOrgId();
+            const a = abo();
+            // Nur sperren, wenn noch kein echtes Abo besteht
+            if (a && a.roh_tarif === "onboarding" && !a.hat_stripe) {
+              await window.sb.from("organisationen").update({ tarif: "gesperrt" }).eq("id", org);
+              await window.nachSpeichern();
+              route("overview");
+            }
+          } catch (_) {}
+          showToast("Kein Tarif gewählt – du kannst dein Dashboard ansehen, aber nicht bearbeiten.");
+        })();
+      } else {
+        showToast("Bezahlvorgang abgebrochen.");
+      }
     }
     // Neuen Nutzern den Onboarding-Funnel zeigen (einmalig):
-    // Farbe → erstes Objekt → 3 Fragen → Abo-Empfehlung → Checkout
+    // Farbe → erstes Objekt → Einheit → 3 Fragen → Abo-Empfehlung → Checkout
     try {
       const fertig = localStorage.getItem("estriq_onboarding_fertig");
       const a = abo();
-      const nochKeinAbo = a && (a.roh_tarif === "test" && !a.hat_stripe);
+      const nochKeinAbo = a && (a.roh_tarif === "onboarding" || a.roh_tarif === "test") && !a.hat_stripe;
       if (!fertig && nochKeinAbo) {
         setTimeout(() => openFarbwahlSheet({ onboarding: true }), 400);
       }
@@ -964,6 +988,7 @@
     btn.disabled = true; btn.textContent = "Bezahlseite wird geöffnet…";
     try {
       localStorage.setItem("estriq_onboarding_fertig", "1");
+      localStorage.setItem("estriq_checkout_aus_onboarding", "1");   // für B1 bei Abbruch
       const { data: { session } } = await window.sb.auth.getSession();
       const token = session && session.access_token;
       const res = await fetch(window.SB_FUNKTION + "/checkout-starten", {
@@ -3120,7 +3145,12 @@
     const art = neu ? (artVorgabe || "miete") : (s ? s.kind : "miete");
     const artName = ART_INFO[art] ? ART_INFO[art].name : "Objekt";
     const body = `
-      ${neu ? `<div class="anlegen-kopf">${svg(ART_INFO[art] ? ART_INFO[art].icon : "home")}<span>${esc(artName)}</span></div>` : ""}
+      ${opt.nachOnboarding ? `<div class="wc-hero" style="padding-bottom:14px">
+        <div class="wc-steps"><span class="done"></span><span class="on"></span><span></span></div>
+        <div class="wc-badge">Dein erstes Objekt</div>
+        <div class="wc-d">Gib deiner Immobilie einen Namen und trag die Eckdaten ein. Danach legst du gleich die erste Wohnung an.</div>
+      </div>` : ""}
+      ${neu && !opt.nachOnboarding ? `<div class="anlegen-kopf">${svg(ART_INFO[art] ? ART_INFO[art].icon : "home")}<span>${esc(artName)}</span></div>` : ""}
       ${efTitel("Grunddaten")}
       ${ef("Name", "name", s ? s.name : "", "text", { pflicht: true, platzhalter: art === "pacht" ? "z. B. Ackerland Nord" : "z. B. Haus Bergstraße 12" })}
       ${ef("Kurzname (intern)", "slug", s ? s.id : "", "text",
@@ -3139,7 +3169,7 @@
       ${efArea("Nebenkosten-Arten", "nk_positionen",
         nkPos.map(p => p.titel + " | " + (p.betrag != null ? p.betrag : (p.anteil || 0))).join("\n"),
         { hinweis: "Je Zeile eine Position: Bezeichnung | Betrag pro Monat in €. Beispiel: Grundsteuer | 45" })}
-      ${efAktionen({ loeschen: neu ? null : "Objekt löschen" })}`;
+      ${efAktionen({ loeschen: neu ? null : "Objekt löschen", speichern: opt.nachOnboarding ? (art === "miete" ? "Weiter zur Wohnung" : "Weiter") : "Speichern" })}`;
 
     const sheet = openSheet(neu ? "Neu: " + artName : "Objekt bearbeiten", neu ? "" : s.name, body);
 
@@ -3180,11 +3210,13 @@
       opt.nachOnboarding ? () => {
         // Nach dem Objekt: bei Vermietung direkt eine Einheit anlegen (füllt das Dashboard),
         // bei AirBNB/Pacht geht es weiter zu den Fragen.
-        const neuesObj = (D.streams || []).slice().sort((a, b) => (b._id > a._id ? 1 : -1))[0];
+        // Das gerade angelegte Objekt ist das zuletzt erstellte (höchste created_at bzw. letztes in der Liste).
+        const streams = (D.streams || []);
+        const neuesObj = streams[streams.length - 1];
         if (art === "miete" && neuesObj) {
-          setTimeout(() => openErsteEinheitSheet(neuesObj), 250);
+          setTimeout(() => openErsteEinheitSheet(neuesObj), 300);
         } else {
-          setTimeout(() => openTarifFragenSheet(), 250);
+          setTimeout(() => openTarifFragenSheet(), 300);
         }
       } : null);
   }
@@ -3209,12 +3241,9 @@
       ${efTitel("Mieter (optional)")}
       ${ef("Name", "mieter", "", "text", { platzhalter: "z. B. Familie Müller" })}
       ${ef("Einzug", "einzug", "", "date")}
+      ${efAktionen({ speichern: "Speichern & weiter" })}
       <div class="wc-skip"><a href="#" id="ehSkip">Ohne Einheit weiter</a></div>`;
     const sheet = openSheet("Erste Einheit", "", body);
-
-    // Speichern-Aktion einbauen (efAktionen-Leiste wird hier manuell ergänzt)
-    const foot = el(`<div class="ef-actions"><button class="ef-save" id="efSave">Speichern & weiter</button></div><div class="ef-msg" id="efMsg"></div>`);
-    sheet.querySelector(".sheet-b").appendChild(foot);
 
     const bauen = (w) => {
       const o = {
