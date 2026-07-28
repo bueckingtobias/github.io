@@ -10,6 +10,8 @@ const SB_URL = 'https://lxigpeasfnnmfvipckxp.supabase.co';   // Project URL
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aWdwZWFzZm5ubWZ2aXBja3hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2Mjc3MjMsImV4cCI6MjEwMDIwMzcyM30.XRN3fHbwTJt1qweyRgRdUFqdXq5-ZyKD_JyNuMO92LI';                     // anon public key (darf öffentlich sein)
 
 window.sb = supabase.createClient(SB_URL, SB_KEY);
+// Basis-Adresse der Edge Functions (für Stripe-Checkout & Rabattcode)
+window.SB_FUNKTION = SB_URL + '/functions/v1';
 
 /* -------------------------------------------------------------
    Lokale Einstellungen (liegen bewusst NICHT in der Datenbank)
