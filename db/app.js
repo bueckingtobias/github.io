@@ -264,11 +264,35 @@
         </div>
         <div class="ef-msg" id="rabattMsg"></div>
       </div>
-      <div class="up-note" style="margin-top:14px">Erster Monat kostenlos · jederzeit kündbar · Zahlung folgt im nächsten Schritt</div>`;
+      <div class="up-note" style="margin-top:14px">Erster Monat kostenlos · jederzeit kündbar</div>
+      ${a.hat_stripe ? `<div class="abo-verwalten"><a href="#" id="portalLink">Abo verwalten oder kündigen</a></div>` : ""}`;
     const sheet = openSheet("Tarif wählen", "Aktuell: " + (TARIFE[aktuell] ? TARIFE[aktuell].name : "Test"), body);
+
+    const pl = sheet.querySelector("#portalLink");
+    if (pl) pl.onclick = (e) => { e.preventDefault(); oeffnePortal(pl); };
 
     sheet.querySelectorAll(".tarif-btn").forEach(b => b.onclick = () => starteCheckout(b.dataset.plan, sheet));
     sheet.querySelector("#rabattBtn").onclick = () => loeseRabattEin(sheet);
+  }
+
+  // Öffnet das Stripe-Kundenportal (Abo ansehen, Zahlungsmittel, kündigen)
+  async function oeffnePortal(link) {
+    const alt = link.textContent;
+    link.textContent = "Portal wird geöffnet…";
+    try {
+      const { data: { session } } = await window.sb.auth.getSession();
+      const token = session && session.access_token;
+      const res = await fetch(window.SB_FUNKTION + "/portal-oeffnen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ zurueck_url: location.origin + location.pathname })
+      });
+      const j = await res.json();
+      if (j.url) { location.href = j.url; }
+      else { link.textContent = alt; showToast(j.fehler || "Portal konnte nicht geöffnet werden."); }
+    } catch (e) {
+      link.textContent = alt; showToast("Verbindung fehlgeschlagen.");
+    }
   }
 
   // Leitet zur von Stripe gehosteten Bezahlseite (30 Tage Test, Karte vorab)
@@ -456,22 +480,28 @@
 
     const sheet = openSheet("Mein Profil", currentUser.email || "", body);
 
-    // Tarif-Status anzeigen
+    // Tarif-Status anzeigen — bildet den echten (Stripe-)Zustand ab
     const a = abo();
     const tarifName = a.tarif === "premium" ? "Premium"
       : a.tarif === "basic" ? "Basic"
       : a.tarif === "gesperrt" ? "Pausiert" : "Test";
-    const istTest = a.roh_tarif === "test";
+    const ss = a.stripe_status || "";
+    const imTest = ss === "trialing" || (a.roh_tarif === "test");
     let statusZeile = "";
-    if (istTest && a.tarif_bis) {
+    if (a.tarif === "gesperrt") {
+      statusZeile = "Bearbeiten pausiert — Daten bleiben lesbar";
+    } else if (imTest && a.tarif_bis) {
       const tage = Math.max(0, Math.ceil((new Date(a.tarif_bis) - new Date()) / 86400000));
-      statusZeile = `Testphase · noch ${tage} Tag${tage === 1 ? "" : "e"}`;
+      const grund = a.objekte || a.einheiten ? "" : "";
+      statusZeile = `Testphase · noch ${tage} Tag${tage === 1 ? "" : "e"}` +
+        (ss === "trialing" ? ", danach kostenpflichtig" : "");
+    } else if (ss === "active" && a.tarif_bis) {
+      const d = new Date(a.tarif_bis).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" });
+      statusZeile = `Aktiv · verlängert sich am ${d}`;
     } else if (a.tarif === "basic") {
       statusZeile = `${a.objekte}/3 Objekte · ${a.einheiten}/10 Einheiten`;
     } else if (a.tarif === "premium") {
-      statusZeile = "Unbegrenzt";
-    } else if (a.tarif === "gesperrt") {
-      statusZeile = "Bearbeiten pausiert — Daten bleiben lesbar";
+      statusZeile = ss === "demo_code" ? "Freigeschaltet (Demo)" : "Unbegrenzt";
     }
     const pt = sheet.querySelector("#pTarif");
     if (pt) pt.innerHTML = `
@@ -721,12 +751,14 @@
       geschichteBereinigen();
       showToast("Bezahlvorgang abgebrochen.");
     }
-    // Neuen Nutzern das Abo-Willkommensmenü zeigen (einmalig, bis Tarif gewählt)
+    // Neuen Nutzern den Onboarding-Funnel zeigen (einmalig):
+    // Farbe → erstes Objekt → 3 Fragen → Abo-Empfehlung → Checkout
     try {
-      const gewaehlt = localStorage.getItem("estriq_tarif_gewaehlt");
+      const fertig = localStorage.getItem("estriq_onboarding_fertig");
       const a = abo();
-      if (!gewaehlt && a && a.roh_tarif === "test") {
-        setTimeout(() => openWelcomeSheet(), 400);
+      const nochKeinAbo = a && (a.roh_tarif === "test" && !a.hat_stripe);
+      if (!fertig && nochKeinAbo) {
+        setTimeout(() => openFarbwahlSheet({ onboarding: true }), 400);
       }
     } catch (_) {}
   }
@@ -747,73 +779,17 @@
   }
 
   // Willkommen: Abo wählen (30 Tage Test)
-  function openWelcomeSheet() {
-    const body = `
-      <div class="wc-hero">
-        <div class="wc-badge">Willkommen bei ESTRIQ</div>
-        <div class="wc-t">Wähle deinen Tarif</div>
-        <div class="wc-d">Beide Tarife starten mit <b>30 Tagen kostenlos</b>. Du kannst jederzeit wechseln oder kündigen.</div>
-      </div>
-      <div class="wc-plans">
-        <div class="wc-plan" data-plan="basic">
-          <div class="wc-plan-top">
-            <div><div class="wc-plan-n">Basic</div><div class="wc-plan-s">Für den Einstieg</div></div>
-            <div class="wc-plan-p">19,99 €<span>/Mon.</span></div>
-          </div>
-          <ul class="wc-feats">
-            <li>Bis zu 3 Objekte</li>
-            <li>Bis zu 10 Einheiten</li>
-            <li>Klassische Vermietung</li>
-            <li>Alle Analysen</li>
-          </ul>
-          <button class="wc-cta" data-plan="basic">30 Tage kostenlos testen</button>
-        </div>
-        <div class="wc-plan premium" data-plan="premium">
-          <div class="wc-flag">Empfohlen</div>
-          <div class="wc-plan-top">
-            <div><div class="wc-plan-n">Premium</div><div class="wc-plan-s">Ohne Grenzen</div></div>
-            <div class="wc-plan-p">49,99 €<span>/Mon.</span></div>
-          </div>
-          <ul class="wc-feats">
-            <li>Unbegrenzt Objekte & Einheiten</li>
-            <li>AirBNB & Landpacht</li>
-            <li>Alle Analysen</li>
-            <li>Alles freigeschaltet</li>
-          </ul>
-          <button class="wc-cta prem" data-plan="premium">30 Tage kostenlos testen</button>
-        </div>
-      </div>
-      <div class="wc-note">Zahlungsdaten werden später hinterlegt · fürs Erste direkt startklar</div>`;
-    const sheet = openSheet("Tarif wählen", "", body);
-    sheet.querySelectorAll(".wc-cta").forEach(b => b.onclick = async () => {
-      const plan = b.dataset.plan;
-      b.disabled = true; b.textContent = "Wird aktiviert…";
-      try {
-        // Fürs Erste: Tarif direkt in der DB setzen (30 Tage Test).
-        // Später übernimmt das der Stripe-Webhook.
-        const bis = new Date(Date.now() + 30 * 86400000).toISOString();
-        const org = await window.meineOrgId();
-        await window.sb.from("organisationen")
-          .update({ tarif: "test", tarif_bis: bis, stripe_status: "trialing_" + plan }).eq("id", org);
-        localStorage.setItem("estriq_tarif_gewaehlt", plan);
-        await window.nachSpeichern();
-        openFarbwahlSheet();   // weiter zur Farbwahl
-      } catch (e) {
-        b.disabled = false; b.textContent = "30 Tage kostenlos testen";
-        alert(window.fehlerText(e));
-      }
-    });
-  }
-
-  // Zweiter Onboarding-Schritt: Farbschema wählen
-  function openFarbwahlSheet() {
+  // Onboarding-Schritt 1: Farbschema wählen
+  function openFarbwahlSheet(opt) {
+    opt = opt || {};
     const themeChips = THEMES.map(t => `<button type="button" class="theme-chip" data-theme="${t.id}" style="--sw:${t.bg}">
       <span class="theme-sw"></span>${esc(t.name)}</button>`).join("");
     const accentDots = AKZENTE.map(a => `<button type="button" class="accent-dot" data-accent="${a.id}"
       style="--ac:${a.farbe}" title="${esc(a.name)}" aria-label="${esc(a.name)}"></button>`).join("");
     const body = `
       <div class="wc-hero">
-        <div class="wc-badge">Fast fertig</div>
+        ${opt.onboarding ? `<div class="wc-steps"><span class="on"></span><span></span><span></span></div>` : ""}
+        <div class="wc-badge">${opt.onboarding ? "Willkommen bei ESTRIQ" : "Darstellung"}</div>
         <div class="wc-t">Mach es zu deinem</div>
         <div class="wc-d">Wähle Hintergrund und Akzentfarbe. Du kannst das jederzeit im Profil ändern — die Auswahl gilt auf all deinen Geräten.</div>
       </div>
@@ -821,7 +797,7 @@
       <div class="theme-row" id="wcTheme">${themeChips}</div>
       <div class="ef-l" style="margin-top:16px">Akzentfarbe</div>
       <div class="accent-row" id="wcAccent">${accentDots}</div>
-      <button class="wc-cta prem" id="wcDone" style="margin-top:24px">Los geht's</button>`;
+      <button class="wc-cta prem" id="wcDone" style="margin-top:24px">${opt.onboarding ? "Weiter" : "Speichern"}</button>`;
     const sheet = openSheet("Darstellung", "", body);
 
     function markiere() {
@@ -837,9 +813,156 @@
     });
     markiere();
     sheet.querySelector("#wcDone").onclick = async () => {
-      await themeInDB(aktThemeId(), aktAccentId());   // geräteübergreifend sichern
-      closeSheet();
+      await themeInDB(aktThemeId(), aktAccentId());
+      if (opt.onboarding) { closeSheet(); setTimeout(() => openErstesObjektSheet(), 250); }
+      else { closeSheet(); }
     };
+  }
+
+  // Onboarding-Schritt 2: erstes Objekt anlegen (erzeugt Bindung)
+  function openErstesObjektSheet() {
+    const body = `
+      <div class="wc-hero">
+        <div class="wc-steps"><span class="done"></span><span class="on"></span><span></span></div>
+        <div class="wc-badge">Erster Schritt in dein Portfolio</div>
+        <div class="wc-t">Leg dein erstes Objekt an</div>
+        <div class="wc-d">Trag eine Immobilie ein, die du vermietest. Du siehst sofort, wie ESTRIQ deine Einnahmen und Rendite berechnet.</div>
+      </div>
+      <div class="ob-arten">
+        <button class="ob-art" data-art="miete">${svg("home")}<div><div class="ob-art-n">Vermietung</div><div class="ob-art-m">Wohnung oder Haus mit Mietern</div></div></button>
+        <button class="ob-art" data-art="airbnb">${svg("bed")}<div><div class="ob-art-n">Kurzzeitvermietung</div><div class="ob-art-m">Ferienwohnung, AirBNB & Co.</div></div></button>
+        <button class="ob-art" data-art="pacht">${svg("sprout")}<div><div class="ob-art-n">Landpacht</div><div class="ob-art-m">Acker- oder Grünland</div></div></button>
+      </div>
+      <div class="wc-skip"><a href="#" id="obSkip">Überspringen</a></div>`;
+    const sheet = openSheet("Erstes Objekt", "", body);
+    sheet.querySelectorAll(".ob-art").forEach(b => b.onclick = () => {
+      const art = b.dataset.art;
+      closeSheet();
+      // Nach dem Speichern des Objekts geht es weiter zu den Fragen
+      setTimeout(() => openObjektEdit(null, true, art, { nachOnboarding: true }), 200);
+    });
+    sheet.querySelector("#obSkip").onclick = (e) => { e.preventDefault(); closeSheet(); setTimeout(() => openTarifFragenSheet(), 200); };
+  }
+
+  // Onboarding-Schritt 3: drei Fragen → Abo-Empfehlung
+  function openTarifFragenSheet() {
+    const fragen = [
+      { id: "objekte", frage: "Wie viele Immobilien möchtest du verwalten?",
+        hinweis: "Das bestimmt, wie viel Struktur du brauchst.",
+        opt: [
+          { t: "1 – 3 Objekte", v: "wenige" },
+          { t: "4 – 10 Objekte", v: "mittel" },
+          { t: "Mehr als 10", v: "viele" }
+        ] },
+      { id: "arten", frage: "Welche Arten der Vermietung nutzt du?",
+        hinweis: "Ferienwohnungen und Landpacht brauchen spezielle Auswertungen.",
+        opt: [
+          { t: "Nur klassische Vermietung", v: "miete" },
+          { t: "Auch Ferienwohnung / AirBNB", v: "airbnb" },
+          { t: "Auch verpachtetes Land", v: "pacht" }
+        ] },
+      { id: "auswertung", frage: "Wie tief möchtest du deine Zahlen auswerten?",
+        hinweis: "ESTRIQ rechnet Rendite, Cashflow, Tilgung und Reserven – je mehr Objekte, desto wertvoller der Gesamtüberblick.",
+        opt: [
+          { t: "Überblick über meine Einnahmen genügt", v: "basis" },
+          { t: "Rendite und Cashflow je Objekt", v: "detail" },
+          { t: "Volles Controlling über alle Objekte", v: "voll" }
+        ] }
+    ];
+    const antworten = {};
+    let idx = 0;
+
+    const sheet = openSheet("Kurz gefragt", "", `<div id="fragenBody"></div>`);
+    const bodyEl = sheet.querySelector("#fragenBody");
+
+    function zeigeFrage() {
+      const f = fragen[idx];
+      bodyEl.innerHTML = `
+        <div class="wc-hero">
+          <div class="wc-steps"><span class="done"></span><span class="done"></span><span class="on"></span></div>
+          <div class="wc-badge">Frage ${idx + 1} von ${fragen.length}</div>
+          <div class="wc-t" style="font-size:19px">${esc(f.frage)}</div>
+          <div class="wc-d">${esc(f.hinweis)}</div>
+        </div>
+        <div class="frage-opts">
+          ${f.opt.map(o => `<button class="frage-opt" data-v="${o.v}">${esc(o.t)}</button>`).join("")}
+        </div>`;
+      bodyEl.querySelectorAll(".frage-opt").forEach(b => b.onclick = () => {
+        antworten[f.id] = b.dataset.v;
+        if (idx < fragen.length - 1) { idx++; zeigeFrage(); }
+        else { closeSheet(); setTimeout(() => openEmpfehlungSheet(antworten), 200); }
+      });
+    }
+    zeigeFrage();
+  }
+
+  // Onboarding-Schritt 4: Empfehlung + Checkout
+  function openEmpfehlungSheet(antworten) {
+    // Entscheidung: Premium wenn viele Objekte ODER AirBNB/Pacht ODER volles Controlling
+    const brauchtPremium =
+      antworten.objekte === "mittel" || antworten.objekte === "viele" ||
+      antworten.arten === "airbnb" || antworten.arten === "pacht" ||
+      antworten.auswertung === "voll";
+    const plan = brauchtPremium ? "premium" : "basic";
+    const preis = brauchtPremium ? "49,99 €" : "19,99 €";
+    const name = brauchtPremium ? "Premium" : "Basic";
+    const begruendung = brauchtPremium
+      ? "Weil du mehrere Objekte oder besondere Vermietungsarten nutzt, empfehlen wir Premium – unbegrenzt Objekte, AirBNB und Landpacht inklusive."
+      : "Für deinen Einstieg genügt Basic – bis zu 3 Objekte und 10 Einheiten mit allen Auswertungen. Wechseln kannst du jederzeit.";
+
+    const body = `
+      <div class="wc-hero">
+        <div class="wc-steps"><span class="done"></span><span class="done"></span><span class="done"></span></div>
+        <div class="wc-badge">Unsere Empfehlung für dich</div>
+        <div class="wc-t">${name}</div>
+        <div class="wc-d">${begruendung}</div>
+      </div>
+      <div class="empf-plan ${plan === "premium" ? "premium" : ""}">
+        <div class="empf-top">
+          <div class="empf-n">${name}</div>
+          <div class="empf-p">${preis}<span>/Monat</span></div>
+        </div>
+        <ul class="wc-feats">
+          ${brauchtPremium
+            ? "<li>Unbegrenzt Objekte & Einheiten</li><li>AirBNB & Landpacht</li><li>Volles Controlling</li>"
+            : "<li>Bis zu 3 Objekte</li><li>Bis zu 10 Einheiten</li><li>Alle Auswertungen</li>"}
+        </ul>
+      </div>
+      <button class="wc-cta prem" id="empfCta" style="margin-top:8px">30 Tage kostenlos testen</button>
+      <button class="wc-cta" id="empfAlt" style="margin-top:10px">${brauchtPremium ? "Lieber mit Basic starten" : "Doch lieber Premium ansehen"}</button>
+      <div class="wc-note" style="margin-top:14px">Erster Monat kostenlos · jederzeit kündbar · danach ${preis}/Monat</div>`;
+    const sheet = openSheet("Dein Tarif", "", body);
+
+    sheet.querySelector("#empfCta").onclick = () => onboardingCheckout(plan, sheet.querySelector("#empfCta"));
+    sheet.querySelector("#empfAlt").onclick = () => {
+      const anderer = plan === "premium" ? "basic" : "premium";
+      onboardingCheckout(anderer, sheet.querySelector("#empfAlt"));
+    };
+  }
+
+  // Checkout aus dem Onboarding: markiert Fluss als fertig, dann zu Stripe
+  async function onboardingCheckout(plan, btn) {
+    const alt = btn.textContent;
+    btn.disabled = true; btn.textContent = "Bezahlseite wird geöffnet…";
+    try {
+      localStorage.setItem("estriq_onboarding_fertig", "1");
+      const { data: { session } } = await window.sb.auth.getSession();
+      const token = session && session.access_token;
+      const res = await fetch(window.SB_FUNKTION + "/checkout-starten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({
+          plan,
+          erfolg_url: location.origin + location.pathname + "?bezahlt=1",
+          abbruch_url: location.origin + location.pathname + "?abbruch=1"
+        })
+      });
+      const j = await res.json();
+      if (j.url) { location.href = j.url; }
+      else { btn.disabled = false; btn.textContent = alt; showToast(j.fehler || "Konnte nicht öffnen."); }
+    } catch (e) {
+      btn.disabled = false; btn.textContent = alt; showToast("Verbindung fehlgeschlagen.");
+    }
   }
 
   /* ---------- NAV ---------- */
@@ -1224,7 +1347,7 @@
   const text = v => (v === "" || v === null || v === undefined) ? null : String(v).trim();
 
   // Speichern-Knopf verdrahten, inkl. Fehleranzeige
-  function efBind(sheet, speichernFn, loeschenFn, loeschFrage) {
+  function efBind(sheet, speichernFn, loeschenFn, loeschFrage, nachErfolg) {
     const msg = sheet.querySelector("#efMsg");
     const btn = sheet.querySelector("#efSave");
     if (btn) btn.onclick = async () => {
@@ -1234,6 +1357,7 @@
         await speichernFn(efWerte(sheet));
         closeSheet();
         await window.nachSpeichern();
+        if (nachErfolg) nachErfolg();
       } catch (e) {
         msg.textContent = window.fehlerText(e);
         msg.className = "ef-msg bad";
@@ -2970,7 +3094,8 @@
   }
 
   // --- Objekt ---
-  function openObjektEdit(s, neu, artVorgabe) {
+  function openObjektEdit(s, neu, artVorgabe, opt) {
+    opt = opt || {};
     const nkPos = (s && s.nkPositionen) || [];
     const art = neu ? (artVorgabe || "miete") : (s ? s.kind : "miete");
     const artName = ART_INFO[art] ? ART_INFO[art].name : "Objekt";
@@ -3019,7 +3144,8 @@
     efBind(sheet,
       async (w) => {
         if (neu) {
-          if (!istPremium() && art !== "miete") {
+          // Im Onboarding darf das erste Objekt jeder Art angelegt werden
+          if (!opt.nachOnboarding && !istPremium() && art !== "miete") {
             closeSheet(); openUpgradeSheet("art");
             throw new Error("Diese Objektart ist Premium vorbehalten.");
           }
@@ -3028,7 +3154,8 @@
         else { await speichereObjekt(s._id, bauen(w)); }
       },
       neu ? null : async () => { await loescheObjekt(s._id); currentView = "overview"; },
-      "Objekt mit allen Daten löschen?");
+      "Objekt mit allen Daten löschen?",
+      opt.nachOnboarding ? () => { setTimeout(() => openTarifFragenSheet(), 250); } : null);
   }
 
   // --- AirBNB-Einstellungen ---
