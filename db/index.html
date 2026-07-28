@@ -208,6 +208,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 
 .main{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
 .head{flex:0 0 auto;padding:calc(38px + env(safe-area-inset-top)) 30px 4px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;position:relative;z-index:3}
+.head-logo{height:34px;width:auto;object-fit:contain;opacity:.92;flex:0 0 auto;margin-top:4px}
 .scroll-fade{position:absolute;left:0;right:0;height:28px;z-index:2;pointer-events:none;
   background:linear-gradient(180deg,var(--bg),transparent)}
 .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mint);font-weight:600}
@@ -479,6 +480,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .pt-status{font-size:12.5px;color:var(--soft)}
 
 /* ===== ONBOARDING-FUNNEL ===== */
+.wc-logo{display:block;height:38px;width:auto;margin:0 auto 16px;object-fit:contain}
 .wc-steps{display:flex;justify-content:center;gap:7px;margin-bottom:16px}
 .wc-steps span{width:28px;height:4px;border-radius:2px;background:var(--stroke-2);transition:.3s}
 .wc-steps span.on{background:var(--mint);width:34px}
@@ -794,16 +796,19 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
   #app{grid-template-columns:1fr;grid-template-rows:1fr;height:100dvh;height:100svh}
   /* Navigationsleiste fest am unteren Bildschirmrand (wie Instagram) */
   .rail{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;width:100%;flex-direction:row;
-    justify-content:space-around;align-items:stretch;padding:8px 6px 0;
+    justify-content:space-around;align-items:stretch;padding:7px 6px 0;
     border-right:none;border-top:1px solid var(--stroke);z-index:50;gap:2px;
     box-sizing:border-box;
-    /* Home-Indicator-Aussparung des iPhones als Innenabstand, Leiste selbst bündig an der Kante */
-    padding-bottom:max(8px,env(safe-area-inset-bottom));
+    /* Buttons müssen tippbar sein — body hat touch-action:none, hier zurückgeben */
+    touch-action:manipulation;pointer-events:auto;
+    /* Home-Indicator-Aussparung als Innenabstand, aber knapp gehalten */
+    padding-bottom:calc(env(safe-area-inset-bottom) * 0.6 + 4px);
     background:color-mix(in srgb,var(--bg2) 96%,transparent);
     backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2)}
   .rail-mark,.rail-spacer{display:none}
-  .rail-btn{width:auto;height:auto;flex:1 1 0;flex-direction:column;gap:3px;padding:5px 4px;border-radius:12px;font-size:9px}
-  .rail-btn svg{width:23px;height:23px}
+  .rail-btn{width:auto;height:auto;flex:1 1 0;flex-direction:column;gap:3px;padding:6px 4px;border-radius:12px;font-size:9px;
+    touch-action:manipulation;pointer-events:auto;cursor:pointer}
+  .rail-btn svg{width:23px;height:23px;pointer-events:none}
   .rail-btn .tip{position:static;transform:none;opacity:1;background:none;border:none;padding:0;color:inherit;
     font-size:9.5px;font-weight:600;pointer-events:none}
   .rail-btn.on .tip{color:var(--mint-2)}
@@ -815,6 +820,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 
   .main{height:100dvh;height:100svh;min-height:0}
   .head{padding:calc(10px + env(safe-area-inset-top)) 18px 2px;flex-direction:column;gap:6px}
+  .head-logo{height:26px;order:-1;align-self:flex-start;margin:0 0 6px}
   .head h2{font-size:23px;line-height:1.15;margin:1px 0 0}
   .head .eyebrow{font-size:11px}
   .head .sub{margin-top:1px}
@@ -989,6 +995,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
         <h2 id="pageTitle">Übersicht</h2>
         <div class="sub" id="pageSub"></div>
       </div>
+      <img src="estriq.PNG" alt="ESTRIQ" class="head-logo" onerror="this.style.display='none'">
     </header>
     <div class="scroll-fade"></div>
     <div class="scroll"><div class="wrap" id="views"></div></div>
@@ -996,9 +1003,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=23"></script>
-<script src="./data-save.js?v=23"></script>
-<script src="./finance-engine.js?v=23"></script>
-<script src="./app.js?v=23"></script>
+<script src="./data-loader.js?v=24"></script>
+<script src="./data-save.js?v=24"></script>
+<script src="./finance-engine.js?v=24"></script>
+<script src="./app.js?v=24"></script>
 </body>
 </html>
