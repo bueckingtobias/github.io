@@ -267,12 +267,32 @@
       <div class="up-note" style="margin-top:14px">Erster Monat kostenlos · jederzeit kündbar · Zahlung folgt im nächsten Schritt</div>`;
     const sheet = openSheet("Tarif wählen", "Aktuell: " + (TARIFE[aktuell] ? TARIFE[aktuell].name : "Test"), body);
 
-    sheet.querySelectorAll(".tarif-btn").forEach(b => b.onclick = () => {
-      const msg = sheet.querySelector("#rabattMsg");
-      msg.textContent = "Die Zahlung richten wir im nächsten Schritt ein (Etappe 3).";
-      msg.className = "ef-msg";
-    });
+    sheet.querySelectorAll(".tarif-btn").forEach(b => b.onclick = () => starteCheckout(b.dataset.plan, sheet));
     sheet.querySelector("#rabattBtn").onclick = () => loeseRabattEin(sheet);
+  }
+
+  // Leitet zur von Stripe gehosteten Bezahlseite (30 Tage Test, Karte vorab)
+  async function starteCheckout(plan, sheet) {
+    const msg = sheet.querySelector("#rabattMsg");
+    msg.textContent = "Bezahlseite wird geöffnet…"; msg.className = "ef-msg";
+    try {
+      const { data: { session } } = await window.sb.auth.getSession();
+      const token = session && session.access_token;
+      const res = await fetch(window.SB_FUNKTION + "/checkout-starten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({
+          plan,
+          erfolg_url: location.origin + location.pathname + "?bezahlt=1",
+          abbruch_url: location.origin + location.pathname + "?abbruch=1"
+        })
+      });
+      const j = await res.json();
+      if (j.url) { location.href = j.url; }   // weiter zu Stripe
+      else { msg.textContent = j.fehler || "Bezahlseite konnte nicht geöffnet werden."; msg.className = "ef-msg bad"; }
+    } catch (e) {
+      msg.textContent = "Verbindung zu Stripe fehlgeschlagen. Bitte später erneut."; msg.className = "ef-msg bad";
+    }
   }
 
   async function loeseRabattEin(sheet) {
@@ -281,22 +301,25 @@
     if (!code) { msg.textContent = "Bitte Code eingeben."; msg.className = "ef-msg bad"; return; }
     msg.textContent = "Prüfe Code…"; msg.className = "ef-msg";
     try {
-      // Serverseitige Prüfung – Funktion kommt in Etappe 3 (Stripe). Vorab abgesichert.
-      const { data, error } = await window.sb.rpc("rabatt_einloesen", { p_code: code });
-      if (error) throw error;
-      if (data && data.ok) {
-        msg.textContent = "Code eingelöst: " + (data.hinweis || "freigeschaltet") + ".";
-        msg.className = "ef-msg";
+      const { data: { session } } = await window.sb.auth.getSession();
+      const token = session && session.access_token;
+      const res = await fetch(window.SB_FUNKTION + "/rabatt-einloesen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ code })
+      });
+      const j = await res.json();
+      if (j.status === "ok") {
+        msg.textContent = "Code eingelöst – Premium ist freigeschaltet."; msg.className = "ef-msg";
         await window.nachSpeichern();
-        closeSheet();
+        setTimeout(closeSheet, 900);
+      } else if (j.status === "ungueltig") {
+        msg.textContent = "Dieser Code ist ungültig."; msg.className = "ef-msg bad";
       } else {
-        msg.textContent = (data && data.hinweis) || "Code ungültig.";
-        msg.className = "ef-msg bad";
+        msg.textContent = "Code konnte nicht eingelöst werden."; msg.className = "ef-msg bad";
       }
     } catch (e) {
-      // Fallback, solange die Serverfunktion noch nicht existiert
-      msg.textContent = "Die Code-Einlösung wird in Etappe 3 aktiviert.";
-      msg.className = "ef-msg";
+      msg.textContent = "Verbindung fehlgeschlagen. Bitte später erneut."; msg.className = "ef-msg bad";
     }
   }
 
@@ -685,6 +708,19 @@
     document.documentElement.classList.remove("pre-login");
     $("#login").classList.add("hide"); $("#app").classList.remove("hide");
     buildRail(); route("overview");
+    // Rückkehr von der Stripe-Bezahlseite auswerten
+    const params = new URLSearchParams(location.search);
+    if (params.get("bezahlt") === "1") {
+      // Tarif kann minimal verzögert sein (Webhook), daher kurz nachladen
+      localStorage.setItem("estriq_tarif_gewaehlt", "1");
+      geschichteBereinigen();
+      setTimeout(async () => { try { await window.nachSpeichern(); } catch (_) {} showToast("Zahlung erfolgreich – dein Tarif ist aktiv."); }, 1200);
+      return;
+    }
+    if (params.get("abbruch") === "1") {
+      geschichteBereinigen();
+      showToast("Bezahlvorgang abgebrochen.");
+    }
     // Neuen Nutzern das Abo-Willkommensmenü zeigen (einmalig, bis Tarif gewählt)
     try {
       const gewaehlt = localStorage.getItem("estriq_tarif_gewaehlt");
@@ -693,6 +729,21 @@
         setTimeout(() => openWelcomeSheet(), 400);
       }
     } catch (_) {}
+  }
+
+  // Entfernt ?bezahlt / ?abbruch aus der Adresszeile
+  function geschichteBereinigen() {
+    try { history.replaceState(null, "", location.origin + location.pathname); } catch (_) {}
+  }
+
+  // Kurze Einblend-Nachricht am unteren Rand
+  function showToast(text) {
+    let t = $("#toast");
+    if (!t) { t = el(`<div id="toast" class="toast"></div>`); document.body.appendChild(t); }
+    t.textContent = text;
+    t.classList.add("on");
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove("on"), 3500);
   }
 
   // Willkommen: Abo wählen (30 Tage Test)
