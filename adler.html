@@ -58,7 +58,12 @@ h1{
 
 /* ---------- Layout ---------- */
 .buehne{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;margin-top:26px;align-items:start}
-@media(max-width:860px){.buehne{grid-template-columns:1fr;gap:18px}}
+@media(max-width:860px){
+  .buehne{grid-template-columns:1fr;gap:18px}
+  .karte-panel{order:1}
+  .karte-adler{order:2}
+  #adler{max-height:52vh}
+}
 
 .tafel{
   background:#fff;
@@ -136,7 +141,9 @@ button.leise:hover:not(:disabled){background:var(--papier)}
 
 /* ---------- Liste ---------- */
 .liste{margin-top:30px}
-table{width:100%;border-collapse:collapse;font-size:15px}
+.tabellenrahmen{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:420px}
+@media(max-width:520px){table{font-size:13px;min-width:0}td,th{padding:9px 6px}td.nr,td.mult{font-size:16px}}
 th{
   font-family:var(--font-zahl);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
   color:var(--grau);text-align:left;padding:0 10px 8px;font-weight:400;border-bottom:1.5px solid var(--gruen);
@@ -146,6 +153,12 @@ td.nr{font-family:var(--font-zahl);font-weight:700;color:var(--gruen);font-size:
 td.mult{font-family:var(--font-zahl);font-weight:700;color:var(--gold);font-size:19px}
 td.geld{font-family:var(--font-zahl);text-align:right;white-space:nowrap}
 tr.frei td{color:var(--grau);font-style:italic}
+tr.gruppe td{border-top:1.5px solid var(--papier-tief)}
+tr:not(.gruppe) td{border-bottom-color:transparent}
+.schuetze{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--papier-tief);flex-wrap:wrap}
+.sname{font-family:var(--font-display);font-size:17px;min-width:130px}
+.steile{font-family:var(--font-zahl);font-size:13px;color:var(--gruen);flex:1}
+.loeschen{flex:0 0 auto;font-size:11px;padding:6px 10px}
 .leerzustand{padding:26px 4px;color:var(--grau);font-size:14px;line-height:1.6}
 .fusszeile{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
 .preisfeld{display:flex;align-items:center;gap:10px;flex:1 1 220px}
@@ -156,7 +169,7 @@ tr.frei td{color:var(--grau);font-style:italic}
 @media print{
   @page{margin:16mm}
   body{background:#fff;padding:0}
-  header,.buehne,.fusszeile,.hinweis-druck{display:none!important}
+  header,.buehne,.fusszeile,.hinweis-druck,.loeschen{display:none!important}
   .liste{margin:0}
   .tafel{border:none;box-shadow:none;padding:0;border-radius:0}
   .druckkopf{display:block;border-bottom:3px solid #004225;padding-bottom:8px;margin-bottom:16px}
@@ -184,7 +197,7 @@ tr.frei td{color:var(--grau);font-style:italic}
 <div class="buehne">
 
   <!-- ADLER -->
-  <div class="tafel">
+  <div class="tafel karte-adler">
     <h2>Der Adler</h2>
     <svg id="adler" viewBox="0 0 1240 1240" role="img" aria-label="Schützenadler mit 15 nummerierten Teilen">
 
@@ -280,7 +293,7 @@ tr.frei td{color:var(--grau);font-style:italic}
   </div>
 
   <!-- BEDIENFELD -->
-  <div class="tafel">
+  <div class="tafel karte-panel">
     <h2>Ziehung</h2>
     <div class="feld" id="panel"></div>
   </div>
@@ -293,12 +306,14 @@ tr.frei td{color:var(--grau);font-style:italic}
     <p id="druckdatum"></p>
   </div>
   <h2>Gesamtliste</h2>
+  <div class="tabellenrahmen">
   <table>
     <thead>
       <tr><th>Teil</th><th>Bezeichnung</th><th>Schütze</th><th>Mult.</th><th style="text-align:right">Preisgeld</th></tr>
     </thead>
     <tbody id="tbody"></tbody>
   </table>
+  </div>
   <div class="fusszeile">
     <div class="preisfeld">
       <label class="klein" for="grundpreis">Grundpreis €</label>
@@ -307,6 +322,9 @@ tr.frei td{color:var(--grau);font-style:italic}
     <button class="leise" id="btnPdf">Als PDF speichern</button>
     <button class="leise" id="btnReset">Alles zurücksetzen</button>
   </div>
+  <h2 style="margin-top:28px">Schützen</h2>
+  <div id="schuetzen"></div>
+
   <p class="hinweis hinweis-druck" style="margin-top:10px">„Als PDF speichern“ öffnet den Druckdialog – dort <em>Als PDF sichern</em> wählen. Gedruckt wird nur die Gesamtliste.</p>
 </div>
 </div>
@@ -388,12 +406,9 @@ function renderPanel(){
       <p class="schritt">Schritt 1</p>
       <label class="klein" for="name">Name des Schützen</label>
       <input type="text" id="name" placeholder="Name eingeben" autocomplete="off">
-      <button id="btnAdd">Teilnehmer hinzufügen</button>
+      <button data-aktion="add">Teilnehmer hinzufügen</button>
       <p class="hinweis">Jeder Schütze zieht zwei verschiedene Teile und würfelt für jedes einen eigenen Multiplikator (1–6). Ein Teil kann an mehrere Schützen gehen.</p>`;
-    const inp = $("#name");
-    inp.focus();
-    inp.addEventListener("keydown", e=>{ if(e.key==="Enter") addTeilnehmer(); });
-    $("#btnAdd").onclick = addTeilnehmer;
+    $("#name").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); addTeilnehmer(); } });
     return;
   }
 
@@ -405,16 +420,16 @@ function renderPanel(){
 
   let aktion = "";
   if(fertig){
-    aktion = `<button class="gold" id="btnNext">Nächster Teilnehmer</button>`;
+    aktion = `<button class="gold" data-aktion="next">Nächster Teilnehmer</button>`;
   } else if(brauchtWurf){
     aktion = `<p class="schritt">Schritt 3 · Multiplikator für Teil ${letzter.teil}</p>
       <div style="display:flex;gap:14px;align-items:center">
         <div class="wuerfel" id="wuerfel">${"<span></span>".repeat(9)}</div>
-        <button class="gold" id="btnWuerfeln" style="flex:1">Würfeln</button>
+        <button class="gold" id="btnWuerfeln" data-aktion="wuerfeln" style="flex:1">Würfeln</button>
       </div>`;
   } else if(brauchtZug){
     aktion = `<p class="schritt">Schritt 2 · Teil ${z.length+1} von 2</p>
-      <button id="btnZiehen">Teil ziehen</button>`;
+      <button id="btnZiehen" data-aktion="ziehen">Teil ziehen</button>`;
   }
 
   panel.innerHTML = `
@@ -423,12 +438,8 @@ function renderPanel(){
     ${zugKarte(z[0],0)}
     ${zugKarte(z[1],1)}
     ${aktion}
-    ${fertig?"":'<button class="leise" id="btnAbbruch">Teilnehmer verwerfen</button>'}`;
+    ${fertig?"":'<button class="leise" data-aktion="abbruch">Teilnehmer verwerfen</button>'}`;
 
-  if($("#btnZiehen")) $("#btnZiehen").onclick = ziehen;
-  if($("#btnWuerfeln")) $("#btnWuerfeln").onclick = wuerfeln;
-  if($("#btnNext")) $("#btnNext").onclick = abschliessen;
-  if($("#btnAbbruch")) $("#btnAbbruch").onclick = verwerfen;
   if(letzter && letzter.mult) zeigeWuerfel(letzter.mult);
 }
 
@@ -477,24 +488,25 @@ function addTeilnehmer(){
   const v = $("#name").value.trim();
   if(!v){ $("#name").focus(); return; }
   aktuell = {name:v, zuege:[]};
-  render();
+  render(); zumPanel();
 }
 
 function ziehen(){
-  if(busy || !pool.length) return;
+  if(busy) return;
   busy = true;
   const btn = $("#btnZiehen"); btn.disabled = true;
-  const ziel = pool[Math.floor(Math.random()*pool.length)];
+  const schon = aktuell.zuege.map(z=>z.teil);
+  const topf = ALLE_TEILE.filter(n=>!schon.includes(n));   // kein Teil zweimal beim selben Schützen
+  const ziel = topf[Math.floor(Math.random()*topf.length)];
   let t = 0;
   const takt = setInterval(()=>{
-    const zufall = pool[Math.floor(Math.random()*pool.length)];
+    const zufall = topf[Math.floor(Math.random()*topf.length)];
     document.querySelectorAll("#adler .part").forEach(g=>{
       g.classList.toggle("aktiv", Number(g.dataset.part)===zufall);
     });
     btn.textContent = "… " + zufall;
     if(++t > 14){
       clearInterval(takt);
-      pool = pool.filter(x=>x!==ziel);
       aktuell.zuege.push({teil:ziel, mult:null});
       busy = false;
       render();
@@ -530,15 +542,29 @@ function wuerfeln(){
 function abschliessen(){
   teilnehmer.push(aktuell);
   aktuell = null;
-  render();
+  render(); zumPanel();
 }
 
 function verwerfen(){
-  if(!confirm("Teilnehmer „"+aktuell.name+"“ verwerfen? Gezogene Teile gehen zurück in den Topf.")) return;
-  aktuell.zuege.forEach(z=>pool.push(z.teil));
-  pool.sort((a,b)=>a-b);
+  if(!confirm("Teilnehmer „"+aktuell.name+"“ verwerfen? Die bisherige Ziehung wird gelöscht.")) return;
   aktuell = null;
   render();
+}
+
+panel.addEventListener("click", e=>{
+  const b = e.target.closest("[data-aktion]");
+  if(!b) return;
+  const a = b.dataset.aktion;
+  if(a==="add") addTeilnehmer();
+  else if(a==="ziehen") ziehen();
+  else if(a==="wuerfeln") wuerfeln();
+  else if(a==="next") abschliessen();
+  else if(a==="abbruch") verwerfen();
+});
+
+function zumPanel(){
+  const k = document.querySelector(".karte-panel");
+  if(k && window.innerWidth<=860) k.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 $("#grundpreis").addEventListener("input", renderTabelle);
@@ -548,9 +574,10 @@ $("#btnPdf").onclick = ()=>{
 };
 $("#btnReset").onclick = ()=>{
   if(!confirm("Wirklich alles zurücksetzen? Alle Namen, Teile und Multiplikatoren werden gelöscht.")) return;
-  pool = Object.keys(TEILE).map(Number); teilnehmer = []; aktuell = null; render();
+  teilnehmer = []; aktuell = null; render();
 };
 
+render();
 laden().then(render);
 </script>
 </body>
