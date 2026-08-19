@@ -1002,7 +1002,7 @@
         status: a.status || "vermietet",
         kalt_fix: z(a.kalt_fix), nk_fix: z(a.nk_fix),
         zahltag: Math.min(31, Math.max(1, Number(a.zahltag) || 1)),
-        mieter: a.mieter || "", einzug: "",
+        mieter: a.mieter || "", einzug: null,
         vertrag: {}
       });
       closeSheet();
@@ -1027,7 +1027,7 @@
         t.push({
           titel: "Rendite für " + s.name + " freischalten",
           text: "Ohne Investitionssumme kann ESTRIQ keine Rendite berechnen. Trag den Kaufpreis inkl. Nebenkosten ein.",
-          aktion: "Objekt öffnen", ziel: () => openObjektEdit(s, false)
+          aktion: "Jetzt eintragen", ziel: () => pflegeInvest(s)
         });
       }
       // Objekt ohne Einheiten
@@ -1046,7 +1046,7 @@
             t.push({
               titel: (u.wohnung || "Eine Einheit") + " steht leer",
               text: "Bei Vermietung kämen " + eur(i.gesamt) + " im Monat dazu – das sind " + eur(i.gesamt * 12) + " im Jahr.",
-              aktion: "Einheit öffnen", ziel: () => openUnitEdit(s, u, false)
+              aktion: "Status prüfen", ziel: () => pflegeLeerstand(s, u)
             });
           }
         }
@@ -1055,7 +1055,7 @@
           t.push({
             titel: "Mieter bei " + (u.wohnung || "einer Einheit") + " ergänzen",
             text: "Mit hinterlegtem Mieter behältst du Verträge und Zahlungseingänge besser im Blick.",
-            aktion: "Einheit öffnen", ziel: () => openUnitEdit(s, u, false)
+            aktion: "Mieter eintragen", ziel: () => pflegeMieter(s, u)
           });
         }
       });
@@ -1064,7 +1064,7 @@
         t.push({
           titel: "Nebenkosten bei " + s.name + " erfassen",
           text: "Trag Grundsteuer, Versicherung & Co. ein, damit dein Cashflow realistisch wird.",
-          aktion: "Objekt öffnen", ziel: () => openObjektEdit(s, false)
+          aktion: "Jetzt erfassen", ziel: () => pflegeNebenkosten(s)
         });
       }
     });
@@ -1113,6 +1113,96 @@
         await window.sb.from("mitglieder").update({ tipps_an: an }).eq("auth_user_id", currentUser.id);
       }
     } catch (_) {}
+  }
+
+  /* ---------- GEFÜHRTE NACHPFLEGE (aus Tipps) ---------- */
+
+  const alsZahl = (v) => {
+    const n = Number(String(v == null ? "" : v).replace(",", "."));
+    return (isFinite(n) && String(v).trim() !== "") ? n : null;
+  };
+
+  // Investitionssumme nachtragen → schaltet die Rendite frei
+  function pflegeInvest(s) {
+    openAssistent("Rendite freischalten", [
+      { id: "invest", frage: "Was hast du in " + s.name + " investiert?",
+        hinweis: "Kaufpreis inklusive Nebenkosten wie Notar, Grunderwerbsteuer und Makler. Daraus berechnet ESTRIQ deine Rendite.",
+        typ: "number", einheit: "€", pflicht: true, platzhalter: "z. B. 250000" }
+    ], async (a) => {
+      await speichereObjekt(s._id, { invest: alsZahl(a.invest) });
+      closeSheet(); await window.nachSpeichern();
+      showToast("Rendite wird jetzt berechnet."); route(s.id);
+    });
+  }
+
+  // Mieter nachtragen
+  function pflegeMieter(s, u) {
+    openAssistent("Mieter eintragen", [
+      { id: "mieter", frage: "Wer wohnt in " + (u.wohnung || "dieser Einheit") + "?",
+        hinweis: "Der Name hilft dir bei der Zahlungskontrolle und den Verträgen.",
+        typ: "text", pflicht: true, platzhalter: "z. B. Familie Müller" },
+      { id: "einzug", frage: "Seit wann wohnt die Person dort?",
+        hinweis: "Kannst du auch später ergänzen.",
+        typ: "date", ueberspringbar: true }
+    ], async (a) => {
+      await speichereEinheit(u._id, { mieter: a.mieter || null, einzug: a.einzug || null });
+      closeSheet(); await window.nachSpeichern();
+      showToast("Mieter gespeichert."); route(s.id);
+    });
+  }
+
+  // Leerstand prüfen → ggf. auf vermietet setzen
+  function pflegeLeerstand(s, u) {
+    openAssistent("Status prüfen", [
+      { id: "jetzt_vermietet", frage: "Ist " + (u.wohnung || "die Einheit") + " inzwischen vermietet?",
+        hinweis: "Sobald du sie als vermietet führst, fließt die Miete in deine Einnahmen ein.",
+        optionen: [
+          { t: "Ja, sie ist vermietet", v: "ja" },
+          { t: "Nein, sie steht weiter leer", v: "nein" }
+        ] },
+      { id: "mieter", frage: "Wer wohnt dort?",
+        hinweis: "Der Name hilft bei der Zahlungskontrolle.",
+        typ: "text", ueberspringbar: true, platzhalter: "z. B. Familie Müller" }
+    ], async (a) => {
+      if (a.jetzt_vermietet === "ja") {
+        await speichereEinheit(u._id, { status: "vermietet", mieter: a.mieter || null });
+        closeSheet(); await window.nachSpeichern();
+        showToast("Einheit ist jetzt als vermietet erfasst.");
+      } else {
+        closeSheet();
+        showToast("Alles klar – Status bleibt unverändert.");
+      }
+      route(s.id);
+    });
+  }
+
+  // Nebenkosten geführt erfassen
+  function pflegeNebenkosten(s) {
+    openAssistent("Nebenkosten erfassen", [
+      { id: "grundsteuer", frage: "Wie viel Grundsteuer zahlst du?",
+        hinweis: "Pro Monat. Wenn du den Jahresbetrag kennst, teile ihn durch zwölf.",
+        typ: "number", einheit: "€ / Monat", ueberspringbar: true, platzhalter: "z. B. 45" },
+      { id: "versicherung", frage: "Was kostet die Versicherung?",
+        hinweis: "Gebäude- und Haftpflichtversicherung, pro Monat.",
+        typ: "number", einheit: "€ / Monat", ueberspringbar: true, platzhalter: "z. B. 60" },
+      { id: "hausgeld", frage: "Zahlst du Hausgeld oder Verwaltung?",
+        hinweis: "Zum Beispiel an die Hausverwaltung, pro Monat.",
+        typ: "number", einheit: "€ / Monat", ueberspringbar: true, platzhalter: "z. B. 120" },
+      { id: "sonstige", frage: "Gibt es weitere laufende Kosten?",
+        hinweis: "Zum Beispiel Wartung, Gartenpflege oder Schornsteinfeger – zusammengefasst pro Monat.",
+        typ: "number", einheit: "€ / Monat", ueberspringbar: true, platzhalter: "z. B. 30" }
+    ], async (a) => {
+      const pos = [];
+      const nimm = (titel, wert) => { const n = alsZahl(wert); if (n) pos.push({ titel: titel, betrag: n }); };
+      nimm("Grundsteuer", a.grundsteuer);
+      nimm("Versicherung", a.versicherung);
+      nimm("Hausgeld / Verwaltung", a.hausgeld);
+      nimm("Sonstige Kosten", a.sonstige);
+      await speichereObjekt(s._id, { nk_positionen: pos.length ? pos : null });
+      closeSheet(); await window.nachSpeichern();
+      showToast(pos.length ? "Nebenkosten gespeichert." : "Keine Angaben – nichts geändert.");
+      route(s.id);
+    });
   }
 
   /* ---------- MIETKONTROLLE ---------- */
