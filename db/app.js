@@ -47,7 +47,7 @@
     let profil = null;
     try {
       const { data } = await window.sb.from("mitglieder")
-        .select("name, email, avatar_url, rolle, theme, accent").limit(1).single();
+        .select("name, email, avatar_url, rolle, theme, accent, tipps_an").limit(1).single();
       profil = data;
     } catch (_) {}
     const name = (profil && profil.name) || mail.split("@")[0];
@@ -59,7 +59,8 @@
       avatar: profil && profil.avatar_url || null,
       rolle: profil && profil.rolle || "inhaber",
       theme: profil && profil.theme || null,
-      accent: profil && profil.accent || null
+      accent: profil && profil.accent || null,
+      tipps_an: profil && profil.tipps_an === false ? false : true
     };
     // Farbschema aus dem Profil anwenden (geräteübergreifend).
     // Fällt auf den lokal gespeicherten Wert zurück, sonst Standard Graphit/Silber.
@@ -471,6 +472,14 @@
         ${AKZENTE.map(a => `<button type="button" class="accent-dot" data-accent="${a.id}"
           style="--ac:${a.farbe}" title="${esc(a.name)}" aria-label="${esc(a.name)}"></button>`).join("")}
       </div>
+      ${efTitel("Hinweise")}
+      <div class="opt-row">
+        <div class="opt-tx">
+          <div class="opt-n">Verbesserungs-Vorschläge</div>
+          <div class="opt-m">Ab und zu ein Hinweis, wie du dein Portfolio vollständiger pflegst</div>
+        </div>
+        <button type="button" class="opt-schalter" id="pTipps" role="switch"><span></span></button>
+      </div>
       ${efTitel("Tarif")}
       <div class="prof-tarif" id="pTarif"></div>
       <button class="up-cta" id="pTarifBtn" style="margin-top:12px">Tarif verwalten</button>
@@ -514,6 +523,17 @@
       </div>`;
     const ptb = sheet.querySelector("#pTarifBtn");
     if (ptb) ptb.onclick = () => { closeSheet(); openTarifSheet(); };
+
+    // Schalter für Verbesserungs-Vorschläge
+    const tp = sheet.querySelector("#pTipps");
+    if (tp) {
+      const setzen = () => tp.classList.toggle("an", currentUser && currentUser.tipps_an !== false);
+      setzen();
+      tp.onclick = async () => {
+        const neu = !(currentUser && currentUser.tipps_an !== false);
+        await tippsSchalten(neu); setzen();
+      };
+    }
 
     // Design: Hintergrund + Akzent, sofortige Vorschau, direkt gespeichert
     function markiere() {
@@ -800,8 +820,410 @@
       const nochKeinAbo = a && (a.roh_tarif === "onboarding" || a.roh_tarif === "test") && !a.hat_stripe;
       if (!fertig && nochKeinAbo) {
         setTimeout(() => openFarbwahlSheet({ onboarding: true }), 400);
+        return;
+      }
+      // Sonst: fällige Mieten prüfen, danach ggf. ein Verbesserungs-Tipp
+      setTimeout(() => { if (!pruefeMieteingaenge()) zeigeTippWennFaellig(); }, 600);
+    } catch (_) {}
+  }
+
+  /* ---------- GEFÜHRTE EINGABE (ASSISTENT) ---------- */
+
+  // Zeigt eine Frage pro Schritt. schritte = [{ id, frage, hinweis, typ, platzhalter,
+  // einheit, pflicht, optionen:[{t,v}], vorgabe, ueberspringbar }]
+  // aufFertig(antworten) wird am Ende aufgerufen.
+  function openAssistent(titel, schritte, aufFertig) {
+    const antworten = {};
+    let idx = 0;
+    const sheet = openSheet(titel, "", `<div id="asBody"></div>`);
+    const bodyEl = sheet.querySelector("#asBody");
+
+    function punkte() {
+      return `<div class="wc-steps">${schritte.map((_, i) =>
+        `<span class="${i < idx ? "done" : i === idx ? "on" : ""}"></span>`).join("")}</div>`;
+    }
+
+    function zeige() {
+      const f = schritte[idx];
+      const istWahl = !!f.optionen;
+      bodyEl.innerHTML = `
+        <div class="wc-hero" style="padding-bottom:16px">
+          ${punkte()}
+          <div class="wc-badge">Schritt ${idx + 1} von ${schritte.length}</div>
+          <div class="wc-t" style="font-size:19px">${esc(f.frage)}</div>
+          ${f.hinweis ? `<div class="wc-d">${esc(f.hinweis)}</div>` : ""}
+        </div>
+        ${istWahl
+          ? `<div class="frage-opts">${f.optionen.map(o =>
+              `<button class="frage-opt" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join("")}</div>`
+          : `<div class="as-feld">
+               <input class="ef-i as-i" id="asInput" type="${f.typ || "text"}"
+                 placeholder="${esc(f.platzhalter || "")}"
+                 value="${esc(antworten[f.id] != null ? antworten[f.id] : (f.vorgabe != null ? f.vorgabe : ""))}"
+                 ${f.typ === "number" ? 'inputmode="decimal" step="any"' : ""}>
+               ${f.einheit ? `<span class="as-einheit">${esc(f.einheit)}</span>` : ""}
+             </div>
+             <div class="ef-msg" id="asMsg"></div>`}
+        <div class="as-nav">
+          ${istWahl ? "" : `<button class="wc-cta prem" id="asWeiter">${idx === schritte.length - 1 ? "Fertig" : "Weiter"}</button>`}
+          ${idx > 0 ? `<button class="wc-cta" id="asZurueck" style="margin-top:10px">Zurück</button>` : ""}
+          ${f.ueberspringbar && !istWahl ? `<div class="wc-skip"><a href="#" id="asSkip">Überspringen</a></div>` : ""}
+        </div>`;
+
+      if (istWahl) {
+        bodyEl.querySelectorAll(".frage-opt").forEach(b => b.onclick = () => {
+          antworten[f.id] = b.dataset.v; weiter();
+        });
+      } else {
+        const inp = bodyEl.querySelector("#asInput");
+        setTimeout(() => { try { inp.focus(); } catch (_) {} }, 120);
+        const abschicken = () => {
+          const wert = (inp.value || "").trim();
+          if (f.pflicht && !wert) {
+            const m = bodyEl.querySelector("#asMsg");
+            m.textContent = "Bitte ausfüllen, um fortzufahren."; m.className = "ef-msg bad";
+            return;
+          }
+          antworten[f.id] = wert; weiter();
+        };
+        bodyEl.querySelector("#asWeiter").onclick = abschicken;
+        inp.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); abschicken(); } };
+        const sk = bodyEl.querySelector("#asSkip");
+        if (sk) sk.onclick = (e) => { e.preventDefault(); antworten[f.id] = ""; weiter(); };
+      }
+      const zb = bodyEl.querySelector("#asZurueck");
+      if (zb) zb.onclick = () => { idx--; zeige(); };
+    }
+
+    async function weiter() {
+      if (idx < schritte.length - 1) { idx++; zeige(); return; }
+      // Letzter Schritt: speichern
+      bodyEl.innerHTML = `<div class="wc-hero"><div class="wc-t" style="font-size:18px">Wird gespeichert…</div></div>`;
+      try {
+        await aufFertig(antworten);
+      } catch (e) {
+        bodyEl.innerHTML = `<div class="wc-hero">
+          <div class="wc-t" style="font-size:18px">Das hat nicht geklappt</div>
+          <div class="wc-d">${esc(window.fehlerText(e))}</div></div>
+          <button class="wc-cta prem" id="asNochmal">Nochmal versuchen</button>`;
+        bodyEl.querySelector("#asNochmal").onclick = () => { idx = schritte.length - 1; zeige(); };
+      }
+    }
+    zeige();
+    return sheet;
+  }
+
+  // Geführtes Anlegen eines Objekts
+  function assistentObjekt(art, opt) {
+    opt = opt || {};
+    const istPacht = art === "pacht";
+    const schritte = [
+      { id: "name", frage: "Wie soll dein Objekt heißen?",
+        hinweis: "Ein Name, unter dem du es wiedererkennst.",
+        typ: "text", pflicht: true,
+        platzhalter: istPacht ? "z. B. Ackerland Nord" : "z. B. Haus Bergstraße 12" },
+      { id: "ort", frage: "Wo liegt das Objekt?",
+        hinweis: "Nur für dich zur Orientierung – wird nirgends veröffentlicht.",
+        typ: "text", ueberspringbar: true, platzhalter: "z. B. Bremen" },
+      { id: "invest", frage: "Was hast du insgesamt investiert?",
+        hinweis: "Kaufpreis inklusive Nebenkosten wie Notar, Grunderwerbsteuer und Makler. Daraus berechnet ESTRIQ deine Rendite.",
+        typ: "number", einheit: "€", pflicht: true, platzhalter: "z. B. 250000" }
+    ];
+    if (!istPacht) {
+      schritte.push({
+        id: "nk_als_puffer", frage: "Wie sollen Nebenkosten behandelt werden?",
+        hinweis: "Als Rücklage bedeutet: Die Nebenkosten deiner Mieter werden für Ausgaben zurückgelegt und nicht als Gewinn gezählt. Das ist die vorsichtigere Rechnung.",
+        optionen: [
+          { t: "Als Rücklage zurücklegen", v: "1" },
+          { t: "Als Ertrag mitzählen", v: "0" }
+        ]
+      });
+    }
+    openAssistent(istPacht ? "Landpacht anlegen" : (art === "airbnb" ? "Kurzzeitvermietung anlegen" : "Objekt anlegen"),
+      schritte, async (a) => {
+        await neuesObjekt({
+          name: a.name || "Objekt",
+          slug: (a.name || "objekt").toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+          art: art,
+          icon: ART_ICON[art] || "home",
+          ort: a.ort || "",
+          notiz: "",
+          invest: Number(String(a.invest).replace(",", ".")) || null,
+          nk_als_puffer: a.nk_als_puffer === "1",
+          nk_positionen: null
+        });
+        closeSheet();
+        await window.nachSpeichern();
+        const streams = (D.streams || []);
+        const neuesObj = streams[streams.length - 1];
+        if (opt.nachOnboarding) {
+          if (art === "miete" && neuesObj) setTimeout(() => assistentEinheit(neuesObj, { nachOnboarding: true }), 300);
+          else setTimeout(() => openTarifFragenSheet(), 300);
+        } else {
+          showToast("Objekt angelegt.");
+          if (art === "miete" && neuesObj) setTimeout(() => assistentEinheit(neuesObj), 350);
+        }
+      });
+  }
+
+  // Geführtes Anlegen einer Einheit
+  function assistentEinheit(s, opt) {
+    opt = opt || {};
+    const schritte = [
+      { id: "bezeichnung", frage: "Wie heißt diese Wohneinheit?",
+        hinweis: "Zum Beispiel nach Lage oder Nummer.",
+        typ: "text", pflicht: true, platzhalter: "z. B. Erdgeschoss links" },
+      { id: "status", frage: "Ist die Einheit vermietet?",
+        optionen: [
+          { t: "Ja, sie ist vermietet", v: "vermietet" },
+          { t: "Nein, sie steht leer", v: "frei" }
+        ] },
+      { id: "flaeche", frage: "Wie groß ist die Wohnung?",
+        hinweis: "Die Wohnfläche in Quadratmetern.",
+        typ: "number", einheit: "m²", ueberspringbar: true, platzhalter: "z. B. 72" },
+      { id: "kalt_fix", frage: "Wie hoch ist die Kaltmiete?",
+        hinweis: "Die reine Miete pro Monat, ohne Nebenkosten.",
+        typ: "number", einheit: "€ / Monat", pflicht: true, platzhalter: "z. B. 650" },
+      { id: "nk_fix", frage: "Was zahlt der Mieter an Nebenkosten?",
+        hinweis: "Die monatliche Vorauszahlung für Heizung, Wasser, Müll und so weiter.",
+        typ: "number", einheit: "€ / Monat", ueberspringbar: true, platzhalter: "z. B. 180" },
+      { id: "zahltag", frage: "An welchem Tag im Monat kommt die Miete?",
+        hinweis: "Ab diesem Tag fragt ESTRIQ beim Login nach, ob die Zahlung eingegangen ist.",
+        typ: "number", einheit: "des Monats", vorgabe: 1, platzhalter: "1" },
+      { id: "mieter", frage: "Wer wohnt dort?",
+        hinweis: "Der Name deines Mieters – hilfreich für die Zahlungskontrolle.",
+        typ: "text", ueberspringbar: true, platzhalter: "z. B. Familie Müller" }
+    ];
+    openAssistent("Einheit anlegen", schritte, async (a) => {
+      const z = (v) => { const n = Number(String(v).replace(",", ".")); return isFinite(n) && v !== "" ? n : null; };
+      await neueEinheit(s._id, {
+        bezeichnung: a.bezeichnung || "Einheit",
+        flaeche: z(a.flaeche),
+        status: a.status || "vermietet",
+        kalt_fix: z(a.kalt_fix), nk_fix: z(a.nk_fix),
+        zahltag: Math.min(31, Math.max(1, Number(a.zahltag) || 1)),
+        mieter: a.mieter || "", einzug: "",
+        vertrag: {}
+      });
+      closeSheet();
+      await window.nachSpeichern();
+      if (opt.nachOnboarding) setTimeout(() => openTarifFragenSheet(), 300);
+      else { showToast("Einheit angelegt – deine Zahlen sind aktualisiert."); route(s.id); }
+    });
+  }
+
+  /* ---------- VERBESSERUNGS-TIPPS ---------- */
+
+  // Sucht echte Lücken im Portfolio und macht daraus konkrete Vorschläge
+  function findeTipps() {
+    const t = [];
+    const streams = (D.streams || []);
+    if (!streams.length) return t;
+
+    streams.forEach(s => {
+      if (s.kind === "pacht") return;
+      // Fehlende Investitionssumme -> keine Rendite berechenbar
+      if (!s.invest) {
+        t.push({
+          titel: "Rendite für " + s.name + " freischalten",
+          text: "Ohne Investitionssumme kann ESTRIQ keine Rendite berechnen. Trag den Kaufpreis inkl. Nebenkosten ein.",
+          aktion: "Objekt öffnen", ziel: () => openObjektEdit(s, false)
+        });
+      }
+      // Objekt ohne Einheiten
+      if (s.kind === "miete" && !(s.einheiten || []).length) {
+        t.push({
+          titel: s.name + " hat noch keine Einheit",
+          text: "Leg eine Wohnung an, damit Einnahmen und Auslastung berechnet werden.",
+          aktion: "Einheit anlegen", ziel: () => assistentEinheit(s)
+        });
+      }
+      // Freie Einheiten -> Potenzial sichtbar machen
+      (s.einheiten || []).forEach(u => {
+        if (u.status !== "vermietet") {
+          const i = FE.unitIncome(u);
+          if (i.gesamt > 0) {
+            t.push({
+              titel: (u.wohnung || "Eine Einheit") + " steht leer",
+              text: "Bei Vermietung kämen " + eur(i.gesamt) + " im Monat dazu – das sind " + eur(i.gesamt * 12) + " im Jahr.",
+              aktion: "Einheit öffnen", ziel: () => openUnitEdit(s, u, false)
+            });
+          }
+        }
+        // Vermietet, aber kein Mieter hinterlegt
+        if (u.status === "vermietet" && !u.mieter) {
+          t.push({
+            titel: "Mieter bei " + (u.wohnung || "einer Einheit") + " ergänzen",
+            text: "Mit hinterlegtem Mieter behältst du Verträge und Zahlungseingänge besser im Blick.",
+            aktion: "Einheit öffnen", ziel: () => openUnitEdit(s, u, false)
+          });
+        }
+      });
+      // Keine Nebenkosten hinterlegt
+      if (s.kind === "miete" && !(s.nkPositionen || []).length) {
+        t.push({
+          titel: "Nebenkosten bei " + s.name + " erfassen",
+          text: "Trag Grundsteuer, Versicherung & Co. ein, damit dein Cashflow realistisch wird.",
+          aktion: "Objekt öffnen", ziel: () => openObjektEdit(s, false)
+        });
+      }
+    });
+    return t;
+  }
+
+  function zeigeTippWennFaellig() {
+    try {
+      if (currentUser && currentUser.tipps_an === false) return;   // im Profil abgeschaltet
+      const n = Number(localStorage.getItem("estriq_login_zaehler") || "0") + 1;
+      localStorage.setItem("estriq_login_zaehler", String(n));
+      if (n % 3 !== 0) return;                                     // nur jeden dritten Login
+      const tipps = findeTipps();
+      if (!tipps.length) return;
+      // Wechselnden Tipp zeigen, damit es nicht immer derselbe ist
+      const idx = Math.floor(n / 3) % tipps.length;
+      openTippSheet(tipps[idx]);
+    } catch (_) {}
+  }
+
+  function openTippSheet(tipp) {
+    const body = `
+      <div class="wc-hero" style="padding-bottom:10px">
+        <div class="wc-badge">Vorschlag für dich</div>
+        <div class="wc-t" style="font-size:19px">${esc(tipp.titel)}</div>
+        <div class="wc-d">${esc(tipp.text)}</div>
+      </div>
+      <button class="wc-cta prem" id="tippGo">${esc(tipp.aktion)}</button>
+      <button class="wc-cta" id="tippSpaeter" style="margin-top:10px">Nicht jetzt</button>
+      <div class="wc-skip"><a href="#" id="tippAus">Solche Vorschläge abschalten</a></div>`;
+    const sheet = openSheet("Tipp", "", body);
+    sheet.querySelector("#tippGo").onclick = () => { closeSheet(); setTimeout(() => tipp.ziel(), 250); };
+    sheet.querySelector("#tippSpaeter").onclick = () => closeSheet();
+    sheet.querySelector("#tippAus").onclick = async (e) => {
+      e.preventDefault();
+      await tippsSchalten(false);
+      closeSheet(); showToast("Vorschläge abgeschaltet – im Profil jederzeit wieder einschaltbar.");
+    };
+  }
+
+  // Einstellung speichern (geräteübergreifend am Nutzer)
+  async function tippsSchalten(an) {
+    try {
+      if (currentUser) currentUser.tipps_an = an;
+      if (window.sb && currentUser) {
+        await window.sb.from("mitglieder").update({ tipps_an: an }).eq("auth_user_id", currentUser.id);
       }
     } catch (_) {}
+  }
+
+  /* ---------- MIETKONTROLLE ---------- */
+
+  // Liefert alle Einheiten, deren Miete diesen Monat fällig, aber noch nicht bestätigt ist
+  function offeneMieten() {
+    const jetzt = new Date();
+    const tagHeute = jetzt.getDate();
+    const jahr = jetzt.getFullYear(), monat = jetzt.getMonth() + 1;
+    const zahlungen = (D.zahlungen || []);
+    const erledigt = new Set(zahlungen.filter(z => z.status === "eingegangen").map(z => z.einheit_id));
+    const offen = [];
+    (D.streams || []).filter(s => s.kind === "miete").forEach(s => {
+      (s.einheiten || []).forEach(u => {
+        if (u.status !== "vermietet") return;          // nur vermietete Einheiten
+        const zahltag = Number(u.zahltag) || 1;
+        if (tagHeute < zahltag) return;                // noch nicht fällig
+        if (erledigt.has(u._id)) return;               // schon bestätigt
+        const i = FE.unitIncome(u);
+        offen.push({ objekt: s, einheit: u, soll: i.gesamt, jahr, monat });
+      });
+    });
+    return offen;
+  }
+
+  // Beim Login: fällige Mieten abfragen. Gibt true zurück, wenn ein Fenster geöffnet wurde.
+  function pruefeMieteingaenge() {
+    // "Später erinnern" gilt bis zum nächsten Login
+    if (sessionStorage.getItem("estriq_miete_spaeter") === "1") return false;
+    const offen = offeneMieten();
+    if (!offen.length) return false;
+    openMietCheckSheet(offen);
+    return true;
+  }
+
+  function openMietCheckSheet(offen) {
+    const monatName = new Date().toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+    // Nach Objekt gruppieren
+    const gruppen = {};
+    offen.forEach(o => {
+      const k = o.objekt._id;
+      if (!gruppen[k]) gruppen[k] = { name: o.objekt.name, icon: o.objekt.icon || "home", zeilen: [] };
+      gruppen[k].zeilen.push(o);
+    });
+    const summe = offen.reduce((a, o) => a + o.soll, 0);
+
+    const body = `
+      <div class="wc-hero" style="padding-bottom:14px">
+        <div class="wc-badge">Mietkontrolle · ${esc(monatName)}</div>
+        <div class="wc-t">Sind diese Mieten eingegangen?</div>
+        <div class="wc-d">${offen.length} ${offen.length === 1 ? "Zahlung ist" : "Zahlungen sind"} fällig · zusammen ${eur(summe)}</div>
+      </div>
+      <div id="mkListe">
+        ${Object.keys(gruppen).map(k => `
+          <div class="mk-obj">
+            <div class="mk-obj-h">${svg(gruppen[k].icon)}<span>${esc(gruppen[k].name)}</span></div>
+            ${gruppen[k].zeilen.map(o => `
+              <div class="mk-row" data-einheit="${o.einheit._id}">
+                <div class="mk-tx">
+                  <div class="mk-n">${esc(o.einheit.wohnung || "Einheit")}</div>
+                  <div class="mk-m">${esc(o.einheit.mieter || "ohne Mieter")} · fällig am ${Number(o.einheit.zahltag) || 1}.</div>
+                </div>
+                <div class="mk-soll">${eur(o.soll)}</div>
+                <button class="mk-ok" data-einheit="${o.einheit._id}" data-betrag="${o.soll}">Eingegangen</button>
+              </div>`).join("")}
+          </div>`).join("")}
+      </div>
+      <div class="ef-msg" id="mkMsg"></div>
+      <div class="mk-actions">
+        <button class="wc-cta prem" id="mkAlle">Alle als eingegangen bestätigen</button>
+        <button class="wc-cta" id="mkSpaeter">Später erinnern</button>
+      </div>`;
+    const sheet = openSheet("Mieteingänge", "", body);
+    const msg = sheet.querySelector("#mkMsg");
+
+    async function bestaetige(einheitId, betrag, zeile) {
+      const jetzt = new Date();
+      try {
+        await window.mietEingangSetzen(einheitId, jetzt.getFullYear(), jetzt.getMonth() + 1, "eingegangen", betrag);
+        if (zeile) { zeile.classList.add("erledigt"); const b = zeile.querySelector(".mk-ok"); if (b) { b.textContent = "Bestätigt"; b.disabled = true; } }
+        return true;
+      } catch (e) {
+        msg.textContent = window.fehlerText(e); msg.className = "ef-msg bad";
+        return false;
+      }
+    }
+
+    sheet.querySelectorAll(".mk-ok").forEach(b => b.onclick = async () => {
+      b.disabled = true; b.textContent = "…";
+      const ok = await bestaetige(b.dataset.einheit, Number(b.dataset.betrag), b.closest(".mk-row"));
+      if (!ok) { b.disabled = false; b.textContent = "Eingegangen"; return; }
+      // Wenn alle erledigt sind, Fenster schließen
+      if (!sheet.querySelectorAll(".mk-row:not(.erledigt)").length) {
+        await window.nachSpeichern(); closeSheet(); showToast("Mieteingänge gespeichert.");
+      }
+    });
+
+    sheet.querySelector("#mkAlle").onclick = async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true; btn.textContent = "Speichere…";
+      for (const b of sheet.querySelectorAll(".mk-row:not(.erledigt) .mk-ok")) {
+        await bestaetige(b.dataset.einheit, Number(b.dataset.betrag), b.closest(".mk-row"));
+      }
+      await window.nachSpeichern(); closeSheet(); showToast("Alle Mieteingänge bestätigt.");
+    };
+
+    sheet.querySelector("#mkSpaeter").onclick = () => {
+      sessionStorage.setItem("estriq_miete_spaeter", "1");
+      closeSheet();
+      showToast("Wir erinnern dich beim nächsten Login.");
+    };
   }
 
   // Entfernt ?bezahlt / ?abbruch aus der Adresszeile
@@ -881,7 +1303,7 @@
       const art = b.dataset.art;
       closeSheet();
       // Nach dem Speichern des Objekts geht es weiter zu den Fragen
-      setTimeout(() => openObjektEdit(null, true, art, { nachOnboarding: true }), 200);
+      setTimeout(() => assistentObjekt(art, { nachOnboarding: true }), 200);
     });
     sheet.querySelector("#obSkip").onclick = (e) => { e.preventDefault(); closeSheet(); setTimeout(() => openTarifFragenSheet(), 200); };
   }
@@ -1132,7 +1554,7 @@
       const art = n.dataset.art;
       if (!istPremium() && art !== "miete") { schliessenUndTun(() => openUpgradeSheet("art")); return; }
       if (!pruefeObjekt(art)) { closeSubmenu(); return; }
-      schliessenUndTun(() => openObjektEdit(null, true, art));
+      schliessenUndTun(() => assistentObjekt(art));
     });
     const t = menu.querySelector('[data-neu="termin"]');
     if (t) t.onclick = () => schliessenUndTun(() => openTerminEdit(null, true));
@@ -1809,7 +2231,7 @@
     host.appendChild(grid);
 
     const addObj = el(`<div class="card pad add-card"><button class="add-btn wide" id="addObjekt">+ Objekt anlegen</button></div>`);
-    addObj.querySelector("#addObjekt").onclick = () => { if (pruefeObjekt("miete")) openObjektEdit(null, true, "miete"); };
+    addObj.querySelector("#addObjekt").onclick = () => { if (pruefeObjekt("miete")) assistentObjekt("miete"); };
     host.appendChild(addObj);
 
     // Verteilung + Kennzahlen
@@ -2656,7 +3078,7 @@
       <button class="add-btn" id="addUnit">+ Einheit</button></div><div class="card-b">${rows}</div></div>`);
     tblCard.querySelectorAll(".drow[data-i]").forEach(r =>
       r.onclick = () => openUnitSheet(s, (s.einheiten || [])[Number(r.dataset.i)]));
-    tblCard.querySelector("#addUnit").onclick = () => { if (pruefeEinheit()) openUnitEdit(s, null, true); };
+    tblCard.querySelector("#addUnit").onclick = () => { if (pruefeEinheit()) assistentEinheit(s); };
     host.appendChild(tblCard);
   }
 
@@ -3026,6 +3448,8 @@
       ${ef("Telefon", "v_telefon", v.telefon || "")}
       ${ef("E-Mail", "v_email", v.email || "", "email")}
       ${efTitel("Vertrag")}
+      ${ef("Miete fällig am", "zahltag", (u && u.zahltag) || 1, "number",
+        { hinweis: "Tag im Monat – danach fragt ESTRIQ beim Login nach dem Zahlungseingang", platzhalter: "1" })}
       ${ef("Kaution", "v_kaution", v.kaution ?? "", "number")}
       ${ef("Vertragsdatum", "v_vertragsdatum", v.vertragsdatum || "", "date")}
       ${ef("Laufzeit", "v_laufzeit", v.laufzeit || "", "text", { platzhalter: "z. B. unbefristet" })}
@@ -3043,6 +3467,7 @@
         status: w.status,
         kueche: zahl(w.kueche), strom: zahl(w.strom), stellplatz: zahl(w.stellplatz),
         mieter: text(w.mieter), einzug: text(w.einzug),
+        zahltag: Math.min(31, Math.max(1, Number(w.zahltag) || 1)),
         vertrag: {
           kaution: zahl(w.v_kaution),
           vertragsdatum: text(w.v_vertragsdatum),
