@@ -80,13 +80,24 @@ function feldName(spalte) {
 }
 
 // ---------- Einheiten ----------
+// Leere Texte zu null machen. Verhindert Formatfehler, wenn ein leeres
+// Feld in eine Datums- oder Zahlenspalte geschrieben wird.
+function ohneLeere(werte) {
+  const o = {};
+  Object.keys(werte || {}).forEach(k => {
+    const v = werte[k];
+    o[k] = (typeof v === "string" && v.trim() === "") ? null : v;
+  });
+  return o;
+}
+
 async function speichereEinheit(id, werte) {
-  const { error } = await window.sb.from('einheiten').update(werte).eq('id', id);
+  const { error } = await window.sb.from('einheiten').update(ohneLeere(werte)).eq('id', id);
   if (error) throw error;
 }
 async function neueEinheit(objektId, werte) {
   const { error } = await window.sb.from('einheiten')
-    .insert({ ...werte, objekt_id: objektId });
+    .insert({ ...ohneLeere(werte), objekt_id: objektId });
   if (error) throw error;
 }
 async function loescheEinheit(id) {
@@ -126,13 +137,13 @@ async function loeschePacht(id) {
 
 // ---------- Objekte ----------
 async function speichereObjekt(id, werte) {
-  const { error } = await window.sb.from('objekte').update(werte).eq('id', id);
+  const { error } = await window.sb.from('objekte').update(ohneLeere(werte)).eq('id', id);
   if (error) throw error;
 }
 async function neuesObjekt(werte) {
   const org = await meineOrgId();
   const { error } = await window.sb.from('objekte')
-    .insert({ ...werte, org_id: org });
+    .insert({ ...ohneLeere(werte), org_id: org });
   if (error) throw error;
 }
 async function loescheObjekt(id) {
