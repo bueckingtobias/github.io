@@ -76,6 +76,7 @@ function zuStream(o) {
         if (e.mieter)     u.mieter     = e.mieter;
         if (e.einzug)     u.einzug     = e.einzug;
         if (e.vertrag)    u.vertrag    = e.vertrag;
+        u.zahltag = e.zahltag != null ? Number(e.zahltag) : 1;   // Tag im Monat, an dem die Miete fällig ist
         u._id = e.id;                       // für die spätere Bearbeitung
         return u;
       });
@@ -137,11 +138,23 @@ async function ladeDaten() {
     if (aboData) abo = aboData;
   } catch (_) {}
 
+  // Zahlungseingänge des laufenden Monats (für die Mietkontrolle)
+  let zahlungen = [];
+  try {
+    const jetzt = new Date();
+    const { data: zData } = await window.sb.from('mietzahlungen')
+      .select('*')
+      .eq('jahr', jetzt.getFullYear())
+      .eq('monat', jetzt.getMonth() + 1);
+    zahlungen = zData || [];
+  } catch (_) {}
+
   window.DASHBOARD_DATA = {
     meta: { ...LOKAL.meta, version: new Date().toISOString().slice(0, 10) },
     begruessungen: LOKAL.begruessungen,
     wetter: LOKAL.wetter,
     abo: abo,
+    zahlungen: zahlungen,
     streams: (objekte || []).map(zuStream),
     termine: (termine || []).map(zuTermin)
   };
