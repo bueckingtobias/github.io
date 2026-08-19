@@ -164,6 +164,17 @@ async function nachSpeichern() {
   window.refreshView();
 }
 
+// Mieteingang für eine Einheit im laufenden Monat festhalten
+async function mietEingangSetzen(einheitId, jahr, monat, status, betrag) {
+  const { error } = await window.sb.from('mietzahlungen')
+    .upsert({
+      einheit_id: einheitId, jahr: jahr, monat: monat,
+      status: status, betrag: betrag ?? null, bestaetigt_am: new Date().toISOString()
+    }, { onConflict: 'einheit_id,jahr,monat' });
+  if (error) throw error;
+}
+
 window.meineOrgId = meineOrgId;
 window.nachSpeichern = nachSpeichern;
+window.mietEingangSetzen = mietEingangSetzen;
 window.fehlerText = fehlerText;
