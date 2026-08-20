@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PST Dashboard</title>
+<style>
+/* ============================================================
+   PST DASHBOARD — Design System
+   Palette: Near-black canvas, hairline separation, one state color at a time.
+   Type: SF Pro stack, tabular numerals, tight tracking on data.
+   ============================================================ */
+:root{
+  --bg:#000000;
+  --bg-2:#08080A;
+  --card:rgba(20,20,23,.72);
+  --card-solid:#141417;
+  --card-2:rgba(255,255,255,.035);
+  --hair:rgba(255,255,255,.085);
+  --hair-2:rgba(255,255,255,.16);
+  --t1:#F5F5F7;
+  --t2:#8E8E93;
+  --t3:#636366;
+  --up:#2FD35A;
+  --up-bg:rgba(47,211,90,.13);
+  --down:#FF453A;
+  --down-bg:rgba(255,69,58,.13);
+  --acc:#0A84FF;
+  --acc-bg:rgba(10,132,255,.14);
+  --warn:#FF9F0A;
+  --warn-bg:rgba(255,159,10,.14);
+  --pur:#BF5AF2;
+  --tea:#64D2FF;
+  --r-xl:24px; --r-lg:18px; --r-md:12px; --r-sm:8px;
+  --ease:cubic-bezier(.32,.72,0,1);
+  --sh:0 1px 0 rgba(255,255,255,.04) inset, 0 12px 32px -12px rgba(0,0,0,.8);
+  --pad:16px;
+}
+[data-theme="light"]{
+  --bg:#F2F2F4;
+  --bg-2:#EDEDF0;
+  --card:rgba(255,255,255,.82);
+  --card-solid:#FFFFFF;
+  --card-2:rgba(0,0,0,.035);
+  --hair:rgba(0,0,0,.09);
+  --hair-2:rgba(0,0,0,.18);
+  --t1:#0B0B0D;
+  --t2:#6E6E73;
+  --t3:#8E8E93;
+  --up:#12A73F;
+  --up-bg:rgba(18,167,63,.11);
+  --down:#DE2E22;
+  --down-bg:rgba(222,46,34,.11);
+  --acc:#0069D9;
+  --acc-bg:rgba(0,105,217,.11);
+  --warn:#C57800;
+  --warn-bg:rgba(197,120,0,.12);
+  --sh:0 1px 0 rgba(255,255,255,.7) inset, 0 8px 24px -14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Helvetica Neue",Arial,sans-serif;
+  font-size:14px;
+  line-height:1.42;
+  letter-spacing:-.01em;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(900px 480px at 88% -8%, rgba(10,132,255,.10), transparent 62%),
+    radial-gradient(760px 420px at 4% 4%, rgba(191,90,242,.07), transparent 60%);
+}
+[data-theme="light"] body::before{
+  background:
+    radial-gradient(900px 480px at 88% -8%, rgba(10,132,255,.10), transparent 62%),
+    radial-gradient(760px 420px at 4% 4%, rgba(191,90,242,.06), transparent 60%);
+}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;letter-spacing:inherit}
+input{font:inherit;color:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--hair-2);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+.noscroll::-webkit-scrollbar{display:none}
+.noscroll{scrollbar-width:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+
+/* ---------- Topbar ---------- */
+.top{
+  position:sticky;top:0;z-index:60;
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  background:color-mix(in srgb, var(--bg) 74%, transparent);
+  border-bottom:1px solid var(--hair);
+}
+.top-in{
+  max-width:1680px;margin:0 auto;padding:10px 16px;
+  display:flex;align-items:center;gap:12px;
+}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.mark{
+  width:30px;height:30px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(145deg,#0A84FF 0%,#5E5CE6 52%,#BF5AF2 100%);
+  display:grid;place-items:center;
+  font-size:10.5px;font-weight:800;letter-spacing:-.04em;color:#fff;
+  box-shadow:0 4px 14px -4px rgba(10,132,255,.7), 0 0 0 .5px rgba(255,255,255,.22) inset;
+}
+.brand-txt{display:flex;flex-direction:column;line-height:1.05}
+.brand-txt b{font-size:15px;font-weight:650;letter-spacing:-.03em}
+.brand-txt span{font-size:9.5px;color:var(--t3);letter-spacing:.10em;text-transform:uppercase;font-weight:600}
+.search{
+  flex:1;min-width:0;position:relative;max-width:420px;
+}
+.search input{
+  width:100%;background:var(--card-2);border:1px solid var(--hair);
+  border-radius:9px;padding:7px 11px 7px 30px;font-size:13px;
+  transition:border-color .2s var(--ease), background .2s var(--ease);
+}
+.search input:focus{outline:none;border-color:var(--acc);background:var(--acc-bg)}
+.search input::placeholder{color:var(--t3)}
+.search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);opacity:.45}
+.sugg{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:80;
+  background:var(--card-solid);border:1px solid var(--hair);border-radius:var(--r-md);
+  box-shadow:0 24px 60px -18px rgba(0,0,0,.85);overflow:hidden;max-height:320px;overflow-y:auto;
+}
+.sugg-i{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--hair)}
+.sugg-i:last-child{border-bottom:0}
+.sugg-i:hover,.sugg-i.on{background:var(--card-2)}
+.top-r{display:flex;align-items:center;gap:7px;margin-left:auto;flex-shrink:0}
+.iconbtn{
+  width:32px;height:32px;border-radius:9px;display:grid;place-items:center;
+  border:1px solid var(--hair);background:var(--card-2);
+  transition:transform .18s var(--ease), background .18s var(--ease), border-color .18s var(--ease);
+}
+.iconbtn:hover{background:var(--hair);transform:translateY(-1px)}
+.iconbtn:active{transform:scale(.94)}
+.iconbtn.on{background:var(--acc-bg);border-color:var(--acc);color:var(--acc)}
+.clock{
+  display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:9px;
+  border:1px solid var(--hair);background:var(--card-2);font-size:11.5px;color:var(--t2);
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--up);flex-shrink:0}
+.dot.closed{background:var(--t3)}
+.dot.live{box-shadow:0 0 0 0 rgba(47,211,90,.55);animation:pulse 2.2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(47,211,90,0)}100%{box-shadow:0 0 0 0 rgba(47,211,90,0)}}
+.demo-badge{
+  font-size:9.5px;font-weight:700;letter-spacing:.09em;padding:3px 7px;border-radius:5px;
+  background:var(--warn-bg);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);
+}
+
+/* ---------- Ticker ---------- */
+.tick{
+  border-bottom:1px solid var(--hair);
+  background:color-mix(in srgb, var(--bg) 60%, transparent);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  position:sticky;top:52px;z-index:55;
+}
+.tick-in{max-width:1680px;margin:0 auto;display:flex;gap:0;overflow-x:auto;scroll-snap-type:x proximity}
+.tk{
+  flex:0 0 auto;padding:9px 15px;border-right:1px solid var(--hair);cursor:pointer;
+  display:flex;flex-direction:column;gap:2px;min-width:132px;scroll-snap-align:start;
+  transition:background .2s var(--ease);
+}
+.tk:hover{background:var(--card-2)}
+.tk.sel{background:var(--card-2);box-shadow:inset 0 -2px 0 var(--acc)}
+.tk-s{font-size:10.5px;color:var(--t2);font-weight:600;letter-spacing:.03em;white-space:nowrap}
+.tk-b{display:flex;align-items:baseline;gap:7px}
+.tk-p{font-size:13.5px;font-weight:600;letter-spacing:-.025em}
+.tk-c{font-size:11.5px;font-weight:600}
+
+/* ---------- Grid ---------- */
+.wrap{max-width:1680px;margin:0 auto;padding:16px;position:relative;z-index:1}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;align-items:start}
+.w{
+  grid-column:span 12;
+  background:var(--card);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid var(--hair);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh);
+  overflow:hidden;
+  animation:rise .55s var(--ease) both;
+  transition:border-color .25s var(--ease), transform .25s var(--ease), opacity .25s var(--ease);
+}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important}}
+.w-head{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  padding:14px var(--pad) 10px;
+}
+.w-t{font-size:13px;font-weight:650;letter-spacing:-.015em;display:flex;align-items:center;gap:8px}
+.w-t i{
+  width:5px;height:5px;border-radius:50%;background:var(--acc);display:block;flex-shrink:0;
+}
+.w-sub{font-size:11px;color:var(--t3);font-weight:500}
+.w-act{margin-left:auto;display:flex;align-items:center;gap:5px;max-width:100%;overflow-x:auto}
+.w-act::-webkit-scrollbar{display:none}
+.w-body{padding:0 var(--pad) var(--pad)}
+.w-body.flush{padding:0 0 6px}
+
+/* Edit mode */
+body.edit .w{border-color:var(--hair-2);border-style:dashed}
+body.edit .w:hover{transform:translateY(-2px);border-color:var(--acc)}
+.drag-h{display:none;cursor:grab;color:var(--t3);padding:2px}
+body.edit .drag-h{display:block}
+.w.dragging{opacity:.35;transform:scale(.98)}
+.w.over{border-color:var(--acc) !important;box-shadow:0 0 0 2px var(--acc-bg)}
+.edit-only{display:none}
+body.edit .edit-only{display:grid}
+.w.hidden-w{display:none}
+
+/* ---------- Atoms ---------- */
+.chg{font-weight:600;font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--t2)}
+.pill{
+  display:inline-flex;align-items:center;gap:4px;padding:2.5px 7px;border-radius:6px;
+  font-size:10.5px;font-weight:650;letter-spacing:-.005em;white-space:nowrap;
+  background:var(--card-2);color:var(--t2);border:1px solid var(--hair);
+}
+.pill.up{background:var(--up-bg);color:var(--up);border-color:color-mix(in srgb,var(--up) 30%,transparent)}
+.pill.down{background:var(--down-bg);color:var(--down);border-color:color-mix(in srgb,var(--down) 30%,transparent)}
+.pill.acc{background:var(--acc-bg);color:var(--acc);border-color:color-mix(in srgb,var(--acc) 32%,transparent)}
+.pill.warn{background:var(--warn-bg);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
+.seg{display:inline-flex;background:var(--card-2);border:1px solid var(--hair);border-radius:8px;padding:2px;gap:2px}
+.seg button{
+  padding:3.5px 9px;border-radius:6px;font-size:11px;font-weight:600;color:var(--t2);
+  transition:background .18s var(--ease), color .18s var(--ease);white-space:nowrap;
+}
+.seg button:hover{color:var(--t1)}
+.seg button.on{background:var(--card-solid);color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+[data-theme="light"] .seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.bar{height:3px;border-radius:3px;background:var(--hair);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:3px;background:var(--acc);transition:width .5s var(--ease)}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7.5px 0;border-bottom:1px solid var(--hair)}
+.kv:last-child{border-bottom:0}
+.kv-k{font-size:11.5px;color:var(--t2);display:flex;align-items:center;gap:5px}
+.kv-v{font-size:13px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hint{
+  display:inline-grid;place-items:center;width:13px;height:13px;border-radius:50%;
+  border:1px solid var(--hair-2);color:var(--t3);font-size:8.5px;font-weight:700;cursor:help;flex-shrink:0;
+}
+.empty{padding:26px 12px;text-align:center;color:var(--t3);font-size:12px}
+
+/* ---------- Watchlist rows ---------- */
+.rows{display:flex;flex-direction:column}
+.row{
+  display:flex;align-items:center;gap:10px;padding:8px var(--pad);cursor:pointer;
+  border-bottom:1px solid var(--hair);transition:background .16s var(--ease);
+}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--card-2)}
+.row.sel{background:var(--acc-bg);box-shadow:inset 2.5px 0 0 var(--acc)}
+.row-l{min-width:0;flex:1}
+.row-s{font-size:12.5px;font-weight:650;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-n{font-size:10.5px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.row-sp{width:58px;height:24px;flex-shrink:0;opacity:.9}
+.row-r{text-align:right;flex-shrink:0;min-width:78px}
+.row-p{font-size:12.5px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.row-c{font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:1px}
+@keyframes flashUp{0%{background:var(--up-bg)}100%{background:transparent}}
+@keyframes flashDn{0%{background:var(--down-bg)}100%{background:transparent}}
+.fu{animation:flashUp .9s var(--ease)}
+.fd{animation:flashDn .9s var(--ease)}
+
+/* ---------- Chart ---------- */
+.q{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;padding:0 var(--pad) 12px}
+.q-p{font-size:38px;font-weight:640;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums}
+.q-m{display:flex;flex-direction:column;gap:3px;padding-bottom:3px}
+.q-c{font-size:14.5px;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.q-x{font-size:10.5px;color:var(--t3)}
+.chart-box{position:relative;width:100%}
+.chart-box svg{display:block;width:100%;overflow:visible}
+.cross{
+  position:absolute;pointer-events:none;background:var(--card-solid);border:1px solid var(--hair-2);
+  border-radius:9px;padding:7px 9px;font-size:11px;box-shadow:0 12px 30px -10px rgba(0,0,0,.8);
+  opacity:0;transition:opacity .14s var(--ease);z-index:5;min-width:104px;
+}
+.cross.on{opacity:1}
+.cross b{display:block;font-size:13px;font-weight:650;letter-spacing:-.02em;margin-bottom:1px}
+.cross s{display:block;text-decoration:none;font-size:10px;color:var(--t3)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;padding:8px var(--pad) 0;font-size:10.5px;color:var(--t2)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:11px;height:2px;border-radius:2px;display:block}
+
+/* ---------- News ---------- */
+.news-tools{display:flex;gap:6px;flex-wrap:wrap;padding:0 var(--pad) 10px;align-items:center}
+.nlist{display:flex;flex-direction:column}
+.n{
+  display:flex;gap:11px;padding:12px var(--pad);border-top:1px solid var(--hair);
+  cursor:pointer;transition:background .16s var(--ease);position:relative;
+}
+.n:hover{background:var(--card-2)}
+.n-rail{width:42px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.n-score{
+  width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  font-size:14px;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;
+  border:1px solid transparent;
+}
+.p1{background:rgba(255,69,58,.15);color:#FF6961;border-color:rgba(255,69,58,.35)}
+.p2{background:var(--warn-bg);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 34%,transparent)}
+.p3{background:var(--acc-bg);color:var(--acc);border-color:color-mix(in srgb,var(--acc) 30%,transparent)}
+.p4{background:var(--card-2);color:var(--t2);border-color:var(--hair)}
+.n-plab{font-size:8px;font-weight:700;letter-spacing:.07em;color:var(--t3);text-transform:uppercase}
+.n-main{flex:1;min-width:0}
+.n-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.n-src{font-size:10.5px;color:var(--t3);font-weight:600}
+.n-h{font-size:13.5px;font-weight:620;letter-spacing:-.018em;line-height:1.34}
+.n-sum{font-size:12px;color:var(--t2);margin-top:4px;line-height:1.45}
+.n-imp{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.n-move{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:7px;
+  font-size:11px;font-weight:650;font-variant-numeric:tabular-nums;
+}
+.n-move.up{background:var(--up-bg);color:var(--up)}
+.n-move.down{background:var(--down-bg);color:var(--down)}
+.n-move.flat{background:var(--card-2);color:var(--t2)}
+.n-conf{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--t3)}
+.n-conf .bar{width:44px}
+.n-det{
+  display:none;margin-top:11px;padding-top:11px;border-top:1px dashed var(--hair-2);
+  animation:rise .3s var(--ease) both;
+}
+.n.open .n-det{display:block}
+.n.open{background:var(--card-2)}
+.det-t{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin:0 0 6px}
+.det-p{font-size:12.2px;color:var(--t1);line-height:1.55;margin:0 0 13px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:13px}
+.kchip{
+  display:inline-flex;align-items:center;gap:4px;padding:3.5px 8px;border-radius:7px;
+  font-size:10.5px;font-weight:600;background:var(--card-2);border:1px solid var(--hair);
+}
+.kchip b{font-weight:700}
+.trg{margin:0 0 13px;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.trg li{font-size:12px;color:var(--t2);display:flex;gap:7px;line-height:1.45}
+.trg li::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--acc);flex-shrink:0;margin-top:7px}
+.decomp{display:flex;flex-direction:column;gap:6px;background:var(--card-2);border:1px solid var(--hair);border-radius:var(--r-md);padding:11px}
+.dc{display:grid;grid-template-columns:104px 1fr 32px;gap:9px;align-items:center}
+.dc-k{font-size:10.5px;color:var(--t2)}
+.dc-v{font-size:10.5px;font-weight:650;text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---------- Heatmap ---------- */
+.heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.ht{
+  border-radius:var(--r-md);padding:10px 9px;min-height:64px;display:flex;flex-direction:column;
+  justify-content:space-between;border:1px solid var(--hair);transition:transform .18s var(--ease);cursor:default;
+}
+.ht:hover{transform:scale(1.035)}
+.ht-n{font-size:10.5px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.ht-v{font-size:15px;font-weight:680;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+
+/* ---------- Gauge / breadth ---------- */
+.gauge{display:flex;align-items:center;gap:16px;padding:4px 0 14px}
+.gauge svg{flex-shrink:0}
+.g-l b{display:block;font-size:24px;font-weight:660;letter-spacing:-.04em;line-height:1.1}
+.g-l span{font-size:11.5px;color:var(--t2)}
+.ad{display:flex;height:7px;border-radius:5px;overflow:hidden;margin:6px 0 5px;background:var(--hair)}
+.ad i{display:block;height:100%}
+
+/* ---------- Calendar ---------- */
+.cal{display:flex;flex-direction:column}
+.ce{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--hair);align-items:flex-start}
+.ce:last-child{border-bottom:0}
+.ce-d{
+  width:44px;flex-shrink:0;text-align:center;border-radius:var(--r-sm);
+  background:var(--card-2);border:1px solid var(--hair);padding:4px 0;
+}
+.ce-d b{display:block;font-size:14px;font-weight:660;letter-spacing:-.03em;line-height:1.1}
+.ce-d span{font-size:8.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ce-m{flex:1;min-width:0}
+.ce-t{font-size:12.2px;font-weight:600;letter-spacing:-.012em}
+.ce-s{font-size:10.5px;color:var(--t3);margin-top:2px}
+.stars{display:flex;gap:2px;flex-shrink:0;padding-top:3px}
+.stars i{width:4px;height:11px;border-radius:2px;background:var(--hair-2);display:block}
+.stars i.on{background:var(--warn)}
+
+/* ---------- Compare ---------- */
+.cmp-pick{display:flex;gap:5px;flex-wrap:wrap;padding:0 0 11px}
+.cmp-b{
+  padding:3.5px 9px;border-radius:7px;font-size:11px;font-weight:600;
+  border:1px solid var(--hair);background:var(--card-2);color:var(--t2);
+  transition:all .18s var(--ease);
+}
+.cmp-b.on{color:var(--t1);border-color:currentColor}
+.cmp-leg{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.cl{display:flex;align-items:center;gap:8px;font-size:11.5px}
+.cl i{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+.cl b{margin-left:auto;font-weight:650;font-variant-numeric:tabular-nums}
+
+/* ---------- Modal ---------- */
+.ov{
+  position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.66);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  display:none;align-items:center;justify-content:center;padding:18px;
+}
+.ov.on{display:flex;animation:fade .25s var(--ease)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--card-solid);border:1px solid var(--hair);border-radius:var(--r-xl);
+  max-width:560px;width:100%;max-height:84vh;overflow-y:auto;
+  box-shadow:0 40px 90px -24px rgba(0,0,0,.9);animation:rise .35s var(--ease) both;
+}
+.modal-h{display:flex;align-items:center;gap:10px;padding:18px 18px 12px;border-bottom:1px solid var(--hair);position:sticky;top:0;background:var(--card-solid);z-index:2}
+.modal-h b{font-size:15px;font-weight:660;letter-spacing:-.025em}
+.modal-b{padding:16px 18px 20px}
+.modal-b h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin:16px 0 7px;font-weight:700}
+.modal-b h4:first-child{margin-top:0}
+.modal-b p{font-size:12.5px;color:var(--t2);line-height:1.6;margin:0 0 9px}
+.modal-b code{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11px;
+  background:var(--card-2);padding:1.5px 5px;border-radius:5px;color:var(--t1);
+}
+.formula{
+  background:var(--card-2);border:1px solid var(--hair);border-radius:var(--r-md);
+  padding:12px;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11px;
+  line-height:1.75;color:var(--t1);overflow-x:auto;white-space:pre;
+}
+
+/* ---------- Widget catalog ---------- */
+.cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.cat-i{
+  display:flex;align-items:center;gap:9px;padding:10px;border-radius:var(--r-md);
+  border:1px solid var(--hair);background:var(--card-2);text-align:left;
+  transition:all .18s var(--ease);
+}
+.cat-i:hover{border-color:var(--acc)}
+.cat-i b{font-size:12px;font-weight:620;display:block}
+.cat-i span{font-size:10px;color:var(--t3)}
+.cat-i .sw{width:15px;height:15px;border-radius:5px;display:grid;place-items:center;flex-shrink:0;border:1px solid var(--hair-2);font-size:9px}
+.cat-i.on .sw{background:var(--acc);border-color:var(--acc);color:#fff}
+
+.foot{
+  max-width:1680px;margin:0 auto;padding:6px 16px 30px;
+  font-size:10.5px;color:var(--t3);line-height:1.6;
+}
+.foot b{color:var(--t2);font-weight:650}
+
+/* ---------- Responsive spans ---------- */
+@media (min-width:760px){
+  :root{--pad:18px}
+  .w[data-span="3"]{grid-column:span 6}
+  .w[data-span="4"]{grid-column:span 6}
+  .w[data-span="6"]{grid-column:span 6}
+  .w[data-span="8"]{grid-column:span 12}
+  .w[data-span="12"]{grid-column:span 12}
+}
+@media (min-width:1140px){
+  .wrap{padding:18px}
+  .grid{gap:16px}
+  .w[data-span="3"]{grid-column:span 3}
+  .w[data-span="4"]{grid-column:span 4}
+  .w[data-span="6"]{grid-column:span 6}
+  .w[data-span="8"]{grid-column:span 8}
+  .w[data-span="12"]{grid-column:span 12}
+}
+@media (max-width:759px){
+  .top-in{padding:9px 12px;gap:8px;flex-wrap:wrap}
+  .search{order:3;flex-basis:100%;max-width:none}
+  .tick{top:auto;position:static}
+  .wrap{padding:12px}
+  .grid{gap:12px}
+  .q-p{font-size:31px}
+  .brand-txt span{display:none}
+  .dc{grid-template-columns:88px 1fr 30px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="mark">PST</div>
+      <div class="brand-txt"><b>PST Dashboard</b><span>Markets &amp; News Radar</span></div>
+    </div>
+    <div class="search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="text" placeholder="Suchen: DAX, Nvidia, MSCI World, ISIN …" autocomplete="off" spellcheck="false">
+      <div class="sugg" id="sugg" style="display:none"></div>
+    </div>
+    <div class="top-r">
+      <span class="demo-badge">DEMO-DATEN</span>
+      <div class="clock" id="clock"><span class="dot live" id="mdot"></span><span id="mtxt">–</span></div>
+      <button class="iconbtn" id="bLive" title="Live-Simulation an/aus" aria-label="Live-Simulation">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l3-8 4 16 3-8h4"/></svg>
+      </button>
+      <button class="iconbtn" id="bEdit" title="Layout bearbeiten" aria-label="Layout bearbeiten">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>
+      </button>
+      <button class="iconbtn" id="bTheme" title="Hell / Dunkel" aria-label="Hell oder Dunkel">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.8 6.8 0 0 0 10.7 10.7Z"/></svg>
+      </button>
+      <button class="iconbtn" id="bInfo" title="Modell &amp; Methodik" aria-label="Modell und Methodik">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="tick"><div class="tick-in noscroll" id="ticker"></div></div>
+
+<div class="wrap">
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="foot">
+  <b>PST Dashboard · Demo-Umgebung.</b> Alle Kurse, Kennzahlen und Meldungen sind simuliert und dienen ausschließlich der Darstellung von Design und Funktionslogik.
+  Keine Anlageberatung, keine Handelsempfehlung. Die Impact-Schätzungen sind Modellausgaben, keine Prognosen.
+</div>
+
+<div class="ov" id="ov"><div class="modal" id="modal"></div></div>
+<script>
+/* =========================================================================
+   PST DASHBOARD — Application
+   Alle Daten sind deterministisch simuliert (seeded PRNG), damit Charts,
+   Indikatoren und Kennzahlen in sich konsistent sind.
+   ========================================================================= */
+(function(){
+'use strict';
+
+/* ---------------- Utils ---------------- */
+const $  = (s,r)=> (r||document).querySelector(s);
+const $$ = (s,r)=> Array.from((r||document).querySelectorAll(s));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+
+const nf=(v,d)=>{
+  if(v==null||isNaN(v)) return '–';
+  return v.toLocaleString('de-DE',{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d});
+};
+const pct=(v,d)=>(v>0?'+':'')+nf(v,d==null?2:d)+' %';
+const cls=v=>v>0.0001?'up':(v<-0.0001?'down':'flat');
+const arrow=v=>v>0.0001?'▲':(v<-0.0001?'▼':'▬');
+const big=v=>{
+  const a=Math.abs(v);
+  if(a>=1e12) return nf(v/1e12,2)+' Bio.';
+  if(a>=1e9)  return nf(v/1e9,1)+' Mrd.';
+  if(a>=1e6)  return nf(v/1e6,0)+' Mio.';
+  if(a>=1e3)  return nf(v/1e3,1)+' Tsd.';
+  return nf(v,0);
+};
+const ago=m=>{
+  if(m<1) return 'gerade eben';
+  if(m<60) return m+' Min.';
+  const h=Math.floor(m/60); if(h<24) return h+' Std.';
+  return Math.floor(h/24)+' T.';
+};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* persistente Layout-Ablage (fällt still zurück, wenn nicht verfügbar) */
+const store={
+  async get(k){ try{const r=await window.storage.get(k); return r?JSON.parse(r.value):null;}catch(e){return null;} },
+  async set(k,v){ try{await window.storage.set(k,JSON.stringify(v));}catch(e){} }
+};
+
+/* ---------------- Deterministischer Zufall ---------------- */
+function hash(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}return (h^h>>>16)>>>0;}
+function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+function gauss(r){let u=0,v=0;while(u===0)u=r();while(v===0)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* --- Faktormodell -------------------------------------------------------
+   Globalfaktor -> Regionalfaktoren -> Index -> ETF-Korb / Einzelaktie.
+   Dadurch entstehen realistische Korrelationen zwischen den Instrumenten. */
+const N=1260;
+const RG=rng(20260113);
+const SG=0.0050, SR=0.0038, RLOAD=0.85;
+const G=[]; for(let i=0;i<N;i++){ let g=gauss(RG)*SG; if(RG()<0.009) g+=gauss(RG)*SG*3.4; G.push(g); }
+const REG={}; ['EU','US','JP','EM','UK'].forEach(k=>{
+  const r=rng(hash('reg'+k)); REG[k]=G.map(g=>RLOAD*g+gauss(r)*SR);
+});
+const SREG=Math.sqrt((RLOAD*SG)**2+SR**2);
+
+function idio(v,exp){ return Math.sqrt(Math.max(v*v-exp*exp,(0.35*v)**2)); }
+/* Levels mit sanfter Rückkehr zum Trendpfad: erhält die kurzfristige Textur,
+   verhindert aber, dass der Zufallspfad die Langfristrendite dominiert. */
+function levels(ret,px,mu,kap){
+  let l=0; const out=[1];
+  for(let i=1;i<ret.length;i++){
+    l+=ret[i]+kap*(mu*i-l);
+    out.push(Math.exp(l));
+  }
+  const k=px/out[out.length-1];
+  return out.map(x=>x*k);
+}
+function volSeries(id,ret){
+  const r=rng(hash(id+'|v'));
+  return ret.map(x=>Math.round((0.6+r()*0.85)*1.4e6*(1+Math.abs(x)*55)));
+}
+/* Intraday (5-Minuten-Verlauf des laufenden Handelstags) */
+function intraday(id,px,prev,vol){
+  const r=rng(hash(id+'|id'));const n=102;const out=[];
+  let v=prev*(1+(r()-0.5)*vol*0.4);
+  for(let i=0;i<n;i++){
+    const u=i/(n-1), smile=(u<0.13||u>0.87)?1.8:0.85;
+    v*=1+(gauss(r)*vol*smile)/10.1;
+    out.push({c:v,v:Math.round((0.4+r()*1.3)*2.4e5*smile)});
+  }
+  const k=px/out[n-1].c;
+  return out.map(o=>({c:o.c*k,v:o.v}));
+}
+
+/* ---------------- Indikatoren ---------------- */
+const sma=(a,p)=>a.map((_,i)=> i<p-1?null: a.slice(i-p+1,i+1).reduce((s,x)=>s+x,0)/p);
+function rsi(a,p){
+  p=p||14;let g=0,l=0;
+  for(let i=1;i<=p;i++){const d=a[i]-a[i-1];d>=0?g+=d:l-=d;}
+  g/=p;l/=p;
+  for(let i=p+1;i<a.length;i++){const d=a[i]-a[i-1];g=(g*(p-1)+(d>0?d:0))/p;l=(l*(p-1)+(d<0?-d:0))/p;}
+  return l===0?100:100-100/(1+g/l);
+}
+function ema(a,p){const k=2/(p+1);let e=a[0];const o=[e];for(let i=1;i<a.length;i++){e=a[i]*k+e*(1-k);o.push(e);}return o;}
+function macd(a){const f=ema(a,12),s=ema(a,26);const m=f.map((x,i)=>x-s[i]);const sig=ema(m,9);
+  return {m:m[m.length-1],s:sig[sig.length-1],h:m[m.length-1]-sig[sig.length-1]};}
+function vola(a,d){const s=a.slice(-d);const r=[];for(let i=1;i<s.length;i++)r.push(Math.log(s[i]/s[i-1]));
+  const mu=r.reduce((x,y)=>x+y,0)/r.length;
+  return Math.sqrt(r.reduce((x,y)=>x+(y-mu)**2,0)/(r.length-1))*Math.sqrt(252)*100;}
+function mdd(a){let peak=a[0],m=0;for(const x of a){if(x>peak)peak=x;m=Math.min(m,x/peak-1);}return m*100;}
+function corr(a,b){
+  const n=Math.min(a.length,b.length),ra=[],rb=[];
+  for(let i=1;i<n;i++){ra.push(Math.log(a[a.length-n+i]/a[a.length-n+i-1]));rb.push(Math.log(b[b.length-n+i]/b[b.length-n+i-1]));}
+  const ma=ra.reduce((s,x)=>s+x,0)/ra.length,mb=rb.reduce((s,x)=>s+x,0)/rb.length;
+  let cov=0,va=0,vb=0;
+  for(let i=0;i<ra.length;i++){cov+=(ra[i]-ma)*(rb[i]-mb);va+=(ra[i]-ma)**2;vb+=(rb[i]-mb)**2;}
+  return cov/Math.sqrt(va*vb);
+}
+
+/* =========================================================================
+   UNIVERSUM  (px = letzter Kurs, ch = Tagesveränderung in %)
+   ========================================================================= */
+const U=[
+/* --- Indizes --- */
+{id:'dax',rg:'EU',b:1.45,s:'DAX',n:'DAX 40 Performance',t:'index',ccy:'EUR',px:24186.44,ch:0.68,ex:'Xetra',isin:'DE0008469008',reg:'Deutschland',vol:.0092,dr:0.78,
+ f:{kgv:15.4,kgve:13.8,kbv:1.82,div:2.74,cape:20.1,mem:40,epsg:8.4,umsg:3.1,konz:'Top 10 = 58 %'},d:'40 größte börsennotierte Unternehmen Deutschlands, Performance-Index inkl. Dividenden.'},
+{id:'mdax',rg:'EU',b:1.30,s:'MDAX',n:'MDAX',t:'index',ccy:'EUR',px:29740.10,ch:0.41,ex:'Xetra',isin:'DE0008467416',reg:'Deutschland',vol:.0104,dr:0.55,
+ f:{kgv:17.9,kgve:15.1,kbv:1.61,div:3.02,cape:18.4,mem:50,epsg:6.1,umsg:2.4,konz:'Top 10 = 34 %'},d:'50 mittelgroße Werte unterhalb des DAX.'},
+{id:'tecdax',rg:'EU',b:1.45,s:'TecDAX',n:'TecDAX',t:'index',ccy:'EUR',px:3982.55,ch:1.12,ex:'Xetra',isin:'DE0007203275',reg:'Deutschland',vol:.0131,dr:0.86,
+ f:{kgv:24.8,kgve:20.3,kbv:3.10,div:1.28,cape:29.7,mem:30,epsg:14.2,umsg:8.6,konz:'Top 10 = 71 %'},d:'30 größte Technologiewerte des deutschen Markts.'},
+{id:'sx5e',rg:'EU',b:1.50,s:'ESTX50',n:'EURO STOXX 50',t:'index',ccy:'EUR',px:5842.19,ch:0.53,ex:'Eurex',isin:'EU0009658145',reg:'Eurozone',vol:.0095,dr:0.7,
+ f:{kgv:14.9,kgve:13.4,kbv:2.04,div:3.18,cape:19.6,mem:50,epsg:7.2,umsg:2.8,konz:'Top 10 = 42 %'},d:'Blue-Chip-Index der Eurozone.'},
+{id:'spx',rg:'US',b:1.40,s:'S&P 500',n:'S&P 500',t:'index',ccy:'USD',px:6784.31,ch:0.44,ex:'CME',isin:'US78378X1072',reg:'USA',vol:.0086,dr:1.05,
+ f:{kgv:24.6,kgve:21.4,kbv:5.02,div:1.21,cape:36.2,mem:503,epsg:11.6,umsg:5.4,konz:'Top 10 = 37 %'},d:'500 führende US-Unternehmen, marktkapitalisierungsgewichtet.'},
+{id:'ndx',rg:'US',b:1.90,s:'NDX',n:'Nasdaq 100',t:'index',ccy:'USD',px:25412.88,ch:0.91,ex:'Nasdaq',isin:'US6311011026',reg:'USA',vol:.0118,dr:1.45,
+ f:{kgv:31.2,kgve:26.1,kbv:7.44,div:0.62,cape:41.8,mem:101,epsg:16.9,umsg:9.8,konz:'Top 10 = 49 %'},d:'100 größte Nicht-Finanzwerte der Nasdaq.'},
+{id:'dji',rg:'US',b:1.28,s:'DJIA',n:'Dow Jones Industrial',t:'index',ccy:'USD',px:47318.62,ch:0.22,ex:'NYSE',isin:'US2605661048',reg:'USA',vol:.0079,dr:0.8,
+ f:{kgv:21.1,kgve:18.9,kbv:5.31,div:1.62,cape:31.4,mem:30,epsg:7.8,umsg:3.9,konz:'Top 10 = 54 %'},d:'30 US-Standardwerte, kursgewichtet.'},
+{id:'n225',rg:'JP',b:1.55,s:'N225',n:'Nikkei 225',t:'index',ccy:'JPY',px:44127.05,ch:-0.36,ex:'TSE',isin:'JP9010C00002',reg:'Japan',vol:.0121,dr:0.85,
+ f:{kgv:19.4,kgve:17.2,kbv:1.94,div:1.84,cape:24.1,mem:225,epsg:9.1,umsg:4.2,konz:'Top 10 = 39 %'},d:'Kursgewichteter japanischer Leitindex.'},
+{id:'ftse',rg:'UK',b:1.25,s:'FTSE',n:'FTSE 100',t:'index',ccy:'GBP',px:9612.44,ch:0.17,ex:'LSE',isin:'GB0001383545',reg:'UK',vol:.0081,dr:0.45,
+ f:{kgv:13.2,kgve:12.1,kbv:1.88,div:3.61,cape:17.2,mem:100,epsg:4.6,umsg:1.7,konz:'Top 10 = 46 %'},d:'100 größte an der LSE gelistete Unternehmen.'},
+
+/* --- ETFs --- */
+{id:'iwda',mix:{spx:.70,sx5e:.11,n225:.09,ftse:.05,mdax:.05},s:'IWDA',n:'iShares Core MSCI World',t:'etf',ccy:'USD',px:118.42,ch:0.48,ex:'Xetra',isin:'IE00B4L5Y983',reg:'Welt (DM)',vol:.0079,dr:0.95,
+ e:{ter:0.20,vol:98.4,rep:'Physisch, vollständig',aus:'Thesaurierend',dom:'Irland',pos:1395,td:-0.02,alter:'2009'},
+ f:{kgv:22.1,kgve:19.4,kbv:3.44,div:1.62,usa:71.4,konz:'Top 10 = 26 %'},d:'23 Industrieländer, Standard-Baustein für globale Aktienquote.'},
+{id:'vwce',mix:{spx:.62,sx5e:.10,n225:.07,ftse:.04,emim:.11,mdax:.06},s:'VWCE',n:'Vanguard FTSE All-World',t:'etf',ccy:'USD',px:143.88,ch:0.45,ex:'Xetra',isin:'IE00BK5BQT80',reg:'Welt (DM+EM)',vol:.0077,dr:0.88,
+ e:{ter:0.22,vol:31.7,rep:'Physisch, optimiert',aus:'Thesaurierend',dom:'Irland',pos:3721,td:0.04,alter:'2019'},
+ f:{kgv:21.2,kgve:18.6,kbv:3.11,div:1.79,usa:63.8,konz:'Top 10 = 22 %'},d:'Industrie- und Schwellenländer in einem Produkt.'},
+{id:'csspx',mix:{spx:1},s:'CSPX',n:'iShares Core S&P 500',t:'etf',ccy:'USD',px:672.15,ch:0.44,ex:'Xetra',isin:'IE00B5BMR087',reg:'USA',vol:.0086,dr:1.05,
+ e:{ter:0.07,vol:112.9,rep:'Physisch, vollständig',aus:'Thesaurierend',dom:'Irland',pos:503,td:-0.05,alter:'2010'},
+ f:{kgv:24.6,kgve:21.4,kbv:5.02,div:1.21,usa:100,konz:'Top 10 = 37 %'},d:'Kostengünstigster Zugang zum US-Kernmarkt.'},
+{id:'xnas',mix:{ndx:1},s:'XNAS',n:'Xtrackers Nasdaq 100',t:'etf',ccy:'USD',px:214.70,ch:0.90,ex:'Xetra',isin:'IE00BMFKG444',reg:'USA Tech',vol:.0118,dr:1.45,
+ e:{ter:0.20,vol:8.9,rep:'Physisch, vollständig',aus:'Thesaurierend',dom:'Irland',pos:101,td:0.01,alter:'2020'},
+ f:{kgv:31.2,kgve:26.1,kbv:7.44,div:0.62,usa:97.2,konz:'Top 10 = 49 %'},d:'Konzentriertes Technologie-Exposure mit hoher Faktorlast Growth.'},
+{id:'emim',rg:'EM',b:1.45,s:'EMIM',n:'iShares Core MSCI EM IMI',t:'etf',ccy:'USD',px:38.94,ch:-0.21,ex:'Xetra',isin:'IE00BKM4GZ66',reg:'Schwellenländer',vol:.0102,dr:0.48,
+ e:{ter:0.18,vol:21.3,rep:'Physisch, optimiert',aus:'Thesaurierend',dom:'Irland',pos:3082,td:0.09,alter:'2014'},
+ f:{kgv:14.8,kgve:12.9,kbv:1.79,div:2.61,usa:0,konz:'Top 10 = 24 %'},d:'Schwellenländer inkl. Small Caps, hohe China/Taiwan-Gewichtung.'},
+{id:'sx6p',mix:{sx5e:.82,ftse:.18},s:'EXSA',n:'iShares STOXX Europe 600',t:'etf',ccy:'EUR',px:64.28,ch:0.39,ex:'Xetra',isin:'DE0002635307',reg:'Europa',vol:.0088,dr:0.62,
+ e:{ter:0.20,vol:6.4,rep:'Physisch, vollständig',aus:'Ausschüttend',dom:'Deutschland',pos:600,td:0.03,alter:'2004'},
+ f:{kgv:15.1,kgve:13.6,kbv:2.11,div:3.09,usa:0,konz:'Top 10 = 21 %'},d:'Breiter Europa-Index über 17 Länder.'},
+
+/* --- Aktien --- */
+{id:'sap',hx:'dax',b:1.25,s:'SAP',n:'SAP SE',t:'stock',ccy:'EUR',px:281.35,ch:1.24,ex:'Xetra',isin:'DE0007164600',reg:'Software',vol:.0138,dr:1.6,
+ f:{kgv:44.2,kgve:33.1,kbv:6.02,div:0.94,mcap:3.28e11,eps:6.37,epsg:31.5,umsg:11.8,marge:24.6,roe:14.2,nd:-0.4,fcf:8.1,beta:1.06,pay:41},d:'Cloud-Transition mit hoher Wiederkehrquote der Umsätze.'},
+{id:'sie',hx:'dax',b:1.15,s:'SIE',n:'Siemens AG',t:'stock',ccy:'EUR',px:242.90,ch:0.62,ex:'Xetra',isin:'DE0007236101',reg:'Industrie',vol:.0129,dr:1.05,
+ f:{kgv:19.8,kgve:17.4,kbv:3.11,div:2.18,mcap:1.94e11,eps:12.27,epsg:9.4,umsg:5.2,marge:15.8,roe:16.1,nd:1.1,fcf:9.4,beta:1.14,pay:43},d:'Automatisierung, Mobility und Digital Industries.'},
+{id:'alv',hx:'dax',b:0.90,s:'ALV',n:'Allianz SE',t:'stock',ccy:'EUR',px:389.60,ch:0.28,ex:'Xetra',isin:'DE0008404005',reg:'Versicherung',vol:.0101,dr:1.15,
+ f:{kgv:12.6,kgve:11.7,kbv:2.02,div:4.62,mcap:1.51e11,eps:30.92,epsg:7.1,umsg:4.0,marge:12.4,roe:17.4,nd:0,fcf:11.2,beta:0.88,pay:58},d:'Diversifizierter Versicherer mit starkem Asset Management.'},
+{id:'rhm',hx:'dax',b:1.25,s:'RHM',n:'Rheinmetall AG',t:'stock',ccy:'EUR',px:1684.00,ch:2.14,ex:'Xetra',isin:'DE0007030009',reg:'Verteidigung',vol:.0224,dr:6.0,
+ f:{kgv:38.4,kgve:26.2,kbv:8.91,div:0.52,mcap:7.42e10,eps:43.85,epsg:46.8,umsg:32.4,marge:16.2,roe:24.8,nd:0.9,fcf:3.2,beta:1.42,pay:20},d:'Auftragsbestand getrieben von europäischen Beschaffungsprogrammen.'},
+{id:'asml',hx:'sx5e',b:1.55,s:'ASML',n:'ASML Holding',t:'stock',ccy:'EUR',px:1042.80,ch:1.86,ex:'Euronext',isin:'NL0010273215',reg:'Halbleiter',vol:.0186,dr:1.5,
+ f:{kgv:34.1,kgve:26.8,kbv:19.4,div:1.14,mcap:4.11e11,eps:30.58,epsg:28.4,umsg:18.2,marge:33.1,roe:52.6,nd:-1.2,fcf:2.9,beta:1.31,pay:38},d:'Monopolstellung bei EUV-Lithografie.'},
+{id:'mc',hx:'sx5e',b:1.20,s:'MC',n:'LVMH',t:'stock',ccy:'EUR',px:642.10,ch:-0.74,ex:'Euronext',isin:'FR0000121014',reg:'Luxus',vol:.0142,dr:0.35,
+ f:{kgv:23.4,kgve:20.9,kbv:4.02,div:2.28,mcap:3.21e11,eps:27.44,epsg:4.2,umsg:1.8,marge:24.1,roe:18.2,nd:1.4,fcf:4.8,beta:1.09,pay:52},d:'Zyklisches Luxus-Exposure mit hoher China-Abhängigkeit.'},
+{id:'aapl',hx:'ndx',b:1.00,s:'AAPL',n:'Apple Inc.',t:'stock',ccy:'USD',px:271.44,ch:0.36,ex:'Nasdaq',isin:'US0378331005',reg:'Hardware',vol:.0121,dr:1.35,
+ f:{kgv:33.8,kgve:29.6,kbv:52.1,div:0.42,mcap:4.02e12,eps:8.03,epsg:12.1,umsg:6.4,marge:31.8,roe:154.2,nd:0.2,fcf:3.1,beta:1.12,pay:15},d:'Services-Anteil stabilisiert die Marge, Hardware-Zyklus bleibt der Treiber.'},
+{id:'nvda',hx:'ndx',b:1.45,s:'NVDA',n:'NVIDIA Corp.',t:'stock',ccy:'USD',px:214.86,ch:2.41,ex:'Nasdaq',isin:'US67066G1040',reg:'Halbleiter',vol:.0248,dr:6.5,
+ f:{kgv:42.6,kgve:29.4,kbv:38.2,div:0.02,mcap:5.24e12,eps:5.04,epsg:58.2,umsg:44.6,marge:62.1,roe:98.4,nd:-1.8,fcf:2.4,beta:1.74,pay:1},d:'Rechenzentrums-Nachfrage bestimmt die gesamte Bewertungsfrage.'},
+{id:'msft',hx:'ndx',b:0.95,s:'MSFT',n:'Microsoft Corp.',t:'stock',ccy:'USD',px:522.90,ch:0.58,ex:'Nasdaq',isin:'US5949181045',reg:'Software',vol:.0114,dr:1.6,
+ f:{kgv:34.2,kgve:28.8,kbv:11.4,div:0.68,mcap:3.88e12,eps:15.29,epsg:14.8,umsg:13.2,marge:44.6,roe:34.1,nd:-0.3,fcf:2.8,beta:0.98,pay:24},d:'Azure und Copilot-Monetarisierung tragen das Wachstum.'}
+];
+
+/* 1) Indizes (inkl. synthetischem EM-Basisindex für Schwellenländer) */
+U.filter(x=>x.t==='index'||x.id==='emim').forEach(x=>{
+  const r=rng(hash(x.id)), R=REG[x.rg], iv=idio(x.vol,x.b*SREG);
+  x.mu=Math.log(1+x.dr)/N; x.kap=0.0024;
+  x.ret=R.map(rv=>x.mu+x.b*rv+gauss(r)*iv);
+});
+/* 2) ETFs als gewichteter Korb der Basisreihen plus Nachbildungsrauschen */
+U.filter(x=>x.t==='etf'&&x.id!=='emim').forEach(x=>{
+  const r=rng(hash(x.id+'|tr'));
+  x.mu=0; for(const k in x.mix) x.mu+=x.mix[k]*BY0(k).mu;
+  x.kap=0.0024;
+  x.ret=G.map((_,i)=>{
+    let s=0; for(const k in x.mix) s+=x.mix[k]*BY0(k).ret[i];
+    return s+gauss(r)*0.0009;
+  });
+});
+/* 3) Einzelaktien: Marktbeta auf den Heimatindex plus titelspezifisches Risiko */
+U.filter(x=>x.t==='stock').forEach(x=>{
+  const r=rng(hash(x.id)), idx=BY0(x.hx), iv=idio(x.vol,x.b*idx.vol);
+  x.mu=Math.log(1+x.dr)/N; x.kap=0.0016;
+  const extra=x.mu-x.b*idx.mu;
+  x.ret=idx.ret.map(rv=>extra+x.b*rv+gauss(r)*iv);
+});
+function BY0(id){ return U.find(y=>y.id===id); }
+
+/* Reihen + Indikatoren berechnen */
+U.forEach(x=>{
+  x.dc=levels(x.ret,x.px,x.mu,x.kap);
+  x.dv=volSeries(x.id,x.ret);
+  x.prev=x.px/(1+x.ch/100);
+  x.id5=intraday(x.id,x.px,x.prev,x.vol);
+  const c=x.dc;
+  x.tech={
+    rsi:rsi(c.slice(-120)),
+    sma50:sma(c,50).at(-1), sma200:sma(c,200).at(-1),
+    macd:macd(c.slice(-260)),
+    v30:vola(c,31), v250:vola(c,251),
+    hi52:Math.max(...c.slice(-252)), lo52:Math.min(...c.slice(-252)),
+    mdd:mdd(c.slice(-252)),
+    p1w:(c.at(-1)/c.at(-6)-1)*100,
+    p1m:(c.at(-1)/c.at(-22)-1)*100,
+    p6m:(c.at(-1)/c.at(-127)-1)*100,
+    p1y:(c.at(-1)/c.at(-253)-1)*100,
+    p3y:(c.at(-1)/c.at(-757)-1)*100,
+    p5y:(c.at(-1)/c[0]-1)*100
+  };
+});
+const BY={}; U.forEach(x=>BY[x.id]=x);
+/* =========================================================================
+   NEWS — jede Meldung trägt die Bausteine, aus denen der Score entsteht:
+   surp = Überraschung ggü. Konsens, brd = Marktbreite, conf = Modellvertrauen,
+   tier = Quellenqualität, mv = erwarteter Kurskorridor in %.
+   ========================================================================= */
+const CAT={
+  geld:{l:'Geldpolitik',c:'var(--acc)'}, earn:{l:'Earnings',c:'var(--pur)'},
+  makro:{l:'Makro',c:'var(--tea)'}, ma:{l:'M&A',c:'var(--warn)'},
+  reg:{l:'Regulierung',c:'#FF6961'}, geo:{l:'Geopolitik',c:'#FF9F0A'},
+  rat:{l:'Rating',c:'#5E5CE6'}, sek:{l:'Sektor',c:'#64D2FF'},
+  fond:{l:'ETF & Fonds',c:'#30D5C8'}, tech:{l:'Markttechnik',c:'#8E8E93'}
+};
+const HOR={intraday:'Intraday',kurz:'Tage',mittel:'Wochen',lang:'Strukturell'};
+
+const NEWS=[
+{id:'n1',min:14,src:'Reuters',tier:1,cat:'geld',tick:['spx','ndx','dji','csspx','xnas','iwda','vwce'],
+ h:'Fed-Protokoll signalisiert Zinssenkung im Dezember als Basisszenario',
+ sum:'Mehrheit der Mitglieder sieht den Disinflationspfad als intakt an; zwei Stimmen mahnen weiter zur Vorsicht bei Dienstleistungspreisen.',
+ dir:1,mv:[0.6,1.4],hor:'kurz',conf:82,surp:74,brd:92,
+ kpi:[{k:'Diskontsatz',d:-1},{k:'KGVe',d:1},{k:'Risikoprämie',d:-1},{k:'Duration-Sensitivität',d:1}],
+ int:'Ein niedrigerer erwarteter Kurzfristzins senkt den Abzinsungsfaktor für künftige Gewinne. Der Effekt trifft Wachstumswerte mit langer Cashflow-Duration deutlich stärker als Substanzwerte — das erklärt die Spreizung zwischen Nasdaq 100 und Dow. Da der Markt bereits rund zwei Drittel dieser Bewegung eingepreist hatte, bleibt der Überraschungsanteil begrenzt.',
+ trg:['Bewertungsexpansion über das KGVe statt über Gewinnrevisionen','Rotation aus defensiven Sektoren in Technologie und Small Caps','Schwächerer Dollar verbessert die Umrechnung für europäische Anleger']},
+
+{id:'n2',min:38,src:'Bloomberg',tier:1,cat:'earn',tick:['nvda','ndx','xnas','spx','asml'],
+ h:'NVIDIA hebt Umsatzprognose für das laufende Quartal deutlich an',
+ sum:'Rechenzentrumssegment über den Erwartungen, Bruttomarge stabil trotz Anlaufkosten der neuen Plattform. Auftragsbestand für zwölf Monate ausverkauft.',
+ dir:1,mv:[2.8,5.5],hor:'kurz',conf:88,surp:86,brd:64,
+ kpi:[{k:'EPS 2027e',d:1},{k:'Umsatz Q+1',d:1},{k:'Bruttomarge',d:0},{k:'KGVe',d:-1},{k:'PEG',d:-1}],
+ int:'Die Guidance liegt spürbar über dem Konsens, wodurch die Gewinnschätzungen nach oben laufen und das Forward-KGV trotz steigendem Kurs sinken kann. Entscheidend ist die stabile Bruttomarge: Sie zeigt, dass das Wachstum nicht über Preiszugeständnisse erkauft wird. Der Impuls strahlt über die Lieferkette auf Halbleiterausrüster aus.',
+ trg:['Aufwärtsrevisionen der Analystenschätzungen in den nächsten fünf Handelstagen','Sympathie-Bewegung bei Zulieferern und Ausrüstern','Höhere Indexgewichtung verstärkt die Wirkung auf den Nasdaq 100']},
+
+{id:'n3',min:52,src:'EZB',tier:1,cat:'geld',tick:['dax','sx5e','mdax','sx6p','tecdax'],
+ h:'EZB belässt Einlagensatz unverändert, streicht Hinweis auf weitere Straffung',
+ sum:'Projektionen für die Kerninflation leicht gesenkt, Wachstumsprognose für die Eurozone unverändert.',
+ dir:1,mv:[0.3,0.8],hor:'kurz',conf:76,surp:41,brd:88,
+ kpi:[{k:'Risikofreier Zins',d:-1},{k:'Bankmargen',d:-1},{k:'KGVe',d:1},{k:'Kreditnachfrage',d:1}],
+ int:'Der Zinsentscheid selbst war erwartet, die geänderte Sprachregelung ist der eigentliche Auslöser. Für den DAX wirken zwei gegenläufige Kräfte: sinkende Diskontsätze stützen die Bewertung, während Finanzwerte mit fallenden Zinsmargen rechnen müssen. Netto überwiegt der Bewertungseffekt, weil Industrie- und Techwerte höher gewichtet sind.',
+ trg:['Bund-Renditen am kurzen Ende geben nach','Zyklische Werte laufen besser als Versicherer und Banken','Euro tendenziell schwächer gegenüber Dollar']},
+
+{id:'n4',min:71,src:'Bureau of Labor Statistics',tier:1,cat:'makro',tick:['spx','ndx','dji','csspx','iwda'],
+ h:'US-Verbraucherpreise steigen im Monatsvergleich schwächer als erwartet',
+ sum:'Kernrate bei 0,2 % gegenüber erwarteten 0,3 %. Mietkomponente verlangsamt sich den vierten Monat in Folge.',
+ dir:1,mv:[0.5,1.2],hor:'intraday',conf:85,surp:68,brd:95,
+ kpi:[{k:'Realzins',d:-1},{k:'Terminal Rate',d:-1},{k:'KGVe',d:1},{k:'Konsumausblick',d:1}],
+ int:'Die Mietkomponente ist der trägste Teil des Warenkorbs — ihr Nachgeben gilt als belastbares Signal für den weiteren Disinflationspfad. Das verschiebt die eingepreiste Zinskurve nach unten und wirkt unmittelbar auf die Bewertungsmultiplikatoren. Erfahrungsgemäß ist die erste Marktreaktion überzeichnet und wird im Tagesverlauf teilweise zurückgenommen.',
+ trg:['Sofortige Reaktion an den Terminmärkten vor dem Kassamarkt','Zweijährige Treasury-Rendite fällt, Kurve versteilt sich','Gold und zinssensitive Sektoren mit überdurchschnittlicher Reaktion']},
+
+{id:'n5',min:96,src:'Handelsblatt',tier:2,cat:'earn',tick:['sap','dax','tecdax'],
+ h:'SAP meldet Rekord beim Cloud-Auftragsbestand, Marge über Plan',
+ sum:'Current Cloud Backlog wächst währungsbereinigt zweistellig, operative Marge übertrifft die eigene Zielspanne.',
+ dir:1,mv:[1.6,3.2],hor:'kurz',conf:80,surp:63,brd:38,
+ kpi:[{k:'Cloud-Backlog',d:1},{k:'Op. Marge',d:1},{k:'EPS 2026e',d:1},{k:'Umsatzqualität',d:1}],
+ int:'Der Auftragsbestand ist der wichtigste Frühindikator für die Umsatzentwicklung der kommenden vier bis sechs Quartale und stützt damit die Planbarkeit der Gewinne. Steigende Wiederkehrquoten rechtfertigen strukturell einen höheren Bewertungsaufschlag. Wegen der hohen Indexgewichtung überträgt sich ein Teil der Bewegung direkt auf den DAX.',
+ trg:['Anhebung der Kursziele durch mehrere Häuser innerhalb einer Woche','DAX-Beitrag von rund 0,15 bis 0,3 Indexprozent','Neubewertung des gesamten europäischen Software-Sektors']},
+
+{id:'n6',min:118,src:'Financial Times',tier:1,cat:'geo',tick:['nvda','asml','ndx','tecdax','xnas','emim'],
+ h:'Washington prüft Verschärfung der Exportauflagen für Halbleiterfertigung',
+ sum:'Betroffen wären Werkzeuge für fortgeschrittene Prozessknoten sowie Wartungsdienstleistungen im Ausland.',
+ dir:-1,mv:[1.4,3.6],hor:'mittel',conf:64,surp:71,brd:58,
+ kpi:[{k:'Umsatz Asien',d:-1},{k:'Auftragseingang',d:-1},{k:'Bruttomarge',d:-1},{k:'Risikoprämie',d:1}],
+ int:'Der unmittelbare Gewinneffekt ist begrenzt, weil betroffene Regionen bereits teilweise substituiert wurden. Schwerer wiegt der Anstieg der Risikoprämie: Regulatorische Unsicherheit verlängert Investitionsentscheidungen der Kunden und macht Auftragseingänge schwerer prognostizierbar. Solche Meldungen entfalten ihre Wirkung typischerweise über mehrere Wochen statt an einem Tag.',
+ trg:['Ausweitung der Bewertungsspanne zwischen Ausrüstern und Chipdesignern','Erhöhte implizite Volatilität in Optionen auf Halbleiterwerte','Mögliche Anpassung der regionalen Umsatzprognosen im nächsten Bericht']},
+
+{id:'n7',min:143,src:'ifo Institut',tier:1,cat:'makro',tick:['dax','mdax','sx5e','sx6p'],
+ h:'ifo-Geschäftsklima steigt den dritten Monat in Folge',
+ sum:'Erwartungskomponente zieht stärker an als die Lagebeurteilung, Impuls kommt vor allem aus dem verarbeitenden Gewerbe.',
+ dir:1,mv:[0.3,0.9],hor:'kurz',conf:71,surp:48,brd:74,
+ kpi:[{k:'BIP-Prognose',d:1},{k:'Umsatz zyklisch',d:1},{k:'Auslastungsgrad',d:1}],
+ int:'Die Erwartungskomponente korreliert historisch enger mit der Kursentwicklung zyklischer Werte als die Lagekomponente, weil sie Auftragseingänge vorwegnimmt. Drei aufeinanderfolgende Anstiege gelten als Trendbestätigung und nicht mehr als Ausreißer. Für den MDAX ist der Effekt relativ größer als für den DAX, da die Binnenkonjunktur dort stärker durchschlägt.',
+ trg:['Aufwertung von Industrie-, Chemie- und Autozulieferern','Anhebung der Gewinnschätzungen für zyklische Segmente','MDAX mit relativer Stärke gegenüber dem DAX']},
+
+{id:'n8',min:167,src:'Dow Jones Newswires',tier:2,cat:'earn',tick:['mc','sx5e','sx6p'],
+ h:'LVMH: Umsatz im Segment Mode & Lederwaren unter den Erwartungen',
+ sum:'Organisches Wachstum in Asien weiterhin negativ, Nordamerika stabilisiert sich leicht.',
+ dir:-1,mv:[2.2,4.4],hor:'kurz',conf:78,surp:59,brd:34,
+ kpi:[{k:'Organisches Wachstum',d:-1},{k:'EBIT-Marge',d:-1},{k:'EPS 2026e',d:-1},{k:'China-Exposure',d:-1}],
+ int:'Mode & Lederwaren trägt den überwiegenden Teil des operativen Ergebnisses — Schwäche dort schlägt überproportional auf die Konzernmarge durch. Die Stabilisierung in Nordamerika reicht nicht aus, um das China-Volumen zu kompensieren. Der Sektor wird typischerweise als Block gehandelt, sodass Wettbewerber mitgezogen werden.',
+ trg:['Abwärtsrevisionen der Margenprognose für das Gesamtjahr','Negative Sympathie-Bewegung im gesamten Luxussegment','Erhöhte Aufmerksamkeit für chinesische Konsumdaten am Monatsende']},
+
+{id:'n9',min:191,src:'Reuters',tier:1,cat:'sek',tick:['rhm','dax','sx5e'],
+ h:'Rheinmetall erhält Rahmenvertrag über Munitionslieferungen mit mehrjähriger Laufzeit',
+ sum:'Volumen im hohen dreistelligen Millionenbereich, Abrufe verteilen sich über vier Jahre.',
+ dir:1,mv:[1.8,4.0],hor:'mittel',conf:74,surp:52,brd:22,
+ kpi:[{k:'Auftragsbestand',d:1},{k:'Umsatz 2027e',d:1},{k:'Kapazitätsauslastung',d:1},{k:'Visibilität',d:1}],
+ int:'Rahmenverträge erhöhen die Planungssicherheit stärker als Einzelaufträge, weil sie die Auslastung über mehrere Geschäftsjahre absichern. Der Gewinneffekt setzt allerdings verzögert ein, da Abrufe erst nach Kapazitätsaufbau erfolgen. Die Aktie reagiert erfahrungsgemäß auf den Auftragsbestand, nicht auf den ausgewiesenen Quartalsumsatz.',
+ trg:['Anhebung der mittelfristigen Umsatzziele','Anhaltender Bewertungsaufschlag gegenüber klassischen Industriewerten','Höhere Volatilität rund um haushaltspolitische Entscheidungen']},
+
+{id:'n10',min:214,src:'Nikkei',tier:1,cat:'geld',tick:['n225','emim','iwda','vwce'],
+ h:'Bank of Japan deutet weiteren Zinsschritt an, Yen wertet auf',
+ sum:'Lohnrunde und Dienstleistungsinflation werden als hinreichend robust bezeichnet.',
+ dir:-1,mv:[0.9,2.1],hor:'kurz',conf:73,surp:57,brd:46,
+ kpi:[{k:'Wechselkurs',d:1},{k:'Exportmarge',d:-1},{k:'EPS Exporteure',d:-1},{k:'Refinanzierungskosten',d:1}],
+ int:'Ein stärkerer Yen belastet die umgerechneten Auslandserlöse der exportlastigen Indexschwergewichte und drückt damit direkt auf die Gewinnschätzungen. Gleichzeitig steigen Refinanzierungskosten im Inland. Für international investierende Anleger wird der Kursverlust teilweise durch den Währungsgewinn ausgeglichen.',
+ trg:['Exportwerte schwächer als Binnenwerte innerhalb des Nikkei','Anpassung der Währungsannahmen in den Gewinnmodellen','Rückwirkung auf global gehedgte Portfolios']},
+
+{id:'n11',min:236,src:'Morningstar',tier:2,cat:'fond',tick:['iwda','vwce','csspx','emim','xnas'],
+ h:'Europäische Aktien-ETFs verzeichnen den stärksten Monatszufluss des Jahres',
+ sum:'Breite Weltindizes dominieren die Zuflüsse, Schwellenländerprodukte drehen erstmals seit vier Monaten wieder ins Plus.',
+ dir:1,mv:[0.2,0.6],hor:'mittel',conf:66,surp:44,brd:70,
+ kpi:[{k:'Fondsvolumen',d:1},{k:'Geld-Brief-Spanne',d:-1},{k:'Tracking Difference',d:0},{k:'Handelsliquidität',d:1}],
+ int:'Zuflüsse wirken nicht über Fundamentaldaten, sondern über die mechanische Nachfrage nach den Indexbestandteilen — der Effekt ist bei hoch gewichteten Titeln am größten. Steigendes Fondsvolumen verbessert zusätzlich die Handelsqualität durch engere Spannen. Als Sentiment-Indikator ist die Kennzahl allerdings antizyklisch zu lesen, wenn sie Extremwerte erreicht.',
+ trg:['Engere Geld-Brief-Spannen bei den betroffenen Produkten','Leichter Nachfrageüberhang bei Schwergewichten der Indizes','Erhöhte Aufmerksamkeit für Positionierungsrisiken bei Sentiment-Extremen']},
+
+{id:'n12',min:262,src:'Bloomberg',tier:1,cat:'ma',tick:['sie','dax','mdax'],
+ h:'Siemens prüft Abspaltung einer Sparte, Bankenmandate vergeben',
+ sum:'Ziel ist eine Reduktion des Konglomeratsabschlags; ein Zeitplan wurde nicht genannt.',
+ dir:1,mv:[1.0,2.6],hor:'mittel',conf:58,surp:69,brd:30,
+ kpi:[{k:'Konglomeratsabschlag',d:-1},{k:'Sum-of-the-Parts',d:1},{k:'Nettoverschuldung',d:-1},{k:'ROCE',d:1}],
+ int:'Der Markt bewertet Mischkonzerne regelmäßig unter der Summe ihrer Teile; eine Abspaltung adressiert genau diesen Abschlag. Da noch kein Zeitplan vorliegt, ist das Modellvertrauen bewusst niedrig angesetzt — die Meldung kann sich als Prüfung ohne Ergebnis erweisen. Erfahrungsgemäß wird die erste Reaktion bei Ausbleiben konkreter Schritte innerhalb weniger Wochen abgebaut.',
+ trg:['Neubewertung entlang einer Sum-of-the-Parts-Rechnung','Spekulativ erhöhtes Handelsvolumen ohne fundamentale Änderung','Ereignisrisiko bis zur nächsten Kapitalmarktkommunikation']},
+
+{id:'n13',min:288,src:'Reuters',tier:1,cat:'makro',tick:['emim','n225','ftse','vwce'],
+ h:'China kündigt zusätzliches Konjunkturpaket mit Schwerpunkt Konsum an',
+ sum:'Maßnahmen umfassen Konsumgutscheine, Wohnungsbauförderung und Erleichterungen für lokale Gebietskörperschaften.',
+ dir:1,mv:[1.2,2.8],hor:'mittel',conf:61,surp:66,brd:52,
+ kpi:[{k:'BIP-Wachstum',d:1},{k:'Rohstoffnachfrage',d:1},{k:'Umsatz China',d:1},{k:'Risikoprämie EM',d:-1}],
+ int:'Konsumorientierte Pakete wirken schneller auf die Unternehmensgewinne als Infrastrukturprogramme, weil sie unmittelbar auf Absatzzahlen durchschlagen. Die Erfahrung der letzten Runden zeigt jedoch eine hohe Diskrepanz zwischen Ankündigung und Umsetzungstempo, weshalb das Modellvertrauen gedämpft bleibt. Europäische Konsum- und Luxuswerte partizipieren indirekt.',
+ trg:['Erholung bei Rohstoff- und Zykliker-Exposure innerhalb der Schwellenländer','Positive Zweitrundeneffekte für europäische China-Zulieferer','Erhöhte Sensitivität gegenüber den nächsten Einkaufsmanagerindizes']},
+
+{id:'n14',min:315,src:'S&P Global',tier:1,cat:'rat',tick:['sx5e','sx6p','ftse'],
+ h:'Ratingagentur senkt Ausblick für eine große Eurozone-Volkswirtschaft auf negativ',
+ sum:'Begründet wird der Schritt mit der Haushaltskonsolidierung und dem Schuldenstandspfad.',
+ dir:-1,mv:[0.4,1.1],hor:'kurz',conf:69,surp:53,brd:62,
+ kpi:[{k:'Staatsanleihen-Spread',d:1},{k:'Refinanzierungskosten',d:1},{k:'Bankbilanzen',d:-1},{k:'Risikoprämie',d:1}],
+ int:'Ein Ausblick ist noch keine Herabstufung, verschiebt aber die Verteilung möglicher Szenarien und weitet Renditeaufschläge. Betroffen sind vor allem Banken mit hohen Beständen an heimischen Staatsanleihen. Der Effekt auf breite Indizes bleibt meist einstellig, sofern kein Folgeschritt erfolgt.',
+ trg:['Ausweitung der Renditeaufschläge gegenüber Bundesanleihen','Relative Schwäche von Finanzwerten des betroffenen Landes','Erhöhte Beachtung des nächsten Haushaltsentwurfs']},
+
+{id:'n15',min:344,src:'CNBC',tier:2,cat:'earn',tick:['aapl','ndx','spx','xnas'],
+ h:'Apple: Services-Umsatz erreicht neuen Höchststand, Hardware-Absatz stagniert',
+ sum:'Bruttomarge profitiert vom höheren Softwareanteil; die Prognose für das Weihnachtsquartal fällt vorsichtig aus.',
+ dir:0,mv:[0.6,1.5],hor:'kurz',conf:72,surp:38,brd:40,
+ kpi:[{k:'Services-Umsatz',d:1},{k:'Bruttomarge',d:1},{k:'Hardware-Absatz',d:0},{k:'Guidance Q+1',d:-1}],
+ int:'Zwei gegenläufige Effekte heben sich weitgehend auf: Der margenstärkere Servicemix stützt das EPS, während die zurückhaltende Prognose die Umsatzerwartung dämpft. In solchen Konstellationen entscheidet meist die Positionierung vor dem Bericht über die Kursreaktion, nicht die Zahlen selbst. Der Beitrag zum Index bleibt deshalb schwer prognostizierbar.',
+ trg:['Erhöhte Streuung der Analystenreaktionen statt einheitlicher Richtung','Rückgang der impliziten Volatilität nach dem Ereignis','Fokus verschiebt sich auf die Margenentwicklung statt auf Stückzahlen']},
+
+{id:'n16',min:372,src:'Wall Street Journal',tier:1,cat:'sek',tick:['msft','ndx','spx'],
+ h:'Microsoft erhöht Investitionsbudget für Rechenzentren erneut',
+ sum:'Das Unternehmen begründet den Schritt mit anhaltender Kapazitätsknappheit bei KI-Diensten.',
+ dir:0,mv:[0.8,1.9],hor:'mittel',conf:70,surp:55,brd:44,
+ kpi:[{k:'Capex',d:1},{k:'Free Cashflow',d:-1},{k:'Umsatz Cloud',d:1},{k:'Abschreibungen',d:1},{k:'ROIC',d:-1}],
+ int:'Höhere Investitionen sind ein Nachfragesignal, belasten aber kurzfristig den freien Cashflow und über steigende Abschreibungen auch die künftige Marge. Der Markt bewertet solche Ankündigungen unterschiedlich, je nachdem ob gerade Wachstum oder Kapitaldisziplin honoriert wird. Für Zulieferer von Rechenzentrumstechnik ist die Nachricht eindeutig positiv.',
+ trg:['Positive Zweitrundeneffekte bei Halbleiter- und Infrastrukturwerten','Erhöhte Aufmerksamkeit für die Cashflow-Marge im nächsten Bericht','Diskussion über die Amortisationsdauer der KI-Investitionen']},
+
+{id:'n17',min:405,src:'Bundesbank',tier:1,cat:'makro',tick:['dax','mdax','sx5e'],
+ h:'Deutsche Industrieproduktion fällt unerwartet zum Vormonat',
+ sum:'Rückgang vor allem im Bereich Investitionsgüter; die Auftragseingänge bleiben dagegen stabil.',
+ dir:-1,mv:[0.4,1.0],hor:'kurz',conf:67,surp:58,brd:66,
+ kpi:[{k:'Umsatz Q+1',d:-1},{k:'Kapazitätsauslastung',d:-1},{k:'Lagerbestände',d:1},{k:'BIP-Prognose',d:-1}],
+ int:'Der Widerspruch zwischen schwacher Produktion und stabilen Auftragseingängen deutet eher auf ein Timing-Problem als auf einen Nachfrageeinbruch hin. Kurzfristig belastet die Meldung dennoch die Gewinnerwartungen der Investitionsgüterhersteller. Belastbar wird das Signal erst bei einer Bestätigung im Folgemonat.',
+ trg:['Kurzfristiger Druck auf Maschinenbau- und Autozulieferer','Mögliche Abwärtsrevision der Quartalswachstumsprognosen','Erhöhte Bedeutung der nächsten Auftragseingangszahlen']},
+
+{id:'n18',min:438,src:'Deutsche Börse',tier:1,cat:'tech',tick:['dax','mdax','tecdax'],
+ h:'Indexüberprüfung: Zwei Wechsel im MDAX zum nächsten Verkettungstermin',
+ sum:'Die Anpassung wird am Verfallstag wirksam; passive Produkte müssen entsprechend nachbilden.',
+ dir:0,mv:[0.2,0.5],hor:'kurz',conf:79,surp:31,brd:26,
+ kpi:[{k:'Indexgewicht',d:0},{k:'Handelsvolumen',d:1},{k:'Free Float',d:0}],
+ int:'Indexänderungen erzeugen mechanische Kauf- und Verkaufsaufträge passiver Produkte, unabhängig von der fundamentalen Lage. Der Effekt konzentriert sich fast vollständig auf die Schlussauktion des Umstellungstags und verpufft danach meist wieder. Für den Gesamtindex ist die Auswirkung vernachlässigbar.',
+ trg:['Deutlich erhöhtes Volumen in der Schlussauktion des Stichtags','Kurzfristige Kursausschläge ohne fundamentalen Hintergrund','Rückkehr zum Ausgangsniveau innerhalb weniger Handelstage']},
+
+{id:'n19',min:472,src:'Reuters',tier:1,cat:'reg',tick:['aapl','msft','ndx','spx'],
+ h:'EU-Kommission eröffnet Verfahren zu Plattformregeln gegen zwei Techkonzerne',
+ sum:'Im Fokus stehen Vorgaben zur Interoperabilität sowie die Ausgestaltung von Standardeinstellungen.',
+ dir:-1,mv:[0.5,1.6],hor:'lang',conf:56,surp:47,brd:42,
+ kpi:[{k:'Regulierungskosten',d:1},{k:'Umsatz Services EU',d:-1},{k:'Rückstellungen',d:1},{k:'Risikoprämie',d:1}],
+ int:'Der direkte finanzielle Effekt möglicher Bußgelder ist im Verhältnis zur Marktkapitalisierung klein. Relevanter ist die mögliche Änderung von Geschäftsmodellen, insbesondere bei margenstarken Servicebereichen. Verfahren dieser Art ziehen sich über Jahre, weshalb die Kurswirkung erfahrungsgemäß in Etappen erfolgt.',
+ trg:['Bildung von Rückstellungen in kommenden Quartalsberichten','Anpassung der Umsatzmodelle für das Europageschäft','Anhaltend erhöhtes Schlagzeilenrisiko ohne kurzfristige Auflösung']},
+
+{id:'n20',min:508,src:'Bloomberg',tier:1,cat:'sek',tick:['ftse','sx5e','sx6p'],
+ h:'Ölpreis fällt nach Ausweitung der Fördermengen',
+ sum:'Die Terminkurve dreht ins Contango, was auf ein wachsendes Überangebot hindeutet.',
+ dir:-1,mv:[0.3,0.9],hor:'kurz',conf:74,surp:49,brd:48,
+ kpi:[{k:'Energiemarge',d:-1},{k:'EPS Energiesektor',d:-1},{k:'Inputkosten Industrie',d:-1},{k:'Headline-Inflation',d:-1}],
+ int:'Für den FTSE 100 mit hohem Energiegewicht überwiegt der negative Gewinneffekt bei Öl- und Gaswerten. Gleichzeitig sinken die Inputkosten für Industrie, Chemie und Transport, was den Effekt auf breitere europäische Indizes teilweise ausgleicht. Niedrigere Energiepreise entlasten zudem die Headline-Inflation.',
+ trg:['Gewinnrevisionen im Energiesektor nach unten','Relative Stärke energieintensiver Branchen','Indirekt niedrigere Inflationserwartungen']},
+
+{id:'n21',min:545,src:'Reuters',tier:1,cat:'earn',tick:['alv','dax','sx5e'],
+ h:'Allianz kündigt neues Aktienrückkaufprogramm an',
+ sum:'Solvenzquote deutlich über dem Zielkorridor, das Programm soll innerhalb von zwölf Monaten abgeschlossen werden.',
+ dir:1,mv:[0.9,2.0],hor:'mittel',conf:81,surp:44,brd:26,
+ kpi:[{k:'Aktienanzahl',d:-1},{k:'EPS 2026e',d:1},{k:'Eigenkapitalrendite',d:1},{k:'Solvenzquote',d:-1}],
+ int:'Rückkäufe erhöhen das Ergebnis je Aktie rein rechnerisch über die sinkende Aktienzahl, ohne dass der operative Gewinn steigen muss. Bei Versicherern ist die Solvenzquote die entscheidende Nebenbedingung — liegt sie komfortabel über dem Ziel, gilt das Programm als nachhaltig finanzierbar. Der Effekt verteilt sich über die Laufzeit statt an einem Tag einzutreten.',
+ trg:['Rechnerische EPS-Anhebung für das laufende und kommende Jahr','Stetige Nachfrage im Markt über die Programmlaufzeit','Signalwirkung auf die Ausschüttungspolitik im Sektor']},
+
+{id:'n22',min:583,src:'MSCI',tier:2,cat:'fond',tick:['iwda','vwce','emim'],
+ h:'Indexanbieter kündigt Anpassung der Länderklassifizierung an',
+ sum:'Die Umstellung erfolgt in zwei Tranchen; betroffene Titel wechseln zwischen den Segmenten.',
+ dir:0,mv:[0.2,0.7],hor:'mittel',conf:63,surp:36,brd:38,
+ kpi:[{k:'Ländergewicht',d:0},{k:'Tracking Difference',d:1},{k:'Umschichtungskosten',d:1}],
+ int:'Für Anleger ändert sich die Zusammensetzung des Portfolios, nicht dessen fundamentale Qualität. Umschichtungen verursachen jedoch Transaktionskosten, die sich in einer leicht erhöhten Tracking Difference niederschlagen können. Der Effekt ist bei optimiert replizierenden Produkten größer als bei vollständiger Replikation.',
+ trg:['Erhöhte Handelsaktivität an den Umstellungsstichtagen','Temporär größere Abweichung zwischen Fonds und Index','Verschiebung der Länderquoten in breiten Weltprodukten']},
+
+{id:'n23',min:624,src:'Barron\u2019s',tier:2,cat:'tech',tick:['spx','ndx','csspx'],
+ h:'Marktbreite verschlechtert sich: Immer weniger Titel tragen den Index',
+ sum:'Der gleichgewichtete Index bleibt seit Wochen hinter der kapitalgewichteten Variante zurück.',
+ dir:-1,mv:[0.4,1.3],hor:'mittel',conf:60,surp:51,brd:80,
+ kpi:[{k:'Konzentrationsrisiko',d:1},{k:'Korrelation',d:1},{k:'Idiosynkratisches Risiko',d:1}],
+ int:'Eine schmale Marktbreite bedeutet, dass der Index zunehmend von wenigen Schwergewichten abhängt — Rückschläge einzelner Titel schlagen dann überproportional durch. Historisch ist das kein Timing-Signal, wohl aber ein Hinweis auf erhöhte Verwundbarkeit. Für passive Anleger steigt das Klumpenrisiko unbemerkt an.',
+ trg:['Höhere Sensitivität des Index gegenüber Einzelmeldungen','Attraktivere relative Bewertung gleichgewichteter Ansätze','Erhöhtes Rückschlagpotenzial bei Enttäuschungen der Schwergewichte']},
+
+{id:'n24',min:668,src:'Bloomberg',tier:1,cat:'geo',tick:['dax','sx5e','sx6p','mdax'],
+ h:'Handelsgespräche über Industriezölle werden ergebnislos vertagt',
+ sum:'Ein neuer Verhandlungstermin steht noch nicht fest; bestehende Sätze bleiben zunächst in Kraft.',
+ dir:-1,mv:[0.5,1.4],hor:'mittel',conf:62,surp:54,brd:72,
+ kpi:[{k:'Exportmarge',d:-1},{k:'Umsatz USA',d:-1},{k:'Inputkosten',d:1},{k:'Risikoprämie',d:1}],
+ int:'Zölle wirken wie eine Steuer auf die Bruttomarge und lassen sich nur teilweise über Preise weitergeben. Besonders betroffen sind Automobil-, Maschinenbau- und Chemiewerte mit hohem US-Umsatzanteil. Die Vertagung verlängert die Unsicherheit, ohne die Belastung zu erhöhen — deshalb bleibt der erwartete Ausschlag moderat.',
+ trg:['Druck auf exportorientierte Sektoren im DAX und MDAX','Erhöhte Nachfrage nach Absicherung über Indexoptionen','Verschiebung von Investitionsentscheidungen der Unternehmen']},
+
+{id:'n25',min:712,src:'ASML',tier:1,cat:'earn',tick:['asml','tecdax','sx5e','sx6p'],
+ h:'ASML meldet Auftragseingang über der Konsensschätzung',
+ sum:'Der Buchungswert übertrifft die Erwartungen deutlich; die Jahresprognose wird bestätigt.',
+ dir:1,mv:[2.0,4.2],hor:'kurz',conf:83,surp:76,brd:36,
+ kpi:[{k:'Book-to-Bill',d:1},{k:'Umsatz 2027e',d:1},{k:'Auftragsbestand',d:1},{k:'KGVe',d:-1}],
+ int:'Der Auftragseingang ist bei Anlagenbauern die aussagekräftigste Kennzahl, weil er die Umsätze zwei bis sechs Quartale im Voraus determiniert. Ein Book-to-Bill deutlich über eins signalisiert eine anziehende Investitionswelle der Chiphersteller. Die bestätigte Jahresprognose begrenzt allerdings das kurzfristige Aufwärtspotenzial der Schätzungen.',
+ trg:['Aufwärtsdruck auf die Umsatzschätzungen für die Folgejahre','Positive Ausstrahlung auf europäische Halbleiterzulieferer','Erhöhte Gewichtung des Titels in Sektorstrategien']},
+
+{id:'n26',min:760,src:'Reuters',tier:1,cat:'makro',tick:['ftse','sx6p'],
+ h:'Britische Löhne wachsen langsamer, Zinssenkungserwartung steigt',
+ sum:'Die Arbeitslosenquote bleibt unverändert, die Beschäftigungsdynamik lässt jedoch nach.',
+ dir:1,mv:[0.3,0.8],hor:'kurz',conf:70,surp:45,brd:40,
+ kpi:[{k:'Leitzinserwartung',d:-1},{k:'Konsum UK',d:0},{k:'Pfund',d:-1},{k:'KGVe',d:1}],
+ int:'Ein schwächeres Lohnwachstum reduziert den Druck auf die Dienstleistungsinflation und erhöht damit die Wahrscheinlichkeit einer Lockerung. Für den FTSE wirkt zusätzlich der Währungskanal: Ein schwächeres Pfund erhöht die umgerechneten Auslandsgewinne der stark international ausgerichteten Indexmitglieder. Beide Effekte weisen in dieselbe Richtung.',
+ trg:['Rückgang der Renditen britischer Staatsanleihen','Relative Stärke von Exportwerten im FTSE 100','Höhere Bewertung zinssensitiver Sektoren']},
+
+{id:'n27',min:812,src:'Xetra',tier:2,cat:'tech',tick:['tecdax','dax'],
+ h:'TecDAX überwindet den gleitenden 200-Tage-Durchschnitt',
+ sum:'Der Ausbruch erfolgt bei überdurchschnittlichem Handelsvolumen; der RSI nähert sich dem oberen Bereich.',
+ dir:1,mv:[0.4,1.2],hor:'kurz',conf:54,surp:33,brd:24,
+ kpi:[{k:'Trendindikator',d:1},{k:'Volumen',d:1},{k:'RSI',d:1}],
+ int:'Der 200-Tage-Durchschnitt gilt vielen systematischen Strategien als Trendfilter, weshalb ein Ausbruch mechanische Anschlusskäufe auslösen kann. Aussagekraft gewinnt das Signal nur durch das erhöhte Volumen — ohne dieses wären Fehlausbrüche häufig. Ein RSI nahe der Überkauft-Zone begrenzt allerdings das unmittelbare Potenzial.',
+ trg:['Anschlusskäufe trendfolgender Strategien','Erhöhte Rückschlaggefahr bei RSI-Werten über 70','Bestätigung erst durch einen erfolgreichen Rücksetzertest']},
+
+{id:'n28',min:868,src:'Handelsblatt',tier:2,cat:'sek',tick:['sap','msft','tecdax','ndx'],
+ h:'Unternehmensumfrage: IT-Budgets für das kommende Jahr steigen deutlich',
+ sum:'Schwerpunkt der Mehrausgaben liegt auf Datenplattformen und Automatisierung; klassische Infrastruktur verliert Anteile.',
+ dir:1,mv:[0.4,1.1],hor:'lang',conf:59,surp:42,brd:50,
+ kpi:[{k:'Umsatzwachstum',d:1},{k:'Auftragspipeline',d:1},{k:'Wiederkehrende Erlöse',d:1}],
+ int:'Budgetumfragen sind Frühindikatoren mit mehreren Quartalen Vorlauf und eignen sich nicht für kurzfristige Kursprognosen. Für Softwarehäuser mit Abonnementmodellen ist die Verschiebung zugunsten von Plattformen jedoch strukturell günstig. Anbieter klassischer Infrastruktur stehen auf der Verliererseite derselben Verschiebung.',
+ trg:['Strukturelle Stützung der mehrjährigen Wachstumsannahmen','Weitere Spreizung zwischen Plattform- und Infrastrukturanbietern','Geringe unmittelbare Kurswirkung, hohe Modellrelevanz']},
+
+{id:'n29',min:928,src:'CBOE',tier:2,cat:'tech',tick:['spx','ndx','dax'],
+ h:'Volatilitätsindex fällt auf den tiefsten Stand seit acht Monaten',
+ sum:'Die Terminkurve bleibt im Contango, die Absicherungsnachfrage geht spürbar zurück.',
+ dir:0,mv:[0.2,0.8],hor:'mittel',conf:64,surp:39,brd:76,
+ kpi:[{k:'Implizite Volatilität',d:-1},{k:'Absicherungskosten',d:-1},{k:'Positionierung',d:1}],
+ int:'Niedrige Volatilität senkt die Kosten für Absicherung und erlaubt risikoparitätischen Strategien, ihre Aktienquote zu erhöhen — das wirkt kurzfristig kurstreibend. Gleichzeitig steigt die Verwundbarkeit gegenüber Schocks, weil eine gemeinsame Positionierung im Stressfall gleichzeitig aufgelöst wird. Die Kennzahl ist damit zweischneidig zu lesen.',
+ trg:['Mechanische Erhöhung der Aktienquote systematischer Strategien','Günstigere Einstiegskosten für Absicherungspositionen','Erhöhtes Risiko schneller Rücksetzer bei Volatilitätsanstieg']},
+
+{id:'n30',min:1010,src:'Bloomberg',tier:1,cat:'ma',tick:['mdax','sx6p'],
+ h:'Übernahmeangebot für einen MDAX-Wert mit deutlicher Prämie',
+ sum:'Der Bieter sichert sich vorab Andienungszusagen; die Mindestannahmeschwelle liegt bei 60 Prozent.',
+ dir:1,mv:[0.3,0.9],hor:'kurz',conf:77,surp:72,brd:20,
+ kpi:[{k:'Übernahmeprämie',d:1},{k:'Bewertungsanker',d:1},{k:'Free Float',d:-1}],
+ int:'Übernahmeangebote setzen einen sichtbaren Bewertungsanker für den gesamten Sektor, weil sie zeigen, welchen Preis ein strategischer Käufer zu zahlen bereit ist. Für den Index selbst ist der Beitrag wegen der geringen Gewichtung klein. Vergleichbare Titel handeln danach häufig mit einem Spekulationsaufschlag.',
+ trg:['Spekulationsaufschlag bei vergleichbaren Nebenwerten','Sinkender Streubesitz nach Vollzug des Angebots','Kurzfristig erhöhtes Handelsvolumen im Segment']}
+];
+
+/* ---------------- Scoring-Engine ---------------- */
+const W={surp:.28, brd:.22, conf:.18, rec:.17, src:.15};
+const SRCQ={1:95,2:78,3:60};
+function recency(n){
+  const hl=n.hor==='lang'?1400:n.hor==='mittel'?760:n.hor==='kurz'?420:240;
+  return 100*Math.exp(-n.min/hl);
+}
+function score(n){
+  const parts={
+    surp:n.surp, brd:n.brd, conf:n.conf,
+    rec:recency(n), src:SRCQ[n.tier]
+  };
+  let s=0; for(const k in W) s+=W[k]*parts[k];
+  return {s:clamp(Math.round(s),0,100), parts};
+}
+function prio(s){ return s>=72?{k:1,l:'Kritisch'}:s>=54?{k:2,l:'Hoch'}:s>=38?{k:3,l:'Mittel'}:{k:4,l:'Niedrig'}; }
+NEWS.forEach(n=>{const r=score(n);n.score=r.s;n.parts=r.parts;n.prio=prio(r.s);n.exp=(n.mv[0]+n.mv[1])/2*n.dir;});
+
+/* ---------------- Sektoren, Marktbreite, Termine ---------------- */
+const SECT=[
+ {n:'Technologie',v:1.42},{n:'Halbleiter',v:2.18},{n:'Software',v:1.06},
+ {n:'Industrie',v:0.62},{n:'Verteidigung',v:2.04},{n:'Banken',v:-0.44},
+ {n:'Versicherung',v:0.21},{n:'Gesundheit',v:0.38},{n:'Konsum zykl.',v:-0.72},
+ {n:'Konsum def.',v:0.14},{n:'Energie',v:-1.31},{n:'Rohstoffe',v:-0.58},
+ {n:'Versorger',v:0.46},{n:'Immobilien',v:0.88},{n:'Telekom',v:-0.12},{n:'Luxus',v:-1.06}
+];
+const BREADTH={adv:312,dec:168,unch:23,newHi:41,newLo:12,vix:13.4,vixCh:-6.2,vdax:14.8,vdaxCh:-4.4,pcr:0.78,fg:68,above200:64.2,above50:71.8};
+const CALEND=[
+ {d:21,m:'Aug',t:'US-Erstanträge Arbeitslosenhilfe',s:'14:30 MESZ · Konsens 224 Tsd.',i:2,tick:['spx','ndx']},
+ {d:22,m:'Aug',t:'Einkaufsmanagerindizes Eurozone (Flash)',s:'10:00 MESZ · Verarbeitendes Gewerbe im Fokus',i:3,tick:['dax','sx5e']},
+ {d:25,m:'Aug',t:'ifo-Geschäftsklima',s:'10:00 MESZ · Erwartungskomponente entscheidend',i:3,tick:['dax','mdax']},
+ {d:26,m:'Aug',t:'NVIDIA · Quartalszahlen',s:'nach US-Börsenschluss · impl. Bewegung ±7,4 %',i:4,tick:['nvda','ndx']},
+ {d:28,m:'Aug',t:'US-BIP (2. Schätzung)',s:'14:30 MESZ · Revision des Konsumbeitrags',i:3,tick:['spx','dji']},
+ {d:29,m:'Aug',t:'Eurozone Verbraucherpreise (Flash)',s:'11:00 MESZ · Kernrate im Fokus',i:4,tick:['dax','sx5e']},
+ {d:1,m:'Sep',t:'Verfallstermin Terminkontrakte',s:'Indexanpassung wird wirksam',i:2,tick:['dax','mdax']},
+ {d:5,m:'Sep',t:'US-Arbeitsmarktbericht',s:'14:30 MESZ · wichtigster Termin des Monats',i:5,tick:['spx','ndx','dji']}
+];
+/* =========================================================================
+   STATE
+   ========================================================================= */
+const CS={EUR:'\u20AC',USD:'$',GBP:'\u00A3',JPY:'\u00A5'};
+const S={
+  sel:'dax', tf:'1J', tab:'index', live:true, edit:false,
+  nfil:'alle', nsort:'prio', nonly:false,
+  cmp:['dax','spx','ndx','iwda'],
+  order:['market','chart','news','kpi','tech','heat','breadth','risk','compare','cal'],
+  hidden:[], spans:{}
+};
+const CMPCOL=['#0A84FF','#BF5AF2','#FF9F0A','#2FD35A','#64D2FF','#FF453A'];
+
+const TF={'1T':{n:0,lab:'Heute'},'1W':{n:6,lab:'1 Woche'},'1M':{n:23,lab:'1 Monat'},
+          '6M':{n:128,lab:'6 Monate'},'1J':{n:253,lab:'1 Jahr'},'5J':{n:1260,lab:'5 Jahre'}};
+
+function inst(){return BY[S.sel];}
+function money(x,v,d){
+  if(x.t==='index') return nf(v,d==null?2:d);
+  return nf(v,d==null?2:d)+'\u2009'+(CS[x.ccy]||x.ccy);
+}
+function seriesOf(x,tf){
+  if(tf==='1T') return {c:x.id5.map(o=>o.c), v:x.id5.map(o=>o.v), base:x.prev, intra:true};
+  const n=Math.min(TF[tf].n, x.dc.length);
+  return {c:x.dc.slice(-n), v:x.dv.slice(-n), base:x.dc[x.dc.length-n], intra:false};
+}
+function perfOf(x,tf){const s=seriesOf(x,tf);return (s.c[s.c.length-1]/s.base-1)*100;}
+
+/* =========================================================================
+   CHART
+   ========================================================================= */
+function spark(arr,col){
+  const w=58,h=24,mn=Math.min(...arr),mx=Math.max(...arr),r=(mx-mn)||1;
+  const p=arr.map((v,i)=>`${(i/(arr.length-1)*w).toFixed(1)},${(h-2-((v-mn)/r)*(h-4)).toFixed(1)}`).join(' ');
+  return `<svg class="row-sp" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${p}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+function bigChart(x,tf,proj){
+  const S_=seriesOf(x,tf), c=S_.c, v=S_.v;
+  const W=760,H=252, x0=8, x1=W-92, yT=12, yB=176, vT=196, vB=228;
+  const mn=Math.min(...c,S_.base), mx=Math.max(...c,S_.base), pad=(mx-mn)*0.14||1;
+  const lo=mn-pad, hi=mx+pad, rng=hi-lo;
+  const px=i=>x0+(i/(c.length-1))*(x1-x0);
+  const py=p=>yB-((p-lo)/rng)*(yB-yT);
+  const chg=(c[c.length-1]/S_.base-1)*100;
+  const col=chg>=0?'var(--up)':'var(--down)';
+  const gid='g'+x.id+tf;
+
+  let line='',area='';
+  c.forEach((p,i)=>{const X=px(i).toFixed(1),Y=py(p).toFixed(1);line+=(i?'L':'M')+X+' '+Y;});
+  area=line+`L${px(c.length-1).toFixed(1)} ${yB} L${x0} ${yB} Z`;
+
+  /* Gitter + Preisachse */
+  let grid='';
+  for(let i=0;i<=4;i++){
+    const p=lo+rng*(i/4), Y=py(p).toFixed(1);
+    grid+=`<line x1="${x0}" y1="${Y}" x2="${x1}" y2="${Y}" stroke="var(--hair)" stroke-width="1"/>`;
+    grid+=`<text x="${x1-4}" y="${(+Y-4).toFixed(1)}" text-anchor="end" font-size="9.5" fill="var(--t3)" style="font-variant-numeric:tabular-nums">${nf(p,p>2000?0:2)}</text>`;
+  }
+  /* Vortagesschluss / Periodenstart */
+  const yb=py(S_.base).toFixed(1);
+  grid+=`<line x1="${x0}" y1="${yb}" x2="${x1}" y2="${yb}" stroke="var(--t3)" stroke-width="1" stroke-dasharray="2 3" opacity=".7"/>`;
+
+  /* Gleitende Durchschnitte */
+  let ma='';
+  if(!S_.intra && c.length>=60){
+    const full=x.dc, off=full.length-c.length;
+    [[50,'#0A84FF'],[200,'#BF5AF2']].forEach(([p,cl])=>{
+      if(full.length<p+c.length) return;
+      const m=sma(full,p).slice(off);
+      let d='';let started=false;
+      m.forEach((val,i)=>{if(val==null)return;const X=px(i).toFixed(1),Y=py(val).toFixed(1);d+=(started?'L':'M')+X+' '+Y;started=true;});
+      if(d) ma+=`<path d="${d}" fill="none" stroke="${cl}" stroke-width="1.2" opacity=".72" stroke-linejoin="round"/>`;
+    });
+  }
+
+  /* Volumen */
+  const vmx=Math.max(...v)||1;
+  let vol='';
+  const bw=Math.max(0.7,(x1-x0)/c.length*0.62);
+  v.forEach((val,i)=>{
+    const h=(val/vmx)*(vB-vT);
+    const up=i===0?true:c[i]>=c[i-1];
+    vol+=`<rect x="${(px(i)-bw/2).toFixed(1)}" y="${(vB-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.6,h).toFixed(1)}" fill="${up?'var(--up)':'var(--down)'}" opacity=".30"/>`;
+  });
+
+  /* Zeitachse */
+  const now=new Date();
+  let xax='';
+  const ticks=5;
+  for(let i=0;i<ticks;i++){
+    const idx=Math.round(i*(c.length-1)/(ticks-1));
+    let lab;
+    if(S_.intra){const mins=9*60+(idx/(c.length-1))*(17.5*60-9*60);lab=String(Math.floor(mins/60)).padStart(2,'0')+':'+String(Math.round(mins%60)).padStart(2,'0');}
+    else{const d=new Date(now-(c.length-1-idx)*86400000*1.42);lab=d.toLocaleDateString('de-DE',{month:'short',year:tf==='5J'?'2-digit':undefined,day:tf==='1W'||tf==='1M'?'2-digit':undefined});}
+    xax+=`<text x="${px(idx).toFixed(1)}" y="246" text-anchor="${i===0?'start':i===ticks-1?'end':'middle'}" font-size="9.5" fill="var(--t3)">${lab}</text>`;
+  }
+
+  /* Impact-Projektion aus der Top-Meldung */
+  let pr='';
+  if(proj){
+    const last=c[c.length-1];
+    const a=last*(1+proj.mv[0]/100*proj.dir), b=last*(1+proj.mv[1]/100*proj.dir);
+    const yA=py(Math.min(a,b)), yB2=py(Math.max(a,b)), yL=py(last);
+    const pc=proj.dir>0?'var(--up)':proj.dir<0?'var(--down)':'var(--t2)';
+    const px1=x1+6, px2=W-8;
+    pr=`<g opacity=".95">
+      <rect x="${px1}" y="${yB2.toFixed(1)}" width="${px2-px1}" height="${Math.max(3,(yA-yB2)).toFixed(1)}" fill="${pc}" opacity=".16" rx="3"/>
+      <line x1="${px1}" y1="${yB2.toFixed(1)}" x2="${px2}" y2="${yB2.toFixed(1)}" stroke="${pc}" stroke-width="1" stroke-dasharray="3 2"/>
+      <line x1="${px1}" y1="${yA.toFixed(1)}" x2="${px2}" y2="${yA.toFixed(1)}" stroke="${pc}" stroke-width="1" stroke-dasharray="3 2"/>
+      <line x1="${x1}" y1="${yL.toFixed(1)}" x2="${px1}" y2="${((yA+yB2)/2).toFixed(1)}" stroke="${pc}" stroke-width="1" stroke-dasharray="2 2" opacity=".6"/>
+      <text x="${px2}" y="${(yB2-5).toFixed(1)}" text-anchor="end" font-size="9" fill="${pc}" font-weight="700">Impact-Korridor</text>
+    </g>`;
+  }
+
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Kursverlauf ${esc(x.n)}">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${chg>=0?'#2FD35A':'#FF453A'}" stop-opacity=".30"/>
+      <stop offset="100%" stop-color="${chg>=0?'#2FD35A':'#FF453A'}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${grid}${vol}
+    <path d="${area}" fill="url(#${gid})"/>
+    ${ma}
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${px(c.length-1).toFixed(1)}" cy="${py(c[c.length-1]).toFixed(1)}" r="3.2" fill="${col}"/>
+    ${pr}${xax}
+    <g id="chGuide" opacity="0">
+      <line id="chLine" x1="0" y1="${yT}" x2="0" y2="${vB}" stroke="var(--hair-2)" stroke-width="1"/>
+      <circle id="chDot" cx="0" cy="0" r="4" fill="${col}" stroke="var(--bg)" stroke-width="2"/>
+    </g>
+  </svg>`;
+}
+
+/* =========================================================================
+   WIDGETS
+   ========================================================================= */
+const TABS={index:'Indizes',etf:'ETFs',stock:'Aktien'};
+
+function wMarket(b){
+  const list=U.filter(x=>x.t===S.tab);
+  b.innerHTML=`<div class="rows">${list.map(x=>{
+    const c=cls(x.ch);
+    return `<div class="row ${x.id===S.sel?'sel':''}" data-go="${x.id}" data-rid="${x.id}" tabindex="0" role="button">
+      <div class="row-l"><div class="row-s">${esc(x.s)}</div><div class="row-n">${esc(x.n)}</div></div>
+      ${spark(x.dc.slice(-70),x.ch>=0?'var(--up)':'var(--down)')}
+      <div class="row-r"><div class="row-p num">${money(x,x.px,x.px>5000?0:2)}</div><div class="row-c ${c}">${arrow(x.ch)} ${pct(x.ch)}</div></div>
+    </div>`;}).join('')}</div>`;
+}
+
+function wChart(b){
+  const x=inst();
+  const top=NEWS.filter(n=>n.tick.includes(x.id)).sort((a,c)=>c.score-a.score)[0];
+  const p=perfOf(x,S.tf), c=cls(p);
+  const diff=x.px-x.prev;
+  b.innerHTML=`
+    <div class="q">
+      <div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:4px">${esc(x.n)} · ${esc(x.ex)} · ${esc(x.isin)}</div>
+        <div class="q-p num">${money(x,x.px,x.px>5000?2:2)}</div>
+      </div>
+      <div class="q-m">
+        <div class="q-c ${cls(x.ch)}">${arrow(x.ch)} ${nf(diff,Math.abs(diff)>100?1:2)} (${pct(x.ch)})</div>
+        <div class="q-x">Heute · Vortag ${nf(x.prev,2)}</div>
+      </div>
+      <div class="q-m">
+        <div class="q-c ${c}">${pct(p)}</div>
+        <div class="q-x">${TF[S.tf].lab}</div>
+      </div>
+    </div>
+    <div class="chart-box" id="cbox">${bigChart(x,S.tf,top&&top.prio.k<=2?top:null)}<div class="cross" id="cross"></div></div>
+    <div class="legend">
+      <span><i style="background:${p>=0?'var(--up)':'var(--down)'}"></i>Kurs</span>
+      ${S.tf!=='1T'?'<span><i style="background:#0A84FF"></i>SMA 50</span><span><i style="background:#BF5AF2"></i>SMA 200</span>':''}
+      <span><i style="background:var(--t3)"></i>${S.tf==='1T'?'Vortagesschluss':'Periodenstart'}</span>
+      ${top&&top.prio.k<=2?`<span><i style="background:${top.dir>0?'var(--up)':top.dir<0?'var(--down)':'var(--t2)'}"></i>Impact-Korridor: ${top.dir>0?'+':top.dir<0?'\u2212':'\u00B1'}${nf(top.mv[0],1)} bis ${top.dir>0?'+':top.dir<0?'\u2212':'\u00B1'}${nf(top.mv[1],1)} %</span>`:''}
+    </div>`;
+  hookCross(x);
+}
+
+function hookCross(x){
+  const box=$('#cbox'); if(!box) return;
+  const svg=box.querySelector('svg'), cross=$('#cross');
+  const g=svg.querySelector('#chGuide'), ln=svg.querySelector('#chLine'), dt=svg.querySelector('#chDot');
+  const S_=seriesOf(x,S.tf), c=S_.c;
+  const W=760, x0=8, x1=W-92, yT=12, yB=176;
+  const mn=Math.min(...c,S_.base), mx=Math.max(...c,S_.base), pad=(mx-mn)*0.14||1;
+  const lo=mn-pad, rng=(mx+pad)-lo;
+  const move=ev=>{
+    const r=box.getBoundingClientRect();
+    const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+    const rel=clamp((cx/r.width*W-x0)/(x1-x0),0,1);
+    const i=Math.round(rel*(c.length-1));
+    const X=x0+(i/(c.length-1))*(x1-x0), Y=yB-((c[i]-lo)/rng)*(yB-yT);
+    g.setAttribute('opacity','1');
+    ln.setAttribute('x1',X);ln.setAttribute('x2',X);
+    dt.setAttribute('cx',X);dt.setAttribute('cy',Y);
+    const d=(c[i]/S_.base-1)*100;
+    cross.className='cross on';
+    cross.innerHTML=`<b class="num">${money(x,c[i])}</b><s>${S_.intra?'Intraday':'Schluss'} · <span class="${cls(d)}">${pct(d)}</span></s><s>Vol. ${big(S_.v[i])}</s>`;
+    const left=clamp(X/W*r.width-cross.offsetWidth/2,2,r.width-cross.offsetWidth-2);
+    cross.style.left=left+'px';
+    cross.style.top=clamp(Y/252*r.height-cross.offsetHeight-12,0,r.height-60)+'px';
+  };
+  const out=()=>{g.setAttribute('opacity','0');cross.className='cross';};
+  box.addEventListener('mousemove',move);
+  box.addEventListener('mouseleave',out);
+  box.addEventListener('touchmove',e=>{move(e);},{passive:true});
+  box.addEventListener('touchend',out);
+}
+
+/* ---------------- News ---------------- */
+function newsList(){
+  let a=NEWS.slice();
+  if(S.nonly) a=a.filter(n=>n.tick.includes(S.sel));
+  if(S.nfil==='top') a=a.filter(n=>n.prio.k<=2);
+  else if(S.nfil==='bull') a=a.filter(n=>n.dir>0);
+  else if(S.nfil==='bear') a=a.filter(n=>n.dir<0);
+  else if(S.nfil!=='alle') a=a.filter(n=>n.cat===S.nfil);
+  if(S.nsort==='prio') a.sort((p,q)=>q.score-p.score||p.min-q.min);
+  else if(S.nsort==='zeit') a.sort((p,q)=>p.min-q.min);
+  else a.sort((p,q)=>Math.abs(q.exp)-Math.abs(p.exp));
+  return a;
+}
+function wNews(b){
+  const a=newsList();
+  const fils=[['alle','Alle'],['top','Top-Priorität'],['bull','Bullisch'],['bear','Bearisch'],['geld','Geldpolitik'],['earn','Earnings'],['makro','Makro'],['geo','Geopolitik'],['tech','Markttechnik'],['fond','ETF & Fonds']];
+  b.innerHTML=`
+    <div class="news-tools">
+      <div class="seg" data-seg="nsort">
+        ${[['prio','Priorität'],['zeit','Zeit'],['wirk','Wirkung']].map(([k,l])=>`<button data-v="${k}" class="${S.nsort===k?'on':''}">${l}</button>`).join('')}
+      </div>
+      <button class="cmp-b ${S.nonly?'on':''}" data-only style="${S.nonly?'color:var(--acc);border-color:var(--acc)':''}">Nur ${esc(inst().s)}</button>
+    </div>
+    <div class="news-tools" style="padding-bottom:4px">
+      ${fils.map(([k,l])=>`<button class="cmp-b ${S.nfil===k?'on':''}" data-fil="${k}" style="${S.nfil===k?'color:var(--acc);border-color:var(--acc)':''}">${l}</button>`).join('')}
+    </div>
+    <div class="nlist">${a.length?a.map(nCard).join(''):'<div class="empty">Keine Meldungen für diesen Filter.<br>Filter zurücksetzen, um alle 30 Meldungen zu sehen.</div>'}</div>`;
+}
+function nCard(n){
+  const cat=CAT[n.cat];
+  const dirC=n.dir>0?'up':n.dir<0?'down':'flat';
+  const sgn=n.dir>0?'+':n.dir<0?'\u2212':'\u00B1';
+  const tickers=n.tick.slice(0,4).map(t=>BY[t]?`<span class="pill" data-go="${t}">${esc(BY[t].s)}</span>`:'').join('');
+  const kpis=n.kpi.map(k=>`<span class="kchip">${esc(k.k)} <b class="${k.d>0?'up':k.d<0?'down':'flat'}">${k.d>0?'\u2191':k.d<0?'\u2193':'\u2192'}</b></span>`).join('');
+  const dcRows=[['surp','Überraschung ggü. Konsens'],['brd','Marktbreite'],['conf','Modellvertrauen'],['rec','Aktualität'],['src','Quellenqualität']]
+    .map(([k,l])=>`<div class="dc"><span class="dc-k">${l}</span><span class="bar"><i style="width:${Math.round(n.parts[k])}%;background:${k==='rec'?'var(--tea)':'var(--acc)'}"></i></span><span class="dc-v num">${Math.round(n.parts[k])}</span></div>`).join('');
+  return `<article class="n" data-n="${n.id}" tabindex="0">
+    <div class="n-rail">
+      <div class="n-score p${n.prio.k} num">${n.score}</div>
+      <div class="n-plab">${n.prio.l}</div>
+    </div>
+    <div class="n-main">
+      <div class="n-meta">
+        <span class="pill" style="color:${cat.c};border-color:${cat.c}33;background:${cat.c}1a">${cat.l}</span>
+        <span class="n-src">${esc(n.src)}</span><span class="n-src">·</span><span class="n-src">vor ${ago(n.min)}</span>
+        ${tickers}
+      </div>
+      <h3 class="n-h">${esc(n.h)}</h3>
+      <p class="n-sum">${esc(n.sum)}</p>
+      <div class="n-imp">
+        <span class="n-move ${dirC}">${arrow(n.dir)} ${sgn}${nf(n.mv[0],1)} bis ${sgn}${nf(n.mv[1],1)} %</span>
+        <span class="pill">${HOR[n.hor]}</span>
+        <span class="n-conf">Vertrauen <span class="bar"><i style="width:${n.conf}%"></i></span> ${n.conf} %</span>
+      </div>
+      <div class="n-det">
+        <p class="det-t">Interpretation</p><p class="det-p">${esc(n.int)}</p>
+        <p class="det-t">Betroffene Kennzahlen</p><div class="chips">${kpis}</div>
+        <p class="det-t">Was die Meldung auslöst</p><ul class="trg">${n.trg.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+        <p class="det-t">Score-Zerlegung · ${n.score}/100</p>
+        <div class="decomp">${dcRows}
+          <div class="dc" style="border-top:1px solid var(--hair);padding-top:7px"><span class="dc-k" style="color:var(--t1);font-weight:600">Gewichtete Summe</span><span></span><span class="dc-v num" style="color:var(--acc)">${n.score}</span></div>
+        </div>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* ---------------- Kennzahlen ---------------- */
+function kv(k,v,h){return `<div class="kv"><span class="kv-k">${k}${h?`<span class="hint" title="${esc(h)}">?</span>`:''}</span><span class="kv-v">${v}</span></div>`;}
+function wKPI(b){
+  const x=inst(),f=x.f;let h='';
+  if(x.t==='index'){
+    h=kv('KGV (aktuell)',nf(f.kgv,1),'Aggregiertes Kurs-Gewinn-Verhältnis der Indexmitglieder.')
+     +kv('KGV (erwartet)',nf(f.kgve,1),'Auf Basis der Gewinnschätzungen für die nächsten 12 Monate.')
+     +kv('Kurs-Buchwert',nf(f.kbv,2))
+     +kv('Dividendenrendite',nf(f.div,2)+' %')
+     +kv('Shiller-CAPE',nf(f.cape,1),'Zyklisch bereinigtes KGV über 10 Jahre — Bewertungsanker für lange Zeiträume.')
+     +kv('Gewinnwachstum e',pct(f.epsg,1))
+     +kv('Umsatzwachstum e',pct(f.umsg,1))
+     +kv('Mitglieder',nf(f.mem,0))
+     +kv('Konzentration',f.konz,'Anteil der zehn größten Positionen an der Indexkapitalisierung.');
+  } else if(x.t==='etf'){
+    const e=x.e;
+    h=kv('Gesamtkostenquote',nf(e.ter,2)+' %','TER — laufende Kosten pro Jahr.')
+     +kv('Tracking Difference',(e.td>0?'+':'')+nf(e.td,2)+' %','Tatsächliche Abweichung zur Indexrendite nach Kosten.')
+     +kv('Fondsvolumen',nf(e.vol,1)+' Mrd. $')
+     +kv('Replikation',e.rep)
+     +kv('Ertragsverwendung',e.aus)
+     +kv('Fondsdomizil',e.dom)
+     +kv('Positionen',nf(e.pos,0))
+     +kv('Auflage',e.alter)
+     +`<div class="kv" style="border-top:1px solid var(--hair-2);margin-top:6px"><span class="kv-k" style="color:var(--t1);font-weight:600">Portfoliokennzahlen</span><span></span></div>`
+     +kv('KGV (erwartet)',nf(f.kgve,1))
+     +kv('Kurs-Buchwert',nf(f.kbv,2))
+     +kv('Dividendenrendite',nf(f.div,2)+' %')
+     +kv('USA-Anteil',nf(f.usa,1)+' %')
+     +kv('Konzentration',f.konz);
+  } else {
+    h=kv('Marktkapitalisierung',big(f.mcap)+'\u2009'+(CS[x.ccy]||''))
+     +kv('KGV (aktuell)',nf(f.kgv,1))
+     +kv('KGV (erwartet)',nf(f.kgve,1),'Bezogen auf die Gewinnschätzung der nächsten 12 Monate.')
+     +kv('PEG-Ratio',nf(f.kgve/Math.max(1,f.epsg),2),'Forward-KGV geteilt durch das erwartete Gewinnwachstum. Unter 1 gilt als günstig.')
+     +kv('Kurs-Buchwert',nf(f.kbv,2))
+     +kv('Ergebnis je Aktie',nf(f.eps,2)+'\u2009'+(CS[x.ccy]||''))
+     +kv('Gewinnwachstum e',pct(f.epsg,1))
+     +kv('Umsatzwachstum e',pct(f.umsg,1))
+     +kv('EBIT-Marge',nf(f.marge,1)+' %')
+     +kv('Eigenkapitalrendite',nf(f.roe,1)+' %')
+     +kv('Nettoverschuldung / EBITDA',nf(f.nd,1)+'\u00D7','Werte unter null bedeuten Nettoliquidität.')
+     +kv('Free-Cashflow-Rendite',nf(f.fcf,1)+' %')
+     +kv('Dividendenrendite',nf(f.div,2)+' %')
+     +kv('Ausschüttungsquote',nf(f.pay,0)+' %')
+     +kv('Beta (3 J.)',nf(f.beta,2),'Sensitivität gegenüber dem Gesamtmarkt. Über 1 bedeutet stärkere Ausschläge.');
+  }
+  b.innerHTML=`<div style="font-size:11.5px;color:var(--t2);line-height:1.5;margin:-2px 0 10px">${esc(x.d)}</div>${h}`;
+}
+
+/* ---------------- Technisches Profil ---------------- */
+function wTech(b){
+  const x=inst(),t=x.tech;
+  const pos=clamp((x.px-t.lo52)/((t.hi52-t.lo52)||1)*100,0,100);
+  const rsiC=t.rsi>70?'var(--down)':t.rsi<30?'var(--up)':'var(--acc)';
+  const d50=(x.px/t.sma50-1)*100, d200=(x.px/t.sma200-1)*100;
+  const perf=[['1 W',t.p1w],['1 M',t.p1m],['6 M',t.p6m],['1 J',t.p1y],['3 J',t.p3y],['5 J',t.p5y]];
+  const mxp=Math.max(...perf.map(p=>Math.abs(p[1])))||1;
+  b.innerHTML=`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t3);margin-bottom:5px">
+        <span>52-Wochen-Tief ${nf(t.lo52,x.px>5000?0:2)}</span><span>Hoch ${nf(t.hi52,x.px>5000?0:2)}</span>
+      </div>
+      <div style="position:relative;height:5px;border-radius:4px;background:linear-gradient(90deg,var(--down-bg),var(--card-2),var(--up-bg));border:1px solid var(--hair)">
+        <div style="position:absolute;left:${pos.toFixed(1)}%;top:-4px;width:3px;height:12px;border-radius:2px;background:var(--t1);transform:translateX(-50%)"></div>
+      </div>
+      <div style="text-align:center;font-size:10.5px;color:var(--t2);margin-top:5px">${nf(pos,0)} % der Jahresspanne</div>
+    </div>
+    <div class="kv"><span class="kv-k">RSI (14)<span class="hint" title="Relative Stärke. Über 70 gilt als überkauft, unter 30 als überverkauft.">?</span></span>
+      <span style="display:flex;align-items:center;gap:8px"><span class="bar" style="width:56px"><i style="width:${t.rsi}%;background:${rsiC}"></i></span><span class="kv-v" style="color:${rsiC}">${nf(t.rsi,1)}</span></span></div>
+    ${kv('MACD-Histogramm',`<span class="${cls(t.macd.h)}">${nf(t.macd.h,2)}</span>`,'Differenz zwischen MACD-Linie und Signallinie. Positiv = Aufwärtsmomentum.')}
+    ${kv('Abstand SMA 50',`<span class="${cls(d50)}">${pct(d50,1)}</span>`)}
+    ${kv('Abstand SMA 200',`<span class="${cls(d200)}">${pct(d200,1)}</span>`)}
+    ${kv('Volatilität 30 T.',nf(t.v30,1)+' %','Annualisierte Standardabweichung der Tagesrenditen.')}
+    ${kv('Volatilität 1 J.',nf(t.v250,1)+' %')}
+    ${kv('Max. Rückgang 1 J.',`<span class="down">${nf(t.mdd,1)} %</span>`,'Größter Verlust vom Höchststand innerhalb der letzten 12 Monate.')}
+    <p class="det-t" style="margin-top:14px">Performance</p>
+    ${perf.map(([l,v])=>`<div class="dc" style="margin-bottom:5px"><span class="dc-k">${l}</span>
+      <span style="position:relative;height:5px;background:var(--hair);border-radius:3px">
+        <i style="position:absolute;left:50%;top:0;height:100%;border-radius:3px;background:${v>=0?'var(--up)':'var(--down)'};width:${(Math.abs(v)/mxp*50).toFixed(1)}%;${v<0?'transform:translateX(-100%)':''}"></i>
+        <i style="position:absolute;left:50%;top:-2px;width:1px;height:9px;background:var(--hair-2)"></i>
+      </span>
+      <span class="dc-v num ${cls(v)}">${nf(v,0)}%</span></div>`).join('')}`;
+}
+
+/* ---------------- Heatmap ---------------- */
+function wHeat(b){
+  const mx=Math.max(...SECT.map(s=>Math.abs(s.v)));
+  b.innerHTML=`<div class="heat">${SECT.map(s=>{
+    const a=Math.min(0.30,0.055+Math.abs(s.v)/mx*0.26);
+    const c=s.v>=0?`rgba(47,211,90,${a})`:`rgba(255,69,58,${a})`;
+    return `<div class="ht" style="background:${c}"><div class="ht-n">${s.n}</div><div class="ht-v ${cls(s.v)}">${pct(s.v,1)}</div></div>`;
+  }).join('')}</div>
+  <div style="font-size:10.5px;color:var(--t3);margin-top:10px">Tagesveränderung nach Branche · Farbintensität skaliert mit dem Betrag</div>`;
+}
+
+/* ---------------- Marktbreite ---------------- */
+function wBreadth(b){
+  const B=BREADTH, tot=B.adv+B.dec+B.unch;
+  const r=52,C=2*Math.PI*r, off=C*(1-B.fg/100);
+  const fgC=B.fg>=75?'var(--up)':B.fg>=55?'#9ACD32':B.fg>=45?'var(--warn)':'var(--down)';
+  const fgL=B.fg>=75?'Extreme Gier':B.fg>=55?'Gier':B.fg>=45?'Neutral':B.fg>=25?'Angst':'Extreme Angst';
+  b.innerHTML=`
+    <div class="gauge">
+      <svg width="122" height="122" viewBox="0 0 122 122">
+        <circle cx="61" cy="61" r="${r}" fill="none" stroke="var(--hair)" stroke-width="9"/>
+        <circle cx="61" cy="61" r="${r}" fill="none" stroke="${fgC}" stroke-width="9" stroke-linecap="round"
+          stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 61 61)"/>
+        <text x="61" y="66" text-anchor="middle" font-size="27" font-weight="650" fill="var(--t1)" style="letter-spacing:-1.4px">${B.fg}</text>
+        <text x="61" y="80" text-anchor="middle" font-size="9" fill="var(--t3)">von 100</text>
+      </svg>
+      <div class="g-l">
+        <b style="color:${fgC}">${fgL}</b>
+        <span>Sentiment-Index aus Volatilität, Marktbreite,<br>Put-Call-Verhältnis und Momentum</span>
+      </div>
+    </div>
+    <p class="det-t">Marktbreite heute</p>
+    <div class="ad">
+      <i style="width:${B.adv/tot*100}%;background:var(--up)"></i>
+      <i style="width:${B.unch/tot*100}%;background:var(--t3)"></i>
+      <i style="width:${B.dec/tot*100}%;background:var(--down)"></i>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:12px">
+      <span class="up">${B.adv} im Plus</span><span class="flat">${B.unch} unverändert</span><span class="down">${B.dec} im Minus</span>
+    </div>
+    ${kv('Neue 52-W-Hochs / Tiefs',`<span class="up">${B.newHi}</span> / <span class="down">${B.newLo}</span>`)}
+    ${kv('Titel über SMA 200',nf(B.above200,1)+' %','Anteil der Indexmitglieder oberhalb ihres 200-Tage-Durchschnitts.')}
+    ${kv('Titel über SMA 50',nf(B.above50,1)+' %')}
+    ${kv('VIX',`${nf(B.vix,2)} <span class="${cls(B.vixCh)}" style="font-size:11px">${pct(B.vixCh,1)}</span>`,'Implizite 30-Tage-Volatilität des S&P 500.')}
+    ${kv('VDAX-NEW',`${nf(B.vdax,2)} <span class="${cls(B.vdaxCh)}" style="font-size:11px">${pct(B.vdaxCh,1)}</span>`)}
+    ${kv('Put-Call-Verhältnis',nf(B.pcr,2),'Unter 0,7 signalisiert erhöhte Sorglosigkeit.')}`;
+}
+
+/* ---------------- Risiko ---------------- */
+function wRisk(b){
+  const x=inst(),t=x.tech;
+  const bench=BY['iwda'], dax=BY['dax'];
+  const cW=corr(x.dc.slice(-253),bench.dc.slice(-253));
+  const cD=corr(x.dc.slice(-253),dax.dc.slice(-253));
+  const sharpe=(t.p1y-2.4)/Math.max(1,t.v250);
+  const var95=1.645*t.v250/Math.sqrt(252);
+  const beta=(x.f&&x.f.beta)?x.f.beta:+(cW*(t.v250/bench.tech.v250)).toFixed(2);
+  const rows=[['MSCI World',cW],['DAX 40',cD],['S&P 500',corr(x.dc.slice(-253),BY['spx'].dc.slice(-253))],['Schwellenländer',corr(x.dc.slice(-253),BY['emim'].dc.slice(-253))]];
+  b.innerHTML=`
+    ${kv('Sharpe-Ratio (1 J.)',`<span class="${sharpe>0?'up':'down'}">${nf(sharpe,2)}</span>`,'Überrendite je Einheit Risiko, risikofreier Zins mit 2,4 % angesetzt.')}
+    ${kv('Volatilität (annualisiert)',nf(t.v250,1)+' %')}
+    ${kv('Max. Rückgang (1 J.)',`<span class="down">${nf(t.mdd,1)} %</span>`)}
+    ${kv('Beta',nf(beta,2),'Marktsensitivität gegenüber dem Weltaktienmarkt.')}
+    ${kv('Value at Risk (1 T., 95 %)',`<span class="down">\u2212${nf(var95,2)} %</span>`,'Verlust, der an 95 von 100 Handelstagen nicht überschritten wird.')}
+    ${kv('Rendite/Risiko (1 J.)',nf(t.p1y/Math.max(1,t.v250),2))}
+    <p class="det-t" style="margin-top:14px">Korrelation über 12 Monate</p>
+    ${rows.map(([l,v])=>`<div class="dc" style="margin-bottom:6px"><span class="dc-k">${l}</span>
+      <span class="bar"><i style="width:${Math.abs(v)*100}%;background:${v>=0?'var(--acc)':'var(--warn)'}"></i></span>
+      <span class="dc-v num">${nf(v,2)}</span></div>`).join('')}
+    <div style="font-size:10.5px;color:var(--t3);margin-top:10px;line-height:1.5">Werte nahe 1 bedeuten Gleichlauf — der Diversifikationseffekt im Portfolio ist dann gering.</div>`;
+}
+
+/* ---------------- Vergleich ---------------- */
+function wCompare(b){
+  const picks=S.cmp.map(id=>BY[id]).filter(Boolean);
+  const W=760,H=190,x0=6,x1=W-56,yT=10,yB=H-22;
+  const norm=picks.map(x=>{const s=seriesOf(x,S.tf);return s.c.map(v=>(v/s.base-1)*100);});
+  const all=norm.flat(); const mn=Math.min(0,...all), mx=Math.max(0,...all), pad=(mx-mn)*0.12||1;
+  const lo=mn-pad, rng=(mx+pad)-lo;
+  const py=v=>yB-((v-lo)/rng)*(yB-yT);
+  let grid='';
+  for(let i=0;i<=3;i++){const v=lo+rng*(i/3),Y=py(v).toFixed(1);
+    grid+=`<line x1="${x0}" y1="${Y}" x2="${x1}" y2="${Y}" stroke="var(--hair)"/><text x="${x1+4}" y="${+Y+3}" font-size="9.5" fill="var(--t3)">${nf(v,0)}%</text>`;}
+  grid+=`<line x1="${x0}" y1="${py(0)}" x2="${x1}" y2="${py(0)}" stroke="var(--hair-2)" stroke-dasharray="3 3"/>`;
+  const lines=norm.map((a,k)=>{
+    let d='';a.forEach((v,i)=>{d+=(i?'L':'M')+(x0+i/(a.length-1)*(x1-x0)).toFixed(1)+' '+py(v).toFixed(1);});
+    return `<path d="${d}" fill="none" stroke="${CMPCOL[k]}" stroke-width="1.7" stroke-linejoin="round"/>`;
+  }).join('');
+  b.innerHTML=`
+    <div class="cmp-pick">${U.map(x=>`<button class="cmp-b ${S.cmp.includes(x.id)?'on':''}" data-cmp="${x.id}" style="${S.cmp.includes(x.id)?'color:'+CMPCOL[S.cmp.indexOf(x.id)]+';border-color:currentColor':''}">${esc(x.s)}</button>`).join('')}</div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;display:block">${grid}${lines}</svg>
+    <div class="cmp-leg">${picks.map((x,k)=>{const p=perfOf(x,S.tf);
+      return `<div class="cl"><i style="background:${CMPCOL[k]}"></i><span>${esc(x.n)}</span><b class="${cls(p)}">${pct(p,1)}</b></div>`;}).join('')}</div>
+    <div style="font-size:10.5px;color:var(--t3);margin-top:9px">Indexiert auf den Beginn des Zeitraums (${TF[S.tf].lab}) · maximal sechs Werte</div>`;
+}
+
+/* ---------------- Termine ---------------- */
+function wCal(b){
+  b.innerHTML=`<div class="cal" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0 22px">
+    ${CALEND.map(c=>`<div class="ce">
+      <div class="ce-d"><b class="num">${c.d}</b><span>${c.m}</span></div>
+      <div class="ce-m"><div class="ce-t">${esc(c.t)}</div><div class="ce-s">${esc(c.s)}</div>
+        <div style="display:flex;gap:4px;margin-top:5px">${c.tick.map(t=>BY[t]?`<span class="pill" data-go="${t}">${esc(BY[t].s)}</span>`:'').join('')}</div></div>
+      <div class="stars" title="Erwartete Marktrelevanz ${c.i}/5">${[1,2,3,4,5].map(i=>`<i class="${i<=c.i?'on':''}"></i>`).join('')}</div>
+    </div>`).join('')}</div>`;
+}
+
+/* =========================================================================
+   WIDGET-REGISTER & LAYOUT
+   ========================================================================= */
+const WG={
+  market :{t:'Märkte',      sub:'Watchlist',                    span:4, r:wMarket,  head:mktHead},
+  chart  :{t:'Kursverlauf', sub:'',                             span:8, r:wChart,   head:tfHead},
+  news   :{t:'News-Radar',  sub:'priorisiert nach Kurswirkung', span:8, r:wNews},
+  kpi    :{t:'Kennzahlen',  sub:'',                             span:4, r:wKPI},
+  tech   :{t:'Technisches Profil', sub:'',                      span:4, r:wTech},
+  heat   :{t:'Sektor-Heatmap', sub:'',                          span:4, r:wHeat},
+  breadth:{t:'Marktbreite & Sentiment', sub:'',                 span:4, r:wBreadth},
+  risk   :{t:'Risiko & Korrelation', sub:'',                    span:4, r:wRisk},
+  compare:{t:'Vergleich',   sub:'normalisiert',                 span:8, r:wCompare},
+  cal    :{t:'Termine & Ereignisse', sub:'nächste 3 Wochen',    span:12,r:wCal}
+};
+function mktHead(){
+  return `<div class="seg" data-seg="tab">${Object.entries(TABS).map(([k,l])=>`<button data-v="${k}" class="${S.tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+}
+function tfHead(){
+  return `<div class="seg" data-seg="tf">${Object.keys(TF).map(k=>`<button data-v="${k}" class="${S.tf===k?'on':''}">${k}</button>`).join('')}</div>`;
+}
+
+function mount(){
+  const g=$('#grid'); g.innerHTML='';
+  S.order.forEach((id,i)=>{
+    const w=WG[id]; if(!w) return;
+    const span=S.spans[id]||w.span;
+    const n=el('section','w'+(S.hidden.includes(id)?' hidden-w':''));
+    n.dataset.w=id; n.dataset.span=span; n.style.animationDelay=Math.min(i*45,320)+'ms';
+    n.innerHTML=`<div class="w-head">
+      <span class="drag-h" draggable="true" title="Ziehen zum Verschieben">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg>
+      </span>
+      <span class="w-t"><i style="background:${id==='news'?'var(--pur)':'var(--acc)'}"></i>${w.t}${w.sub?` <span class="w-sub">${w.sub}</span>`:''}</span>
+      <span class="w-act">
+        ${w.head?w.head():''}
+        <button class="iconbtn edit-only" data-act="span" title="Breite ändern"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M8 8 4 12l4 4M16 8l4 4-4 4"/></svg></button>
+        <button class="iconbtn edit-only" data-act="up" title="Nach vorn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="m6 14 6-6 6 6"/></svg></button>
+        <button class="iconbtn edit-only" data-act="down" title="Nach hinten"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="m6 10 6 6 6-6"/></svg></button>
+        <button class="iconbtn edit-only" data-act="hide" title="Ausblenden"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+      </span></div>
+      <div class="w-body${id==='market'?' flush':''}"></div>`;
+    g.appendChild(n);
+    if(!S.hidden.includes(id)) w.r($('.w-body',n));
+  });
+  wireDrag();
+}
+function paint(id){
+  const n=$(`.w[data-w="${id}"]`); if(!n||S.hidden.includes(id)) return;
+  WG[id].r($('.w-body',n));
+  const act=$('.w-act',n);
+  if(WG[id].head){ const old=$('.seg',act); if(old) old.outerHTML=WG[id].head(); }
+}
+function paintSel(){['chart','kpi','tech','risk'].forEach(paint); if(S.nonly)paint('news'); markSel();}
+function markSel(){
+  $$('.row').forEach(r=>r.classList.toggle('sel',r.dataset.rid===S.sel));
+  $$('.tk').forEach(t=>t.classList.toggle('sel',t.dataset.go===S.sel));
+  const b=$('[data-only]'); if(b) b.textContent='Nur '+inst().s;
+}
+function saveLayout(){store.set('pst_layout',{order:S.order,hidden:S.hidden,spans:S.spans});}
+
+function wireDrag(){
+  let src=null;
+  $$('.w').forEach(n=>{
+    const h=$('.drag-h',n);
+    h.addEventListener('dragstart',e=>{src=n;n.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',n.dataset.w);});
+    h.addEventListener('dragend',()=>{src&&src.classList.remove('dragging');$$('.w').forEach(x=>x.classList.remove('over'));src=null;});
+    n.addEventListener('dragover',e=>{if(src&&src!==n){e.preventDefault();n.classList.add('over');}});
+    n.addEventListener('dragleave',()=>n.classList.remove('over'));
+    n.addEventListener('drop',e=>{
+      e.preventDefault();n.classList.remove('over');if(!src||src===n)return;
+      const a=S.order.indexOf(src.dataset.w), b=S.order.indexOf(n.dataset.w);
+      S.order.splice(a,1);S.order.splice(b,0,src.dataset.w);
+      saveLayout();mount();
+    });
+  });
+}
+
+/* =========================================================================
+   TICKER, UHR, SUCHE
+   ========================================================================= */
+function ticker(){
+  const ids=['dax','sx5e','spx','ndx','dji','n225','ftse','iwda','nvda','sap'];
+  $('#ticker').innerHTML=ids.map(id=>{const x=BY[id];
+    return `<div class="tk ${id===S.sel?'sel':''}" data-go="${id}" data-tid="${id}" tabindex="0" role="button">
+      <span class="tk-s">${esc(x.s)}</span>
+      <span class="tk-b"><span class="tk-p num" data-px="${id}">${nf(x.px,x.px>5000?0:2)}</span>
+      <span class="tk-c ${cls(x.ch)}" data-ch="${id}">${pct(x.ch,2)}</span></span>
+    </div>`;}).join('');
+}
+function clock(){
+  const now=new Date();
+  const b=new Date(now.toLocaleString('en-US',{timeZone:'Europe/Berlin'}));
+  const hm=b.getHours()+b.getMinutes()/60, wd=b.getDay()>0&&b.getDay()<6;
+  const xetra=wd&&hm>=9&&hm<17.5, nyse=wd&&hm>=15.5&&hm<22;
+  const open=xetra||nyse;
+  $('#mdot').className='dot'+(open?' live':' closed');
+  $('#mtxt').textContent=(xetra?'Xetra offen':nyse?'NYSE offen':'Märkte geschlossen')+' · '+
+    b.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+function search(v){
+  const s=$('#sugg');
+  if(!v||v.length<1){s.style.display='none';return;}
+  const q=v.toLowerCase();
+  const r=U.filter(x=>x.s.toLowerCase().includes(q)||x.n.toLowerCase().includes(q)||x.isin.toLowerCase().includes(q)||x.reg.toLowerCase().includes(q)).slice(0,7);
+  if(!r.length){s.innerHTML='<div class="sugg-i" style="color:var(--t3)">Kein Treffer im Demo-Universum</div>';s.style.display='block';return;}
+  s.innerHTML=r.map(x=>`<div class="sugg-i" data-go="${x.id}">
+    <span class="pill">${x.t==='index'?'IDX':x.t==='etf'?'ETF':'AKT'}</span>
+    <span style="flex:1;min-width:0"><b style="font-size:12.5px">${esc(x.s)}</b>
+      <span style="color:var(--t3);font-size:11px"> · ${esc(x.n)}</span></span>
+    <span class="num ${cls(x.ch)}" style="font-size:11.5px;font-weight:600">${pct(x.ch)}</span></div>`).join('');
+  s.style.display='block';
+}
+
+/* =========================================================================
+   MODALS
+   ========================================================================= */
+function openModal(html){$('#modal').innerHTML=html;$('#ov').classList.add('on');}
+function closeModal(){$('#ov').classList.remove('on');}
+const XBTN=`<button class="iconbtn" data-close style="margin-left:auto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
+
+function infoModal(){
+  openModal(`<div class="modal-h"><b>Modell & Methodik</b>${XBTN}</div><div class="modal-b">
+    <h4>Wie der Prioritäts-Score entsteht</h4>
+    <p>Jede Meldung wird in fünf messbare Bausteine zerlegt. Der Score ist ihre gewichtete Summe auf einer Skala von 0 bis 100 — die Zerlegung ist in jeder aufgeklappten Meldung einsehbar.</p>
+    <div class="formula">Score = 0,28 · Überraschung
+      + 0,22 · Marktbreite
+      + 0,18 · Modellvertrauen
+      + 0,17 · Aktualität
+      + 0,15 · Quellenqualität</div>
+    <h4>Die fünf Bausteine</h4>
+    <p><b>Überraschung</b> misst die Abweichung vom Konsens. Eine erwartete Zinsentscheidung bewegt Kurse kaum — die Abweichung davon schon.<br>
+    <b>Marktbreite</b> erfasst, wie viele Titel betroffen sind. Ein Inflationsdatum trifft den gesamten Markt, ein Einzelauftrag nur ein Unternehmen.<br>
+    <b>Modellvertrauen</b> bewertet, wie belastbar der Wirkungszusammenhang ist. Bestätigte Zahlen liegen hoch, Prüfungen ohne Zeitplan niedrig.<br>
+    <b>Aktualität</b> zerfällt exponentiell — mit einer Halbwertszeit, die vom Zeithorizont abhängt. Strukturelle Meldungen altern langsamer als Intraday-Nachrichten.<br>
+    <b>Quellenqualität</b> unterscheidet Primärquellen und Nachrichtenagenturen von Sekundärberichterstattung.</p>
+    <h4>Prioritätsstufen</h4>
+    <p><code>≥ 72</code> Kritisch · <code>≥ 54</code> Hoch · <code>≥ 38</code> Mittel · <code>&lt; 38</code> Niedrig</p>
+    <h4>Erwarteter Kurskorridor</h4>
+    <p>Der angegebene Bereich beschreibt die aus historisch vergleichbaren Ereignissen abgeleitete Bewegungsspanne, nicht ein Kursziel. Die Richtung folgt der erwarteten Wirkung auf Gewinnschätzungen und Diskontierungssatz. Der Korridor der höchstpriorisierten Meldung wird rechts im Chart als Band eingeblendet.</p>
+    <h4>Datenlage</h4>
+    <p>Diese Umgebung arbeitet mit deterministisch simulierten Kursreihen. Indikatoren wie RSI, MACD, gleitende Durchschnitte, Volatilität, Korrelation und maximaler Rückgang werden aus diesen Reihen tatsächlich berechnet und sind daher in sich konsistent. Fundamentaldaten und Meldungen sind exemplarisch.</p>
+    <h4>Anbindung echter Daten</h4>
+    <p>Für den Produktivbetrieb genügt es, <code>U[].px</code>, <code>U[].dc</code> und <code>NEWS</code> aus einer Marktdaten- und Nachrichten-API zu befüllen. Die Indikator-, Scoring- und Renderlogik bleibt unverändert.</p>
+    <h4>Rechtlicher Hinweis</h4>
+    <p>Keine Anlageberatung und keine Handelsempfehlung. Die Impact-Schätzungen sind Modellausgaben, keine Prognosen.</p>
+  </div>`);
+}
+function catalogModal(){
+  openModal(`<div class="modal-h"><b>Bausteine</b>${XBTN}</div><div class="modal-b">
+    <p>Aktive Bausteine erscheinen im Dashboard. Reihenfolge und Breite lassen sich im Bearbeitungsmodus direkt an der Kachel ändern.</p>
+    <div class="cat">${S.order.map(id=>{const on=!S.hidden.includes(id);
+      return `<button class="cat-i ${on?'on':''}" data-toggle="${id}">
+        <span class="sw">${on?'\u2713':''}</span>
+        <span><b>${WG[id].t}</b><span>${WG[id].sub||(id==='kpi'?'Fundamentaldaten':'')}</span></span></button>`;}).join('')}</div>
+    <p style="margin-top:14px">
+      <button class="cmp-b" data-reset>Layout zurücksetzen</button>
+    </p></div>`);
+}
+/* =========================================================================
+   EVENTS
+   ========================================================================= */
+function go(id){
+  if(!BY[id]) return;
+  S.sel=id;
+  const x=BY[id];
+  if(x.t!==S.tab){S.tab=x.t;paint('market');}
+  paintSel();
+  $('#sugg').style.display='none';$('#q').value='';
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const go_=t.closest('[data-go]'); if(go_){go(go_.dataset.go);return;}
+
+  const seg=t.closest('.seg button');
+  if(seg){
+    const key=seg.parentElement.dataset.seg, v=seg.dataset.v;
+    if(key==='tf'){S.tf=v;paint('chart');paint('compare');}
+    else if(key==='tab'){S.tab=v;paint('market');}
+    else if(key==='nsort'){S.nsort=v;paint('news');}
+    return;
+  }
+  const fil=t.closest('[data-fil]'); if(fil){S.nfil=fil.dataset.fil;paint('news');return;}
+  const only=t.closest('[data-only]'); if(only){S.nonly=!S.nonly;paint('news');return;}
+  const cmp=t.closest('[data-cmp]');
+  if(cmp){
+    const id=cmp.dataset.cmp, i=S.cmp.indexOf(id);
+    if(i>=0){ if(S.cmp.length>1) S.cmp.splice(i,1); }
+    else { if(S.cmp.length>=6) S.cmp.shift(); S.cmp.push(id); }
+    paint('compare');return;
+  }
+  const n=t.closest('.n'); if(n && !t.closest('[data-go]')){n.classList.toggle('open');return;}
+
+  const act=t.closest('[data-act]');
+  if(act){
+    const w=act.closest('.w'), id=w.dataset.w, a=act.dataset.act;
+    if(a==='span'){const cyc=[4,6,8,12];const cur=S.spans[id]||WG[id].span;S.spans[id]=cyc[(cyc.indexOf(cur)+1)%cyc.length]||4;w.dataset.span=S.spans[id];}
+    else if(a==='up'){const i=S.order.indexOf(id);if(i>0){S.order.splice(i,1);S.order.splice(i-1,0,id);mount();}}
+    else if(a==='down'){const i=S.order.indexOf(id);if(i<S.order.length-1){S.order.splice(i,1);S.order.splice(i+1,0,id);mount();}}
+    else if(a==='hide'){S.hidden.push(id);w.classList.add('hidden-w');}
+    saveLayout();return;
+  }
+  const tg=t.closest('[data-toggle]');
+  if(tg){
+    const id=tg.dataset.toggle, i=S.hidden.indexOf(id);
+    if(i>=0)S.hidden.splice(i,1);else S.hidden.push(id);
+    saveLayout();mount();catalogModal();return;
+  }
+  if(t.closest('[data-reset]')){
+    S.order=['market','chart','news','kpi','tech','heat','breadth','risk','compare','cal'];
+    S.hidden=[];S.spans={};saveLayout();mount();closeModal();return;
+  }
+  if(t.closest('[data-close]')||t.id==='ov'){closeModal();return;}
+  if(!t.closest('.search')) $('#sugg').style.display='none';
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();$('#sugg').style.display='none';}
+  if(e.key==='Enter'){
+    const a=document.activeElement;
+    if(a&&a.dataset&&a.dataset.go){go(a.dataset.go);return;}
+    if(a&&a.classList&&a.classList.contains('n')){a.classList.toggle('open');return;}
+    if(a&&a.id==='q'){const f=$('#sugg .sugg-i[data-go]');if(f)go(f.dataset.go);}
+  }
+});
+$('#q').addEventListener('input',e=>search(e.target.value.trim()));
+$('#q').addEventListener('focus',e=>{if(e.target.value)search(e.target.value.trim());});
+
+$('#bTheme').addEventListener('click',()=>{
+  const cur=document.documentElement.dataset.theme;
+  document.documentElement.dataset.theme=cur==='dark'?'light':'dark';
+  paint('chart');paint('compare');paint('heat');paint('breadth');
+});
+$('#bEdit').addEventListener('click',e=>{
+  S.edit=!S.edit;document.body.classList.toggle('edit',S.edit);
+  e.currentTarget.classList.toggle('on',S.edit);
+  if(S.edit)catalogModal();
+});
+$('#bInfo').addEventListener('click',infoModal);
+$('#bLive').addEventListener('click',e=>{
+  S.live=!S.live;e.currentTarget.classList.toggle('on',S.live);
+  $('#mdot').classList.toggle('live',S.live);
+});
+
+/* =========================================================================
+   LIVE-SIMULATION
+   ========================================================================= */
+function tickOnce(){
+  if(!S.live) return;
+  const pick=[];
+  const r=Math.random;
+  U.forEach(x=>{if(r()<0.4)pick.push(x);});
+  pick.forEach(x=>{
+    const step=x.px*(Math.random()-0.5)*x.vol*0.42;
+    const before=x.px;
+    x.px=Math.max(0.01,x.px+step);
+    x.ch=(x.px/x.prev-1)*100;
+    x.id5[x.id5.length-1].c=x.px;
+    x.dc[x.dc.length-1]=x.px;
+    const up=x.px>=before;
+    $$(`[data-px="${x.id}"]`).forEach(n=>{n.textContent=nf(x.px,x.px>5000?0:2);});
+    $$(`[data-ch="${x.id}"]`).forEach(n=>{n.textContent=pct(x.ch,2);n.className='tk-c '+cls(x.ch);});
+    $$(`.row[data-rid="${x.id}"]`).forEach(n=>{
+      $('.row-p',n).textContent=money(x,x.px,x.px>5000?0:2);
+      const c=$('.row-c',n);c.textContent=arrow(x.ch)+' '+pct(x.ch);c.className='row-c '+cls(x.ch);
+      n.classList.remove('fu','fd');void n.offsetWidth;n.classList.add(up?'fu':'fd');
+    });
+    $$(`.tk[data-tid="${x.id}"]`).forEach(n=>{n.classList.remove('fu','fd');void n.offsetWidth;n.classList.add(up?'fu':'fd');});
+  });
+  if(pick.some(x=>x.id===S.sel)){
+    const x=inst(), q=$('.q');
+    if(q){
+      const d=x.px-x.prev;
+      $('.q-p',q).textContent=money(x,x.px,2);
+      const c=$('.q-c',q);c.textContent=arrow(x.ch)+' '+nf(d,Math.abs(d)>100?1:2)+' ('+pct(x.ch)+')';
+      c.className='q-c '+cls(x.ch);
+    }
+  }
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+(async function init(){
+  const saved=await store.get('pst_layout');
+  if(saved&&Array.isArray(saved.order)){
+    const valid=saved.order.filter(id=>WG[id]);
+    Object.keys(WG).forEach(id=>{if(!valid.includes(id))valid.push(id);});
+    S.order=valid;
+    S.hidden=(saved.hidden||[]).filter(id=>WG[id]);
+    S.spans=saved.spans||{};
+  }
+  $('#bLive').classList.toggle('on',S.live);
+  ticker();mount();clock();markSel();
+  setInterval(clock,1000);
+  setInterval(tickOnce,3200);
+})();
+
+})();
+
+</script>
+</body>
+</html>
