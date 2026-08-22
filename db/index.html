@@ -65,47 +65,77 @@
 .lp-hero-cta{display:flex;align-items:center;gap:18px;margin-top:34px;flex-wrap:wrap}
 .lp-cta-note{font-size:13.5px;color:#8A939F}
 
-/* Produktvorschau – das Signatur-Element */
+/* Produktvorschau – das Signatur-Element: echtes Produkt, leicht gekippt */
 .lp-hero-vis{position:relative}
-.lp-shot{position:relative;z-index:2;background:#16181d;border-radius:22px;
-  padding:24px;box-shadow:0 30px 70px rgba(16,20,24,.22),0 4px 12px rgba(16,20,24,.08);
-  color:#eef1f5;font-family:"Inter",sans-serif}
-.lp-shot-h{margin-bottom:20px}
-.lp-shot-eyebrow{display:block;font-size:10.5px;font-weight:700;letter-spacing:.14em;
+.lp-shot-buehne{perspective:1600px;perspective-origin:50% 40%}
+.lp-shot{position:relative;z-index:2;background:#16181d;border-radius:18px;overflow:hidden;
+  box-shadow:0 40px 90px -20px rgba(16,20,24,.45),0 8px 26px rgba(16,20,24,.14),
+    0 0 0 1px rgba(16,20,24,.06);
+  color:#eef1f5;font-family:"Inter",sans-serif;
+  transform:rotateY(-9deg) rotateX(5deg) translateZ(0);
+  transform-style:preserve-3d;
+  transition:transform .1s linear;will-change:transform}
+/* Fensterleiste – lässt es wie eine echte Anwendung wirken */
+.lp-shot-bar{display:flex;align-items:center;gap:7px;padding:11px 14px;
+  background:#101216;border-bottom:1px solid rgba(180,190,205,.1)}
+.lp-dot{width:9px;height:9px;border-radius:50%;background:rgba(180,190,205,.22)}
+.lp-shot-url{margin-left:10px;font-size:10.5px;color:rgba(220,226,235,.38);
+  background:rgba(48,52,60,.5);border-radius:6px;padding:3px 10px}
+.lp-shot-body{padding:20px}
+.lp-shot-h{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.lp-shot-eyebrow{display:block;font-size:10px;font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;color:#5eead4;margin-bottom:5px}
-.lp-shot-title{font-family:"Space Grotesk",sans-serif;font-size:22px;font-weight:600}
-.lp-shot-grid{display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:auto auto;gap:12px}
-.lp-tile{background:rgba(48,52,60,.42);border:1px solid rgba(180,190,205,.12);
-  border-radius:15px;padding:16px}
-.lp-tile-hero{grid-row:span 2;background:linear-gradient(160deg,rgba(45,212,191,.14),rgba(48,52,60,.42))}
-.lp-tile-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+.lp-shot-title{display:block;font-family:"Space Grotesk",sans-serif;font-size:21px;font-weight:600}
+.lp-shot-sub{display:block;font-size:11.5px;color:rgba(220,226,235,.45);margin-top:3px}
+.lp-shot-pill{flex:0 0 auto;font-size:10.5px;color:rgba(220,226,235,.6);
+  background:rgba(48,52,60,.5);border:1px solid rgba(180,190,205,.12);
+  border-radius:20px;padding:5px 11px}
+.lp-shot-grid{display:grid;grid-template-columns:1.35fr 1fr;grid-template-rows:auto auto;gap:11px}
+.lp-tile{position:relative;background:rgba(48,52,60,.42);border:1px solid rgba(180,190,205,.12);
+  border-radius:14px;padding:15px;overflow:hidden}
+.lp-tile-hero{grid-row:span 2;background:linear-gradient(160deg,rgba(45,212,191,.15),rgba(48,52,60,.42))}
+.lp-tile-ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;
   background:rgba(22,24,29,.6);border:1px solid rgba(180,190,205,.14);
-  color:#5eead4;font-size:15px;margin-bottom:14px}
-.lp-tile-num{font-family:"Space Grotesk",sans-serif;font-size:30px;font-weight:600;
+  color:#5eead4;font-size:14px;margin-bottom:12px}
+.lp-tile-num{font-family:"Space Grotesk",sans-serif;font-size:28px;font-weight:600;
   line-height:1;letter-spacing:-.02em}
-.lp-tile-num.lp-sm{font-size:19px}
-.lp-tile-lab{font-size:12.5px;font-weight:600;margin-top:9px}
-.lp-tile-sub{font-size:11px;color:rgba(220,226,235,.45);margin-top:3px}
-.lp-shot-row{display:flex;align-items:center;gap:12px;margin-top:14px;
-  background:rgba(48,52,60,.42);border:1px solid rgba(180,190,205,.12);
-  border-radius:13px;padding:13px 16px}
-.lp-bar-lab{font-size:12px;color:rgba(220,226,235,.62);flex:0 0 auto}
-.lp-bar{flex:1;height:6px;border-radius:99px;background:rgba(180,190,205,.16);overflow:hidden}
-.lp-bar span{display:block;height:100%;border-radius:99px;
+.lp-tile-num.lp-sm{font-size:18px}
+.lp-tile-lab{font-size:12px;font-weight:600;margin-top:8px}
+.lp-tile-sub{font-size:10.5px;color:rgba(220,226,235,.45);margin-top:3px}
+/* Kleiner Verlauf im großen Feld */
+.lp-spark{position:absolute;left:0;right:0;bottom:0;width:100%;height:34px;opacity:.5}
+.lp-spark-l{fill:none;stroke:#2dd4bf;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:200;stroke-dashoffset:200;animation:lpDraw 1.6s ease-out both .6s}
+@keyframes lpDraw{to{stroke-dashoffset:0}}
+/* Objektzeilen */
+.lp-shot-liste{margin-top:11px;display:flex;flex-direction:column;gap:7px}
+.lp-zeile{display:flex;align-items:center;gap:10px;
+  background:rgba(48,52,60,.36);border:1px solid rgba(180,190,205,.1);
+  border-radius:11px;padding:10px 13px}
+.lp-z-ic{flex:0 0 auto;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;
+  background:rgba(22,24,29,.6);color:#5eead4;font-size:11px}
+.lp-z-n{flex:1;min-width:0;font-size:12px;font-weight:500;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.lp-z-bar{flex:0 0 58px;height:5px;border-radius:99px;background:rgba(180,190,205,.16);overflow:hidden}
+.lp-z-bar i{display:block;height:100%;border-radius:99px;
   background:linear-gradient(90deg,#0f766e,#2dd4bf);
-  animation:lpBar 1.4s cubic-bezier(.22,.61,.36,1) both .5s}
+  animation:lpBar 1.3s cubic-bezier(.22,.61,.36,1) both .7s}
 @keyframes lpBar{from{width:0!important}}
-.lp-bar-val{font-size:12px;font-weight:700;color:#5eead4;flex:0 0 auto}
-.lp-shot-glow{position:absolute;inset:-8% -12% -14% -8%;z-index:1;border-radius:40px;
-  background:radial-gradient(60% 55% at 70% 30%,rgba(15,118,110,.16),transparent 70%);
-  filter:blur(20px)}
+.lp-z-v{flex:0 0 auto;font-family:"Space Grotesk",sans-serif;font-size:12.5px;
+  font-weight:600;color:#5eead4}
+.lp-shot-glow{position:absolute;inset:-10% -14% -16% -10%;z-index:1;border-radius:40px;
+  background:radial-gradient(60% 55% at 68% 32%,rgba(15,118,110,.18),transparent 70%);
+  filter:blur(22px)}
 
-/* Streifen */
-.lp-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#E8ECF1;
-  border-top:1px solid #E8ECF1;border-bottom:1px solid #E8ECF1}
-.lp-strip-i{background:#FAFBFC;padding:26px clamp(20px,4vw,44px);display:flex;flex-direction:column;gap:5px}
-.lp-strip-i b{font-size:14.5px;font-weight:600}
-.lp-strip-i span{font-size:13px;color:#5A6472}
+/* Streifen – drei ruhige Karten statt Tabellenoptik */
+.lp-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+  max-width:1400px;margin:0 auto;padding:0 clamp(20px,5vw,64px) clamp(40px,6vw,72px)}
+.lp-strip-i{background:#fff;border:1px solid #E4E8ED;border-radius:16px;
+  padding:24px 26px;display:flex;flex-direction:column;gap:7px}
+.lp-strip-ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:#E9F3F1;color:#0F766E;font-size:17px;margin-bottom:6px}
+.lp-strip-i b{font-size:15px;font-weight:600;line-height:1.35}
+.lp-strip-i span{font-size:13.5px;color:#5A6472;line-height:1.55}
 
 /* Abschnitte */
 .lp-sec{padding:clamp(56px,8vw,110px) clamp(20px,5vw,64px);max-width:1400px;margin:0 auto}
@@ -151,7 +181,7 @@
 /* Schluss + Fuß */
 .lp-schluss{text-align:center;padding:clamp(60px,8vw,110px) clamp(20px,5vw,64px);
   background:#F2F5F8;border-top:1px solid #E8ECF1}
-.lp-schluss p{font-size:16.5px;color:#5A6472;margin:14px 0 30px}
+.lp-schluss p{font-size:16.5px;color:#5A6472;margin:18px auto 44px;max-width:34em}
 .lp-foot{display:flex;align-items:center;gap:18px;flex-wrap:wrap;
   padding:26px clamp(20px,5vw,64px);border-top:1px solid #E8ECF1}
 .lp-foot-logo{height:26px;width:auto;filter:invert(1);opacity:.75}
@@ -160,20 +190,69 @@
 .lp-foot-firma{font-size:12px!important;color:#8A939F!important}
 
 @media(max-width:900px){
-  .lp-hero{grid-template-columns:1fr;padding-top:40px}
+  .lp-hero{grid-template-columns:1fr;padding-top:32px;gap:36px}
   .lp-hero-vis{order:-1}
   .lp-nav-links{display:none}
-  .lp-strip{grid-template-columns:1fr}
+  .lp-strip{grid-template-columns:1fr;gap:12px}
+  .lp-shot{transform:none!important}
+  .lp-steps{gap:26px}
 }
+/* Handy – der Hauptweg für Besucher aus der Werbung */
 @media(max-width:560px){
-  .lp-nav{gap:12px;padding:12px 18px}
-  .lp-nav-logo{height:26px}
-  .lp-nav-cta .lp-btn{padding:10px 15px;font-size:13.5px}
-  .lp-btn-text{font-size:13.5px;padding:10px 4px}
-  .lp-shot{padding:18px}
-  .lp-shot-grid{grid-template-columns:1fr}
-  .lp-tile-hero{grid-row:auto}
-  .lp-tile-num{font-size:26px}
+  .lp-nav{gap:10px;padding:11px 16px}
+  .lp-nav-logo{height:24px}
+  .lp-nav-cta{gap:4px}
+  .lp-nav-cta .lp-btn{padding:10px 14px;font-size:13.5px;border-radius:10px}
+  .lp-btn-text{font-size:13.5px;padding:10px 6px}
+
+  .lp-hero{padding:26px 18px 34px;gap:28px}
+  .lp-eyebrow{font-size:11px;margin-bottom:12px}
+  .lp-h1{font-size:32px;line-height:1.1;margin-bottom:16px}
+  .lp-h1 br{display:none}            /* Zeilenumbrüche dem Handy überlassen */
+  .lp-lead{font-size:15.5px;line-height:1.58}
+  .lp-hero-cta{margin-top:24px;gap:12px;flex-direction:column;align-items:stretch}
+  .lp-hero-cta .lp-btn-lg{width:100%;font-size:16px;padding:17px 22px}
+  .lp-cta-note{text-align:center}
+
+  /* Vorschau kompakter, aber vollständig */
+  .lp-shot-body{padding:15px}
+  .lp-shot-bar{padding:9px 12px}
+  .lp-shot-title{font-size:18px}
+  .lp-shot-grid{grid-template-columns:1fr 1fr;gap:9px}
+  .lp-tile{padding:13px}
+  .lp-tile-hero{grid-row:auto;grid-column:span 2}
+  .lp-tile-ic{width:28px;height:28px;margin-bottom:10px;font-size:13px}
+  .lp-tile-num{font-size:25px}
+  .lp-tile-num.lp-sm{font-size:16px}
+  .lp-tile-lab{font-size:11.5px}
+  .lp-zeile{padding:9px 11px;gap:8px}
+  .lp-z-bar{flex-basis:40px}
+  .lp-z-n{font-size:11.5px}
+
+  .lp-strip{padding:0 18px 34px}
+  .lp-strip-i{padding:20px 20px}
+
+  .lp-sec{padding:44px 18px}
+  .lp-sec-h{margin-bottom:26px}
+  .lp-h2{font-size:26px}
+  .lp-sec-lead{font-size:15.5px}
+  .lp-cards{gap:14px}
+  .lp-card{padding:22px}
+  .lp-card h3{font-size:17.5px}
+
+  .lp-steps{gap:22px}
+  .lp-step-n{width:34px;height:34px;font-size:15px}
+
+  .lp-preise{gap:16px}
+  .lp-plan{padding:26px 22px}
+  .lp-plan-p{font-size:32px}
+
+  .lp-schluss{padding:48px 18px}
+  .lp-schluss p{margin:16px auto 32px;font-size:15.5px}
+  .lp-schluss .lp-btn-lg{width:100%}
+
+  .lp-foot{flex-direction:column;align-items:flex-start;gap:12px;padding:24px 18px}
+  .lp-foot-tx{margin-right:0}
 }
 @media(prefers-reduced-motion:reduce){
   .lp-bar span{animation:none}
@@ -428,7 +507,9 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 }
 @media(min-width:1900px){
   .wrap{max-width:1800px}
-  .g-2{grid-template-columns:repeat(3,1fr)}
+  /* Nur Objektkarten-Listen dürfen auf drei Spalten gehen.
+     Paare wie Kalender+Wetter bleiben zweispaltig und wachsen mit. */
+  .g-objekte{grid-template-columns:repeat(3,1fr)}
 }
 .card{position:relative;background:linear-gradient(160deg,var(--glass),var(--glass-2));border:1px solid var(--stroke);
   border-radius:var(--r);backdrop-filter:blur(24px);box-shadow:0 20px 50px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.04);
@@ -1155,33 +1236,63 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
     </div>
 
     <div class="lp-hero-vis" aria-hidden="true">
-      <div class="lp-shot">
-        <div class="lp-shot-h">
-          <span class="lp-shot-eyebrow">Portfolio</span>
-          <span class="lp-shot-title">Übersicht</span>
-        </div>
-        <div class="lp-shot-grid">
-          <div class="lp-tile lp-tile-hero">
-            <div class="lp-tile-ic">€</div>
-            <div class="lp-tile-num" id="lpZahl">0 €</div>
-            <div class="lp-tile-lab">Einnahmen / Monat</div>
-            <div class="lp-tile-sub">4 von 5 vermietet</div>
+      <div class="lp-shot-buehne">
+        <div class="lp-shot" id="lpShot">
+          <div class="lp-shot-bar">
+            <span class="lp-dot"></span><span class="lp-dot"></span><span class="lp-dot"></span>
+            <span class="lp-shot-url">estriq.de</span>
           </div>
-          <div class="lp-tile">
-            <div class="lp-tile-ic">↗</div>
-            <div class="lp-tile-num lp-sm" id="lpRendite">0,00 %</div>
-            <div class="lp-tile-lab">Bruttorendite</div>
+          <div class="lp-shot-body">
+            <div class="lp-shot-h">
+              <div>
+                <span class="lp-shot-eyebrow">Portfolio</span>
+                <span class="lp-shot-title">Übersicht</span>
+                <span class="lp-shot-sub">3 Objekte · 7 Einheiten</span>
+              </div>
+              <span class="lp-shot-pill">August 2026</span>
+            </div>
+            <div class="lp-shot-grid">
+              <div class="lp-tile lp-tile-hero">
+                <div class="lp-tile-ic">€</div>
+                <div class="lp-tile-num" id="lpZahl">0 €</div>
+                <div class="lp-tile-lab">Einnahmen / Monat</div>
+                <div class="lp-tile-sub">6 von 7 vermietet</div>
+                <svg class="lp-spark" viewBox="0 0 120 34" preserveAspectRatio="none">
+                  <path class="lp-spark-l" d="M0,27 L20,24 L40,25 L60,17 L80,15 L100,9 L120,6"/>
+                </svg>
+              </div>
+              <div class="lp-tile">
+                <div class="lp-tile-ic">↗</div>
+                <div class="lp-tile-num lp-sm" id="lpRendite">0,00 %</div>
+                <div class="lp-tile-lab">Bruttorendite</div>
+              </div>
+              <div class="lp-tile">
+                <div class="lp-tile-ic">▤</div>
+                <div class="lp-tile-num lp-sm">4.760 €</div>
+                <div class="lp-tile-lab">Tilgung / Monat</div>
+              </div>
+            </div>
+            <div class="lp-shot-liste">
+              <div class="lp-zeile">
+                <span class="lp-z-ic">⌂</span>
+                <span class="lp-z-n">Haus Bergstraße 12</span>
+                <span class="lp-z-bar"><i style="width:80%"></i></span>
+                <span class="lp-z-v">4.180 €</span>
+              </div>
+              <div class="lp-zeile">
+                <span class="lp-z-ic">⌂</span>
+                <span class="lp-z-n">Wohnung Parkallee</span>
+                <span class="lp-z-bar"><i style="width:100%"></i></span>
+                <span class="lp-z-v">2.940 €</span>
+              </div>
+              <div class="lp-zeile">
+                <span class="lp-z-ic">✦</span>
+                <span class="lp-z-n">Ferienwohnung See</span>
+                <span class="lp-z-bar"><i style="width:62%"></i></span>
+                <span class="lp-z-v">1.206 €</span>
+              </div>
+            </div>
           </div>
-          <div class="lp-tile">
-            <div class="lp-tile-ic">▤</div>
-            <div class="lp-tile-num lp-sm">939.883 €</div>
-            <div class="lp-tile-lab">Restschuld</div>
-          </div>
-        </div>
-        <div class="lp-shot-row">
-          <div class="lp-bar-lab">Vermietet</div>
-          <div class="lp-bar"><span style="width:80%"></span></div>
-          <div class="lp-bar-val">4/5</div>
         </div>
       </div>
       <div class="lp-shot-glow"></div>
@@ -1189,9 +1300,21 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
   </section>
 
   <section class="lp-strip">
-    <div class="lp-strip-i"><b>Wohnungen, Ferienwohnungen und Pachtland</b><span>alles in einem Portfolio</span></div>
-    <div class="lp-strip-i"><b>Automatische Mietkontrolle</b><span>ESTRIQ fragt nach, wenn Zahltag ist</span></div>
-    <div class="lp-strip-i"><b>Auf allen Geräten</b><span>als App auf dem Handy installierbar</span></div>
+    <div class="lp-strip-i">
+      <span class="lp-strip-ic">⌂</span>
+      <b>Wohnung, Ferienwohnung, Pachtland</b>
+      <span>Alle Arten in einem Portfolio — nicht in drei Tabellen.</span>
+    </div>
+    <div class="lp-strip-i">
+      <span class="lp-strip-ic">✓</span>
+      <b>Mietkontrolle, die sich meldet</b>
+      <span>Am Zahltag fragt ESTRIQ nach. Du hakst ab, fertig.</span>
+    </div>
+    <div class="lp-strip-i">
+      <span class="lp-strip-ic">◱</span>
+      <b>Am Schreibtisch und unterwegs</b>
+      <span>Im Browser und als App auf dem Startbildschirm.</span>
+    </div>
   </section>
 
   <section class="lp-sec" id="funktionen">
@@ -1421,9 +1544,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=30"></script>
-<script src="./data-save.js?v=30"></script>
-<script src="./finance-engine.js?v=30"></script>
-<script src="./app.js?v=30"></script>
+<script src="./data-loader.js?v=31"></script>
+<script src="./data-save.js?v=31"></script>
+<script src="./finance-engine.js?v=31"></script>
+<script src="./app.js?v=31"></script>
 </body>
 </html>
