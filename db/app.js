@@ -118,6 +118,7 @@
   /* ---------- DESIGN / THEME ---------- */
   const THEMES = [
     { id: "graphit", name: "Graphit", bg: "#1c1f26" },
+    { id: "hell",    name: "Hell",    bg: "#f4f6f9" },
     { id: "smaragd", name: "Smaragd", bg: "#0a1f1a" },
     { id: "marine",  name: "Marine",  bg: "#111a2b" }
   ];
