@@ -55,6 +55,27 @@
   --stroke:rgba(150,180,220,.13);--stroke-2:rgba(150,180,220,.22);
   --text:#eaf0f8;--soft:rgba(210,222,240,.62);--softer:rgba(210,222,240,.4);
 }
+/* ---- Helles Theme ---- */
+[data-theme="hell"]{
+  --bg:#f4f6f9;--bg2:#ffffff;
+  --panel:rgba(255,255,255,.75);--panel-solid:#ffffff;
+  --glass:rgba(255,255,255,.7);--glass-2:rgba(244,246,249,.85);
+  --stroke:rgba(20,30,48,.1);--stroke-2:rgba(20,30,48,.16);
+  --text:#161b22;
+  --soft:rgba(30,40,56,.66);--softer:rgba(30,40,56,.45);
+  --danger:#c0392b;
+}
+/* Im hellen Theme brauchen dunkle Flächen und Schatten andere Werte */
+[data-theme="hell"] .sheet-bd{background:rgba(20,30,48,.35)}
+[data-theme="hell"] .sub-bd{background:rgba(20,30,48,.25)}
+[data-theme="hell"] .card,[data-theme="hell"] .kpi{box-shadow:0 2px 14px rgba(20,30,48,.07)}
+[data-theme="hell"] .sheet{box-shadow:0 24px 70px rgba(20,30,48,.22)}
+[data-theme="hell"] .toast{box-shadow:0 16px 40px rgba(20,30,48,.2)}
+[data-theme="hell"] .rail{background:rgba(255,255,255,.9)}
+[data-theme="hell"] .wc-flag,[data-theme="hell"] .rail-mark svg{color:#fff}
+/* Das Logo ist weiß – im hellen Theme umkehren, damit es sichtbar bleibt */
+[data-theme="hell"] .head-logo,[data-theme="hell"] .wc-logo{filter:invert(1)}
+
 /* ---- Akzentfarben ---- */
 [data-accent="teal"]  {--mint:#2dd4bf;--mint-2:#5eead4;--deep:#0f766e;}
 [data-accent="mint"]  {--mint:#4ade9e;--mint-2:#7ef0bd;--deep:#1f7a5a;}
@@ -64,6 +85,13 @@
 [data-accent="rose"]  {--mint:#ee7a9f;--mint-2:#f7a8c1;--deep:#b03d68;}
 [data-accent="rubin"] {--mint:#c0392b;--mint-2:#e05545;--deep:#7d1f16;}
 [data-accent="silber"]{--mint:#c8ccd4;--mint-2:#e4e7ec;--deep:#8b9099;}
+
+/* Im hellen Theme sind die hellen Akzenttöne unlesbar.
+   Darum dort durchgehend die dunklere Variante verwenden.
+   (Muss nach den Akzenten stehen, sonst greift es nicht.) */
+[data-theme="hell"]{--mint-2:var(--deep);--mint:var(--deep)}
+[data-theme="hell"][data-accent="silber"]{--mint:#5a6068;--mint-2:#5a6068;--deep:#5a6068}
+[data-theme="hell"][data-accent="bernstein"]{--mint:#8a5c12;--mint-2:#8a5c12;--deep:#8a5c12}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 /* UI-Elemente nicht markierbar (native App-Haptik); Fließtext/Eingaben schon */
 button,.rail-btn,.card,.kpi,.sub-item,.theme-chip,.accent-dot,.ltab,.tl-i,.w-day,
@@ -208,7 +236,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 
 .main{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
 .head{flex:0 0 auto;padding:calc(38px + env(safe-area-inset-top)) 30px 4px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;position:relative;z-index:3}
-.head-logo{height:52px;width:auto;object-fit:contain;opacity:.95;flex:0 0 auto;margin-top:2px}
+.head-logo{height:64px;width:auto;object-fit:contain;opacity:1;flex:0 0 auto;margin-top:0}
 .scroll-fade{position:absolute;left:0;right:0;height:28px;z-index:2;pointer-events:none;
   background:linear-gradient(180deg,var(--bg),transparent)}
 .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mint);font-weight:600}
@@ -228,6 +256,15 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .g-kpi{grid-template-columns:repeat(4,1fr)}
 .g-2{grid-template-columns:1fr 1fr}
 .g-3{grid-template-columns:repeat(3,1fr)}
+/* Große 16:9-Bildschirme besser ausnutzen */
+@media(min-width:1500px){
+  .wrap{max-width:1560px}
+  .scroll{padding:26px 40px 40px}
+}
+@media(min-width:1900px){
+  .wrap{max-width:1800px}
+  .g-2{grid-template-columns:repeat(3,1fr)}
+}
 .card{position:relative;background:linear-gradient(160deg,var(--glass),var(--glass-2));border:1px solid var(--stroke);
   border-radius:var(--r);backdrop-filter:blur(24px);box-shadow:0 20px 50px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.04);
   overflow:hidden}
@@ -480,7 +517,7 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 .pt-status{font-size:12.5px;color:var(--soft)}
 
 /* ===== ONBOARDING-FUNNEL ===== */
-.wc-logo{display:block;height:46px;width:auto;margin:0 auto 18px;object-fit:contain}
+.wc-logo{display:block;height:58px;width:auto;margin:0 auto 20px;object-fit:contain}
 .wc-steps{display:flex;justify-content:center;gap:7px;margin-bottom:16px}
 .wc-steps span{width:28px;height:4px;border-radius:2px;background:var(--stroke-2);transition:.3s}
 .wc-steps span.on{background:var(--mint);width:34px}
@@ -854,7 +891,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 
   .main{height:100dvh;height:100svh;min-height:0}
   .head{padding:calc(10px + env(safe-area-inset-top)) 18px 2px;flex-direction:column;gap:6px}
-  .head-logo{height:30px;order:-1;align-self:flex-start;margin:0 0 8px}
+  .head-logo{height:36px;order:-1;align-self:flex-start;margin:0 0 10px}
   .head h2{font-size:23px;line-height:1.15;margin:1px 0 0}
   .head .eyebrow{font-size:11px}
   .head .sub{margin-top:1px}
@@ -1037,9 +1074,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=28"></script>
-<script src="./data-save.js?v=28"></script>
-<script src="./finance-engine.js?v=28"></script>
-<script src="./app.js?v=28"></script>
+<script src="./data-loader.js?v=29"></script>
+<script src="./data-save.js?v=29"></script>
+<script src="./finance-engine.js?v=29"></script>
+<script src="./app.js?v=29"></script>
 </body>
 </html>
