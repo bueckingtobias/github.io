@@ -2320,7 +2320,7 @@
             <span class="mini-val">${k.bruttoRendite.toLocaleString("de-DE")} %</span></div>
         </div></div>`;
     }).join("");
-    const grid = el(`<div class="grid g-2">${cards}</div>`);
+    const grid = el(`<div class="grid g-2 g-objekte">${cards}</div>`);
     grid.querySelectorAll(".obj-card").forEach(c => c.onclick = () => route(c.dataset.id));
     host.appendChild(grid);
 
@@ -3906,6 +3906,31 @@
       }));
 
     zaehleHoch();
+    kippBeimScrollen();
+  }
+
+  // Die Produktvorschau richtet sich beim Scrollen langsam auf
+  function kippBeimScrollen() {
+    const shot = $("#lpShot"), lp = $("#landing");
+    if (!shot || !lp) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      shot.style.transform = "none"; return;
+    }
+    if (window.innerWidth <= 900) { shot.style.transform = "none"; return; }
+    let warten = false;
+    const anpassen = () => {
+      warten = false;
+      const oben = lp.scrollTop;
+      // Über die ersten 520 Pixel vom gekippten in den geraden Zustand
+      const p = Math.max(0, Math.min(1, oben / 520));
+      const yGrad = -9 * (1 - p);
+      const xGrad = 5 * (1 - p);
+      shot.style.transform = `rotateY(${yGrad.toFixed(2)}deg) rotateX(${xGrad.toFixed(2)}deg)`;
+    };
+    lp.addEventListener("scroll", () => {
+      if (!warten) { warten = true; requestAnimationFrame(anpassen); }
+    }, { passive: true });
+    anpassen();
   }
 
   // Die Zahl im Heldenbereich zählt beim Laden hoch — das Versprechen des Produkts
