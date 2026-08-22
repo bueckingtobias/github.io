@@ -760,6 +760,9 @@
 
   function enterApp() {
     document.documentElement.classList.remove("pre-login");
+    const lp = $("#landing"); if (lp) lp.classList.add("hide");
+    const tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) tc.setAttribute("content", "#16181d");
     $("#login").classList.add("hide"); $("#app").classList.remove("hide");
     buildRail(); route("overview");
     // Rückkehr von der Stripe-Bezahlseite auswerten
@@ -3866,8 +3869,71 @@
     document.addEventListener("wheel", e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
   }
 
+  /* ---------- LANDING ---------- */
+
+  function loginOeffnen(modus) {
+    $("#login").classList.remove("hide");
+    setRegMode(modus === "registrieren");
+    setTimeout(() => { const f = $("#mail"); if (f) f.focus(); }, 180);
+  }
+  function loginSchliessen() {
+    $("#login").classList.add("hide");
+    const m = $("#loginMsg"); if (m) { m.textContent = ""; m.className = "login-msg"; }
+  }
+
+  function landingVerdrahten() {
+    // Landing sichtbar, Login zunächst geschlossen
+    const lp = $("#landing");
+    if (lp) $("#login").classList.add("hide");
+
+    document.querySelectorAll("[data-login]").forEach(b =>
+      b.addEventListener("click", () => loginOeffnen(b.dataset.login)));
+
+    const zu = $("#loginZu");
+    if (zu) zu.addEventListener("click", loginSchliessen);
+    // Klick auf den abgedunkelten Hintergrund schließt ebenfalls
+    const lg = $("#login");
+    if (lg) lg.addEventListener("click", (e) => { if (e.target === lg) loginSchliessen(); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && lg && !lg.classList.contains("hide")) loginSchliessen();
+    });
+
+    // Sanftes Scrollen zu den Ankern
+    document.querySelectorAll('.lp-nav-links a[href^="#"]').forEach(a =>
+      a.addEventListener("click", (e) => {
+        const ziel = document.querySelector(a.getAttribute("href"));
+        if (ziel) { e.preventDefault(); ziel.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      }));
+
+    zaehleHoch();
+  }
+
+  // Die Zahl im Heldenbereich zählt beim Laden hoch — das Versprechen des Produkts
+  function zaehleHoch() {
+    const el1 = $("#lpZahl"), el2 = $("#lpRendite");
+    if (!el1) return;
+    const kurz = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const zielB = 8326, zielR = 6.11;
+    if (kurz) {
+      el1.textContent = zielB.toLocaleString("de-DE") + " €";
+      if (el2) el2.textContent = zielR.toLocaleString("de-DE", { minimumFractionDigits: 2 }) + " %";
+      return;
+    }
+    const start = performance.now(), dauer = 1500;
+    const lauf = (t) => {
+      const p = Math.min(1, (t - start) / dauer);
+      const e = 1 - Math.pow(1 - p, 3);   // weich auslaufend
+      el1.textContent = Math.round(zielB * e).toLocaleString("de-DE") + " €";
+      if (el2) el2.textContent = (zielR * e).toLocaleString("de-DE",
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " %";
+      if (p < 1) requestAnimationFrame(lauf);
+    };
+    requestAnimationFrame(lauf);
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
     blockZoom();
+    landingVerdrahten();
     $("#loginBtn").addEventListener("click", tryLogin);
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") regMode ? tryRegister() : tryLogin(); });
     $("#logoutBtn").addEventListener("click", logout);
@@ -3897,15 +3963,13 @@
         D = window.DASHBOARD_DATA;
         enterApp();
       } catch (e) {
-        $("#login").classList.remove("hide");
+        // Angemeldet, aber Daten konnten nicht geladen werden → Login-Popup mit Hinweis
+        loginOeffnen("anmelden");
         $("#loginMsg").textContent = window.fehlerText(e);
         $("#loginMsg").className = "login-msg bad";
         console.error(e);
-        setTimeout(() => $("#pw").focus(), 150);
       }
-    } else {
-      $("#login").classList.remove("hide");
-      setTimeout(() => $("#pw").focus(), 150);
     }
+    // Sonst bleibt die Landing-Seite stehen; der Login öffnet sich erst per Klick.
   });
 })();
