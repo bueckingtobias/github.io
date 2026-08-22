@@ -18,6 +18,168 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ============================ LANDING ============================
+   Feste helle Palette – unabhängig vom App-Theme.
+   Papier #FAFBFC · Tinte #101418 · Schiefer #5A6472 · Teal #0F766E    */
+#landing{position:fixed;inset:0;z-index:55;overflow-y:auto;overflow-x:hidden;
+  background:#FAFBFC;color:#101418;
+  font-family:"Inter",system-ui,-apple-system,sans-serif;
+  -webkit-overflow-scrolling:touch;touch-action:pan-y}
+#landing.hide{display:none}
+#landing ::selection{background:#0F766E;color:#fff}
+#landing h1,#landing h2,#landing h3{font-family:"Space Grotesk",system-ui,sans-serif;
+  letter-spacing:-.03em;margin:0}
+#landing p{margin:0}
+
+.lp-nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:28px;
+  padding:16px clamp(20px,5vw,64px);background:rgba(250,251,252,.86);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid #E8ECF1}
+.lp-nav-logo{height:34px;width:auto;filter:invert(1);flex:0 0 auto}
+.lp-nav-links{display:flex;gap:26px;margin-left:auto}
+.lp-nav-links a{font-size:14px;color:#5A6472;text-decoration:none;transition:color .15s}
+.lp-nav-links a:hover{color:#101418}
+.lp-nav-cta{display:flex;align-items:center;gap:10px}
+
+.lp-btn{cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:600;
+  background:#0F766E;color:#fff;border:1px solid #0F766E;border-radius:11px;
+  padding:11px 20px;transition:.16s}
+.lp-btn:hover{background:#0b5c56;border-color:#0b5c56;transform:translateY(-1px)}
+.lp-btn-lg{font-size:16px;padding:16px 30px;border-radius:13px}
+.lp-btn-hell{background:#fff;color:#0F766E;border-color:#CBD5DC}
+.lp-btn-hell:hover{background:#F1F6F5;border-color:#0F766E;color:#0F766E}
+.lp-btn-block{width:100%;margin-top:22px}
+.lp-btn-text{cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:600;
+  background:none;border:none;color:#101418;padding:11px 8px;transition:color .15s}
+.lp-btn-text:hover{color:#0F766E}
+
+/* Held */
+.lp-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,5vw,72px);
+  align-items:center;padding:clamp(48px,7vw,96px) clamp(20px,5vw,64px) clamp(40px,6vw,80px);
+  max-width:1400px;margin:0 auto}
+.lp-eyebrow{font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:#0F766E;margin-bottom:18px}
+.lp-h1{font-size:clamp(38px,5.6vw,68px);line-height:1.04;font-weight:600;margin-bottom:24px}
+.lp-h1 em{font-style:normal;color:#0F766E}
+.lp-lead{font-size:clamp(16px,1.5vw,19px);line-height:1.6;color:#5A6472;max-width:30em}
+.lp-hero-cta{display:flex;align-items:center;gap:18px;margin-top:34px;flex-wrap:wrap}
+.lp-cta-note{font-size:13.5px;color:#8A939F}
+
+/* Produktvorschau – das Signatur-Element */
+.lp-hero-vis{position:relative}
+.lp-shot{position:relative;z-index:2;background:#16181d;border-radius:22px;
+  padding:24px;box-shadow:0 30px 70px rgba(16,20,24,.22),0 4px 12px rgba(16,20,24,.08);
+  color:#eef1f5;font-family:"Inter",sans-serif}
+.lp-shot-h{margin-bottom:20px}
+.lp-shot-eyebrow{display:block;font-size:10.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:#5eead4;margin-bottom:5px}
+.lp-shot-title{font-family:"Space Grotesk",sans-serif;font-size:22px;font-weight:600}
+.lp-shot-grid{display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:auto auto;gap:12px}
+.lp-tile{background:rgba(48,52,60,.42);border:1px solid rgba(180,190,205,.12);
+  border-radius:15px;padding:16px}
+.lp-tile-hero{grid-row:span 2;background:linear-gradient(160deg,rgba(45,212,191,.14),rgba(48,52,60,.42))}
+.lp-tile-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  background:rgba(22,24,29,.6);border:1px solid rgba(180,190,205,.14);
+  color:#5eead4;font-size:15px;margin-bottom:14px}
+.lp-tile-num{font-family:"Space Grotesk",sans-serif;font-size:30px;font-weight:600;
+  line-height:1;letter-spacing:-.02em}
+.lp-tile-num.lp-sm{font-size:19px}
+.lp-tile-lab{font-size:12.5px;font-weight:600;margin-top:9px}
+.lp-tile-sub{font-size:11px;color:rgba(220,226,235,.45);margin-top:3px}
+.lp-shot-row{display:flex;align-items:center;gap:12px;margin-top:14px;
+  background:rgba(48,52,60,.42);border:1px solid rgba(180,190,205,.12);
+  border-radius:13px;padding:13px 16px}
+.lp-bar-lab{font-size:12px;color:rgba(220,226,235,.62);flex:0 0 auto}
+.lp-bar{flex:1;height:6px;border-radius:99px;background:rgba(180,190,205,.16);overflow:hidden}
+.lp-bar span{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,#0f766e,#2dd4bf);
+  animation:lpBar 1.4s cubic-bezier(.22,.61,.36,1) both .5s}
+@keyframes lpBar{from{width:0!important}}
+.lp-bar-val{font-size:12px;font-weight:700;color:#5eead4;flex:0 0 auto}
+.lp-shot-glow{position:absolute;inset:-8% -12% -14% -8%;z-index:1;border-radius:40px;
+  background:radial-gradient(60% 55% at 70% 30%,rgba(15,118,110,.16),transparent 70%);
+  filter:blur(20px)}
+
+/* Streifen */
+.lp-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#E8ECF1;
+  border-top:1px solid #E8ECF1;border-bottom:1px solid #E8ECF1}
+.lp-strip-i{background:#FAFBFC;padding:26px clamp(20px,4vw,44px);display:flex;flex-direction:column;gap:5px}
+.lp-strip-i b{font-size:14.5px;font-weight:600}
+.lp-strip-i span{font-size:13px;color:#5A6472}
+
+/* Abschnitte */
+.lp-sec{padding:clamp(56px,8vw,110px) clamp(20px,5vw,64px);max-width:1400px;margin:0 auto}
+.lp-sec-alt{background:#F2F5F8;max-width:none}
+.lp-sec-h{max-width:640px;margin-bottom:clamp(34px,4vw,54px)}
+.lp-h2{font-size:clamp(28px,3.6vw,44px);line-height:1.12;font-weight:600;margin-bottom:14px}
+.lp-sec-lead{font-size:16.5px;line-height:1.6;color:#5A6472}
+
+.lp-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:20px}
+.lp-card{background:#fff;border:1px solid #E4E8ED;border-radius:18px;padding:28px;
+  transition:.2s}
+.lp-card:hover{border-color:#0F766E;transform:translateY(-3px);
+  box-shadow:0 14px 34px rgba(16,20,24,.07)}
+.lp-card h3{font-size:19px;font-weight:600;margin-bottom:11px}
+.lp-card p{font-size:14.5px;line-height:1.62;color:#5A6472}
+
+/* Ablauf – echte Reihenfolge, daher nummeriert */
+.lp-steps{list-style:none;padding:0;margin:0;max-width:1400px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:34px}
+.lp-steps li{display:flex;gap:18px;align-items:flex-start}
+.lp-step-n{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:#0F766E;color:#fff;font-family:"Space Grotesk",sans-serif;font-size:17px;font-weight:600}
+.lp-steps h3{font-size:18px;font-weight:600;margin-bottom:9px}
+.lp-steps p{font-size:14.5px;line-height:1.62;color:#5A6472}
+
+/* Preise */
+.lp-preise{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;max-width:860px}
+.lp-plan{position:relative;background:#fff;border:1px solid #E4E8ED;border-radius:20px;padding:32px}
+.lp-plan-top{border-color:#0F766E;box-shadow:0 16px 40px rgba(15,118,110,.1)}
+.lp-plan-flag{position:absolute;top:-11px;left:32px;background:#0F766E;color:#fff;
+  font-size:11px;font-weight:700;letter-spacing:.04em;padding:5px 13px;border-radius:20px}
+.lp-plan-n{font-family:"Space Grotesk",sans-serif;font-size:20px;font-weight:600;margin-bottom:8px}
+.lp-plan-p{font-family:"Space Grotesk",sans-serif;font-size:36px;font-weight:600;letter-spacing:-.02em}
+.lp-plan-p span{font-size:14px;font-weight:400;color:#8A939F;letter-spacing:0}
+.lp-plan-d{font-size:14px;color:#5A6472;margin-top:10px}
+.lp-liste{list-style:none;padding:0;margin:22px 0 0}
+.lp-liste li{position:relative;padding-left:26px;margin-bottom:11px;font-size:14.5px;line-height:1.5}
+.lp-liste li:before{content:"";position:absolute;left:0;top:6px;width:15px;height:15px;
+  border-radius:50%;background:#0F766E;
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6L9 17l-5-5'/></svg>") center/11px no-repeat;
+  mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6L9 17l-5-5'/></svg>") center/11px no-repeat}
+
+/* Schluss + Fuß */
+.lp-schluss{text-align:center;padding:clamp(60px,8vw,110px) clamp(20px,5vw,64px);
+  background:#F2F5F8;border-top:1px solid #E8ECF1}
+.lp-schluss p{font-size:16.5px;color:#5A6472;margin:14px 0 30px}
+.lp-foot{display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:26px clamp(20px,5vw,64px);border-top:1px solid #E8ECF1}
+.lp-foot-logo{height:26px;width:auto;filter:invert(1);opacity:.75}
+.lp-foot-tx{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+.lp-foot-tx span{font-size:13px;color:#5A6472}
+.lp-foot-firma{font-size:12px!important;color:#8A939F!important}
+
+@media(max-width:900px){
+  .lp-hero{grid-template-columns:1fr;padding-top:40px}
+  .lp-hero-vis{order:-1}
+  .lp-nav-links{display:none}
+  .lp-strip{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .lp-nav{gap:12px;padding:12px 18px}
+  .lp-nav-logo{height:26px}
+  .lp-nav-cta .lp-btn{padding:10px 15px;font-size:13.5px}
+  .lp-btn-text{font-size:13.5px;padding:10px 4px}
+  .lp-shot{padding:18px}
+  .lp-shot-grid{grid-template-columns:1fr}
+  .lp-tile-hero{grid-row:auto}
+  .lp-tile-num{font-size:26px}
+}
+@media(prefers-reduced-motion:reduce){
+  .lp-bar span{animation:none}
+  .lp-btn:hover,.lp-card:hover{transform:none}
+}
+
 /* ============================ SMYRNA GREEN THEME ============================ */
 :root{
   /* Standard-Theme: Graphit + Teal-Akzent. Wird per data-theme / data-accent überschrieben. */
@@ -101,7 +263,8 @@ input,textarea,select,.sheet-b p,.note,.card-t,.num{-webkit-user-select:auto;use
 html,body{height:100%}
 html{background:var(--bg);overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* Solange der Login sichtbar ist, immer Graphit — kein grünes Durchscheinen */
-html.pre-login,html.pre-login body{background:#16181d!important}
+/* Vor der Anmeldung ist die Landing-Seite sichtbar – immer hell */
+html.pre-login,html.pre-login body{background:#FAFBFC!important}
 body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscroll-behavior:none;
   position:fixed;inset:0;width:100%;height:100%;
   -webkit-touch-callout:none;
@@ -118,28 +281,25 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
 *{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--mint) 25%,transparent) transparent}
 
 /* ============================ LOGIN ============================ */
-#login{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:24px;
-  background:
-    radial-gradient(680px 420px at 82% 6%,rgba(200,204,212,.09),transparent 58%),
-    radial-gradient(560px 380px at 12% 96%,rgba(139,144,153,.16),transparent 60%),
-    linear-gradient(180deg,#1c1f26,#16181d)}
+#login{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:24px;
+  background:rgba(16,20,24,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#login .login-schliessen{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;cursor:pointer;border:1px solid #E4E8ED;background:#fff;
+  color:#5A6472;font-size:19px;line-height:1;padding:0;transition:.15s}
+#login .login-schliessen:hover{border-color:#0F766E;color:#0F766E}
 #login.hide{display:none}
 .hide{display:none!important}
-.login-card{width:min(380px,100%);
-  background:linear-gradient(180deg,rgba(34,38,46,.66),rgba(32,35,42,.6));
-  border:1px solid rgba(180,190,205,.2);border-radius:24px;padding:34px 32px 28px;
-  backdrop-filter:blur(32px) saturate(1.15);
-  box-shadow:0 32px 70px -22px rgba(0,0,0,.62),0 6px 20px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.07);
-  position:relative;overflow:hidden}
-.login-card::before{content:"";position:absolute;top:0;left:24%;right:24%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(228,231,236,.5),transparent);pointer-events:none}
-.login-orb{position:absolute;width:180px;height:180px;right:-58px;top:-64px;border-radius:50%;
-  background:radial-gradient(circle at 42% 42%,rgba(228,231,236,.32),transparent 68%);
-  filter:blur(16px);opacity:.36;pointer-events:none}
+.login-card{width:min(400px,100%);
+  background:#fff;color:#101418;
+  border:1px solid #E4E8ED;border-radius:22px;padding:38px 32px 30px;
+  box-shadow:0 40px 90px -20px rgba(16,20,24,.4),0 8px 24px rgba(16,20,24,.12);
+  position:relative;overflow:hidden;
+  font-family:"Inter",system-ui,sans-serif}
+
+.login-orb{display:none}
 /* Logo mittig, prominenter — ersetzt den Schriftzug */
 .login-logo{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:26px;position:relative}
-.login-logo-img{max-width:300px;max-height:120px;width:78%;object-fit:contain;
-  filter:drop-shadow(0 8px 22px color-mix(in srgb,#8b9099 35%,transparent))}
+.login-logo-img{max-width:230px;max-height:80px;width:68%;object-fit:contain;filter:invert(1)}
 .login-logo-fallback{display:flex;align-items:center;gap:11px}
 .login-logo-txt h1{font-family:var(--fdisp);font-size:22px;margin:0;font-weight:600;letter-spacing:.04em}
 .mark{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;position:relative;overflow:hidden;
@@ -147,25 +307,25 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   box-shadow:0 8px 20px color-mix(in srgb,#8b9099 48%,transparent),inset 0 1px 0 rgba(255,255,255,.22)}
 .mark svg{width:24px;height:24px}
 /* Reiter-Umschalter */
-.login-tabs{position:relative;display:flex;background:rgba(22,24,29,.55);
-  border:1px solid rgba(180,190,205,.2);border-radius:13px;padding:4px;margin-bottom:22px}
+.login-tabs{position:relative;display:flex;background:#F2F5F8;
+  border:1px solid #E4E8ED;border-radius:13px;padding:4px;margin-bottom:22px}
 .ltab{flex:1;position:relative;z-index:2;background:none;border:none;cursor:pointer;
-  padding:10px;font-family:var(--fbody);font-size:14px;font-weight:600;color:var(--softer);
+  padding:10px;font-family:inherit;font-size:14px;font-weight:600;color:#5A6472;
   transition:color .2s;border-radius:9px}
-.ltab.active{color:#08120f}
+.ltab.active{color:#fff}
 .ltab-ind{position:absolute;z-index:1;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
-  background:linear-gradient(135deg,#c8ccd4,#8b9099);border-radius:9px;
-  box-shadow:0 5px 16px color-mix(in srgb,#8b9099 38%,transparent);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  background:#0F766E;border-radius:9px;
+  box-shadow:0 4px 12px rgba(15,118,110,.28);transition:transform .28s cubic-bezier(.4,0,.2,1)}
 .ltab-ind.right{transform:translateX(100%)}
 /* Formular: einheitlich linksbündig */
 .login-form{display:flex;flex-direction:column}
 .field-row{display:flex;flex-direction:column;margin-bottom:14px}
-.field-row label,#pwLabel{font-size:12px;color:var(--soft);margin:0 0 7px 2px;font-weight:500;text-align:left}
-.field-row input{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(180,190,205,.2);
-  background:rgba(22,24,29,.55);color:#eef1f5;
-  padding:13px 15px;font-size:15px;outline:none;font-family:var(--fbody);transition:.18s}
-.field-row input:focus{border-color:#c8ccd4;box-shadow:0 0 0 3px color-mix(in srgb,#c8ccd4 15%,transparent)}
-.field-row input::placeholder{color:rgba(220,226,235,.4)}
+.field-row label,#pwLabel{font-size:12.5px;color:#5A6472;margin:0 0 7px 2px;font-weight:500;text-align:left}
+.field-row input{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid #DDE3E9;
+  background:#FAFBFC;color:#101418;
+  padding:13px 15px;font-size:15px;outline:none;font-family:inherit;transition:.18s}
+.field-row input:focus{border-color:#0F766E;box-shadow:0 0 0 3px rgba(15,118,110,.13)}
+.field-row input::placeholder{color:#A6AEB8}
 /* Profilbild-Auswahl */
 #rowAvatar{display:flex;flex-direction:column;align-items:center;margin:2px 0 18px}
 .ava-circle{position:relative;width:88px;height:88px;border-radius:50%;cursor:pointer;padding:0;
@@ -182,14 +342,19 @@ body{margin:0;font-family:var(--fbody);color:var(--text);overflow:hidden;overscr
   box-shadow:0 4px 12px rgba(0,0,0,.4);border:2px solid var(--bg2)}
 .ava-edit svg{width:14px;height:14px}
 .ava-circle.filled .ava-edit{display:grid}
-.ava-cap{margin-top:11px;font-size:12.5px;color:var(--softer)}
+.ava-cap{margin-top:11px;font-size:12.5px;color:#8A939F}
 .login-btn{width:100%;margin-top:8px;cursor:pointer;border:none;border-radius:12px;
-  background:linear-gradient(135deg,#c8ccd4,#8b9099);color:#08120f;padding:15px;font-size:15px;font-weight:700;
-  font-family:var(--fbody);box-shadow:0 10px 26px color-mix(in srgb,#8b9099 40%,transparent);transition:.18s}
-.login-btn:hover{filter:brightness(1.06)}
+  background:#0F766E;color:#fff;padding:15px;font-size:15px;font-weight:700;
+  font-family:inherit;box-shadow:0 10px 24px rgba(15,118,110,.26);transition:.18s}
+.login-btn:hover{background:#0b5c56}
 .login-btn:active{transform:scale(.98)}
-.login-msg{min-height:18px;margin-top:14px;font-size:12.5px;color:var(--soft);text-align:center;line-height:1.4}
-.login-msg.bad{color:var(--danger)}
+.login-msg{min-height:18px;margin-top:14px;font-size:12.5px;color:#5A6472;text-align:center;line-height:1.4}
+.login-msg.bad{color:#c0392b}
+/* Avatar-Auswahl im hellen Popup */
+.login-card .ava-circle{border-color:#DDE3E9;background:#FAFBFC}
+.login-card .ava-circle:hover{border-color:#0F766E}
+.login-card .ava-cam{color:#8A939F}
+.login-card .ava-circle:hover .ava-cam{color:#0F766E}
 
 /* ============================ SHELL ============================ */
 #app{height:100dvh;height:100svh;display:grid;grid-template-columns:var(--rail) 1fr;overflow:hidden}
@@ -962,8 +1127,190 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </script>
 
 <!-- LOGIN -->
+<!-- LANDING -->
+<div id="landing">
+  <header class="lp-nav">
+    <img src="estriq.PNG" alt="ESTRIQ" class="lp-nav-logo" onerror="this.style.display='none'">
+    <nav class="lp-nav-links">
+      <a href="#funktionen">Funktionen</a>
+      <a href="#ablauf">So funktioniert's</a>
+      <a href="#preise">Preise</a>
+    </nav>
+    <div class="lp-nav-cta">
+      <button class="lp-btn-text" data-login="anmelden">Anmelden</button>
+      <button class="lp-btn" data-login="registrieren">Kostenlos testen</button>
+    </div>
+  </header>
+
+  <section class="lp-hero">
+    <div class="lp-hero-tx">
+      <div class="lp-eyebrow">Für private Vermieter und Eigentümer</div>
+      <h1 class="lp-h1">Sieh endlich, was deine<br><em>Immobilien wirklich</em><br>abwerfen.</h1>
+      <p class="lp-lead">ESTRIQ rechnet Mieteinnahmen, Nebenkosten, Kreditraten und Rendite zusammen —
+        je Objekt und über dein ganzes Portfolio. Kein Excel, keine Zettelwirtschaft.</p>
+      <div class="lp-hero-cta">
+        <button class="lp-btn lp-btn-lg" data-login="registrieren">30 Tage kostenlos testen</button>
+        <span class="lp-cta-note">Jederzeit kündbar</span>
+      </div>
+    </div>
+
+    <div class="lp-hero-vis" aria-hidden="true">
+      <div class="lp-shot">
+        <div class="lp-shot-h">
+          <span class="lp-shot-eyebrow">Portfolio</span>
+          <span class="lp-shot-title">Übersicht</span>
+        </div>
+        <div class="lp-shot-grid">
+          <div class="lp-tile lp-tile-hero">
+            <div class="lp-tile-ic">€</div>
+            <div class="lp-tile-num" id="lpZahl">0 €</div>
+            <div class="lp-tile-lab">Einnahmen / Monat</div>
+            <div class="lp-tile-sub">4 von 5 vermietet</div>
+          </div>
+          <div class="lp-tile">
+            <div class="lp-tile-ic">↗</div>
+            <div class="lp-tile-num lp-sm" id="lpRendite">0,00 %</div>
+            <div class="lp-tile-lab">Bruttorendite</div>
+          </div>
+          <div class="lp-tile">
+            <div class="lp-tile-ic">▤</div>
+            <div class="lp-tile-num lp-sm">939.883 €</div>
+            <div class="lp-tile-lab">Restschuld</div>
+          </div>
+        </div>
+        <div class="lp-shot-row">
+          <div class="lp-bar-lab">Vermietet</div>
+          <div class="lp-bar"><span style="width:80%"></span></div>
+          <div class="lp-bar-val">4/5</div>
+        </div>
+      </div>
+      <div class="lp-shot-glow"></div>
+    </div>
+  </section>
+
+  <section class="lp-strip">
+    <div class="lp-strip-i"><b>Wohnungen, Ferienwohnungen und Pachtland</b><span>alles in einem Portfolio</span></div>
+    <div class="lp-strip-i"><b>Automatische Mietkontrolle</b><span>ESTRIQ fragt nach, wenn Zahltag ist</span></div>
+    <div class="lp-strip-i"><b>Auf allen Geräten</b><span>als App auf dem Handy installierbar</span></div>
+  </section>
+
+  <section class="lp-sec" id="funktionen">
+    <div class="lp-sec-h">
+      <div class="lp-eyebrow">Funktionen</div>
+      <h2 class="lp-h2">Die Zahlen, die wirklich zählen</h2>
+      <p class="lp-sec-lead">Du trägst deine Objekte einmal ein. Ab dann rechnet ESTRIQ mit.</p>
+    </div>
+    <div class="lp-cards">
+      <article class="lp-card">
+        <h3>Einnahmen und Cashflow</h3>
+        <p>Kaltmiete, Nebenkosten und Kreditrate werden gegenübergestellt. Du siehst,
+          was am Monatsende tatsächlich übrig bleibt — nicht nur, was reinkommt.</p>
+      </article>
+      <article class="lp-card">
+        <h3>Rendite je Objekt</h3>
+        <p>Brutto- und Nettorendite, Cashflow-ROI und eingesetztes Kapital.
+          So erkennst du, welches Objekt trägt und welches nur Arbeit macht.</p>
+      </article>
+      <article class="lp-card">
+        <h3>Mieteingänge im Griff</h3>
+        <p>Du hinterlegst je Wohnung den Zahltag. Ist er erreicht, fragt ESTRIQ beim
+          Anmelden nach, ob die Miete da ist — und du hakst sie ab.</p>
+      </article>
+      <article class="lp-card">
+        <h3>Kredite und Tilgung</h3>
+        <p>Restschuld, Zinsanteil und Sondertilgungen laufen mit.
+          Du weißt jederzeit, wie weit du bist.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="lp-sec lp-sec-alt" id="ablauf">
+    <div class="lp-sec-h">
+      <div class="lp-eyebrow">So funktioniert's</div>
+      <h2 class="lp-h2">In wenigen Minuten startklar</h2>
+    </div>
+    <ol class="lp-steps">
+      <li>
+        <span class="lp-step-n">1</span>
+        <div>
+          <h3>Objekt anlegen</h3>
+          <p>ESTRIQ fragt dich Schritt für Schritt: Name, Ort, was du investiert hast.
+            Eine Frage pro Bildschirm, nichts zum Ausfüllen von Formularen.</p>
+        </div>
+      </li>
+      <li>
+        <span class="lp-step-n">2</span>
+        <div>
+          <h3>Wohnungen eintragen</h3>
+          <p>Fläche, Kaltmiete, Nebenkosten, Zahltag. Sobald die erste Wohnung
+            drin ist, stehen deine Zahlen im Dashboard.</p>
+        </div>
+      </li>
+      <li>
+        <span class="lp-step-n">3</span>
+        <div>
+          <h3>Laufen lassen</h3>
+          <p>Rendite, Cashflow und Tilgung aktualisieren sich mit.
+            Bei Zahltag meldet sich ESTRIQ von selbst.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="lp-sec" id="preise">
+    <div class="lp-sec-h">
+      <div class="lp-eyebrow">Preise</div>
+      <h2 class="lp-h2">Ein Monat kostenlos, dann fair</h2>
+      <p class="lp-sec-lead">Beide Tarife starten mit 30 Tagen ohne Kosten. Kündbar zum Monatsende.</p>
+    </div>
+    <div class="lp-preise">
+      <article class="lp-plan">
+        <div class="lp-plan-n">Basic</div>
+        <div class="lp-plan-p">19,99 €<span>/Monat</span></div>
+        <p class="lp-plan-d">Für den Einstieg mit wenigen Wohnungen.</p>
+        <ul class="lp-liste">
+          <li>Bis zu 3 Objekte</li>
+          <li>Bis zu 10 Wohneinheiten</li>
+          <li>Klassische Vermietung</li>
+          <li>Alle Auswertungen</li>
+        </ul>
+        <button class="lp-btn lp-btn-hell lp-btn-block" data-login="registrieren">Basic testen</button>
+      </article>
+      <article class="lp-plan lp-plan-top">
+        <div class="lp-plan-flag">Für wachsende Portfolios</div>
+        <div class="lp-plan-n">Premium</div>
+        <div class="lp-plan-p">49,99 €<span>/Monat</span></div>
+        <p class="lp-plan-d">Wenn mehr dazukommt als nur Wohnungen.</p>
+        <ul class="lp-liste">
+          <li>Unbegrenzt Objekte und Einheiten</li>
+          <li>Ferienwohnung und Kurzzeitvermietung</li>
+          <li>Landpacht und Pachtverträge</li>
+          <li>Volles Controlling über alles</li>
+        </ul>
+        <button class="lp-btn lp-btn-block" data-login="registrieren">Premium testen</button>
+      </article>
+    </div>
+  </section>
+
+  <section class="lp-schluss">
+    <h2 class="lp-h2">Deine Zahlen warten schon auf dich.</h2>
+    <p>Trag dein erstes Objekt ein und sieh in fünf Minuten, was es abwirft.</p>
+    <button class="lp-btn lp-btn-lg" data-login="registrieren">Jetzt kostenlos starten</button>
+  </section>
+
+  <footer class="lp-foot">
+    <img src="estriq.PNG" alt="ESTRIQ" class="lp-foot-logo" onerror="this.style.display='none'">
+    <div class="lp-foot-tx">
+      <span>ESTRIQ — Immobilien im Blick</span>
+      <span class="lp-foot-firma">Bücking Immobilien GmbH &amp; Co. KG</span>
+    </div>
+    <button class="lp-btn-text" data-login="anmelden">Anmelden</button>
+  </footer>
+</div>
+
 <div id="login">
   <div class="login-card">
+    <button type="button" class="login-schliessen" id="loginZu" aria-label="Schließen">×</button>
     <div class="login-orb"></div>
 
     <div class="login-logo">
@@ -1074,9 +1421,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=29"></script>
-<script src="./data-save.js?v=29"></script>
-<script src="./finance-engine.js?v=29"></script>
-<script src="./app.js?v=29"></script>
+<script src="./data-loader.js?v=30"></script>
+<script src="./data-save.js?v=30"></script>
+<script src="./finance-engine.js?v=30"></script>
+<script src="./app.js?v=30"></script>
 </body>
 </html>
