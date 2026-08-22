@@ -3874,7 +3874,7 @@
 
   function loginOeffnen(modus) {
     $("#login").classList.remove("hide");
-    setRegMode(modus === "registrieren");
+    setRegMode(false);   // Beta: keine Selbstregistrierung
     setTimeout(() => { const f = $("#mail"); if (f) f.focus(); }, 180);
   }
   function loginSchliessen() {
@@ -3910,6 +3910,74 @@
     kippBeimScrollen();
     stickyKnopf();
     impressumVerdrahten();
+    wartelisteVerdrahten();
+  }
+
+  /* ---------- WARTELISTE (Beta-Phase) ---------- */
+
+  async function wartelisteEintragen(mail, feld, msg, btn) {
+    const wert = (mail || "").trim().toLowerCase();
+    if (!wert || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wert)) {
+      msg.textContent = "Bitte gib eine gültige E-Mail-Adresse ein.";
+      msg.className = "lp-warte-msg bad";
+      return false;
+    }
+    const alt = btn.textContent;
+    btn.disabled = true; btn.textContent = "Moment…";
+    try {
+      // Woher kommt der Besuch? (für die Auswertung eurer Werbung)
+      const p = new URLSearchParams(location.search);
+      const quelle = p.get("utm_source") || p.get("quelle") || (document.referrer ? "web" : "direkt");
+      const { error } = await window.sb.from("warteliste").insert({ email: wert, quelle: quelle });
+      // Doppelte Eintragung ist kein Fehler für den Besucher
+      if (error && !String(error.message || "").includes("duplicate")) throw error;
+      msg.textContent = "Danke! Du stehst auf der Liste — wir melden uns zum Start.";
+      msg.className = "lp-warte-msg ok";
+      if (feld) feld.classList.add("fertig");
+      return true;
+    } catch (e) {
+      btn.disabled = false; btn.textContent = alt;
+      msg.textContent = "Das hat leider nicht geklappt. Bitte versuch es später noch einmal.";
+      msg.className = "lp-warte-msg bad";
+      return false;
+    }
+  }
+
+  function wartelisteVerdrahten() {
+    // Formular im Heldenbereich
+    const f1 = $("#warteForm");
+    if (f1) f1.addEventListener("submit", (e) => {
+      e.preventDefault();
+      wartelisteEintragen($("#warteMail").value, f1, $("#warteMsg"), $("#warteBtn"));
+    });
+
+    // Popup-Formular
+    const box = $("#warteBox"), f2 = $("#warteForm2"), zu = $("#wbZu");
+    if (f2) f2.addEventListener("submit", (e) => {
+      e.preventDefault();
+      wartelisteEintragen($("#warteMail2").value, f2, $("#warteMsg2"), $("#warteBtn2"));
+    });
+    if (zu) zu.addEventListener("click", () => box.classList.add("hide"));
+    if (box) box.addEventListener("click", (e) => { if (e.target === box) box.classList.add("hide"); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && box && !box.classList.contains("hide")) box.classList.add("hide");
+    });
+
+    // Alle Knöpfe mit data-warte öffnen das Popup
+    document.querySelectorAll("[data-warte]").forEach(b =>
+      b.addEventListener("click", () => {
+        box.classList.remove("hide");
+        setTimeout(() => { const i = $("#warteMail2"); if (i) i.focus(); }, 180);
+      }));
+
+    // Aus dem Login heraus zur Warteliste
+    const bw = $("#betaWarte");
+    if (bw) bw.addEventListener("click", (e) => {
+      e.preventDefault();
+      loginSchliessen();
+      box.classList.remove("hide");
+      setTimeout(() => { const i = $("#warteMail2"); if (i) i.focus(); }, 200);
+    });
   }
 
   // Impressum & Datenschutz
