@@ -303,6 +303,60 @@
   .lp-sticky{display:flex}
 }
 
+/* Bald-verfügbar-Kennzeichnung */
+.lp-badge-soon{display:inline-flex;align-items:center;gap:9px;margin-bottom:20px;
+  background:#E7F2EC;color:#1F6B4A;border:1px solid rgba(31,107,74,.2);
+  font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:20px}
+.lp-puls{width:8px;height:8px;border-radius:50%;background:#1F6B4A;
+  box-shadow:0 0 0 0 rgba(31,107,74,.5);animation:lpPuls 2.2s ease-out infinite}
+@keyframes lpPuls{
+  0%{box-shadow:0 0 0 0 rgba(31,107,74,.5)}
+  70%{box-shadow:0 0 0 9px rgba(31,107,74,0)}
+  100%{box-shadow:0 0 0 0 rgba(31,107,74,0)}
+}
+
+/* Warteliste */
+.lp-warte{margin-top:34px;max-width:520px}
+.lp-warte-feld{display:flex;gap:10px}
+.lp-warte-feld input{flex:1;min-width:0;border:1px solid #DDE3E9;border-radius:13px;
+  background:#fff;color:#101418;padding:16px 18px;font-size:16px;
+  font-family:inherit;outline:none;transition:.16s}
+.lp-warte-feld input::placeholder{color:#A6AEB8}
+.lp-warte-feld input:focus{border-color:#1F6B4A;box-shadow:0 0 0 3px rgba(31,107,74,.13)}
+.lp-warte-feld .lp-btn-lg{flex:0 0 auto;white-space:nowrap}
+.lp-warte-msg{font-size:13.5px;color:#5A6472;margin-top:12px;line-height:1.5}
+.lp-warte-msg.ok{color:#1F6B4A;font-weight:600}
+.lp-warte-msg.bad{color:#c0392b}
+.lp-warte.fertig .lp-warte-feld{display:none}
+
+/* Warteliste als Popup (aus Preisen, Fußzeile, festem Knopf) */
+#warteBox{position:fixed;inset:0;z-index:75;display:grid;place-items:center;padding:22px;
+  background:rgba(16,20,24,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#warteBox.hide{display:none}
+.wb-karte{position:relative;width:min(440px,100%);background:#fff;color:#101418;
+  border-radius:20px;padding:36px 30px 30px;text-align:center;
+  box-shadow:0 40px 90px -20px rgba(16,20,24,.4);font-family:"Inter",system-ui,sans-serif}
+.wb-karte h3{font-family:"Space Grotesk",sans-serif;font-size:22px;font-weight:600;
+  margin:0 0 10px;letter-spacing:-.02em}
+.wb-karte p{font-size:14.5px;line-height:1.6;color:#5A6472;margin:0 0 22px}
+.wb-karte .lp-warte{margin-top:0;max-width:none}
+.wb-karte .lp-warte-feld{flex-direction:column}
+.wb-karte .lp-warte-feld .lp-btn-lg{width:100%}
+
+@media(max-width:560px){
+  .lp-warte{margin-top:26px}
+  .lp-warte-feld{flex-direction:column}
+  .lp-warte-feld .lp-btn-lg{width:100%}
+  .lp-badge-soon{font-size:12px;padding:6px 13px;margin-bottom:16px}
+}
+
+/* Beta-Phase: keine Selbstregistrierung */
+.login-tabs.beta-nur-login{display:none}
+.beta-hinweis{font-size:12.5px;color:#5A6472;text-align:center;margin-bottom:20px;
+  background:#F2F5F8;border:1px solid #E4E8ED;border-radius:11px;padding:11px 14px;line-height:1.5}
+.beta-hinweis a{color:#1F6B4A;font-weight:600;text-decoration:underline;
+  text-underline-offset:2px;cursor:pointer}
+
 /* ============================ SMYRNA GREEN THEME ============================ */
 :root{
   /* Standard-Theme: Graphit + Teal-Akzent. Wird per data-theme / data-accent überschrieben. */
@@ -1266,21 +1320,25 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
       <a href="#preise">Preise</a>
     </nav>
     <div class="lp-nav-cta">
-      <button class="lp-btn-text" data-login="anmelden">Anmelden</button>
-      <button class="lp-btn" data-login="registrieren">Kostenlos testen</button>
+      <button class="lp-btn-text" data-login="anmelden">Beta-Login</button>
+      <button class="lp-btn" data-warte>Vormerken</button>
     </div>
   </header>
 
   <section class="lp-hero">
     <div class="lp-hero-tx">
+      <div class="lp-badge-soon"><span class="lp-puls"></span>Bald verfügbar · Beta läuft</div>
       <div class="lp-eyebrow">Für private Vermieter und Eigentümer</div>
       <h1 class="lp-h1">Sieh endlich, was deine<br><em>Immobilien wirklich</em><br>abwerfen.</h1>
       <p class="lp-lead">ESTRIQ rechnet Mieteinnahmen, Nebenkosten, Kreditraten und Rendite zusammen —
         je Objekt und über dein ganzes Portfolio. Kein Excel, keine Zettelwirtschaft.</p>
-      <div class="lp-hero-cta">
-        <button class="lp-btn lp-btn-lg" data-login="registrieren">30 Tage kostenlos testen</button>
-        <span class="lp-cta-note">Jederzeit kündbar</span>
-      </div>
+      <form class="lp-warte" id="warteForm" novalidate>
+        <div class="lp-warte-feld">
+          <input type="email" id="warteMail" placeholder="deine@email.de" autocomplete="email" required>
+          <button type="submit" class="lp-btn lp-btn-lg" id="warteBtn">Platz sichern</button>
+        </div>
+        <div class="lp-warte-msg" id="warteMsg">Trag dich ein und du bist beim Start als Erste:r dabei.</div>
+      </form>
     </div>
 
     <div class="lp-hero-vis" aria-hidden="true">
@@ -1432,7 +1490,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
     <div class="lp-sec-h">
       <div class="lp-eyebrow">Preise</div>
       <h2 class="lp-h2">Ein Monat kostenlos, dann fair</h2>
-      <p class="lp-sec-lead">Beide Tarife starten mit 30 Tagen ohne Kosten. Kündbar zum Monatsende.</p>
+      <p class="lp-sec-lead">Beide Tarife starten mit 30 Tagen ohne Kosten. Zum Start bekommst du als Vorgemerkte:r Bescheid — kündbar zum Monatsende.</p>
     </div>
     <div class="lp-preise">
       <article class="lp-plan">
@@ -1445,7 +1503,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
           <li>Klassische Vermietung</li>
           <li>Alle Auswertungen</li>
         </ul>
-        <button class="lp-btn lp-btn-hell lp-btn-block" data-login="registrieren">Basic testen</button>
+        <button class="lp-btn lp-btn-hell lp-btn-block" data-warte>Für Basic vormerken</button>
       </article>
       <article class="lp-plan lp-plan-top">
         <div class="lp-plan-flag">Für wachsende Portfolios</div>
@@ -1458,15 +1516,16 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
           <li>Landpacht und Pachtverträge</li>
           <li>Volles Controlling über alles</li>
         </ul>
-        <button class="lp-btn lp-btn-block" data-login="registrieren">Premium testen</button>
+        <button class="lp-btn lp-btn-block" data-warte>Für Premium vormerken</button>
       </article>
     </div>
   </section>
 
   <section class="lp-schluss">
-    <h2 class="lp-h2">Deine Zahlen warten schon auf dich.</h2>
-    <p>Trag dein erstes Objekt ein und sieh in fünf Minuten, was es abwirft.</p>
-    <button class="lp-btn lp-btn-lg" data-login="registrieren">Jetzt kostenlos starten</button>
+    <h2 class="lp-h2">Sei dabei, wenn ESTRIQ startet.</h2>
+    <p>Wir öffnen ESTRIQ Schritt für Schritt. Trag dich ein und du gehörst
+      zu den Ersten, die ihr Portfolio einrichten.</p>
+    <button class="lp-btn lp-btn-lg" data-warte>Platz auf der Warteliste sichern</button>
   </section>
 
   <footer class="lp-foot">
@@ -1477,17 +1536,34 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
     </div>
     <div class="lp-foot-links">
       <a href="#" id="lpImpressum">Impressum &amp; Datenschutz</a>
-      <button class="lp-btn-text" data-login="anmelden">Anmelden</button>
+      <button class="lp-btn-text" data-login="anmelden">Beta-Login</button>
     </div>
   </footer>
 
   <!-- Fester Handlungsknopf auf dem Handy -->
   <div class="lp-sticky" id="lpSticky">
     <div class="lp-sticky-tx">
-      <b>30 Tage kostenlos</b>
-      <span>danach ab 19,99 € / Monat</span>
+      <b>ESTRIQ startet bald</b>
+      <span>Jetzt Platz sichern — kostenlos</span>
     </div>
-    <button class="lp-btn" data-login="registrieren">Starten</button>
+    <button class="lp-btn" data-warte>Vormerken</button>
+  </div>
+</div>
+
+<!-- WARTELISTE -->
+<div id="warteBox" class="hide">
+  <div class="wb-karte">
+    <button type="button" class="login-schliessen" id="wbZu" aria-label="Schließen">×</button>
+    <h3>Sei beim Start dabei</h3>
+    <p>ESTRIQ ist gerade in der Beta. Trag deine E-Mail ein — wir melden uns,
+      sobald dein Zugang bereitsteht.</p>
+    <form class="lp-warte" id="warteForm2" novalidate>
+      <div class="lp-warte-feld">
+        <input type="email" id="warteMail2" placeholder="deine@email.de" autocomplete="email" required>
+        <button type="submit" class="lp-btn lp-btn-lg" id="warteBtn2">Platz sichern</button>
+      </div>
+      <div class="lp-warte-msg" id="warteMsg2">Keine Werbung, nur die Startnachricht.</div>
+    </form>
   </div>
 </div>
 
@@ -1587,10 +1663,14 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
       </div>
     </div>
 
-    <div class="login-tabs">
+    <div class="login-tabs beta-nur-login">
       <button type="button" class="ltab active" id="tabLogin">Anmelden</button>
       <button type="button" class="ltab" id="tabRegister">Registrieren</button>
       <div class="ltab-ind" id="tabInd"></div>
+    </div>
+    <div class="beta-hinweis">
+      Beta-Zugang nur auf Einladung.
+      <a href="#" id="betaWarte">Auf die Warteliste</a>
     </div>
 
     <div class="login-form">
@@ -1687,9 +1767,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=32"></script>
-<script src="./data-save.js?v=32"></script>
-<script src="./finance-engine.js?v=32"></script>
-<script src="./app.js?v=32"></script>
+<script src="./data-loader.js?v=33"></script>
+<script src="./data-save.js?v=33"></script>
+<script src="./finance-engine.js?v=33"></script>
+<script src="./app.js?v=33"></script>
 </body>
 </html>
