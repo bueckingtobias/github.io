@@ -177,12 +177,16 @@ async function nachSpeichern() {
 
 // Mieteingang für eine Einheit im laufenden Monat festhalten
 async function mietEingangSetzen(einheitId, jahr, monat, status, betrag) {
-  const { error } = await window.sb.from('mietzahlungen')
-    .upsert({
-      einheit_id: einheitId, jahr: jahr, monat: monat,
-      status: status, betrag: betrag ?? null, bestaetigt_am: new Date().toISOString()
-    }, { onConflict: 'einheit_id,jahr,monat' });
+  // Über eine geprüfte Datenbankfunktion – umgeht Upsert-Berechtigungsprobleme
+  const { data, error } = await window.sb.rpc('miete_bestaetigen', {
+    p_einheit: einheitId,
+    p_jahr: jahr,
+    p_monat: monat,
+    p_status: status,
+    p_betrag: betrag ?? null
+  });
   if (error) throw error;
+  if (data === 'kein_zugriff') throw new Error('Diese Einheit gehört nicht zu deinem Konto.');
 }
 
 window.meineOrgId = meineOrgId;
