@@ -65,7 +65,7 @@
     // Farbschema aus dem Profil anwenden (geräteübergreifend).
     // Fällt auf den lokal gespeicherten Wert zurück, sonst Standard Graphit/Silber.
     const theme = currentUser.theme || localStorage.getItem("estriq_theme") || "graphit";
-    const accent = currentUser.accent || localStorage.getItem("estriq_accent") || "silber";
+    const accent = currentUser.accent || localStorage.getItem("estriq_accent") || "buecking";
     themeAnwenden(theme, accent);
     themeSpeichern(theme, accent);
   }
@@ -123,6 +123,7 @@
     { id: "marine",  name: "Marine",  bg: "#111a2b" }
   ];
   const AKZENTE = [
+    { id: "buecking",  name: "Bücking",   farbe: "#4CAF7D" },
     { id: "teal",      name: "Teal",      farbe: "#2dd4bf" },
     { id: "mint",      name: "Mint",      farbe: "#4ade9e" },
     { id: "blau",      name: "Blau",      farbe: "#4a9fee" },
@@ -144,7 +145,7 @@
     try {
       if (theme === "graphit") localStorage.removeItem("estriq_theme");
       else localStorage.setItem("estriq_theme", theme);
-      localStorage.setItem("estriq_accent", accent || "silber");
+      localStorage.setItem("estriq_accent", accent || "buecking");
     } catch (_) {}
   }
   // Farbschema am Nutzer in der Datenbank speichern (geräteübergreifend)
@@ -2320,7 +2321,7 @@
             <span class="mini-val">${k.bruttoRendite.toLocaleString("de-DE")} %</span></div>
         </div></div>`;
     }).join("");
-    const grid = el(`<div class="grid g-2 g-objekte">${cards}</div>`);
+    const grid = el(`<div class="grid g-objekte">${cards}</div>`);
     grid.querySelectorAll(".obj-card").forEach(c => c.onclick = () => route(c.dataset.id));
     host.appendChild(grid);
 
@@ -3907,6 +3908,35 @@
 
     zaehleHoch();
     kippBeimScrollen();
+    stickyKnopf();
+    impressumVerdrahten();
+  }
+
+  // Impressum & Datenschutz
+  function impressumVerdrahten() {
+    const link = $("#lpImpressum"), box = $("#impressum"), zu = $("#impZu");
+    if (!link || !box) return;
+    link.addEventListener("click", (e) => { e.preventDefault(); box.classList.remove("hide"); });
+    if (zu) zu.addEventListener("click", () => box.classList.add("hide"));
+    box.addEventListener("click", (e) => { if (e.target === box) box.classList.add("hide"); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !box.classList.contains("hide")) box.classList.add("hide");
+    });
+  }
+
+  // Fester Handlungsknopf auf dem Handy: erscheint, sobald der Held vorbei ist
+  function stickyKnopf() {
+    const bar = $("#lpSticky"), lp = $("#landing");
+    if (!bar || !lp) return;
+    let warten = false;
+    const pruefen = () => {
+      warten = false;
+      bar.classList.toggle("an", lp.scrollTop > 420);
+    };
+    lp.addEventListener("scroll", () => {
+      if (!warten) { warten = true; requestAnimationFrame(pruefen); }
+    }, { passive: true });
+    pruefen();
   }
 
   // Die Produktvorschau richtet sich beim Scrollen langsam auf
