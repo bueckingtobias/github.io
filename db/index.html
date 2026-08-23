@@ -147,9 +147,11 @@
 .lp-sec-alt{background:#F2F5F8;max-width:none;padding-left:0;padding-right:0}
 .lp-sec-alt > *{max-width:1400px;margin-left:auto;margin-right:auto;
   padding-left:clamp(20px,5vw,64px);padding-right:clamp(20px,5vw,64px);box-sizing:border-box}
-.lp-sec-h{max-width:640px;margin-bottom:clamp(34px,4vw,54px)}
-.lp-h2{font-size:clamp(28px,3.6vw,44px);line-height:1.12;font-weight:600;margin-bottom:14px}
-.lp-sec-lead{font-size:16.5px;line-height:1.6;color:#5A6472}
+/* Der Block spannt über die volle Breite (beginnt also links an der
+   gemeinsamen Kante). Nur der Text bricht früher um, damit er lesbar bleibt. */
+.lp-sec-h{max-width:none;margin:0 0 clamp(34px,4vw,54px)}
+.lp-h2{font-size:clamp(28px,3.6vw,44px);line-height:1.12;font-weight:600;margin:0 0 14px;max-width:15em}
+.lp-sec-lead{font-size:16.5px;line-height:1.6;color:#5A6472;max-width:34em}
 
 .lp-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:20px}
 .lp-card{background:#fff;border:1px solid #E4E8ED;border-radius:18px;padding:28px;
@@ -195,7 +197,7 @@
 .lp-schluss{padding:clamp(60px,8vw,110px) 0;background:#F2F5F8;border-top:1px solid #E8ECF1}
 .lp-schluss > *{max-width:1400px;margin-left:auto;margin-right:auto;
   padding-left:clamp(20px,5vw,64px);padding-right:clamp(20px,5vw,64px);box-sizing:border-box;display:block}
-.lp-schluss p{font-size:16.5px;color:#5A6472;margin:18px auto 44px;max-width:calc(34em + clamp(40px,10vw,128px))}
+.lp-schluss p{font-size:16.5px;color:#5A6472;margin:18px 0 44px;max-width:calc(34em + clamp(40px,10vw,128px))}
 .lp-schluss .lp-btn-lg{width:auto}
 .lp-foot{display:flex;align-items:center;gap:18px;flex-wrap:wrap;
   padding:26px clamp(20px,5vw,64px);border-top:1px solid #E8ECF1}
@@ -265,7 +267,7 @@
   .lp-plan-p{font-size:32px}
 
   .lp-schluss{padding:48px 18px}
-  .lp-schluss p{margin:16px auto 32px;font-size:15.5px}
+  .lp-schluss p{margin:16px 0 32px;font-size:15.5px}
   .lp-schluss .lp-btn-lg{width:100%}
 
   .lp-foot{flex-direction:column;align-items:flex-start;gap:12px;padding:24px 18px}
@@ -1928,9 +1930,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=36"></script>
-<script src="./data-save.js?v=36"></script>
-<script src="./finance-engine.js?v=36"></script>
-<script src="./app.js?v=36"></script>
+<script src="./data-loader.js?v=37"></script>
+<script src="./data-save.js?v=37"></script>
+<script src="./finance-engine.js?v=37"></script>
+<script src="./app.js?v=37"></script>
 </body>
 </html>
