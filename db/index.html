@@ -35,7 +35,7 @@
   padding:16px clamp(20px,5vw,64px);background:rgba(250,251,252,.86);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid #E8ECF1}
-.lp-nav-logo{height:34px;width:auto;filter:invert(1);flex:0 0 auto}
+.lp-nav-logo{height:52px;width:auto;filter:invert(1);flex:0 0 auto}
 .lp-nav-links{display:flex;gap:26px;margin-left:auto}
 .lp-nav-links a{font-size:14px;color:#5A6472;text-decoration:none;transition:color .15s}
 .lp-nav-links a:hover{color:#101418}
@@ -143,6 +143,7 @@
 /* Abschnitte */
 .lp-sec{padding:clamp(56px,8vw,110px) clamp(20px,5vw,64px);max-width:1400px;margin:0 auto}
 .lp-sec-alt{background:#F2F5F8;max-width:none}
+#ablauf .lp-sec-h{margin-left:auto;margin-right:auto;text-align:center}
 .lp-sec-h{max-width:640px;margin-bottom:clamp(34px,4vw,54px)}
 .lp-h2{font-size:clamp(28px,3.6vw,44px);line-height:1.12;font-weight:600;margin-bottom:14px}
 .lp-sec-lead{font-size:16.5px;line-height:1.6;color:#5A6472}
@@ -158,17 +159,19 @@
 /* Ablauf – echte Reihenfolge, daher nummeriert */
 .lp-steps{list-style:none;padding:0;margin:0;max-width:1400px;
   display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:34px}
-.lp-steps li{display:flex;gap:18px;align-items:flex-start}
-.lp-step-n{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
-  background:#1F6B4A;color:#fff;font-family:"Space Grotesk",sans-serif;font-size:17px;font-weight:600}
+.lp-steps li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.lp-step-n{flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  background:#1F6B4A;color:#fff;font-family:"Space Grotesk",sans-serif;font-size:19px;font-weight:600;
+  box-shadow:0 8px 20px rgba(31,107,74,.25)}
 .lp-steps h3{font-size:18px;font-weight:600;margin-bottom:9px}
-.lp-steps p{font-size:14.5px;line-height:1.62;color:#5A6472}
+.lp-steps p{font-size:14.5px;line-height:1.62;color:#5A6472;max-width:30em;margin:0 auto}
 
 /* Preise */
 .lp-preise{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
 .lp-plan-life{border-color:#C9A227;
   background:linear-gradient(180deg,#FFFCF2,#fff)}
 .lp-flag-life{background:#C9A227}
+.lp-life-note{font-size:11.5px;color:#8A939F;text-align:center;margin-top:12px;line-height:1.45}
 .lp-plan-life .lp-liste li:before{background:#C9A227}
 .lp-plan{position:relative;background:#fff;border:1px solid #E4E8ED;border-radius:20px;padding:32px}
 .lp-plan-top{border-color:#1F6B4A;box-shadow:0 16px 40px rgba(31,107,74,.1)}
@@ -191,7 +194,7 @@
 .lp-schluss p{font-size:16.5px;color:#5A6472;margin:18px auto 44px;max-width:34em}
 .lp-foot{display:flex;align-items:center;gap:18px;flex-wrap:wrap;
   padding:26px clamp(20px,5vw,64px);border-top:1px solid #E8ECF1}
-.lp-foot-logo{height:26px;width:auto;filter:invert(1);opacity:.75}
+.lp-foot-logo{height:40px;width:auto;filter:invert(1);opacity:.8}
 .lp-foot-tx{display:flex;flex-direction:column;gap:2px;margin-right:auto}
 .lp-foot-tx span{font-size:13px;color:#5A6472}
 .lp-foot-firma{font-size:12px!important;color:#8A939F!important}
@@ -209,7 +212,7 @@
 /* Handy – der Hauptweg für Besucher aus der Werbung */
 @media(max-width:560px){
   .lp-nav{gap:10px;padding:11px 16px}
-  .lp-nav-logo{height:24px}
+  .lp-nav-logo{height:36px}
   .lp-nav-cta{gap:4px}
   .lp-nav-cta .lp-btn{padding:10px 14px;font-size:13.5px;border-radius:10px}
   .lp-btn-text{font-size:13.5px;padding:10px 6px}
@@ -369,8 +372,13 @@
 .lp-ein-dreh .lp-ein-vis{order:1}
 .lp-ein-tx h3{font-size:clamp(20px,2.3vw,26px);font-weight:600;margin-bottom:12px}
 .lp-ein-tx p{font-size:15.5px;line-height:1.65;color:#5A6472;max-width:34em}
+.lp-ein-vis{perspective:1500px;perspective-origin:50% 45%}
 .lp-mini{background:#16181d;border-radius:16px;padding:20px;color:#eef1f5;
-  box-shadow:0 20px 46px -14px rgba(16,20,24,.3)}
+  box-shadow:0 26px 56px -16px rgba(16,20,24,.36),0 4px 12px rgba(16,20,24,.1);
+  transform:rotateY(7deg) rotateX(4deg);transform-style:preserve-3d;
+  transition:transform .1s linear;will-change:transform}
+/* Bei gedrehter Anordnung von der anderen Seite kippen */
+.lp-ein-dreh .lp-mini{transform:rotateY(-7deg) rotateX(4deg)}
 .lp-mini-h{margin-bottom:16px}
 .lp-mini-e{display:block;font-size:10px;font-weight:700;letter-spacing:.13em;
   text-transform:uppercase;color:#7DD3A6;margin-bottom:5px}
@@ -413,6 +421,23 @@
   .lp-mini-gross{font-size:28px}
   .lp-mk span{font-size:17px}
 }
+
+/* Stimmen von Testnutzern */
+.lp-stimmen{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;margin-top:clamp(34px,4vw,52px)}
+.lp-stimme{margin:0;background:#fff;border:1px solid #E4E8ED;border-radius:18px;
+  padding:28px 26px}
+.lp-stimme blockquote{margin:0 0 20px;font-size:16px;line-height:1.65;color:#101418;
+  font-family:"Space Grotesk",system-ui,sans-serif;letter-spacing:-.01em}
+.lp-stimme blockquote:before{content:"„";font-size:34px;line-height:0;color:#1F6B4A;
+  vertical-align:-8px;margin-right:2px}
+.lp-stimme figcaption{display:flex;align-items:center;gap:12px}
+.lp-st-av{flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  background:#E7F2EC;color:#1F6B4A;font-family:"Space Grotesk",sans-serif;
+  font-size:16px;font-weight:600}
+.lp-st-tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lp-st-tx b{font-size:14px;font-weight:600}
+.lp-st-tx small{font-size:12.5px;color:#5A6472}
 
 /* ============================ SMYRNA GREEN THEME ============================ */
 :root{
@@ -1653,18 +1678,49 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
       </article>
 
       <article class="lp-plan lp-plan-life">
-        <div class="lp-plan-flag lp-flag-life">Nur zum Start</div>
+        <div class="lp-plan-flag lp-flag-life">Nur 100 Plätze</div>
         <div class="lp-plan-n">Lifetime</div>
         <div class="lp-plan-p">199,99 €<span>einmalig</span></div>
-        <p class="lp-plan-d">Einmal zahlen, dauerhaft nutzen — solange das Angebot besteht.</p>
+        <p class="lp-plan-d">Einmal zahlen, dauerhaft nutzen. Danach gibt es ESTRIQ nur noch im Monatstarif.</p>
         <ul class="lp-liste">
           <li>Alles aus Premium</li>
           <li>Keine monatlichen Kosten</li>
           <li>Alle künftigen Funktionen</li>
-          <li>Begrenztes Startangebot</li>
+          <li>Streng limitiert auf 100 Zugänge</li>
         </ul>
         <button class="lp-btn lp-btn-block" data-warte>Lifetime sichern</button>
+        <div class="lp-life-note">Wird nach der Startphase dauerhaft eingestellt.</div>
       </article>
+    </div>
+    <!-- ==========================================================
+         TESTIMONIALS
+         WICHTIG: Die Platzhalter unten durch ECHTE Zitate deiner
+         Beta-Tester ersetzen. Erfundene Bewertungen sind nach
+         § 5 UWG irreführende Werbung und abmahnfähig.
+         Ersetze: Zitat, Name, Rolle. Fehlen echte Zitate,
+         diesen ganzen Abschnitt vorerst löschen.
+         ========================================================== -->
+    <div class="lp-stimmen">
+      <figure class="lp-stimme">
+        <blockquote>[Hier ein echtes Zitat deines Beta-Testers einsetzen — was ihm konkret geholfen hat, möglichst mit einer Zahl oder einem Beispiel.]</blockquote>
+        <figcaption>
+          <span class="lp-st-av">?</span>
+          <span class="lp-st-tx">
+            <b>[Name des Testers]</b>
+            <small>[z. B. Vermieter, 4 Wohnungen, Bremen]</small>
+          </span>
+        </figcaption>
+      </figure>
+      <figure class="lp-stimme">
+        <blockquote>[Zweites echtes Zitat — gern aus einer anderen Perspektive, z. B. jemand mit Ferienwohnung oder größerem Bestand.]</blockquote>
+        <figcaption>
+          <span class="lp-st-av">?</span>
+          <span class="lp-st-tx">
+            <b>[Name des Testers]</b>
+            <small>[z. B. Eigentümerin, 9 Einheiten, Oldenburg]</small>
+          </span>
+        </figcaption>
+      </figure>
     </div>
   </section>
 
@@ -1914,9 +1970,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=34"></script>
-<script src="./data-save.js?v=34"></script>
-<script src="./finance-engine.js?v=34"></script>
-<script src="./app.js?v=34"></script>
+<script src="./data-loader.js?v=35"></script>
+<script src="./data-save.js?v=35"></script>
+<script src="./finance-engine.js?v=35"></script>
+<script src="./app.js?v=35"></script>
 </body>
 </html>
