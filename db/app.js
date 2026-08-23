@@ -168,7 +168,7 @@
   /* ---------- ABO / TARIF ---------- */
   const TARIFE = {
     basic:   { name: "Basic",   preis: "19,99 €", objekte: 3, einheiten: 10 },
-    premium: { name: "Premium", preis: "49,99 €", objekte: Infinity, einheiten: Infinity }
+    premium: { name: "Premium", preis: "29,99 €", objekte: Infinity, einheiten: Infinity }
   };
   function abo() {
     return (D && D.abo) || { tarif: "premium", roh_tarif: "test", objekte: 0, einheiten: 0 };
@@ -248,7 +248,7 @@
         <div class="tarif-card premium${aktuell === "premium" ? " current" : ""}">
           <div class="tarif-flag">Empfohlen</div>
           <div class="tarif-n">Premium</div>
-          <div class="tarif-p">49,99 €<span>/Monat</span></div>
+          <div class="tarif-p">29,99 €<span>/Monat</span></div>
           <ul class="tarif-feats">
             <li>Unbegrenzt Objekte</li>
             <li>Unbegrenzt Einheiten</li>
@@ -1463,7 +1463,7 @@
       antworten.arten === "airbnb" || antworten.arten === "pacht" ||
       antworten.auswertung === "voll";
     const plan = brauchtPremium ? "premium" : "basic";
-    const preis = brauchtPremium ? "49,99 €" : "19,99 €";
+    const preis = brauchtPremium ? "29,99 €" : "19,99 €";
     const name = brauchtPremium ? "Premium" : "Basic";
     const begruendung = brauchtPremium
       ? "Weil du mehrere Objekte oder besondere Vermietungsarten nutzt, empfehlen wir Premium – unbegrenzt Objekte, AirBNB und Landpacht inklusive."
@@ -3928,16 +3928,26 @@
       // Woher kommt der Besuch? (für die Auswertung eurer Werbung)
       const p = new URLSearchParams(location.search);
       const quelle = p.get("utm_source") || p.get("quelle") || (document.referrer ? "web" : "direkt");
+      if (!window.sb) throw new Error("Keine Verbindung zur Datenbank.");
       const { error } = await window.sb.from("warteliste").insert({ email: wert, quelle: quelle });
-      // Doppelte Eintragung ist kein Fehler für den Besucher
-      if (error && !String(error.message || "").includes("duplicate")) throw error;
-      msg.textContent = "Danke! Du stehst auf der Liste — wir melden uns zum Start.";
+      // Doppelte Eintragung ist für den Besucher kein Fehler
+      const txt = String((error && (error.message || error.details)) || "");
+      const schonDrin = /duplicate|unique|23505/i.test(txt);
+      if (error && !schonDrin) throw error;
+      msg.textContent = schonDrin
+        ? "Du stehst bereits auf der Liste — wir melden uns zum Start."
+        : "Danke! Du stehst auf der Liste — wir melden uns zum Start.";
       msg.className = "lp-warte-msg ok";
       if (feld) feld.classList.add("fertig");
       return true;
     } catch (e) {
       btn.disabled = false; btn.textContent = alt;
-      msg.textContent = "Das hat leider nicht geklappt. Bitte versuch es später noch einmal.";
+      const detail = String((e && (e.message || e.details)) || "");
+      console.error("Warteliste:", e);
+      // Klartext statt Rätselraten
+      msg.textContent = /permission|denied|row-level|policy|42501/i.test(detail)
+        ? "Eintragen ist gerade nicht möglich (Zugriff). Bitte melde dich unter info@buecking-immobilien.de."
+        : "Das hat leider nicht geklappt: " + (detail || "unbekannter Fehler");
       msg.className = "lp-warte-msg bad";
       return false;
     }
