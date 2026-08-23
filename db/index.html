@@ -165,7 +165,11 @@
 .lp-steps p{font-size:14.5px;line-height:1.62;color:#5A6472}
 
 /* Preise */
-.lp-preise{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;max-width:860px}
+.lp-preise{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.lp-plan-life{border-color:#C9A227;
+  background:linear-gradient(180deg,#FFFCF2,#fff)}
+.lp-flag-life{background:#C9A227}
+.lp-plan-life .lp-liste li:before{background:#C9A227}
 .lp-plan{position:relative;background:#fff;border:1px solid #E4E8ED;border-radius:20px;padding:32px}
 .lp-plan-top{border-color:#1F6B4A;box-shadow:0 16px 40px rgba(31,107,74,.1)}
 .lp-plan-flag{position:absolute;top:-11px;left:32px;background:#1F6B4A;color:#fff;
@@ -356,6 +360,59 @@
   background:#F2F5F8;border:1px solid #E4E8ED;border-radius:11px;padding:11px 14px;line-height:1.5}
 .beta-hinweis a{color:#1F6B4A;font-weight:600;text-decoration:underline;
   text-underline-offset:2px;cursor:pointer}
+
+/* Produkteinblicke – abwechselnd Text und echte Ansicht */
+.lp-einblick{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(28px,4vw,60px);
+  align-items:center;max-width:1400px;margin:0 auto clamp(36px,5vw,64px)}
+.lp-einblick:last-child{margin-bottom:0}
+.lp-ein-dreh .lp-ein-tx{order:2}
+.lp-ein-dreh .lp-ein-vis{order:1}
+.lp-ein-tx h3{font-size:clamp(20px,2.3vw,26px);font-weight:600;margin-bottom:12px}
+.lp-ein-tx p{font-size:15.5px;line-height:1.65;color:#5A6472;max-width:34em}
+.lp-mini{background:#16181d;border-radius:16px;padding:20px;color:#eef1f5;
+  box-shadow:0 20px 46px -14px rgba(16,20,24,.3)}
+.lp-mini-h{margin-bottom:16px}
+.lp-mini-e{display:block;font-size:10px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:#7DD3A6;margin-bottom:5px}
+.lp-mini-h b{font-family:"Space Grotesk",sans-serif;font-size:17px;font-weight:600}
+.lp-mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.lp-mk{background:rgba(48,52,60,.42);border:1px solid rgba(180,190,205,.12);
+  border-radius:11px;padding:13px}
+.lp-mk span{display:block;font-family:"Space Grotesk",sans-serif;font-size:19px;
+  font-weight:600;letter-spacing:-.02em}
+.lp-mk small{display:block;font-size:11px;color:rgba(220,226,235,.5);margin-top:4px}
+.lp-mini-gross{font-family:"Space Grotesk",sans-serif;font-size:34px;font-weight:600;
+  letter-spacing:-.02em;color:#7DD3A6;margin-bottom:14px}
+.lp-mini-liste{display:flex;flex-direction:column;gap:7px}
+.lp-ml{display:flex;align-items:center;gap:11px;background:rgba(48,52,60,.36);
+  border:1px solid rgba(180,190,205,.1);border-radius:10px;padding:11px 13px}
+.lp-ml-n{flex:1;min-width:0;font-size:12.5px;font-weight:500}
+.lp-ml-n small{display:block;font-size:10.5px;color:rgba(220,226,235,.45);margin-top:2px}
+.lp-ml b{font-family:"Space Grotesk",sans-serif;font-size:13.5px;font-weight:600}
+.lp-ml i{font-style:normal;font-size:11px;color:rgba(220,226,235,.5)}
+.lp-ml-ok{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(76,175,125,.2);color:#7DD3A6!important;font-size:11px!important}
+.lp-ml-offen{border-color:rgba(201,162,39,.35);background:rgba(201,162,39,.09)}
+.lp-ml-offen i{color:#D9B23F!important;font-weight:600}
+.lp-mini-row{display:flex;align-items:center;gap:11px;margin-top:12px;
+  background:rgba(48,52,60,.36);border:1px solid rgba(180,190,205,.1);
+  border-radius:10px;padding:11px 13px;font-size:12px}
+.lp-mini-row span:first-child{color:rgba(220,226,235,.6)}
+.lp-mini-bar{flex:1;height:5px;border-radius:99px;background:rgba(180,190,205,.16);overflow:hidden}
+.lp-mini-bar i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,#1F6B4A,#4CAF7D)}
+.lp-mini-row b{font-family:"Space Grotesk",sans-serif;font-size:12.5px;color:#7DD3A6}
+
+@media(max-width:900px){
+  .lp-einblick{grid-template-columns:1fr;gap:22px}
+  .lp-ein-dreh .lp-ein-tx{order:1}
+  .lp-ein-dreh .lp-ein-vis{order:2}
+}
+@media(max-width:560px){
+  .lp-mini{padding:16px}
+  .lp-mini-gross{font-size:28px}
+  .lp-mk span{font-size:17px}
+}
 
 /* ============================ SMYRNA GREEN THEME ============================ */
 :root{
@@ -1316,6 +1373,7 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
     <img src="estriq.PNG" alt="ESTRIQ" class="lp-nav-logo" onerror="this.style.display='none'">
     <nav class="lp-nav-links">
       <a href="#funktionen">Funktionen</a>
+      <a href="#einblick">Einblick</a>
       <a href="#ablauf">So funktioniert's</a>
       <a href="#preise">Preise</a>
     </nav>
@@ -1486,11 +1544,85 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
     </ol>
   </section>
 
+  <section class="lp-sec lp-sec-alt" id="einblick">
+    <div class="lp-sec-h">
+      <div class="lp-eyebrow">Einblick</div>
+      <h2 class="lp-h2">So sieht ESTRIQ von innen aus</h2>
+      <p class="lp-sec-lead">Drei Ansichten, die du täglich nutzen wirst.</p>
+    </div>
+
+    <div class="lp-einblick">
+      <div class="lp-ein-tx">
+        <h3>Jedes Objekt einzeln durchleuchtet</h3>
+        <p>Für jede Immobilie siehst du Cashflow nach Kreditrate, Bruttorendite und
+          eingesetztes Kapital. Farbige Kennzahlen zeigen sofort, wo es rundläuft
+          und wo nicht.</p>
+      </div>
+      <div class="lp-ein-vis">
+        <div class="lp-mini">
+          <div class="lp-mini-h"><span class="lp-mini-e">Vermietung</span><b>Haus Bergstraße 12</b></div>
+          <div class="lp-mini-grid">
+            <div class="lp-mk"><span>1.842 €</span><small>Netto-Cashflow</small></div>
+            <div class="lp-mk"><span>6,11 %</span><small>Bruttorendite</small></div>
+            <div class="lp-mk"><span>4.180 €</span><small>Einnahmen</small></div>
+            <div class="lp-mk"><span>820.000 €</span><small>Investition</small></div>
+          </div>
+          <div class="lp-mini-row">
+            <span>Vermietet</span>
+            <span class="lp-mini-bar"><i style="width:80%"></i></span>
+            <b>4/5</b>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-einblick lp-ein-dreh">
+      <div class="lp-ein-tx">
+        <h3>Mieteingänge abhaken statt suchen</h3>
+        <p>Ist der Zahltag erreicht, fragt ESTRIQ beim Anmelden nach — gruppiert nach
+          Objekt, mit Mieter und Sollbetrag. Ein Tipp pro Wohnung, und der Monat ist sauber.</p>
+      </div>
+      <div class="lp-ein-vis">
+        <div class="lp-mini">
+          <div class="lp-mini-h"><span class="lp-mini-e">Mietkontrolle · August</span><b>Sind diese Mieten da?</b></div>
+          <div class="lp-mini-liste">
+            <div class="lp-ml"><span class="lp-ml-n">EG links<small>Familie Müller</small></span><b>830 €</b><i class="lp-ml-ok">✓</i></div>
+            <div class="lp-ml"><span class="lp-ml-n">1. OG rechts<small>M. Schneider</small></span><b>905 €</b><i class="lp-ml-ok">✓</i></div>
+            <div class="lp-ml lp-ml-offen"><span class="lp-ml-n">Dachgeschoss<small>K. Weber</small></span><b>650 €</b><i>offen</i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-einblick">
+      <div class="lp-ein-tx">
+        <h3>Kredite und Tilgung im Blick</h3>
+        <p>Restschuld, Zinsanteil und geplante Sondertilgungen laufen automatisch mit.
+          Du siehst, wie schnell du entschuldest — und was das monatlich kostet.</p>
+      </div>
+      <div class="lp-ein-vis">
+        <div class="lp-mini">
+          <div class="lp-mini-h"><span class="lp-mini-e">Finanzierung</span><b>Restschuld gesamt</b></div>
+          <div class="lp-mini-gross">939.883 €</div>
+          <div class="lp-mini-liste">
+            <div class="lp-ml"><span class="lp-ml-n">Tilgung / Monat</span><b>4.760 €</b></div>
+            <div class="lp-ml"><span class="lp-ml-n">Sondertilgung Dezember</span><b>10.000 €</b></div>
+          </div>
+          <div class="lp-mini-row">
+            <span>Entschuldet</span>
+            <span class="lp-mini-bar"><i style="width:34%"></i></span>
+            <b>34 %</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="lp-sec" id="preise">
     <div class="lp-sec-h">
       <div class="lp-eyebrow">Preise</div>
-      <h2 class="lp-h2">Ein Monat kostenlos, dann fair</h2>
-      <p class="lp-sec-lead">Beide Tarife starten mit 30 Tagen ohne Kosten. Zum Start bekommst du als Vorgemerkte:r Bescheid — kündbar zum Monatsende.</p>
+      <h2 class="lp-h2">Fair kalkuliert — oder einmal für immer</h2>
+      <p class="lp-sec-lead">Die Monatstarife starten mit 30 Tagen ohne Kosten, kündbar zum Monatsende. Das Lifetime-Angebot gibt es nur in der Startphase.</p>
     </div>
     <div class="lp-preise">
       <article class="lp-plan">
@@ -1505,10 +1637,11 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
         </ul>
         <button class="lp-btn lp-btn-hell lp-btn-block" data-warte>Für Basic vormerken</button>
       </article>
+
       <article class="lp-plan lp-plan-top">
         <div class="lp-plan-flag">Für wachsende Portfolios</div>
         <div class="lp-plan-n">Premium</div>
-        <div class="lp-plan-p">49,99 €<span>/Monat</span></div>
+        <div class="lp-plan-p">29,99 €<span>/Monat</span></div>
         <p class="lp-plan-d">Wenn mehr dazukommt als nur Wohnungen.</p>
         <ul class="lp-liste">
           <li>Unbegrenzt Objekte und Einheiten</li>
@@ -1517,6 +1650,20 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
           <li>Volles Controlling über alles</li>
         </ul>
         <button class="lp-btn lp-btn-block" data-warte>Für Premium vormerken</button>
+      </article>
+
+      <article class="lp-plan lp-plan-life">
+        <div class="lp-plan-flag lp-flag-life">Nur zum Start</div>
+        <div class="lp-plan-n">Lifetime</div>
+        <div class="lp-plan-p">199,99 €<span>einmalig</span></div>
+        <p class="lp-plan-d">Einmal zahlen, dauerhaft nutzen — solange das Angebot besteht.</p>
+        <ul class="lp-liste">
+          <li>Alles aus Premium</li>
+          <li>Keine monatlichen Kosten</li>
+          <li>Alle künftigen Funktionen</li>
+          <li>Begrenztes Startangebot</li>
+        </ul>
+        <button class="lp-btn lp-btn-block" data-warte>Lifetime sichern</button>
       </article>
     </div>
   </section>
@@ -1767,9 +1914,9 @@ input[type=range].sld::-moz-range-thumb{width:20px;height:20px;border-radius:50%
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./data-loader.js?v=33"></script>
-<script src="./data-save.js?v=33"></script>
-<script src="./finance-engine.js?v=33"></script>
-<script src="./app.js?v=33"></script>
+<script src="./data-loader.js?v=34"></script>
+<script src="./data-save.js?v=34"></script>
+<script src="./finance-engine.js?v=34"></script>
+<script src="./app.js?v=34"></script>
 </body>
 </html>
