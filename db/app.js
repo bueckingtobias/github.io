@@ -4020,20 +4020,33 @@
   // Die Produktvorschau richtet sich beim Scrollen langsam auf
   function kippBeimScrollen() {
     const shot = $("#lpShot"), lp = $("#landing");
-    if (!shot || !lp) return;
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      shot.style.transform = "none"; return;
+    if (!lp) return;
+    const minis = Array.from(document.querySelectorAll(".lp-mini"));
+    const ruhig = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const schmal = window.innerWidth <= 900;
+    if (ruhig || schmal) {
+      if (shot) shot.style.transform = "none";
+      minis.forEach(m => m.style.transform = "none");
+      return;
     }
-    if (window.innerWidth <= 900) { shot.style.transform = "none"; return; }
     let warten = false;
     const anpassen = () => {
       warten = false;
-      const oben = lp.scrollTop;
-      // Über die ersten 520 Pixel vom gekippten in den geraden Zustand
-      const p = Math.max(0, Math.min(1, oben / 520));
-      const yGrad = -9 * (1 - p);
-      const xGrad = 5 * (1 - p);
-      shot.style.transform = `rotateY(${yGrad.toFixed(2)}deg) rotateX(${xGrad.toFixed(2)}deg)`;
+      // Heldenbereich: über die ersten 520 Pixel aufrichten
+      if (shot) {
+        const p = Math.max(0, Math.min(1, lp.scrollTop / 520));
+        shot.style.transform = `rotateY(${(-9 * (1 - p)).toFixed(2)}deg) rotateX(${(5 * (1 - p)).toFixed(2)}deg)`;
+      }
+      // Einblick-Karten: aufrichten, während sie durchs Bild wandern
+      const hoehe = lp.clientHeight || window.innerHeight;
+      minis.forEach(m => {
+        const r = m.getBoundingClientRect();
+        const mitte = r.top + r.height / 2;
+        // 0 = weit unten, 1 = auf Höhe der Bildmitte
+        const p = Math.max(0, Math.min(1, (hoehe - mitte) / (hoehe * 0.55)));
+        const seite = m.closest(".lp-ein-dreh") ? -7 : 7;
+        m.style.transform = `rotateY(${(seite * (1 - p)).toFixed(2)}deg) rotateX(${(4 * (1 - p)).toFixed(2)}deg)`;
+      });
     };
     lp.addEventListener("scroll", () => {
       if (!warten) { warten = true; requestAnimationFrame(anpassen); }
