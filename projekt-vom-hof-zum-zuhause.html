@@ -350,6 +350,10 @@
       background:rgba(0,184,118,.18);
       border-color:rgba(174,255,220,.28);
     }
+    .hero-badge.rented{
+      background:rgba(179,0,0,.28);
+      border-color:rgba(255,128,128,.38);
+    }
     .hero-dots,
     .apartment-dots{
       display:flex;
@@ -1024,7 +1028,7 @@
         </div>
         <div class="hero-overlay">
           <div class="hero-badges">
-            <span class="hero-badge success">Vermietung läuft</span>
+            <span class="hero-badge rented">Vermietet</span>
           </div>
           <div class="hero-dots" aria-label="Bildauswahl Projektansichten"></div>
         </div>
@@ -1033,7 +1037,7 @@
     <section class="section-panel project-status-panel" aria-labelledby="status-title">
       <div class="section-head">
         <h2 id="status-title">Projektstatus</h2>
-        <p>Das Projekt befindet sich in der finalen Bauphase. Die Vermietung läuft bereits parallel.</p>
+        <p>Das Projekt befindet sich in der finalen Bauphase. Alle Wohneinheiten sind vermietet.</p>
       </div>
       <div class="status-wrap">
         <div class="status-steps">
@@ -1051,290 +1055,33 @@
             <div class="status-label">Umbau &amp; Modernisierung</div>
             <div class="status-tag">Weit fortgeschritten</div>
           </div>
+          <div class="status-step done">
+            <div class="status-dot">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0c3d28" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>
+            </div>
+            <div class="status-label">Vermietung</div>
+            <div class="status-tag">Abgeschlossen</div>
+          </div>
           <div class="status-step current">
             <div class="status-dot"></div>
-            <div class="status-label">Vermietung</div>
-            <div class="status-tag">Aktuell</div>
-          </div>
-          <div class="status-step">
-            <div class="status-dot"></div>
             <div class="status-label">Fertigstellung &amp; Bezug</div>
-            <div class="status-tag">Als Nächstes</div>
+            <div class="status-tag">Aktuell</div>
           </div>
         </div>
       </div>
     </section>
-    <section class="tabs" aria-labelledby="wohnungen-title">
-      <div class="intro-wrap" style="padding-top:0">
-        <div class="kicker">Wohnungsübersicht</div>
-        <h2 class="title-stacked" id="wohnungen-title" style="margin-bottom:8px">
-          <span class="line1" style="font-size:clamp(24px,3vw,34px)">Verfügbarkeiten &amp; Mietübersicht</span>
-          <span class="line2" style="font-size:clamp(15px,2vw,19px)">Alle Wohneinheiten im Überblick</span>
-        </h2>
+    <section class="section-panel" aria-labelledby="wohnungen-title">
+      <div class="section-head" style="text-align:center">
+        <div class="kicker" style="text-align:center">Wohnungsübersicht</div>
+        <h2 id="wohnungen-title">Alle Wohneinheiten vermietet</h2>
+        <p style="margin:0 auto">
+          Sämtliche fünf Wohneinheiten des Projekts „Mehrfamilienhaus in Elmeloh" sind vermietet.
+          Gern nehmen wir Sie für vergleichbare Einheiten oder spätere Verfügbarkeiten auf die Vormerkliste –
+          nutzen Sie dazu einfach das Kontaktformular am Ende dieser Seite.
+        </p>
       </div>
-      <div class="tab-controls">
-        <input type="radio" name="apt" id="tab1" checked><label for="tab1">Wohnung 1</label>
-        <input type="radio" name="apt" id="tab2"><label for="tab2">Wohnung 2</label>
-        <input type="radio" name="apt" id="tab3"><label for="tab3">Wohnung 3</label>
-        <input type="radio" name="apt" id="tab4"><label for="tab4">Wohnung 4</label>
-        <input type="radio" name="apt" id="tab5"><label for="tab5">Wohnung 5</label>
-      </div>
-      <div class="panels">
-        <article class="panel active"
-                 data-id="1"
-                 data-groesse="ca. 106 m²"
-                 data-zimmer="3 Zimmer"
-                 data-status="Vermietet"
-                 data-miete="1272.00"
-                 data-nk="159.00"
-                 data-kueche="70"
-                 data-kaution="3816.00">
-          <div class="box-body">
-            <div class="apartment-head">
-              <div>
-                <h3>Wohnung 1</h3>
-              </div>
-              <div class="badges">
-                <span class="badge rented">Vermietet</span>
-              </div>
-            </div>
-            <div class="meta">
-              <span class="chip">ca. 106 m²</span>
-              <span class="chip">3 Zimmer</span>
-              <span class="chip">Bereits vergeben</span>
-            </div>
-            <div class="apartment-grid">
-              <div class="info-card price-card">
-                <h4>Mietübersicht</h4>
-                <ul class="price-list">
-                  <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                </ul>
-                <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
-                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
-              </div>
-              <div class="info-card usp-card">
-                <h4>Inklusivleistungen &amp; Vorteile</h4>
-                <ul class="usp-list">
-                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
-                </ul>
-              </div>
-            </div>
-            <div class="rented-box">Diese Wohnung ist bereits vergeben. Auf Wunsch nehmen wir Sie gern für vergleichbare Einheiten oder spätere Verfügbarkeiten auf die Vormerkliste.</div>
-            <div class="actions">
-              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
-              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
-            </div>
-          </div>
-        </article>
-        <article class="panel"
-                 data-id="2"
-                 data-groesse="ca. 93 m²"
-                 data-zimmer="4 Zimmer"
-                 data-status="Vermietet"
-                 data-miete="1162.50"
-                 data-nk="232.50"
-                 data-kueche="75"
-                 data-kaution="3487.50">
-          <div class="box-body">
-            <div class="apartment-head">
-              <div>
-                <h3>Wohnung 2</h3>
-              </div>
-              <div class="badges">
-                <span class="badge rented">Vermietet</span>
-              </div>
-            </div>
-            <div class="meta">
-              <span class="chip">ca. 93 m²</span>
-              <span class="chip">4 Zimmer</span>
-              <span class="chip">Bereits vergeben</span>
-            </div>
-            <div class="apartment-grid">
-              <div class="info-card price-card">
-                <h4>Mietübersicht</h4>
-                <ul class="price-list">
-                  <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                </ul>
-                <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
-                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
-              </div>
-              <div class="info-card usp-card">
-                <h4>Inklusivleistungen &amp; Vorteile</h4>
-                <ul class="usp-list">
-                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
-                </ul>
-              </div>
-            </div>
-            <div class="rented-box">Diese Wohnung ist bereits vergeben. Auf Wunsch nehmen wir Sie gern für ähnliche Einheiten oder spätere Verfügbarkeiten auf die Vormerkliste.</div>
-            <div class="actions">
-              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
-              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
-            </div>
-          </div>
-        </article>
-        <article class="panel"
-                 data-id="3"
-                 data-groesse="ca. 92 m²"
-                 data-zimmer="3 Zimmer"
-                 data-status="Vermietet"
-                 data-miete="1150.00"
-                 data-nk="230.00"
-                 data-kueche="75"
-                 data-kaution="3450.00">
-          <div class="box-body">
-            <div class="apartment-head">
-              <div>
-                <h3>Wohnung 3</h3>
-              </div>
-              <div class="badges">
-                <span class="badge rented">Vermietet</span>
-              </div>
-            </div>
-            <div class="meta">
-              <span class="chip">ca. 92 m²</span>
-              <span class="chip">3 Zimmer</span>
-              <span class="chip">Bereits vergeben</span>
-            </div>
-            <div class="apartment-grid">
-              <div class="info-card price-card">
-                <h4>Mietübersicht</h4>
-                <ul class="price-list">
-                  <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                </ul>
-                <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
-                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
-              </div>
-              <div class="info-card usp-card">
-                <h4>Inklusivleistungen &amp; Vorteile</h4>
-                <ul class="usp-list">
-                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
-                </ul>
-              </div>
-            </div>
-            <div class="rented-box">Diese Wohnung ist bereits vergeben. Gern können Sie sich für spätere Verfügbarkeiten oder vergleichbare Einheiten vormerken lassen.</div>
-            <div class="actions">
-              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
-              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
-            </div>
-          </div>
-        </article>
-        <article class="panel"
-                 data-id="4"
-                 data-groesse="ca. 94 m²"
-                 data-zimmer="3 Zimmer"
-                 data-status="Vermietet"
-                 data-miete="1128.00"
-                 data-nk="141.00"
-                 data-kueche="70"
-                 data-kaution="3384.00">
-          <div class="box-body">
-            <div class="apartment-head">
-              <div>
-                <h3>Wohnung 4</h3>
-              </div>
-              <div class="badges">
-                <span class="badge rented">Vermietet</span>
-              </div>
-            </div>
-            <div class="meta">
-              <span class="chip">ca. 94 m²</span>
-              <span class="chip">3 Zimmer</span>
-              <span class="chip">Bereits vergeben</span>
-            </div>
-            <div class="apartment-grid">
-              <div class="info-card price-card">
-                <h4>Mietübersicht</h4>
-                <ul class="price-list">
-                  <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                </ul>
-                <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
-                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
-              </div>
-              <div class="info-card usp-card">
-                <h4>Inklusivleistungen &amp; Vorteile</h4>
-                <ul class="usp-list">
-                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
-                </ul>
-              </div>
-            </div>
-            <div class="rented-box">Diese Wohnung ist bereits vergeben. Gern können Sie sich für spätere Verfügbarkeiten oder vergleichbare Einheiten vormerken lassen.</div>
-            <div class="actions">
-              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
-              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
-            </div>
-          </div>
-        </article>
-        <article class="panel"
-                 data-id="5"
-                 data-groesse="ca. 126 m²"
-                 data-zimmer="4 Zimmer"
-                 data-status="Verfügbar"
-                 data-miete="1512.00"
-                 data-nk="189.00"
-                 data-kueche="70"
-                 data-kaution="4536.00">
-          <div class="box-body">
-            <div class="apartment-head">
-              <div>
-                <h3>Wohnung 5</h3>
-              </div>
-              <div class="badges">
-                <span class="badge available">Verfügbar</span>
-              </div>
-            </div>
-            <div class="meta">
-              <span class="chip">ca. 126 m²</span>
-              <span class="chip">4 Zimmer</span>
-              <span class="chip">Stellplatz inklusive</span>
-            </div>
-            <div class="apartment-grid">
-              <div class="info-card price-card">
-                <h4>Mietübersicht</h4>
-                <ul class="price-list">
-                  <li><span class="label">Kaltmiete</span><span class="value js-miete"></span></li>
-                  <li><span class="label">Nebenkosten</span><span class="value js-nk"></span></li>
-                  <li><span class="label">Küche</span><span class="value js-kueche"></span></li>
-                </ul>
-                <div class="total"><span>Monatliche Gesamtmiete</span><span class="js-total"></span></div>
-                <p class="deposit-note">Die Kaution beträgt drei Nettokaltmieten.</p>
-              </div>
-              <div class="info-card usp-card">
-                <h4>Inklusivleistungen &amp; Vorteile</h4>
-                <ul class="usp-list">
-                  <li><span class="usp-ic" aria-hidden="true">⚡</span><span><strong>Günstiger Strom</strong> – 25 ct/kWh ohne Grundgebühr aus hauseigener Solaranlage.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">♨</span><span><strong>Erdwärme</strong> – effizientes, kostengünstiges Heizen, bereits in den Nebenkosten enthalten.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🅿</span><span><strong>Stellplatz inklusive</strong> – eigener PKW-Stellplatz ohne Aufpreis.</span></li>
-                  <li><span class="usp-ic" aria-hidden="true">🚲</span><span><strong>Fahrradschuppen</strong> – gemeinschaftliche, wettergeschützte Abstellmöglichkeit.</span></li>
-                </ul>
-              </div>
-            </div>
-            <div class="rented-box"></div>
-            <div class="actions">
-              <a class="btn btn-email" href="#">Anfragen per E-Mail</a>
-              <a class="btn btn-ghost" href="tel:+4917657960759">Anrufen</a>
-            </div>
-          </div>
-        </article>
+      <div style="padding:26px 34px 38px; display:flex; justify-content:center">
+        <span class="badge rented" style="font-size:1rem">Vermietet</span>
       </div>
     </section>
 
@@ -1353,30 +1100,30 @@
         </button>
         <div class="apartment-slides">
               <div class="apartment-slide active"><img src="pictures_elmeloh/w1-6.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 1" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-6.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 2" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-7.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 3" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-6.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 2" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-7.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 3" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-13.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 4" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-11.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 5" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-2.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 6" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-11.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 5" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-2.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 6" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-11.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 7" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-3.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 8" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-3.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 8" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-12.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 9" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-13.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 10" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-1.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 11" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-12.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 12" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-13.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 10" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-1.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 11" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-12.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 12" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-10.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 13" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-9.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 14" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-7.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 15" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-9.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 16" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-9.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 16" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-1.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 17" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-14.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 18" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-5.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 19" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-5.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 19" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-3.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 20" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-8.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 21" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-8.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 21" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-4.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 22" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-10.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 23" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-10.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 23" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-5.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 24" loading="lazy"></div>
-              <div class="apartment-slide"><img src="pictures_elmeloh/w4-4.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 25" loading="lazy"></div>
+              <div class="apartment-slide"><img src="pictures_elmeloh/w4-4.jpeg" alt="Impression Mehrfamilienhaus Elmeloh – Bild 25" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-2.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 26" loading="lazy"></div>
               <div class="apartment-slide"><img src="pictures_elmeloh/w1-8.PNG" alt="Impression Mehrfamilienhaus Elmeloh – Bild 27" loading="lazy"></div>
         </div>
@@ -1396,8 +1143,8 @@
           mit einer bereits vollständig vorbereiteten Nachricht – Sie müssen nur noch auf „Senden“ klicken.
         </p>
         <div class="contact-note">
-          Sie können eine konkrete Wohnung auswählen oder eine allgemeine Projektanfrage senden.
-          Auch Vormerkungen für bereits vergebene Einheiten sind jederzeit möglich.
+          Alle Wohneinheiten dieses Projekts sind vermietet. Vormerkungen für vergleichbare Einheiten
+          oder spätere Verfügbarkeiten sind jederzeit möglich.
         </div>
         <form class="project-contact-form" id="projectContactForm">
           <div class="form-row">
@@ -1429,7 +1176,7 @@
                 <option value="Wohnung 2">Wohnung 2 (ca. 93 m², vermietet)</option>
                 <option value="Wohnung 3">Wohnung 3 (ca. 92 m², vermietet)</option>
                 <option value="Wohnung 4">Wohnung 4 (ca. 94 m², vermietet)</option>
-                <option value="Wohnung 5">Wohnung 5 (ca. 126 m², verfügbar)</option>
+                <option value="Wohnung 5">Wohnung 5 (ca. 126 m², vermietet)</option>
                 <option value="Allgemeine Projektanfrage">Allgemeine Projektanfrage</option>
               </select>
             </div>
