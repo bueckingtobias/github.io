@@ -485,6 +485,8 @@
       ${efTitel("Tarif")}
       <div class="prof-tarif" id="pTarif"></div>
       <button class="up-cta" id="pTarifBtn" style="margin-top:12px">Tarif verwalten</button>
+      ${efTitel("Konto")}
+      <button class="up-cta" id="pLogout" style="margin-top:4px">Abmelden</button>
       ${efTitel("Gefahrenzone")}
       <button class="ef-del" id="pDel" style="width:100%">Konto löschen</button>
       <div class="ef-h" style="margin-top:8px">Löscht dein Konto und alle zugehörigen Daten unwiderruflich.</div>`;
@@ -525,6 +527,8 @@
       </div>`;
     const ptb = sheet.querySelector("#pTarifBtn");
     if (ptb) ptb.onclick = () => { closeSheet(); openTarifSheet(); };
+    const plo = sheet.querySelector("#pLogout");
+    if (plo) plo.onclick = () => logout();
 
     // Schalter für Verbesserungs-Vorschläge
     const tp = sheet.querySelector("#pTipps");
@@ -1535,7 +1539,8 @@
     return [
       { id: "overview", label: "Übersicht", icon: "grid" },
       { id: "vermietung", label: "Vermietung", icon: "home", group: true },
-      ...rest
+      ...rest,
+      { id: "tools", label: "Tools", icon: "chart" }
     ];
   }
   function shortLabel(n) { return (n || "").split(" · ")[0]; }
@@ -1571,8 +1576,8 @@
     mk("rail-add", "plus", "Neu", (e) => { e.stopPropagation(); openAnlegenMenu(rail); });
     mk("", "grid", "Übersicht", () => route("overview"));
     const objBtn = mk("", "home", "Objekte", (e) => { e.stopPropagation(); openObjekteMenu(objBtn); });
+    mk("", "chart", "Tools", () => route("tools"));
     mk("profile", "user", "Profil", () => openProfilSheet());
-    mk("logout", "logout", "Logout", () => logout());
   }
 
   // Handy: Objekte-Menü (Vermietung / AirBNB / Landpacht + einzelne Objekte)
@@ -1728,14 +1733,456 @@
     const host = $("#views"); host.innerHTML = "";
     if (id === "overview") renderOverview(host);
     else if (id === "vermietung") renderVermietung(host);
+    else if (id === "tools") renderTools(host);
     else renderStream(host, id);
     $(".scroll").scrollTop = 0;
   }
 
   /* ---------- shared bits ---------- */
-  function kpiCard(icon, num, lab, desc, accent, action) {
+  /* ================= TOOLS: RECHNER & WISSEN ================= */
+
+  const WISSEN = [
+    { id: "mietarten", titel: "Kaltmiete, Warmmiete, Nettokaltmiete",
+      kurz: "Drei Begriffe, die ständig verwechselt werden.",
+      inhalt: `
+        <p><b>Nettokaltmiete</b> ist die reine Miete für den Wohnraum. Kein Strom, keine Heizung, kein Wasser. Das ist die Zahl, mit der du rechnest — bei Rendite, bei Mieterhöhung, bei allem.</p>
+        <p><b>Kaltmiete</b> wird umgangssprachlich meist gleichbedeutend benutzt. In Mietverträgen taucht manchmal die Bruttokaltmiete auf: Nettokaltmiete plus kalte Betriebskosten, aber ohne Heizung.</p>
+        <p><b>Warmmiete</b> ist alles zusammen: Nettokaltmiete plus sämtliche Nebenkosten inklusive Heizung. Das ist die Zahl, die dein Mieter überweist.</p>
+        <div class="wi-merke">Für deine Kalkulation zählt ausschließlich die Nettokaltmiete. Wer mit der Warmmiete rechnet, überschätzt seine Rendite deutlich — die Nebenkosten gehören dir nicht, du reichst sie nur durch.</div>`
+    },
+    { id: "cashflow-rendite", titel: "Cashflow ist nicht Rendite",
+      kurz: "Zwei Zahlen, zwei völlig verschiedene Aussagen.",
+      inhalt: `
+        <p><b>Rendite</b> misst die Qualität des Objekts: Wie viel Miete bringt es im Verhältnis zum Kaufpreis? Sie ist unabhängig davon, wie du finanziert hast.</p>
+        <p><b>Cashflow</b> misst deine Liquidität: Was bleibt nach Abzug der Kreditrate übrig? Er hängt massiv von deiner Finanzierung ab.</p>
+        <p>Dasselbe Objekt kann mit hoher Tilgung negativen Cashflow haben und mit niedriger Tilgung positiven — die Rendite bleibt identisch.</p>
+        <div class="wi-merke">Rendite sagt dir, ob das Objekt gut ist. Cashflow sagt dir, ob du es dir leisten kannst. Du brauchst beide Zahlen.</div>`
+    },
+    { id: "umlagefaehig", titel: "Umlagefähig oder nicht?",
+      kurz: "Was du auf den Mieter umlegen darfst — und was nicht.",
+      inhalt: `
+        <p><b>Umlagefähig</b> nach Betriebskostenverordnung sind unter anderem: Grundsteuer, Wasser und Abwasser, Heizung, Aufzug, Straßenreinigung, Müllabfuhr, Gebäudereinigung, Gartenpflege, Beleuchtung, Schornsteinfeger, Sach- und Haftpflichtversicherung, Hauswart und Gemeinschaftsantenne.</p>
+        <p><b>Nicht umlagefähig</b> sind: Instandhaltung und Reparaturen, Verwaltungskosten, Kontoführung, Rechtsberatung, Mietausfallwagnis, Leerstandskosten und Rücklagen.</p>
+        <div class="wi-merke">Die Faustregel: Laufender Betrieb ja, Werterhalt nein. Reparaturen sind immer deine Sache — auch wenn es im Mietvertrag anders steht, solche Klauseln sind meist unwirksam.</div>
+        <div class="wi-hinweis">Das ist eine Orientierung, keine Rechtsberatung. Im Zweifel den Mieterverein oder einen Fachanwalt fragen.</div>`
+    },
+    { id: "versteckte-kosten", titel: "Die vier versteckten Kosten",
+      kurz: "Was in fast jeder Renditerechnung fehlt.",
+      inhalt: `
+        <p><b>1. Instandhaltung.</b> Rechne mit etwa 1 Prozent des Gebäudewerts pro Jahr, oder rund 10 Euro je Quadratmeter. Das Dach kommt irgendwann, garantiert.</p>
+        <p><b>2. Mietausfall.</b> Leerstand, Mietnomaden, Zahlungsausfälle. Zwei bis fünf Prozent der Jahresmiete als Puffer sind realistisch.</p>
+        <p><b>3. Verwaltung.</b> Auch wenn du selbst verwaltest, kostet es Zeit. Bei Fremdverwaltung etwa 20 bis 30 Euro je Einheit und Monat.</p>
+        <p><b>4. Kaufnebenkosten.</b> Grunderwerbsteuer, Notar, Grundbuch, Makler — je nach Bundesland 9 bis 15 Prozent des Kaufpreises. Sie gehören in die Investitionssumme.</p>
+        <div class="wi-merke">Wer diese vier Posten weglässt, rechnet sich eine Rendite schön, die es nie gab.</div>`
+    },
+    { id: "mieterhoehung", titel: "Mieterhöhung: die Regeln",
+      kurz: "Wann, wie viel und in welcher Form.",
+      inhalt: `
+        <p><b>Sperrfrist:</b> Seit der letzten Erhöhung müssen zwölf Monate vergangen sein, und die Miete muss fünfzehn Monate unverändert gewesen sein.</p>
+        <p><b>Kappungsgrenze:</b> Innerhalb von drei Jahren höchstens 20 Prozent. In angespannten Wohnlagen sind es nur 15 Prozent.</p>
+        <p><b>Obergrenze:</b> Die ortsübliche Vergleichsmiete. Nachweisen kannst du sie über den Mietspiegel, ein Gutachten oder drei Vergleichswohnungen.</p>
+        <p><b>Form:</b> Schriftlich mit Begründung. Der Mieter hat dann bis zum Ende des übernächsten Monats Zeit zuzustimmen.</p>
+        <div class="wi-hinweis">Orientierung, keine Rechtsberatung. Regionale Regeln können abweichen.</div>`
+    },
+    { id: "nebenkosten", titel: "Nebenkostenabrechnung: Pflichtangaben",
+      kurz: "Sechs Punkte, ohne die sie angreifbar ist.",
+      inhalt: `
+        <p><b>1.</b> Zusammenstellung der Gesamtkosten je Kostenart.<br>
+           <b>2.</b> Angabe und Erläuterung des Verteilerschlüssels.<br>
+           <b>3.</b> Berechnung des Anteils für diesen Mieter.<br>
+           <b>4.</b> Abzug der geleisteten Vorauszahlungen.<br>
+           <b>5.</b> Klarer Abrechnungszeitraum von zwölf Monaten.<br>
+           <b>6.</b> Zugang innerhalb von zwölf Monaten nach Ende des Zeitraums.</p>
+        <div class="wi-merke">Die Frist ist hart: Kommt die Abrechnung zu spät, kannst du keine Nachzahlung mehr verlangen — Guthaben musst du trotzdem auszahlen.</div>
+        <div class="wi-hinweis">Orientierung, keine Rechtsberatung.</div>`
+    },
+    { id: "leise-verluste", titel: "Wo Geld leise verschwindet",
+      kurz: "Sechs Stellen, die kaum jemand prüft.",
+      inhalt: `
+        <p><b>Mieten, die nie angepasst wurden.</b> Nach fünf Jahren unter Marktniveau summiert sich das erheblich.</p>
+        <p><b>Zu niedrige Vorauszahlungen.</b> Du streckst die Betriebskosten das ganze Jahr vor und bekommst erst spät Geld zurück.</p>
+        <p><b>Nicht umgelegte Positionen.</b> Umlagefähige Kosten, die schlicht vergessen wurden.</p>
+        <p><b>Leerstand zwischen zwei Mietern.</b> Jeder Monat ist unwiederbringlich weg.</p>
+        <p><b>Zu hohe Zinsen nach Ablauf der Bindung.</b> Anschlussfinanzierung nicht rechtzeitig geprüft.</p>
+        <p><b>Ungenutzte Sondertilgung.</b> Das vertragliche Recht verfällt jedes Jahr aufs Neue.</p>
+        <div class="wi-merke">Keiner dieser Punkte tut spürbar weh. Zusammen kosten sie oft mehr als eine ganze Monatsmiete pro Jahr.</div>`
+    },
+    { id: "zinsbindung", titel: "Zinsbindung und Anschlussfinanzierung",
+      kurz: "Warum du Jahre vorher anfangen solltest.",
+      inhalt: `
+        <p>Nach Ablauf der Zinsbindung wird die Restschuld neu finanziert — zum dann geltenden Zins. Steigt der von 2 auf 5 Prozent, kann sich deine Rate fast verdoppeln.</p>
+        <p><b>Forward-Darlehen</b> sichern dir den heutigen Zins bis zu 60 Monate im Voraus. Dafür zahlst du einen kleinen Aufschlag je Monat Vorlauf.</p>
+        <p><b>Sondertilgung</b> senkt die Restschuld und damit dein Risiko bei der Anschlussfinanzierung. Viele Verträge erlauben 5 Prozent jährlich.</p>
+        <div class="wi-merke">Trag dir das Ende der Zinsbindung drei Jahre vorher in den Kalender. Wer erst im letzten Monat verhandelt, hat keine Verhandlungsposition.</div>`
+    }
+  ];
+
+  const RECHNER = [
+    {
+      id: "rendite", titel: "Renditerechner", icon: "trend",
+      kurz: "Was wirft eine Immobilie im Verhältnis zum Kaufpreis ab?",
+      felder: [
+        { id: "kaufpreis", label: "Kaufpreis", einheit: "€", wert: 250000 },
+        { id: "nebenkosten", label: "Kaufnebenkosten", einheit: "%", wert: 12, hinweis: "Notar, Grunderwerbsteuer, Makler" },
+        { id: "miete", label: "Kaltmiete pro Monat", einheit: "€", wert: 950 },
+        { id: "bewirt", label: "Bewirtschaftungskosten", einheit: "% der Miete", wert: 20, hinweis: "Instandhaltung, Verwaltung, Mietausfall" }
+      ],
+      rechne: (w) => {
+        const invest = w.kaufpreis * (1 + w.nebenkosten / 100);
+        const jahr = w.miete * 12;
+        const netto = jahr * (1 - w.bewirt / 100);
+        return {
+          zeilen: [
+            { l: "Gesamtinvestition", v: eur(invest), gross: true },
+            { l: "Jahreskaltmiete", v: eur(jahr) },
+            { l: "Bruttorendite", v: (invest ? (jahr / invest * 100) : 0).toFixed(2).replace(".", ",") + " %", gross: true },
+            { l: "Nettorendite", v: (invest ? (netto / invest * 100) : 0).toFixed(2).replace(".", ",") + " %", gross: true },
+            { l: "davon Bewirtschaftung", v: "− " + eur(jahr - netto) }
+          ],
+          balken: Math.max(0, Math.min(100, invest ? (jahr / invest * 100) * 10 : 0)),
+          fazit: invest && (jahr / invest * 100) >= 5
+            ? "Solide Ausgangslage. Prüf trotzdem den Cashflow nach Finanzierung."
+            : "Rechnerisch dünn. Bei dieser Rendite wird positiver Cashflow schwierig."
+        };
+      }
+    },
+    {
+      id: "kredit", titel: "Kreditrechner", icon: "bank",
+      kurz: "Was kostet dich die Finanzierung monatlich?",
+      felder: [
+        { id: "summe", label: "Darlehenssumme", einheit: "€", wert: 200000 },
+        { id: "zins", label: "Sollzins", einheit: "% p. a.", wert: 3.5 },
+        { id: "tilgung", label: "Anfangstilgung", einheit: "% p. a.", wert: 2 }
+      ],
+      rechne: (w) => {
+        const rate = w.summe * (w.zins + w.tilgung) / 100 / 12;
+        const zinsM = w.summe * w.zins / 100 / 12;
+        const tilgM = rate - zinsM;
+        // Laufzeit bis vollständige Tilgung
+        let rest = w.summe, monate = 0;
+        const zM = w.zins / 100 / 12;
+        while (rest > 0 && monate < 1200) { rest = rest + rest * zM - rate; monate++; }
+        const jahre = Math.floor(monate / 12), restM = monate % 12;
+        return {
+          zeilen: [
+            { l: "Monatliche Rate", v: eur(rate), gross: true },
+            { l: "davon Zinsen", v: eur(zinsM) },
+            { l: "davon Tilgung", v: eur(tilgM) },
+            { l: "Schuldenfrei nach", v: jahre + " Jahren " + restM + " Monaten", gross: true },
+            { l: "Zinskosten gesamt", v: eur(Math.max(0, rate * monate - w.summe)) }
+          ],
+          verhaeltnis: { zins: rate ? zinsM / rate * 100 : 0, tilgung: rate ? tilgM / rate * 100 : 0 },
+          fazit: "Eine höhere Anfangstilgung verkürzt die Laufzeit stark und spart Zinsen — kostet aber monatlich mehr."
+        };
+      }
+    },
+    {
+      id: "zinseszins", titel: "Zinseszinsrechner", icon: "chart",
+      kurz: "Wie stark wächst Kapital über die Zeit?",
+      felder: [
+        { id: "start", label: "Startkapital", einheit: "€", wert: 20000 },
+        { id: "sparrate", label: "Monatliche Sparrate", einheit: "€", wert: 500 },
+        { id: "zins", label: "Rendite", einheit: "% p. a.", wert: 6 },
+        { id: "jahre", label: "Laufzeit", einheit: "Jahre", wert: 20 }
+      ],
+      rechne: (w) => {
+        const m = w.zins / 100 / 12;
+        let kap = w.start;
+        const verlauf = [kap];
+        for (let i = 0; i < w.jahre * 12; i++) { kap = kap * (1 + m) + w.sparrate; if ((i + 1) % 12 === 0) verlauf.push(kap); }
+        const eingezahlt = w.start + w.sparrate * 12 * w.jahre;
+        return {
+          zeilen: [
+            { l: "Endkapital", v: eur(kap), gross: true },
+            { l: "davon eingezahlt", v: eur(eingezahlt) },
+            { l: "davon Zinsertrag", v: eur(Math.max(0, kap - eingezahlt)), gross: true }
+          ],
+          verlauf: verlauf,
+          fazit: "Der Zinsertrag wächst nicht gleichmäßig, sondern beschleunigt sich. Die letzten Jahre bringen am meisten."
+        };
+      }
+    },
+    {
+      id: "opportunitaet", titel: "Opportunitätskosten", icon: "layers",
+      kurz: "Was hätte dein Geld woanders gebracht?",
+      felder: [
+        { id: "kapital", label: "Eingesetztes Eigenkapital", einheit: "€", wert: 60000 },
+        { id: "immoRendite", label: "Rendite der Immobilie", einheit: "% p. a.", wert: 5 },
+        { id: "altRendite", label: "Alternative Anlage", einheit: "% p. a.", wert: 7, hinweis: "z. B. breit gestreuter Aktienindex" },
+        { id: "jahre", label: "Zeitraum", einheit: "Jahre", wert: 15 }
+      ],
+      rechne: (w) => {
+        const immo = w.kapital * Math.pow(1 + w.immoRendite / 100, w.jahre);
+        const alt = w.kapital * Math.pow(1 + w.altRendite / 100, w.jahre);
+        const diff = immo - alt;
+        return {
+          zeilen: [
+            { l: "Immobilie nach " + w.jahre + " Jahren", v: eur(immo), gross: true },
+            { l: "Alternative nach " + w.jahre + " Jahren", v: eur(alt), gross: true },
+            { l: "Unterschied", v: (diff >= 0 ? "+ " : "− ") + eur(Math.abs(diff)) }
+          ],
+          vergleich: { a: immo, b: alt },
+          fazit: diff >= 0
+            ? "Rechnerisch liegt die Immobilie vorn. Bedenke: Sie bringt Aufwand mit, dafür kannst du sie mit Fremdkapital hebeln."
+            : "Rechnerisch läge die Alternative vorn. Der Vergleich blendet aber den Kredithebel aus — mit Fremdkapital arbeitet die Immobilie mit dem Geld der Bank."
+        };
+      }
+    }
+  ];
+
+  function renderTools(host) {
+    $("#eyebrow").textContent = "Tools";
+    $("#pageTitle").textContent = "Rechner & Wissen";
+    $("#pageSub").textContent = "Verstehen, was hinter den Zahlen steckt";
+
+    // Rechner-Übersicht
+    host.appendChild(el(`<div class="sec-t">Rechner</div>`));
+    const rGrid = el(`<div class="grid g-objekte">${RECHNER.map(r => `
+      <div class="card pad clickable tool-karte" data-rechner="${r.id}">
+        <div class="chip">${svg(r.icon)}</div>
+        <div class="tool-n">${esc(r.titel)}</div>
+        <div class="tool-k">${esc(r.kurz)}</div>
+        <span class="tapme">Öffnen ›</span>
+      </div>`).join("")}</div>`);
+    rGrid.querySelectorAll("[data-rechner]").forEach(n =>
+      n.onclick = () => openRechner(n.dataset.rechner));
+    host.appendChild(rGrid);
+
+    // Wissensbereich
+    host.appendChild(el(`<div class="sec-t" style="margin-top:8px">Wissen für Vermieter</div>`));
+    const wGrid = el(`<div class="grid g-objekte">${WISSEN.map(a => `
+      <div class="card pad clickable wi-karte" data-wissen="${a.id}">
+        <div class="wi-n">${esc(a.titel)}</div>
+        <div class="wi-k">${esc(a.kurz)}</div>
+        <span class="tapme">Lesen ›</span>
+      </div>`).join("")}</div>`);
+    wGrid.querySelectorAll("[data-wissen]").forEach(n =>
+      n.onclick = () => openWissen(n.dataset.wissen));
+    host.appendChild(wGrid);
+
+    host.appendChild(el(`<div class="note" style="margin-top:6px">
+      Angaben zu Mietrecht und Betriebskosten dienen der Orientierung und ersetzen keine Rechts- oder Steuerberatung.</div>`));
+  }
+
+  function openWissen(id) {
+    const a = WISSEN.find(x => x.id === id);
+    if (!a) return;
+    openSheet(a.titel, a.kurz, `<div class="wi-inhalt">${a.inhalt}</div>`);
+  }
+
+  function openRechner(id) {
+    const r = RECHNER.find(x => x.id === id);
+    if (!r) return;
+    const body = `
+      <div class="rechner-kurz">${esc(r.kurz)}</div>
+      <div id="rcFelder">${r.felder.map(f => `
+        <div class="rc-row">
+          <label class="rc-l">${esc(f.label)}${f.hinweis ? `<small>${esc(f.hinweis)}</small>` : ""}</label>
+          <div class="rc-feld">
+            <input class="ef-i rc-i" type="number" step="any" inputmode="decimal"
+              data-f="${f.id}" value="${f.wert}">
+            <span class="rc-e">${esc(f.einheit)}</span>
+          </div>
+        </div>`).join("")}</div>
+      <div id="rcErgebnis" class="rc-erg"></div>`;
+    const sheet = openSheet(r.titel, "", body);
+
+    const rechnen = () => {
+      const w = {};
+      sheet.querySelectorAll(".rc-i").forEach(i => {
+        w[i.dataset.f] = Number(String(i.value).replace(",", ".")) || 0;
+      });
+      const e = r.rechne(w);
+      let extra = "";
+      if (e.verhaeltnis) extra = `
+        <div class="rc-vh"><i class="z" style="width:${e.verhaeltnis.zins.toFixed(1)}%"></i><i class="t" style="width:${e.verhaeltnis.tilgung.toFixed(1)}%"></i></div>
+        <div class="rc-leg"><b class="z"></b>Zinsanteil <b class="t"></b>Tilgungsanteil</div>`;
+      if (e.balken != null) extra = `
+        <div class="rc-skala"><i style="width:${e.balken.toFixed(1)}%"></i></div>
+        <div class="rc-leg-s"><span>0 %</span><span>5 %</span><span>10 %</span></div>`;
+      if (e.verlauf) extra = rcVerlauf(e.verlauf);
+      if (e.vergleich) {
+        const max = Math.max(e.vergleich.a, e.vergleich.b) || 1;
+        extra = `<div class="rc-verg">
+          <div class="rc-vg"><span>Immobilie</span><i style="width:${(e.vergleich.a / max * 100).toFixed(1)}%"></i><b>${eur(e.vergleich.a)}</b></div>
+          <div class="rc-vg"><span>Alternative</span><i class="alt" style="width:${(e.vergleich.b / max * 100).toFixed(1)}%"></i><b>${eur(e.vergleich.b)}</b></div>
+        </div>`;
+      }
+      sheet.querySelector("#rcErgebnis").innerHTML = `
+        ${extra}
+        <div class="rc-zeilen">${e.zeilen.map(z =>
+          `<div class="rc-z${z.gross ? " gross" : ""}"><span>${esc(z.l)}</span><b>${esc(z.v)}</b></div>`).join("")}</div>
+        <div class="rc-fazit">${esc(e.fazit)}</div>`;
+    };
+    sheet.querySelectorAll(".rc-i").forEach(i => i.addEventListener("input", rechnen));
+    rechnen();
+  }
+
+  // Kleines Liniendiagramm für den Zinseszins-Verlauf
+  function rcVerlauf(werte) {
+    const max = Math.max(...werte) || 1, n = werte.length;
+    const pkt = werte.map((v, i) => `${(i / (n - 1) * 200).toFixed(1)},${(70 - v / max * 62).toFixed(1)}`).join(" ");
+    return `<svg viewBox="0 0 200 72" class="rc-svg" preserveAspectRatio="none">
+      <polyline points="${pkt}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg><div class="rc-leg-s"><span>Start</span><span>Ende</span></div>`;
+  }
+  // Jede Kennzahl bekommt ein kleines "i". Aufbau: Was ist das, wie rechnet ESTRIQ,
+  // was ist ein guter Wert, und eine kleine Grafik zur Veranschaulichung.
+  const KPI_INFO = {
+    einnahmen: {
+      titel: "Einnahmen pro Monat",
+      kurz: "Was tatsächlich jeden Monat auf dein Konto kommt.",
+      text: "Summe aller Mieten aus <b>vermieteten</b> Einheiten. Leerstehende Wohnungen zählen hier nicht mit — die findest du im Potenzial.",
+      formel: "Kaltmiete + Nebenkosten (aller vermieteten Einheiten)",
+      merke: "Einnahmen sind nicht dein Gewinn. Kreditrate und laufende Kosten gehen noch ab — das siehst du im Netto-Cashflow.",
+      grafik: "balken"
+    },
+    potenzial: {
+      titel: "Potenzial pro Monat",
+      kurz: "Was möglich wäre, wenn alles vermietet ist.",
+      text: "Rechnet alle Einheiten mit, auch die leerstehenden. Die Lücke zu den echten Einnahmen ist dein <b>Leerstandsverlust</b>.",
+      formel: "Einnahmen bei Vollvermietung",
+      merke: "Jeder Monat Leerstand ist verlorenes Geld, das nicht nachgeholt werden kann.",
+      grafik: "luecke"
+    },
+    cashflow: {
+      titel: "Netto-Cashflow",
+      kurz: "Was am Monatsende wirklich übrig bleibt.",
+      text: "Die ehrlichste Zahl im Dashboard. Von den Einnahmen wird die Kreditrate abgezogen. Ist sie negativ, legst du jeden Monat Geld drauf.",
+      formel: "Einnahmen − Tilgung − Zinsen",
+      merke: "Ein negativer Cashflow ist nicht automatisch schlecht: Tilgung ist Vermögensaufbau. Aber du musst ihn dir leisten können.",
+      grafik: "wasserfall"
+    },
+    rendite: {
+      titel: "Bruttomietrendite",
+      kurz: "Wie viel Prozent deines Kaufpreises die Miete jährlich einbringt.",
+      text: "Die Standardkennzahl zum Vergleichen von Objekten. Sie sagt nichts über Kosten oder Finanzierung — dafür ist sie schnell und überall gleich gerechnet.",
+      formel: "(Jahreskaltmiete ÷ Investition) × 100",
+      merke: "Als grobe Orientierung: unter 4 % wird es in der Regel schwer, positiven Cashflow zu erreichen. Ab etwa 6 % wird es interessant. Die Lage entscheidet mit.",
+      grafik: "skala"
+    },
+    auslastung: {
+      titel: "Auslastung",
+      kurz: "Wie viele deiner Einheiten vermietet sind.",
+      text: "Verhältnis von vermieteten zu allen Einheiten. Schon eine leere Wohnung von fünf drückt deine Einnahmen um rund 20 Prozent.",
+      formel: "(Vermietete Einheiten ÷ alle Einheiten) × 100",
+      merke: "Dauerhafter Leerstand hat fast immer einen von drei Gründen: zu hoher Preis, schlechter Zustand oder schwache Lage.",
+      grafik: "kreis"
+    },
+    restschuld: {
+      titel: "Restschuld",
+      kurz: "Was du der Bank aktuell noch schuldest.",
+      text: "Summe aller offenen Kredite. Sie sinkt mit jeder Tilgungsrate und mit Sondertilgungen.",
+      formel: "Ursprungsdarlehen − geleistete Tilgung",
+      merke: "Die Restschuld allein sagt wenig. Entscheidend ist, ob der Wert der Immobilie darüber liegt und ob du die Rate tragen kannst.",
+      grafik: "abbau"
+    },
+    tilgung: {
+      titel: "Tilgung pro Monat",
+      kurz: "Der Teil deiner Rate, der die Schulden verringert.",
+      text: "Deine Kreditrate besteht aus Zins und Tilgung. Nur die Tilgung baut Vermögen auf — der Zins ist der Preis fürs Geliehene.",
+      formel: "Kreditrate − Zinsanteil",
+      merke: "Am Anfang der Laufzeit ist der Zinsanteil hoch. Mit jeder Rate verschiebt sich das Verhältnis zugunsten der Tilgung.",
+      grafik: "zinstilgung"
+    },
+    invest: {
+      titel: "Investition",
+      kurz: "Was dich das Objekt insgesamt gekostet hat.",
+      text: "Kaufpreis plus Kaufnebenkosten: Grunderwerbsteuer, Notar, Grundbuch und gegebenenfalls Makler. Basis für alle Renditekennzahlen.",
+      formel: "Kaufpreis + Kaufnebenkosten",
+      merke: "Die Kaufnebenkosten liegen in Deutschland je nach Bundesland bei etwa 9 bis 15 Prozent. Wer sie weglässt, rechnet sich die Rendite schön.",
+      grafik: "anteile"
+    },
+    roi: {
+      titel: "Cashflow-ROI",
+      kurz: "Wie stark sich dein eingesetztes Kapital verzinst.",
+      text: "Setzt den jährlichen Netto-Cashflow ins Verhältnis zur Investition. Anders als die Bruttorendite berücksichtigt er die Finanzierung.",
+      formel: "(Netto-Cashflow × 12 ÷ Investition) × 100",
+      merke: "Vergleich diesen Wert mit dem, was dein Geld woanders bringen würde — das nennt man Opportunitätskosten.",
+      grafik: "skala"
+    },
+    nkpuffer: {
+      titel: "Nebenkosten-Rücklage",
+      kurz: "Was du für Betriebskosten zurücklegst.",
+      text: "Nebenkosten sind durchlaufende Posten: Dein Mieter zahlt sie voraus, du gibst sie für Heizung, Wasser, Müll und Versicherung wieder aus.",
+      formel: "Nebenkostenvorauszahlungen der Mieter",
+      merke: "Nebenkosten als Gewinn zu zählen ist der häufigste Rechenfehler von Vermietern. Am Jahresende sind sie meist weg.",
+      grafik: "durchlauf"
+    }
+  };
+
+  // Kleine Grafiken zu den Erklärungen (schlicht, ohne Zusatzbibliothek)
+  function infoGrafik(art) {
+    const g = (inhalt) => `<div class="ig">${inhalt}</div>`;
+    switch (art) {
+      case "balken": return g(`
+        <div class="ig-bal"><span style="height:78%"></span><span style="height:88%"></span><span style="height:84%"></span><span style="height:92%"></span></div>
+        <div class="ig-cap">Monatliche Mieteingänge</div>`);
+      case "luecke": return g(`
+        <div class="ig-stack"><div class="ig-voll"><i style="width:100%"></i><span>Potenzial</span></div>
+          <div class="ig-voll"><i class="ist" style="width:80%"></i><span>tatsächlich</span></div></div>
+        <div class="ig-cap">Die Lücke ist dein Leerstand</div>`);
+      case "wasserfall": return g(`
+        <div class="ig-wf">
+          <div class="ig-wf-i"><b>+</b><i style="height:100%"></i><span>Miete</span></div>
+          <div class="ig-wf-i"><b>−</b><i class="ab" style="height:58%"></i><span>Rate</span></div>
+          <div class="ig-wf-i"><b>=</b><i class="rest" style="height:42%"></i><span>übrig</span></div>
+        </div>
+        <div class="ig-cap">Von der Miete zur Rate zum Rest</div>`);
+      case "skala": return g(`
+        <div class="ig-skala"><div class="ig-sk-bar"><i></i></div>
+          <div class="ig-sk-marks"><span>0 %</span><span>4 %</span><span>6 %</span><span>10 %</span></div></div>
+        <div class="ig-cap">Grobe Einordnung — die Lage entscheidet mit</div>`);
+      case "kreis": return g(`
+        <div class="ig-kreis" style="--p:80"><div class="ig-kr-in">80<small>%</small></div></div>
+        <div class="ig-cap">4 von 5 Einheiten vermietet</div>`);
+      case "abbau": return g(`
+        <svg viewBox="0 0 200 70" class="ig-svg"><path d="M0,12 C60,16 120,42 200,62" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        <div class="ig-cap">Restschuld sinkt mit jeder Rate</div>`);
+      case "zinstilgung": return g(`
+        <div class="ig-zt">
+          <div class="ig-zt-r"><span>Jahr 1</span><i class="z" style="width:70%"></i><i class="t" style="width:30%"></i></div>
+          <div class="ig-zt-r"><span>Jahr 10</span><i class="z" style="width:48%"></i><i class="t" style="width:52%"></i></div>
+          <div class="ig-zt-r"><span>Jahr 20</span><i class="z" style="width:22%"></i><i class="t" style="width:78%"></i></div>
+        </div>
+        <div class="ig-leg"><b class="z"></b>Zins <b class="t"></b>Tilgung</div>`);
+      case "anteile": return g(`
+        <div class="ig-anteil"><i style="width:88%">Kaufpreis</i><i class="nk" style="width:12%">NK</i></div>
+        <div class="ig-cap">Kaufnebenkosten: rund 9 – 15 %</div>`);
+      case "durchlauf": return g(`
+        <div class="ig-durch"><span>Mieter zahlt</span><b>→</b><span>du legst zurück</span><b>→</b><span>Versorger</span></div>
+        <div class="ig-cap">Durchlaufender Posten, kein Gewinn</div>`);
+      default: return "";
+    }
+  }
+
+  function openInfoSheet(schluessel) {
+    const i = KPI_INFO[schluessel];
+    if (!i) return;
+    const body = `
+      <div class="info-kopf">
+        <div class="info-kurz">${esc(i.kurz)}</div>
+      </div>
+      ${infoGrafik(i.grafik)}
+      <p class="info-text">${i.text}</p>
+      <div class="info-formel"><span>So rechnet ESTRIQ</span><b>${esc(i.formel)}</b></div>
+      <div class="info-merke"><span>Merke</span>${esc(i.merke)}</div>
+      <button class="wc-cta" id="infoTools" style="margin-top:20px">Passende Rechner öffnen</button>`;
+    const sheet = openSheet(i.titel, "", body);
+    sheet.querySelector("#infoTools").onclick = () => { closeSheet(); route("tools"); };
+  }
+
+  // Kleines "i" für eine Kennzahl
+  function infoIcon(schluessel) {
+    return KPI_INFO[schluessel]
+      ? `<button class="kpi-i" data-info="${schluessel}" aria-label="Erklärung" title="Was bedeutet das?">i</button>`
+      : "";
+  }
+
+  function kpiCard(icon, num, lab, desc, accent, action, info) {
     return `<div class="card kpi ${accent ? 'accent' : ''}${action ? ' clickable' : ''}"${action ? ` data-act="${action}"` : ''}><div class="card-glow"></div>
       ${action ? '<span class="tapme">Details ›</span>' : ''}
+      ${infoIcon(info)}
       <div class="chip">${svg(icon)}</div>
       <div class="num">${esc(num)}</div>
       <div class="lab">${esc(lab)}</div>
@@ -2291,10 +2738,10 @@
     const netto = ist - tilg, occ = units ? Math.round(let_ / units * 100) : 0;
 
     host.appendChild(el(`<div class="grid g-kpi">
-      ${kpiCard("euro", eur(ist), "Einnahmen / Monat", "alle Objekte", true)}
-      ${kpiCard("layers", eur(pot), "Potenzial / Monat", "+" + eur(pot - ist) + " ungenutzt")}
-      ${kpiCard("wallet", eur(netto), "Netto-Cashflow", "nach Tilgung", netto >= 0)}
-      ${kpiCard("home", occ + " %", "Auslastung", let_ + " / " + units + " Einheiten", occ >= 60)}
+      ${kpiCard("euro", eur(ist), "Einnahmen / Monat", "alle Objekte", true, null, "einnahmen")}
+      ${kpiCard("layers", eur(pot), "Potenzial / Monat", "+" + eur(pot - ist) + " ungenutzt", false, null, "potenzial")}
+      ${kpiCard("wallet", eur(netto), "Netto-Cashflow", "nach Tilgung", netto >= 0, null, "cashflow")}
+      ${kpiCard("home", occ + " %", "Auslastung", let_ + " / " + units + " Einheiten", occ >= 60, null, "auslastung")}
     </div>`));
 
     // Kerninsights je Objekt
@@ -2381,10 +2828,10 @@
 
     // KPI-Reihe 1 — Einnahmen & Cashflow
     host.appendChild(wireActs(el(`<div class="grid g-kpi">
-      ${kpiCard("euro", eur(t.ist), "Einnahmen / Monat", "aktuell vermietet", true, "einnahmen")}
-      ${kpiCard("layers", eur(t.potenzial), "Potenzial / Monat", "+" + eur(upside) + " ungenutzt", false, "potenzial")}
-      ${kpiCard("wallet", eur(nettoMonth), "Netto-Cashflow", "nach Tilgung", nettoMonth >= 0, "netto")}
-      ${kpiCard("home", occ + " %", "Auslastung", unitsLet + " / " + unitsTotal + " Einheiten", occ >= 60, "auslastung")}
+      ${kpiCard("euro", eur(t.ist), "Einnahmen / Monat", "aktuell vermietet", true, "einnahmen", "einnahmen")}
+      ${kpiCard("layers", eur(t.potenzial), "Potenzial / Monat", "+" + eur(upside) + " ungenutzt", false, "potenzial", "potenzial")}
+      ${kpiCard("wallet", eur(nettoMonth), "Netto-Cashflow", "nach Tilgung", nettoMonth >= 0, "netto", "cashflow")}
+      ${kpiCard("home", occ + " %", "Auslastung", unitsLet + " / " + unitsTotal + " Einheiten", occ >= 60, "auslastung", "auslastung")}
     </div>`), {
       einnahmen: () => openPortfolioSheet("einnahmen", ctx),
       potenzial: () => openPortfolioSheet("potenzial", ctx),
@@ -2396,8 +2843,8 @@
     host.appendChild(wireActs(el(`<div class="grid g-kpi">
       ${kpiCard("trend", eur(t.jahrIst), "Einnahmen / Jahr", "hochgerechnet", false, "jahr")}
       ${kpiCard("chart", eur(nettoPot), "Netto-Potenzial / Mon.", "bei Vollvermietung", nettoPot >= 0, "potenzial")}
-      ${kpiCard("bank", eur(debtMonth), "Tilgung / Monat", eur(debtMonth * 12) + " / Jahr", false, "tilgung")}
-      ${kpiCard("debt", eur(debtRest), "Restschuld heute", "exakt " + eur2(debtRest), false, "schuld")}
+      ${kpiCard("bank", eur(debtMonth), "Tilgung / Monat", eur(debtMonth * 12) + " / Jahr", false, "tilgung", "tilgung")}
+      ${kpiCard("debt", eur(debtRest), "Restschuld heute", "exakt " + eur2(debtRest), false, "schuld", "restschuld")}
     </div>`), {
       jahr: () => openPortfolioSheet("einnahmen", ctx),
       potenzial: () => openPortfolioSheet("potenzial", ctx),
@@ -3061,17 +3508,17 @@
     if (k && s.invest) {
       // Rendite-Kennzahlen für alle Objekte
       host.appendChild(wireActs(el(`<div class="grid g-kpi">
-        ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditrate", m.netto >= 0, "cf")}
-        ${kpiCard("trend", k.bruttoRendite.toLocaleString("de-DE") + " %", "Bruttomietrendite", "Kaltmiete / Invest")}
-        ${kpiCard("chart", k.cashflowRoi.toLocaleString("de-DE") + " %", "Cashflow-ROI", "netto / Invest p.a.")}
-        ${kpiCard("coins", eur(k.invest), "Investition", "eingesetztes Kapital")}
+        ${kpiCard("wallet", eur(m.netto), "Netto-Cashflow / Monat", "nach Kreditrate", m.netto >= 0, "cf", "cashflow")}
+        ${kpiCard("trend", k.bruttoRendite.toLocaleString("de-DE") + " %", "Bruttomietrendite", "Kaltmiete / Invest", false, null, "rendite")}
+        ${kpiCard("chart", k.cashflowRoi.toLocaleString("de-DE") + " %", "Cashflow-ROI", "netto / Invest p.a.", false, null, "roi")}
+        ${kpiCard("coins", eur(k.invest), "Investition", "eingesetztes Kapital", false, null, "invest")}
       </div>`), { cf: () => openCashflowSheet(s) }));
       // Zweite Reihe mit Einnahmen/Tilgung/Restschuld (nützlich bei mehreren Krediten)
       host.appendChild(wireActs(el(`<div class="grid g-kpi">
         ${kpiCard("euro", eur(m.gesamt), "Einnahmen / Monat", m.vermietet + "/" + m.einheiten + " vermietet", true)}
         ${kpiCard("layers", eur(m.gesamtPotenzial), "Potenzial / Monat", "bei Vollvermietung")}
-        ${kpiCard("bank", eur(k.kreditAbtrag), "Tilgung / Monat", kredite.length + (kredite.length === 1 ? " Kredit" : " Kredite"))}
-        ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld heute", "exakt " + eur2(k.restschuldGesamt))}
+        ${kpiCard("bank", eur(k.kreditAbtrag), "Tilgung / Monat", kredite.length + (kredite.length === 1 ? " Kredit" : " Kredite"), false, null, "tilgung")}
+        ${kpiCard("debt", eur(k.restschuldGesamt), "Restschuld heute", "exakt " + eur2(k.restschuldGesamt), false, null, "restschuld")}
       </div>`), { cf: () => openCashflowSheet(s) }));
     } else if (k && kredite.length) {
       host.appendChild(wireActs(el(`<div class="grid g-kpi">
@@ -4080,6 +4527,11 @@
   document.addEventListener("DOMContentLoaded", async () => {
     blockZoom();
     landingVerdrahten();
+    // Erklär-Knöpfe an Kennzahlen (gilt auch für später gezeichnete Karten)
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest && e.target.closest("[data-info]");
+      if (b) { e.stopPropagation(); openInfoSheet(b.dataset.info); }
+    });
     $("#loginBtn").addEventListener("click", tryLogin);
     $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") regMode ? tryRegister() : tryLogin(); });
     $("#logoutBtn").addEventListener("click", logout);
