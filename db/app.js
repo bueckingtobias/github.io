@@ -1312,10 +1312,23 @@
     sheet.querySelector("#mkAlle").onclick = async (e) => {
       const btn = e.currentTarget;
       btn.disabled = true; btn.textContent = "Speichere…";
+      let ok = 0, fehler = 0;
       for (const b of sheet.querySelectorAll(".mk-row:not(.erledigt) .mk-ok")) {
-        await bestaetige(b.dataset.einheit, Number(b.dataset.betrag), b.closest(".mk-row"));
+        const r = await bestaetige(b.dataset.einheit, Number(b.dataset.betrag), b.closest(".mk-row"));
+        r ? ok++ : fehler++;
       }
-      await window.nachSpeichern(); closeSheet(); showToast("Alle Mieteingänge bestätigt.");
+      if (fehler) {
+        // Nicht schließen und keinen Erfolg melden, wenn etwas schiefging
+        btn.disabled = false; btn.textContent = "Erneut versuchen";
+        return;
+      }
+      await window.nachSpeichern();
+      // Gegenprobe: steht es wirklich in der Datenbank?
+      const nochOffen = offeneMieten().length;
+      closeSheet();
+      showToast(nochOffen
+        ? "Gespeichert, aber es sind noch " + nochOffen + " Zahlungen offen."
+        : "Alle Mieteingänge bestätigt.");
     };
 
     sheet.querySelector("#mkSpaeter").onclick = () => {
@@ -1742,7 +1755,7 @@
   /* ================= TOOLS: RECHNER & WISSEN ================= */
 
   const WISSEN = [
-    { id: "mietarten", titel: "Kaltmiete, Warmmiete, Nettokaltmiete",
+    { id: "mietarten", kat: "grundlagen", icon: "euro", titel: "Kaltmiete, Warmmiete, Nettokaltmiete",
       kurz: "Drei Begriffe, die ständig verwechselt werden.",
       inhalt: `
         <p><b>Nettokaltmiete</b> ist die reine Miete für den Wohnraum. Kein Strom, keine Heizung, kein Wasser. Das ist die Zahl, mit der du rechnest — bei Rendite, bei Mieterhöhung, bei allem.</p>
@@ -1750,7 +1763,7 @@
         <p><b>Warmmiete</b> ist alles zusammen: Nettokaltmiete plus sämtliche Nebenkosten inklusive Heizung. Das ist die Zahl, die dein Mieter überweist.</p>
         <div class="wi-merke">Für deine Kalkulation zählt ausschließlich die Nettokaltmiete. Wer mit der Warmmiete rechnet, überschätzt seine Rendite deutlich — die Nebenkosten gehören dir nicht, du reichst sie nur durch.</div>`
     },
-    { id: "cashflow-rendite", titel: "Cashflow ist nicht Rendite",
+    { id: "cashflow-rendite", kat: "grundlagen", icon: "chart", titel: "Cashflow ist nicht Rendite",
       kurz: "Zwei Zahlen, zwei völlig verschiedene Aussagen.",
       inhalt: `
         <p><b>Rendite</b> misst die Qualität des Objekts: Wie viel Miete bringt es im Verhältnis zum Kaufpreis? Sie ist unabhängig davon, wie du finanziert hast.</p>
@@ -1758,7 +1771,7 @@
         <p>Dasselbe Objekt kann mit hoher Tilgung negativen Cashflow haben und mit niedriger Tilgung positiven — die Rendite bleibt identisch.</p>
         <div class="wi-merke">Rendite sagt dir, ob das Objekt gut ist. Cashflow sagt dir, ob du es dir leisten kannst. Du brauchst beide Zahlen.</div>`
     },
-    { id: "umlagefaehig", titel: "Umlagefähig oder nicht?",
+    { id: "umlagefaehig", kat: "betrieb", icon: "layers", titel: "Umlagefähig oder nicht?",
       kurz: "Was du auf den Mieter umlegen darfst — und was nicht.",
       inhalt: `
         <p><b>Umlagefähig</b> nach Betriebskostenverordnung sind unter anderem: Grundsteuer, Wasser und Abwasser, Heizung, Aufzug, Straßenreinigung, Müllabfuhr, Gebäudereinigung, Gartenpflege, Beleuchtung, Schornsteinfeger, Sach- und Haftpflichtversicherung, Hauswart und Gemeinschaftsantenne.</p>
@@ -1766,7 +1779,7 @@
         <div class="wi-merke">Die Faustregel: Laufender Betrieb ja, Werterhalt nein. Reparaturen sind immer deine Sache — auch wenn es im Mietvertrag anders steht, solche Klauseln sind meist unwirksam.</div>
         <div class="wi-hinweis">Das ist eine Orientierung, keine Rechtsberatung. Im Zweifel den Mieterverein oder einen Fachanwalt fragen.</div>`
     },
-    { id: "versteckte-kosten", titel: "Die vier versteckten Kosten",
+    { id: "versteckte-kosten", kat: "grundlagen", icon: "wallet", titel: "Die vier versteckten Kosten",
       kurz: "Was in fast jeder Renditerechnung fehlt.",
       inhalt: `
         <p><b>1. Instandhaltung.</b> Rechne mit etwa 1 Prozent des Gebäudewerts pro Jahr, oder rund 10 Euro je Quadratmeter. Das Dach kommt irgendwann, garantiert.</p>
@@ -1775,7 +1788,7 @@
         <p><b>4. Kaufnebenkosten.</b> Grunderwerbsteuer, Notar, Grundbuch, Makler — je nach Bundesland 9 bis 15 Prozent des Kaufpreises. Sie gehören in die Investitionssumme.</p>
         <div class="wi-merke">Wer diese vier Posten weglässt, rechnet sich eine Rendite schön, die es nie gab.</div>`
     },
-    { id: "mieterhoehung", titel: "Mieterhöhung: die Regeln",
+    { id: "mieterhoehung", kat: "recht", icon: "trend", titel: "Mieterhöhung: die Regeln",
       kurz: "Wann, wie viel und in welcher Form.",
       inhalt: `
         <p><b>Sperrfrist:</b> Seit der letzten Erhöhung müssen zwölf Monate vergangen sein, und die Miete muss fünfzehn Monate unverändert gewesen sein.</p>
@@ -1784,7 +1797,7 @@
         <p><b>Form:</b> Schriftlich mit Begründung. Der Mieter hat dann bis zum Ende des übernächsten Monats Zeit zuzustimmen.</p>
         <div class="wi-hinweis">Orientierung, keine Rechtsberatung. Regionale Regeln können abweichen.</div>`
     },
-    { id: "nebenkosten", titel: "Nebenkostenabrechnung: Pflichtangaben",
+    { id: "nebenkosten", kat: "recht", icon: "calendar", titel: "Nebenkostenabrechnung: Pflichtangaben",
       kurz: "Sechs Punkte, ohne die sie angreifbar ist.",
       inhalt: `
         <p><b>1.</b> Zusammenstellung der Gesamtkosten je Kostenart.<br>
@@ -1796,7 +1809,7 @@
         <div class="wi-merke">Die Frist ist hart: Kommt die Abrechnung zu spät, kannst du keine Nachzahlung mehr verlangen — Guthaben musst du trotzdem auszahlen.</div>
         <div class="wi-hinweis">Orientierung, keine Rechtsberatung.</div>`
     },
-    { id: "leise-verluste", titel: "Wo Geld leise verschwindet",
+    { id: "leise-verluste", kat: "betrieb", icon: "debt", titel: "Wo Geld leise verschwindet",
       kurz: "Sechs Stellen, die kaum jemand prüft.",
       inhalt: `
         <p><b>Mieten, die nie angepasst wurden.</b> Nach fünf Jahren unter Marktniveau summiert sich das erheblich.</p>
@@ -1807,7 +1820,7 @@
         <p><b>Ungenutzte Sondertilgung.</b> Das vertragliche Recht verfällt jedes Jahr aufs Neue.</p>
         <div class="wi-merke">Keiner dieser Punkte tut spürbar weh. Zusammen kosten sie oft mehr als eine ganze Monatsmiete pro Jahr.</div>`
     },
-    { id: "zinsbindung", titel: "Zinsbindung und Anschlussfinanzierung",
+    { id: "zinsbindung", kat: "finanzierung", icon: "bank", titel: "Zinsbindung und Anschlussfinanzierung",
       kurz: "Warum du Jahre vorher anfangen solltest.",
       inhalt: `
         <p>Nach Ablauf der Zinsbindung wird die Restschuld neu finanziert — zum dann geltenden Zins. Steigt der von 2 auf 5 Prozent, kann sich deine Rate fast verdoppeln.</p>
@@ -1817,9 +1830,16 @@
     }
   ];
 
+  const WISSEN_KAT = [
+    { id: "grundlagen", name: "Grundlagen", info: "Die Begriffe, die alles bestimmen" },
+    { id: "betrieb", name: "Betrieb & Kosten", info: "Was im Alltag Geld kostet" },
+    { id: "recht", name: "Recht & Fristen", info: "Regeln, die du kennen musst" },
+    { id: "finanzierung", name: "Finanzierung", info: "Kredit, Zins und Tilgung" }
+  ];
+
   const RECHNER = [
     {
-      id: "rendite", titel: "Renditerechner", icon: "trend",
+      id: "rendite", titel: "Renditerechner", icon: "trend", kat: "kauf",
       kurz: "Was wirft eine Immobilie im Verhältnis zum Kaufpreis ab?",
       felder: [
         { id: "kaufpreis", label: "Kaufpreis", einheit: "€", wert: 250000 },
@@ -1847,7 +1867,7 @@
       }
     },
     {
-      id: "kredit", titel: "Kreditrechner", icon: "bank",
+      id: "kredit", titel: "Kreditrechner", icon: "bank", kat: "finanzierung",
       kurz: "Was kostet dich die Finanzierung monatlich?",
       felder: [
         { id: "summe", label: "Darlehenssumme", einheit: "€", wert: 200000 },
@@ -1877,7 +1897,7 @@
       }
     },
     {
-      id: "zinseszins", titel: "Zinseszinsrechner", icon: "chart",
+      id: "zinseszins", titel: "Zinseszinsrechner", icon: "chart", kat: "vermoegen",
       kurz: "Wie stark wächst Kapital über die Zeit?",
       felder: [
         { id: "start", label: "Startkapital", einheit: "€", wert: 20000 },
@@ -1903,7 +1923,7 @@
       }
     },
     {
-      id: "opportunitaet", titel: "Opportunitätskosten", icon: "layers",
+      id: "opportunitaet", titel: "Opportunitätskosten", icon: "layers", kat: "vermoegen",
       kurz: "Was hätte dein Geld woanders gebracht?",
       felder: [
         { id: "kapital", label: "Eingesetztes Eigenkapital", einheit: "€", wert: 60000 },
@@ -1927,38 +1947,264 @@
             : "Rechnerisch läge die Alternative vorn. Der Vergleich blendet aber den Kredithebel aus — mit Fremdkapital arbeitet die Immobilie mit dem Geld der Bank."
         };
       }
+    },
+    {
+      id: "kaufneben", titel: "Kaufnebenkosten", icon: "coins", kat: "kauf",
+      kurz: "Was zum Kaufpreis noch obendrauf kommt.",
+      felder: [
+        { id: "kaufpreis", label: "Kaufpreis", einheit: "€", wert: 250000 },
+        { id: "grest", label: "Grunderwerbsteuer", einheit: "%", wert: 5, hinweis: "Bundeslandabhängig: 3,5 bis 6,5 %" },
+        { id: "notar", label: "Notar und Grundbuch", einheit: "%", wert: 2 },
+        { id: "makler", label: "Maklercourtage", einheit: "%", wert: 3.57, hinweis: "Oft geteilt, entfällt beim Direktkauf" }
+      ],
+      rechne: (w) => {
+        const g = w.kaufpreis * w.grest / 100, n = w.kaufpreis * w.notar / 100, m = w.kaufpreis * w.makler / 100;
+        const nk = g + n + m, ges = w.kaufpreis + nk;
+        return {
+          zeilen: [
+            { l: "Grunderwerbsteuer", v: eur(g) },
+            { l: "Notar und Grundbuch", v: eur(n) },
+            { l: "Makler", v: eur(m) },
+            { l: "Nebenkosten gesamt", v: eur(nk), gross: true },
+            { l: "Anteil am Kaufpreis", v: (w.kaufpreis ? nk / w.kaufpreis * 100 : 0).toFixed(1).replace(".", ",") + " %" },
+            { l: "Gesamtinvestition", v: eur(ges), gross: true }
+          ],
+          stapel: [
+            { l: "Kaufpreis", v: w.kaufpreis, f: "a" },
+            { l: "Grunderwerbsteuer", v: g, f: "b" },
+            { l: "Notar", v: n, f: "c" },
+            { l: "Makler", v: m, f: "d" }
+          ],
+          fazit: "Die Nebenkosten sind verlorenes Geld — sie stecken nicht im Wert der Immobilie. Deshalb gehören sie zwingend in die Renditerechnung."
+        };
+      }
+    },
+    {
+      id: "cashflow", titel: "Cashflow-Rechner", icon: "wallet", kat: "kauf",
+      kurz: "Was bleibt nach allen Kosten und der Kreditrate übrig?",
+      felder: [
+        { id: "miete", label: "Kaltmiete pro Monat", einheit: "€", wert: 950 },
+        { id: "rate", label: "Kreditrate pro Monat", einheit: "€", wert: 780 },
+        { id: "instand", label: "Instandhaltung", einheit: "€/Monat", wert: 80, hinweis: "Faustregel: 1 € je m² und Monat" },
+        { id: "verwaltung", label: "Verwaltung", einheit: "€/Monat", wert: 25 },
+        { id: "ausfall", label: "Mietausfallrisiko", einheit: "% der Miete", wert: 3 }
+      ],
+      rechne: (w) => {
+        const ausfall = w.miete * w.ausfall / 100;
+        const cf = w.miete - (w.rate + w.instand + w.verwaltung + ausfall);
+        return {
+          zeilen: [
+            { l: "Mieteinnahme", v: eur(w.miete) },
+            { l: "− Kreditrate", v: "− " + eur(w.rate) },
+            { l: "− Instandhaltung", v: "− " + eur(w.instand) },
+            { l: "− Verwaltung", v: "− " + eur(w.verwaltung) },
+            { l: "− Mietausfallrisiko", v: "− " + eur(ausfall) },
+            { l: "Cashflow pro Monat", v: eur(cf), gross: true },
+            { l: "Cashflow pro Jahr", v: eur(cf * 12), gross: true }
+          ],
+          wasserfall: [
+            { l: "Miete", v: w.miete, typ: "plus" },
+            { l: "Rate", v: w.rate, typ: "minus" },
+            { l: "Kosten", v: w.instand + w.verwaltung + ausfall, typ: "minus" },
+            { l: "Rest", v: Math.abs(cf), typ: cf >= 0 ? "rest" : "neg" }
+          ],
+          fazit: cf >= 0
+            ? "Positiver Cashflow: Das Objekt trägt sich selbst und wirft zusätzlich etwas ab."
+            : "Negativer Cashflow: Du legst monatlich " + eur(Math.abs(cf)) + " drauf. Das kann sich lohnen, wenn die Tilgung hoch ist — du musst es dir aber leisten können."
+        };
+      }
+    },
+    {
+      id: "sondertilgung", titel: "Sondertilgung", icon: "coins", kat: "finanzierung",
+      kurz: "Wie viel Zinsen sparst du durch eine Extrazahlung?",
+      felder: [
+        { id: "summe", label: "Restschuld", einheit: "€", wert: 200000 },
+        { id: "zins", label: "Sollzins", einheit: "% p. a.", wert: 3.5 },
+        { id: "rate", label: "Monatliche Rate", einheit: "€", wert: 917 },
+        { id: "sonder", label: "Sondertilgung pro Jahr", einheit: "€", wert: 5000 }
+      ],
+      rechne: (w) => {
+        const lauf = (mitSonder) => {
+          let rest = w.summe, mon = 0, zins = 0;
+          const zM = w.zins / 100 / 12;
+          while (rest > 0 && mon < 1200) {
+            const z = rest * zM; zins += z;
+            rest = rest + z - w.rate;
+            if (mitSonder && (mon + 1) % 12 === 0) rest -= w.sonder;
+            mon++;
+          }
+          return { mon, zins };
+        };
+        const ohne = lauf(false), mit = lauf(true);
+        const sparMon = Math.max(0, ohne.mon - mit.mon), sparZins = Math.max(0, ohne.zins - mit.zins);
+        return {
+          zeilen: [
+            { l: "Ohne Sondertilgung", v: Math.floor(ohne.mon / 12) + " J " + (ohne.mon % 12) + " M" },
+            { l: "Mit Sondertilgung", v: Math.floor(mit.mon / 12) + " J " + (mit.mon % 12) + " M", gross: true },
+            { l: "Schneller schuldenfrei", v: Math.floor(sparMon / 12) + " J " + (sparMon % 12) + " M", gross: true },
+            { l: "Gesparte Zinsen", v: eur(sparZins), gross: true }
+          ],
+          vergleich: { a: ohne.mon, b: mit.mon, la: "ohne Sondertilgung", lb: "mit Sondertilgung", einheit: "Monate" },
+          fazit: "Sondertilgung wirkt am stärksten früh in der Laufzeit, weil dann der Zinsanteil am höchsten ist. Viele Verträge erlauben 5 % jährlich kostenfrei."
+        };
+      }
+    },
+    {
+      id: "anschluss", titel: "Anschlussfinanzierung", icon: "debt", kat: "finanzierung",
+      kurz: "Was passiert, wenn der Zins nach der Bindung steigt?",
+      felder: [
+        { id: "rest", label: "Restschuld bei Ablauf", einheit: "€", wert: 150000 },
+        { id: "altZins", label: "Bisheriger Zins", einheit: "% p. a.", wert: 2 },
+        { id: "neuZins", label: "Erwarteter neuer Zins", einheit: "% p. a.", wert: 4.5 },
+        { id: "tilgung", label: "Tilgung", einheit: "% p. a.", wert: 2 }
+      ],
+      rechne: (w) => {
+        const alt = w.rest * (w.altZins + w.tilgung) / 100 / 12;
+        const neu = w.rest * (w.neuZins + w.tilgung) / 100 / 12;
+        const diff = neu - alt;
+        return {
+          zeilen: [
+            { l: "Bisherige Rate", v: eur(alt) },
+            { l: "Neue Rate", v: eur(neu), gross: true },
+            { l: "Mehrbelastung pro Monat", v: (diff >= 0 ? "+ " : "− ") + eur(Math.abs(diff)), gross: true },
+            { l: "Mehrbelastung pro Jahr", v: (diff >= 0 ? "+ " : "− ") + eur(Math.abs(diff * 12)) }
+          ],
+          vergleich: { a: alt, b: neu, la: "bisherige Rate", lb: "neue Rate", waehrung: true },
+          fazit: diff > 0
+            ? "Deine Rate steigt spürbar. Prüfe rechtzeitig ein Forward-Darlehen oder erhöhe vorher die Tilgung, um die Restschuld zu senken."
+            : "Die Anschlussfinanzierung wird günstiger. Überlege, ob du stattdessen die Tilgung erhöhst."
+        };
+      }
+    },
+    {
+      id: "kauffaktor", titel: "Kaufpreisfaktor", icon: "layers", kat: "kauf",
+      kurz: "Wie viele Jahresmieten kostet die Immobilie?",
+      felder: [
+        { id: "kaufpreis", label: "Kaufpreis", einheit: "€", wert: 250000 },
+        { id: "miete", label: "Kaltmiete pro Monat", einheit: "€", wert: 950 }
+      ],
+      rechne: (w) => {
+        const jahr = w.miete * 12;
+        const faktor = jahr ? w.kaufpreis / jahr : 0;
+        const rendite = w.kaufpreis ? jahr / w.kaufpreis * 100 : 0;
+        return {
+          zeilen: [
+            { l: "Jahreskaltmiete", v: eur(jahr) },
+            { l: "Kaufpreisfaktor", v: faktor.toFixed(1).replace(".", ",") + " ×", gross: true },
+            { l: "entspricht Bruttorendite", v: rendite.toFixed(2).replace(".", ",") + " %", gross: true }
+          ],
+          faktor: faktor,
+          fazit: faktor <= 20
+            ? "Unter Faktor 20 gilt als günstig — in Städten kaum noch zu finden, in ländlichen Lagen realistisch."
+            : faktor <= 28
+              ? "Im normalen Bereich für gute Lagen. Der Cashflow wird hier meist knapp."
+              : "Hoher Faktor. Das lohnt sich fast nur, wenn du auf Wertsteigerung setzt — nicht auf laufende Erträge."
+        };
+      }
+    },
+    {
+      id: "instandhaltung", titel: "Instandhaltungsrücklage", icon: "home", kat: "betrieb",
+      kurz: "Wie viel solltest du monatlich zurücklegen?",
+      felder: [
+        { id: "flaeche", label: "Wohnfläche", einheit: "m²", wert: 80 },
+        { id: "baujahr", label: "Baujahr", einheit: "", wert: 1985 },
+        { id: "gebaeude", label: "Gebäudewert", einheit: "€", wert: 200000, hinweis: "Kaufpreis ohne Grundstücksanteil" }
+      ],
+      rechne: (w) => {
+        const alter = Math.max(0, new Date().getFullYear() - w.baujahr);
+        const proQm = alter < 22 ? 9 : alter < 32 ? 11.5 : 14;
+        const nachFlaeche = w.flaeche * proQm / 12;
+        const nachWert = w.gebaeude * 0.01 / 12;
+        const empfehlung = Math.max(nachFlaeche, nachWert);
+        return {
+          zeilen: [
+            { l: "Gebäudealter", v: alter + " Jahre" },
+            { l: "Nach Fläche", v: eur(nachFlaeche) + " / Monat" },
+            { l: "Nach Gebäudewert (1 % p. a.)", v: eur(nachWert) + " / Monat" },
+            { l: "Empfehlung", v: eur(empfehlung) + " / Monat", gross: true },
+            { l: "Pro Jahr", v: eur(empfehlung * 12), gross: true }
+          ],
+          vergleich: { a: nachFlaeche, b: nachWert, la: "nach Fläche", lb: "nach Wert", waehrung: true },
+          fazit: "Ältere Gebäude brauchen mehr Rücklage — ab 32 Jahren rechnet man mit rund 14 € je m² und Jahr. Wer nichts zurücklegt, finanziert das nächste Dach über einen teuren Kredit."
+        };
+      }
+    },
+    {
+      id: "mieterhoehung", titel: "Mieterhöhung", icon: "trend", kat: "betrieb",
+      kurz: "Wie viel darfst du erhöhen — und was bringt es?",
+      felder: [
+        { id: "aktuell", label: "Aktuelle Kaltmiete", einheit: "€/Monat", wert: 700 },
+        { id: "vergleich", label: "Ortsübliche Vergleichsmiete", einheit: "€/Monat", wert: 880 },
+        { id: "kappung", label: "Kappungsgrenze", einheit: "%", wert: 20, hinweis: "15 % in angespannten Wohnlagen" }
+      ],
+      rechne: (w) => {
+        const maxKappung = w.aktuell * (1 + w.kappung / 100);
+        const neu = Math.min(maxKappung, w.vergleich);
+        const plus = Math.max(0, neu - w.aktuell);
+        return {
+          zeilen: [
+            { l: "Grenze durch Kappung", v: eur(maxKappung) },
+            { l: "Grenze durch Vergleichsmiete", v: eur(w.vergleich) },
+            { l: "Zulässige neue Miete", v: eur(neu), gross: true },
+            { l: "Erhöhung pro Monat", v: "+ " + eur(plus), gross: true },
+            { l: "Mehr pro Jahr", v: "+ " + eur(plus * 12), gross: true }
+          ],
+          grenzen: { aktuell: w.aktuell, kappung: maxKappung, vergleich: w.vergleich, neu: neu },
+          fazit: "Es gilt immer die niedrigere der beiden Grenzen. Zwischen zwei Erhöhungen müssen zwölf Monate liegen, die Miete muss fünfzehn Monate unverändert gewesen sein.",
+          rechtlich: true
+        };
+      }
     }
   ];
+
+  const RECHNER_KAT = [
+    { id: "kauf", name: "Kauf & Rendite", info: "Lohnt sich dieses Objekt?" },
+    { id: "finanzierung", name: "Finanzierung", info: "Was kostet dich die Bank?" },
+    { id: "betrieb", name: "Betrieb & Miete", info: "Laufende Kosten und Mieteinnahmen" },
+    { id: "vermoegen", name: "Vermögen & Vergleich", info: "Was macht dein Geld sonst?" }
+  ];
+
 
   function renderTools(host) {
     $("#eyebrow").textContent = "Tools";
     $("#pageTitle").textContent = "Rechner & Wissen";
-    $("#pageSub").textContent = "Verstehen, was hinter den Zahlen steckt";
+    $("#pageSub").textContent = RECHNER.length + " Rechner · " + WISSEN.length + " Themen";
 
-    // Rechner-Übersicht
-    host.appendChild(el(`<div class="sec-t">Rechner</div>`));
-    const rGrid = el(`<div class="grid g-objekte">${RECHNER.map(r => `
-      <div class="card pad clickable tool-karte" data-rechner="${r.id}">
-        <div class="chip">${svg(r.icon)}</div>
-        <div class="tool-n">${esc(r.titel)}</div>
-        <div class="tool-k">${esc(r.kurz)}</div>
-        <span class="tapme">Öffnen ›</span>
-      </div>`).join("")}</div>`);
-    rGrid.querySelectorAll("[data-rechner]").forEach(n =>
-      n.onclick = () => openRechner(n.dataset.rechner));
-    host.appendChild(rGrid);
+    // Rechner nach Kategorien
+    RECHNER_KAT.forEach(k => {
+      const liste = RECHNER.filter(r => r.kat === k.id);
+      if (!liste.length) return;
+      host.appendChild(el(`<div class="kat-kopf">
+        <div class="kat-n">${esc(k.name)}</div>
+        <div class="kat-i">${esc(k.info)}</div></div>`));
+      const g = el(`<div class="grid g-objekte">${liste.map(r => `
+        <div class="card pad clickable tool-karte" data-rechner="${r.id}">
+          <div class="chip">${svg(r.icon)}</div>
+          <div class="tool-n">${esc(r.titel)}</div>
+          <div class="tool-k">${esc(r.kurz)}</div>
+          <span class="tapme">Öffnen ›</span>
+        </div>`).join("")}</div>`);
+      g.querySelectorAll("[data-rechner]").forEach(n => n.onclick = () => openRechner(n.dataset.rechner));
+      host.appendChild(g);
+    });
 
-    // Wissensbereich
-    host.appendChild(el(`<div class="sec-t" style="margin-top:8px">Wissen für Vermieter</div>`));
-    const wGrid = el(`<div class="grid g-objekte">${WISSEN.map(a => `
-      <div class="card pad clickable wi-karte" data-wissen="${a.id}">
-        <div class="wi-n">${esc(a.titel)}</div>
-        <div class="wi-k">${esc(a.kurz)}</div>
-        <span class="tapme">Lesen ›</span>
-      </div>`).join("")}</div>`);
-    wGrid.querySelectorAll("[data-wissen]").forEach(n =>
-      n.onclick = () => openWissen(n.dataset.wissen));
-    host.appendChild(wGrid);
+    // Wissensbereich nach Kategorien
+    WISSEN_KAT.forEach(k => {
+      const liste = WISSEN.filter(a => a.kat === k.id);
+      if (!liste.length) return;
+      host.appendChild(el(`<div class="kat-kopf">
+        <div class="kat-n">${esc(k.name)}</div>
+        <div class="kat-i">${esc(k.info)}</div></div>`));
+      const g = el(`<div class="grid g-objekte">${liste.map(a => `
+        <div class="card pad clickable wi-karte" data-wissen="${a.id}">
+          <div class="wi-ic">${svg(a.icon || "chart")}</div>
+          <div class="wi-n">${esc(a.titel)}</div>
+          <div class="wi-k">${esc(a.kurz)}</div>
+          <span class="tapme">Lesen ›</span>
+        </div>`).join("")}</div>`);
+      g.querySelectorAll("[data-wissen]").forEach(n => n.onclick = () => openWissen(n.dataset.wissen));
+      host.appendChild(g);
+    });
 
     host.appendChild(el(`<div class="note" style="margin-top:6px">
       Angaben zu Mietrecht und Betriebskosten dienen der Orientierung und ersetzen keine Rechts- oder Steuerberatung.</div>`));
@@ -1994,25 +2240,68 @@
       });
       const e = r.rechne(w);
       let extra = "";
+      // Zins-/Tilgungsverhältnis
       if (e.verhaeltnis) extra = `
         <div class="rc-vh"><i class="z" style="width:${e.verhaeltnis.zins.toFixed(1)}%"></i><i class="t" style="width:${e.verhaeltnis.tilgung.toFixed(1)}%"></i></div>
         <div class="rc-leg"><b class="z"></b>Zinsanteil <b class="t"></b>Tilgungsanteil</div>`;
-      if (e.balken != null) extra = `
+      // Renditeskala
+      else if (e.balken != null) extra = `
         <div class="rc-skala"><i style="width:${e.balken.toFixed(1)}%"></i></div>
         <div class="rc-leg-s"><span>0 %</span><span>5 %</span><span>10 %</span></div>`;
-      if (e.verlauf) extra = rcVerlauf(e.verlauf);
-      if (e.vergleich) {
-        const max = Math.max(e.vergleich.a, e.vergleich.b) || 1;
+      // Verlaufskurve
+      else if (e.verlauf) extra = rcVerlauf(e.verlauf);
+      // Gestapelte Anteile (Kaufnebenkosten)
+      else if (e.stapel) {
+        const ges = e.stapel.reduce((a, x) => a + x.v, 0) || 1;
+        extra = `<div class="rc-stapel">${e.stapel.map(x =>
+          `<i class="f-${x.f}" style="width:${(x.v / ges * 100).toFixed(2)}%" title="${esc(x.l)}"></i>`).join("")}</div>
+          <div class="rc-stapel-leg">${e.stapel.map(x =>
+          `<span><b class="f-${x.f}"></b>${esc(x.l)}</span>`).join("")}</div>`;
+      }
+      // Wasserfall (Cashflow)
+      else if (e.wasserfall) {
+        const max = Math.max(...e.wasserfall.map(x => x.v)) || 1;
+        extra = `<div class="rc-wf">${e.wasserfall.map(x =>
+          `<div class="rc-wf-i">
+             <i class="${x.typ}" style="height:${Math.max(5, x.v / max * 100).toFixed(1)}%"></i>
+             <span>${esc(x.l)}</span>
+             <b>${eur(x.v)}</b>
+           </div>`).join("")}</div>`;
+      }
+      // Kaufpreisfaktor auf einer Skala
+      else if (e.faktor != null) {
+        const pos = Math.max(0, Math.min(100, (e.faktor - 12) / 28 * 100));
+        extra = `<div class="rc-faktor">
+            <div class="rc-fk-bar"><i style="left:${pos.toFixed(1)}%"></i></div>
+            <div class="rc-fk-marks"><span>12×<small>günstig</small></span><span>20×</span><span>28×</span><span>40×<small>teuer</small></span></div>
+          </div>`;
+      }
+      // Grenzen bei der Mieterhöhung
+      else if (e.grenzen) {
+        const g = e.grenzen, max = Math.max(g.kappung, g.vergleich) || 1;
+        const bar = (v, kl, l) => `<div class="rc-vg"><span>${l}</span><i class="${kl}" style="width:${(v / max * 100).toFixed(1)}%"></i><b>${eur(v)}</b></div>`;
         extra = `<div class="rc-verg">
-          <div class="rc-vg"><span>Immobilie</span><i style="width:${(e.vergleich.a / max * 100).toFixed(1)}%"></i><b>${eur(e.vergleich.a)}</b></div>
-          <div class="rc-vg"><span>Alternative</span><i class="alt" style="width:${(e.vergleich.b / max * 100).toFixed(1)}%"></i><b>${eur(e.vergleich.b)}</b></div>
+          ${bar(g.aktuell, "grau", "heute")}
+          ${bar(g.kappung, "alt", "Kappung")}
+          ${bar(g.vergleich, "alt", "Vergleich")}
+          ${bar(g.neu, "", "zulässig")}
+        </div>`;
+      }
+      // Zwei Werte gegenüberstellen
+      else if (e.vergleich) {
+        const max = Math.max(e.vergleich.a, e.vergleich.b) || 1;
+        const fmt = (v) => e.vergleich.waehrung === false ? Math.round(v) + " " + (e.vergleich.einheit || "") : eur(v);
+        extra = `<div class="rc-verg">
+          <div class="rc-vg"><span>${esc(e.vergleich.la || "Immobilie")}</span><i style="width:${(e.vergleich.a / max * 100).toFixed(1)}%"></i><b>${e.vergleich.einheit ? Math.round(e.vergleich.a) + " " + e.vergleich.einheit : eur(e.vergleich.a)}</b></div>
+          <div class="rc-vg"><span>${esc(e.vergleich.lb || "Alternative")}</span><i class="alt" style="width:${(e.vergleich.b / max * 100).toFixed(1)}%"></i><b>${e.vergleich.einheit ? Math.round(e.vergleich.b) + " " + e.vergleich.einheit : eur(e.vergleich.b)}</b></div>
         </div>`;
       }
       sheet.querySelector("#rcErgebnis").innerHTML = `
         ${extra}
         <div class="rc-zeilen">${e.zeilen.map(z =>
           `<div class="rc-z${z.gross ? " gross" : ""}"><span>${esc(z.l)}</span><b>${esc(z.v)}</b></div>`).join("")}</div>
-        <div class="rc-fazit">${esc(e.fazit)}</div>`;
+        <div class="rc-fazit">${esc(e.fazit)}</div>
+        ${e.rechtlich ? `<div class="wi-hinweis">Orientierung, keine Rechtsberatung.</div>` : ""}`;
     };
     sheet.querySelectorAll(".rc-i").forEach(i => i.addEventListener("input", rechnen));
     rechnen();
